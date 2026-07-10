@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen overflow-x-hidden bg-[#F8FAFC]">
       <PublicHeader />
       <Hero />
       <FeatureMatrix />
@@ -104,7 +104,7 @@ function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-slate-200">
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-14 sm:px-6 sm:pt-24 sm:pb-20">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 120, damping: 20 }} className="mx-auto max-w-3xl text-center">
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 120, damping: 20 }} className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">
             <Sparkles size={12} className="text-[#0284C7]" /> Now onboarding AI, engineering & tech creators
           </span>
