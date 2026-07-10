@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 
@@ -30,11 +30,10 @@ function Auth() {
   const [proof, setProof] = useState(0);
   const nav = useNavigate();
 
-  // rotate marketing proof
-  useState(() => {
+  useEffect(() => {
     const t = setInterval(() => setProof((p) => (p + 1) % SOCIAL_PROOFS.length), 2600);
     return () => clearInterval(t);
-  });
+  }, []);
 
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-5">
