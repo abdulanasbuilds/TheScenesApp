@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Sparkles, Rocket, GraduationCap, Check, Upload, ArrowRight, ArrowLeft, Zap, Trophy, MessagesSquare, Lock } from "lucide-react";
+import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Welcome to SukaSpace · Onboarding" }] }),
@@ -123,15 +124,22 @@ function Onboarding() {
 
 function Welcome({ onNext }: { onNext: () => void }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#0284C7]/10 text-[#0284C7]">
-        <Sparkles size={22} />
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="grid gap-0 lg:grid-cols-2">
+        <div className="p-8 text-center sm:p-10 lg:flex lg:flex-col lg:justify-center">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#0284C7]/10 text-[#0284C7]">
+            <Sparkles size={22} />
+          </div>
+          <h1 className="mt-5 text-3xl font-bold tracking-tight text-slate-900">Welcome to the future of learning.</h1>
+          <p className="mt-2 text-base text-slate-600">You're 3 quick steps away from your workspace.</p>
+          <motion.button onClick={onNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="mt-6 inline-flex items-center gap-2 self-center rounded-xl bg-[#0284C7] px-5 py-3 text-sm font-semibold text-white shadow-sm">
+            Let's go <ArrowRight size={14} />
+          </motion.button>
+        </div>
+        <div className="border-t border-slate-200 bg-[#F8FAFC] p-3 lg:border-l lg:border-t-0">
+          <img src={UPLOADED_MOCKUPS.onboardingJourney} alt="SukaSpace onboarding role selection mockup" className="h-full min-h-[260px] w-full rounded-xl border border-slate-200 bg-white object-cover" />
+        </div>
       </div>
-      <h1 className="mt-5 text-3xl font-bold tracking-tight text-slate-900">Welcome to the future of learning.</h1>
-      <p className="mt-2 text-base text-slate-600">You're 3 quick steps away from your workspace.</p>
-      <motion.button onClick={onNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#0284C7] px-5 py-3 text-sm font-semibold text-white shadow-sm">
-        Let's go <ArrowRight size={14} />
-      </motion.button>
     </div>
   );
 }

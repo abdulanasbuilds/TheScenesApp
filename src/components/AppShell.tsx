@@ -51,26 +51,26 @@ export function AppShell() {
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur">
-          <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-500 md:max-w-md">
-            <Search size={14} />
-            <span>Search communities, lessons, people…</span>
+        <header className="sticky top-0 z-30 grid h-14 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-slate-200 bg-white/90 px-3 backdrop-blur sm:gap-3 sm:px-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-500 md:max-w-md">
+            <Search size={14} className="shrink-0" />
+            <span className="truncate">Search communities, lessons, people…</span>
           </div>
-          <button className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50">
+          <button aria-label="Notifications" className="shrink-0 rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50">
             <Bell size={16} />
           </button>
           <Avatar initials="YU" tone="sky" size={30} />
         </header>
 
         {/* Mobile bottom nav */}
-        <div className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 bg-white flex justify-around py-1.5">
+        <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white px-1 py-1.5 md:hidden">
           {NAV.map((n) => {
             const Icon = n.icon;
             const active = loc.pathname.startsWith(n.to);
             return (
-              <Link key={n.to} to={n.to} className={`flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium ${active ? "text-[#0284C7]" : "text-slate-500"}`}>
-                <Icon size={18} />
-                {n.label}
+              <Link key={n.to} to={n.to} className={`flex min-w-0 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[10px] font-medium ${active ? "bg-sky-50 text-[#0284C7]" : "text-slate-500"}`}>
+                <Icon size={18} className="shrink-0" />
+                <span className="max-w-full truncate">{n.label === "Creator Hub" ? "Creator" : n.label}</span>
               </Link>
             );
           })}

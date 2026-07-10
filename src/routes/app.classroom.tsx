@@ -105,7 +105,7 @@ function Classroom() {
           <div className="mt-6">
             <div className="mb-2 text-xs font-semibold text-slate-500">Resources</div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {[{ n: "agent-graph.py", s: "2.4 KB" }, { n: "state-schema.pdf", s: "318 KB" }, { n: "sandbox-repo.zip", s: "1.2 MB" }, { n: "slide-deck.pdf", s: "4.7 MB" }].map((r) => (
+              {[{ n: "agent-graph.py", s: "2.4 KB" }, { n: "state-schema.pdf", s: "318 KB" }, { n: "project-files.zip", s: "1.2 MB" }, { n: "slide-deck.pdf", s: "4.7 MB" }].map((r) => (
                 <button key={r.n} className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white p-3 text-left text-sm hover:border-slate-300">
                   <Download size={16} className="text-[#0284C7]" />
                   <div className="min-w-0 flex-1"><div className="truncate font-semibold text-slate-900">{r.n}</div><div className="text-xs text-slate-500">{r.s}</div></div>
