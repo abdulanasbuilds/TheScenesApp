@@ -5,6 +5,7 @@ import { Search, Users, Sparkles, X } from "lucide-react";
 import { PublicHeader } from "@/components/PublicHeader";
 import { Avatar } from "@/components/BrowserFrame";
 import { MOCK_COMMUNITIES, MOCK_CATEGORIES } from "@/lib/mock-data";
+import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 
 export const Route = createFileRoute("/discover")({
   head: () => ({
@@ -40,9 +41,8 @@ function Discovery() {
     <div className="min-h-screen bg-[#F8FAFC]">
       <PublicHeader />
 
-      {/* Dev-only toggle */}
       <div className="mx-auto flex max-w-7xl items-center justify-end gap-2 px-4 pt-3 sm:px-6">
-        <span className="text-[11px] font-medium text-slate-500">Preview state</span>
+        <span className="text-[11px] font-medium text-slate-500">Catalog state</span>
         <button
           onClick={() => setSimulateZeroState(false)}
           className={`rounded-md border px-2 py-0.5 text-[11px] font-semibold ${!simulateZeroState ? "border-[#0284C7] bg-[#0284C7] text-white" : "border-slate-200 bg-white text-slate-600"}`}
@@ -160,8 +160,8 @@ function Discovery() {
 
 function ZeroState({ onClaim }: { onClaim: () => void }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 200, damping: 26 }} className="mx-auto grid max-w-5xl gap-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid-cols-5">
-      <div className="p-8 lg:col-span-3 lg:p-10">
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 200, damping: 26 }} className="mx-auto grid max-w-6xl gap-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid-cols-5">
+      <div className="p-6 sm:p-8 lg:col-span-2 lg:p-10">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600"><Sparkles size={12} className="text-[#0284C7]" /> Day 1 · Early access</span>
         <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">The next generation of tech communities is launching.</h2>
         <p className="mt-3 text-base text-slate-600">Be the first expert to claim your niche. AI, LLM engineering, automation, no-code — early creators own the discovery graph as new members flood in.</p>
@@ -171,7 +171,10 @@ function ZeroState({ onClaim }: { onClaim: () => void }) {
           <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#0284C7]" />Direct feedback line with the SukaSpace team</li>
         </ul>
       </div>
-      <div className="flex flex-col justify-center border-t border-slate-200 bg-[#F8FAFC] p-8 lg:col-span-2 lg:border-l lg:border-t-0 lg:p-10">
+      <div className="border-t border-slate-200 bg-[#F8FAFC] p-3 lg:col-span-3 lg:border-l lg:border-t-0">
+        <img src={UPLOADED_MOCKUPS.searchZeroState} alt="SukaSpace discovery search zero-state mockup" className="h-full min-h-[280px] w-full rounded-xl border border-slate-200 bg-white object-cover" />
+      </div>
+      <div className="flex flex-col justify-center border-t border-slate-200 bg-white p-6 lg:col-span-5 lg:p-8">
         <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Launch</div>
         <div className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Create the first tech space</div>
         <p className="mt-2 text-sm text-slate-600">2-minute setup. No card required.</p>
