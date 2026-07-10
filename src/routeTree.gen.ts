@@ -15,6 +15,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppMessagesRouteImport } from './routes/app.messages'
+import { Route as AppFeedRouteImport } from './routes/app.feed'
+import { Route as AppCreatorRouteImport } from './routes/app.creator'
+import { Route as AppClassroomRouteImport } from './routes/app.classroom'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -46,6 +51,31 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMessagesRoute = AppMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFeedRoute = AppFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCreatorRoute = AppCreatorRouteImport.update({
+  id: '/creator',
+  path: '/creator',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClassroomRoute = AppClassroomRouteImport.update({
+  id: '/classroom',
+  path: '/classroom',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,6 +83,11 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
+  '/app/classroom': typeof AppClassroomRoute
+  '/app/creator': typeof AppCreatorRoute
+  '/app/feed': typeof AppFeedRoute
+  '/app/messages': typeof AppMessagesRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
@@ -60,6 +95,11 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
+  '/app/classroom': typeof AppClassroomRoute
+  '/app/creator': typeof AppCreatorRoute
+  '/app/feed': typeof AppFeedRoute
+  '/app/messages': typeof AppMessagesRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -69,13 +109,39 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
+  '/app/classroom': typeof AppClassroomRoute
+  '/app/creator': typeof AppCreatorRoute
+  '/app/feed': typeof AppFeedRoute
+  '/app/messages': typeof AppMessagesRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/auth' | '/discover' | '/onboarding' | '/app/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/discover'
+    | '/onboarding'
+    | '/app/classroom'
+    | '/app/creator'
+    | '/app/feed'
+    | '/app/messages'
+    | '/app/settings'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/discover' | '/onboarding' | '/app'
+  to:
+    | '/'
+    | '/auth'
+    | '/discover'
+    | '/onboarding'
+    | '/app/classroom'
+    | '/app/creator'
+    | '/app/feed'
+    | '/app/messages'
+    | '/app/settings'
+    | '/app'
   id:
     | '__root__'
     | '/'
@@ -83,6 +149,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/discover'
     | '/onboarding'
+    | '/app/classroom'
+    | '/app/creator'
+    | '/app/feed'
+    | '/app/messages'
+    | '/app/settings'
     | '/app/'
   fileRoutesById: FileRoutesById
 }
@@ -138,14 +209,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/messages': {
+      id: '/app/messages'
+      path: '/messages'
+      fullPath: '/app/messages'
+      preLoaderRoute: typeof AppMessagesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/feed': {
+      id: '/app/feed'
+      path: '/feed'
+      fullPath: '/app/feed'
+      preLoaderRoute: typeof AppFeedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/creator': {
+      id: '/app/creator'
+      path: '/creator'
+      fullPath: '/app/creator'
+      preLoaderRoute: typeof AppCreatorRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/classroom': {
+      id: '/app/classroom'
+      path: '/classroom'
+      fullPath: '/app/classroom'
+      preLoaderRoute: typeof AppClassroomRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppClassroomRoute: typeof AppClassroomRoute
+  AppCreatorRoute: typeof AppCreatorRoute
+  AppFeedRoute: typeof AppFeedRoute
+  AppMessagesRoute: typeof AppMessagesRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppClassroomRoute: AppClassroomRoute,
+  AppCreatorRoute: AppCreatorRoute,
+  AppFeedRoute: AppFeedRoute,
+  AppMessagesRoute: AppMessagesRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
