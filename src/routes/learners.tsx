@@ -19,7 +19,7 @@ export const Route = createFileRoute("/learners")({
 
 function LearnersPage() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen overflow-x-hidden bg-[#F8FAFC]">
       <PublicHeader />
       <main>
         <section className="border-b border-slate-200">
