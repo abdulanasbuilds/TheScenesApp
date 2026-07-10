@@ -10,10 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as LearnersRouteImport } from './routes/learners'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as CreatorsRouteImport } from './routes/creators'
+import { Route as CreateCommunityRouteImport } from './routes/create-community'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
@@ -27,14 +32,34 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LearnersRoute = LearnersRouteImport.update({
+  id: '/learners',
+  path: '/learners',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorsRoute = CreatorsRouteImport.update({
+  id: '/creators',
+  path: '/creators',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateCommunityRoute = CreateCommunityRouteImport.update({
+  id: '/create-community',
+  path: '/create-community',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -45,6 +70,11 @@ const AuthRoute = AuthRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -85,10 +115,15 @@ const AppClassroomRoute = AppClassroomRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/create-community': typeof CreateCommunityRoute
+  '/creators': typeof CreatorsRoute
   '/discover': typeof DiscoverRoute
+  '/learners': typeof LearnersRoute
   '/onboarding': typeof OnboardingRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/creator': typeof AppCreatorRoute
@@ -99,9 +134,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/create-community': typeof CreateCommunityRoute
+  '/creators': typeof CreatorsRoute
   '/discover': typeof DiscoverRoute
+  '/learners': typeof LearnersRoute
   '/onboarding': typeof OnboardingRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/creator': typeof AppCreatorRoute
@@ -113,10 +153,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/create-community': typeof CreateCommunityRoute
+  '/creators': typeof CreatorsRoute
   '/discover': typeof DiscoverRoute
+  '/learners': typeof LearnersRoute
   '/onboarding': typeof OnboardingRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/creator': typeof AppCreatorRoute
@@ -129,10 +174,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/app'
     | '/auth'
+    | '/create-community'
+    | '/creators'
     | '/discover'
+    | '/learners'
     | '/onboarding'
+    | '/pricing'
     | '/sitemap.xml'
     | '/app/classroom'
     | '/app/creator'
@@ -143,9 +193,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/auth'
+    | '/create-community'
+    | '/creators'
     | '/discover'
+    | '/learners'
     | '/onboarding'
+    | '/pricing'
     | '/sitemap.xml'
     | '/app/classroom'
     | '/app/creator'
@@ -156,10 +211,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/app'
     | '/auth'
+    | '/create-community'
+    | '/creators'
     | '/discover'
+    | '/learners'
     | '/onboarding'
+    | '/pricing'
     | '/sitemap.xml'
     | '/app/classroom'
     | '/app/creator'
@@ -171,10 +231,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CreateCommunityRoute: typeof CreateCommunityRoute
+  CreatorsRoute: typeof CreatorsRoute
   DiscoverRoute: typeof DiscoverRoute
+  LearnersRoute: typeof LearnersRoute
   OnboardingRoute: typeof OnboardingRoute
+  PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -187,6 +252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -194,11 +266,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/learners': {
+      id: '/learners'
+      path: '/learners'
+      fullPath: '/learners'
+      preLoaderRoute: typeof LearnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/discover': {
       id: '/discover'
       path: '/discover'
       fullPath: '/discover'
       preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creators': {
+      id: '/creators'
+      path: '/creators'
+      fullPath: '/creators'
+      preLoaderRoute: typeof CreatorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create-community': {
+      id: '/create-community'
+      path: '/create-community'
+      fullPath: '/create-community'
+      preLoaderRoute: typeof CreateCommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -213,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -289,10 +389,15 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  CreateCommunityRoute: CreateCommunityRoute,
+  CreatorsRoute: CreatorsRoute,
   DiscoverRoute: DiscoverRoute,
+  LearnersRoute: LearnersRoute,
   OnboardingRoute: OnboardingRoute,
+  PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
