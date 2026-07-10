@@ -77,14 +77,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "SukaSpace — Community + Courses for the AI Era" },
+      { name: "description", content: "Launch a premium learning community with linear course tracking and rich multi-channel discussions. Built for AI, engineering, and tech creators." },
+      { property: "og:title", content: "SukaSpace — Community + Courses for the AI Era" },
+      { property: "og:description", content: "Community meets courses. Ship your knowledge empire with SukaSpace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {

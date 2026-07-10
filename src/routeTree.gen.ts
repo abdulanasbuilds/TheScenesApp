@@ -9,38 +9,212 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppMessagesRouteImport } from './routes/app.messages'
+import { Route as AppFeedRouteImport } from './routes/app.feed'
+import { Route as AppCreatorRouteImport } from './routes/app.creator'
+import { Route as AppClassroomRouteImport } from './routes/app.classroom'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMessagesRoute = AppMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFeedRoute = AppFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCreatorRoute = AppCreatorRouteImport.update({
+  id: '/creator',
+  path: '/creator',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClassroomRoute = AppClassroomRouteImport.update({
+  id: '/classroom',
+  path: '/classroom',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/discover': typeof DiscoverRoute
+  '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/classroom': typeof AppClassroomRoute
+  '/app/creator': typeof AppCreatorRoute
+  '/app/feed': typeof AppFeedRoute
+  '/app/messages': typeof AppMessagesRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/discover': typeof DiscoverRoute
+  '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/classroom': typeof AppClassroomRoute
+  '/app/creator': typeof AppCreatorRoute
+  '/app/feed': typeof AppFeedRoute
+  '/app/messages': typeof AppMessagesRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/discover': typeof DiscoverRoute
+  '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/classroom': typeof AppClassroomRoute
+  '/app/creator': typeof AppCreatorRoute
+  '/app/feed': typeof AppFeedRoute
+  '/app/messages': typeof AppMessagesRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/discover'
+    | '/onboarding'
+    | '/sitemap.xml'
+    | '/app/classroom'
+    | '/app/creator'
+    | '/app/feed'
+    | '/app/messages'
+    | '/app/settings'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/discover'
+    | '/onboarding'
+    | '/sitemap.xml'
+    | '/app/classroom'
+    | '/app/creator'
+    | '/app/feed'
+    | '/app/messages'
+    | '/app/settings'
+    | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/discover'
+    | '/onboarding'
+    | '/sitemap.xml'
+    | '/app/classroom'
+    | '/app/creator'
+    | '/app/feed'
+    | '/app/messages'
+    | '/app/settings'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  DiscoverRoute: typeof DiscoverRoute
+  OnboardingRoute: typeof OnboardingRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +222,79 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/messages': {
+      id: '/app/messages'
+      path: '/messages'
+      fullPath: '/app/messages'
+      preLoaderRoute: typeof AppMessagesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/feed': {
+      id: '/app/feed'
+      path: '/feed'
+      fullPath: '/app/feed'
+      preLoaderRoute: typeof AppFeedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/creator': {
+      id: '/app/creator'
+      path: '/creator'
+      fullPath: '/app/creator'
+      preLoaderRoute: typeof AppCreatorRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/classroom': {
+      id: '/app/classroom'
+      path: '/classroom'
+      fullPath: '/app/classroom'
+      preLoaderRoute: typeof AppClassroomRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppClassroomRoute: typeof AppClassroomRoute
+  AppCreatorRoute: typeof AppCreatorRoute
+  AppFeedRoute: typeof AppFeedRoute
+  AppMessagesRoute: typeof AppMessagesRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppClassroomRoute: AppClassroomRoute,
+  AppCreatorRoute: AppCreatorRoute,
+  AppFeedRoute: AppFeedRoute,
+  AppMessagesRoute: AppMessagesRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRoute,
+  DiscoverRoute: DiscoverRoute,
+  OnboardingRoute: OnboardingRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
