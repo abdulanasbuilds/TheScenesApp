@@ -28,7 +28,7 @@ function Classroom() {
           {role === "learner" ? (
             <div className="mt-3 rounded-xl border border-border bg-[background] p-3">
               <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
-                <span className="inline-flex items-center gap-1"><Trophy size={12} className="text-amber-500" /> Level 7</span>
+                <span className="inline-flex items-center gap-1"><Trophy size={12} className="text-primary" /> Level 7</span>
                 <span className="inline-flex items-center gap-1"><Flame size={12} className="text-primary" /> 12-day streak</span>
               </div>
               <div className="mt-1 text-2xl font-bold text-foreground">1,240 XP</div>
