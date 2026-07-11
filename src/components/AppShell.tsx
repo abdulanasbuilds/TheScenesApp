@@ -1,14 +1,21 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { Home, GraduationCap, MessagesSquare, BarChart3, Settings, Bell, Search } from "lucide-react";
+import { Home, GraduationCap, MessagesSquare, BarChart3, Settings, Bell, Search, Trophy, Calendar, Users, Wallet } from "lucide-react";
 import { Avatar } from "./BrowserFrame";
 
 const NAV = [
   { to: "/app/feed", label: "Home", icon: Home },
   { to: "/app/classroom", label: "Classroom", icon: GraduationCap },
   { to: "/app/messages", label: "Messages", icon: MessagesSquare },
+  { to: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
+  { to: "/app/calendar", label: "Calendar", icon: Calendar },
+  { to: "/app/members", label: "Members", icon: Users },
+  { to: "/app/payouts", label: "Payouts", icon: Wallet },
   { to: "/app/creator", label: "Creator Hub", icon: BarChart3 },
+  { to: "/app/search", label: "Search", icon: Search },
   { to: "/app/settings", label: "Settings", icon: Settings },
 ] as const;
+
+const MOBILE_NAV = NAV.filter((n) => ["/app/feed", "/app/classroom", "/app/messages", "/app/creator", "/app/settings"].includes(n.to));
 
 export function AppShell() {
   const loc = useLocation();
