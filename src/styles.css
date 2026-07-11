@@ -36,28 +36,28 @@
 
 :root {
   --radius: 0.75rem;
-  /* SukaSpace tokens - Ocean Blue on off-white */
-  --background: oklch(0.985 0.005 240);      /* #F8FAFC */
-  --foreground: oklch(0.208 0.042 265.755);  /* slate-900 */
-  --card: oklch(1 0 0);                       /* pure white */
-  --card-foreground: oklch(0.208 0.042 265.755);
+  /* Professional Workspace Design System */
+  --background: oklch(0.972 0.008 254.604);   /* #F8FAFC / slate-50 - Subtle cool off-white */
+  --foreground: oklch(0.11 0.022 264.361);    /* #0F172A / slate-900 - Dark neutral gray for headings */
+  --card: oklch(1 0 0);                       /* #FFFFFF - Pure white for cards/content */
+  --card-foreground: oklch(0.11 0.022 264.361);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.208 0.042 265.755);
-  --primary: oklch(0.612 0.153 240);          /* Ocean Blue #0284C7 */
+  --popover-foreground: oklch(0.11 0.022 264.361);
+  --primary: oklch(0.357 0.238 263.051);      /* #1D4ED8 / blue-700 - Deep navy/ocean blue */
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417); /* slate-500 */
-  --accent: oklch(0.955 0.02 240);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
+  --secondary: oklch(1 0 0);                  /* #FFFFFF - Secondary is white */
+  --secondary-foreground: oklch(0.11 0.022 264.361);
+  --muted: oklch(0.927 0.016 255.228);        /* #E2E8F0 / slate-200 - Muted gray for borders */
+  --muted-foreground: oklch(0.554 0.046 257.417); /* #64748B / slate-500 - Medium-dark gray text */
+  --accent: oklch(1 0 0);                     /* #FFFFFF - Accent is white */
+  --accent-foreground: oklch(0.11 0.022 264.361);
+  --destructive: oklch(0.357 0.238 263.051);  /* #1D4ED8 / blue-700 - Use primary blue */
   --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.62 0.15 155);            /* Emerald #059669 */
+  --success: oklch(0.357 0.238 263.051);      /* #1D4ED8 / blue-700 - Use primary blue */
   --success-foreground: oklch(1 0 0);
-  --border: oklch(0.929 0.013 255.508);       /* slate-200 #E2E8F0 */
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.612 0.153 240);
+  --border: oklch(0.927 0.016 255.228);       /* #E2E8F0 / slate-200 - Muted gray borders */
+  --input: oklch(0.927 0.016 255.228);
+  --ring: oklch(0.357 0.238 263.051);
 }
 
 @layer base {
