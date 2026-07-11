@@ -20,7 +20,7 @@ const MOBILE_NAV = NAV.filter((n) => ["/app/feed", "/app/classroom", "/app/messa
 export function AppShell() {
   const loc = useLocation();
   return (
-    <div className="flex min-h-screen bg-[background]">
+    <div className="flex min-h-screen bg-background">
       {/* Left rail */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-card md:flex">
         <div className="flex h-14 items-center gap-2 border-b border-border px-4">
@@ -39,7 +39,7 @@ export function AppShell() {
                   active ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
-                <Icon size={16} className={active ? "text-[primary]" : "text-muted-foreground"} />
+                <Icon size={16} className={active ? "text-primary" : "text-muted-foreground"} />
                 {item.label}
               </Link>
             );
@@ -75,7 +75,7 @@ export function AppShell() {
             const Icon = n.icon;
             const active = loc.pathname.startsWith(n.to);
             return (
-              <Link key={n.to} to={n.to} className={`flex min-w-0 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[10px] font-medium ${active ? "bg-sky-50 text-[primary]" : "text-muted-foreground"}`}>
+              <Link key={n.to} to={n.to} className={`flex min-w-0 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[10px] font-medium ${active ? "bg-sky-50 text-primary" : "text-muted-foreground"}`}>
                 <Icon size={18} className="shrink-0" />
                 <span className="max-w-full truncate">{n.label === "Creator Hub" ? "Creator" : n.label}</span>
               </Link>
@@ -89,7 +89,7 @@ export function AppShell() {
             const active = loc.pathname.startsWith(n.to);
             const Icon = n.icon;
             return (
-              <Link key={n.to} to={n.to} className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${active ? "border-[primary] bg-sky-50 text-[primary]" : "border-border bg-card text-muted-foreground"}`}>
+              <Link key={n.to} to={n.to} className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${active ? "border-primary bg-sky-50 text-primary" : "border-border bg-card text-muted-foreground"}`}>
                 <Icon size={13} />{n.label === "Creator Hub" ? "Creator" : n.label}
               </Link>
             );

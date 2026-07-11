@@ -15,7 +15,7 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   return (
-    <div className="min-h-screen bg-[background]">
+    <div className="min-h-screen bg-background">
       <PublicHeader />
       <main>
         <section className="border-b border-border">
@@ -25,7 +25,7 @@ function AboutPage() {
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {["Courses with direction", "Communities with context", "Creator tools with control"].map((item) => <div key={item} className="rounded-xl border border-border bg-card p-5 text-base font-semibold text-foreground shadow-sm">{item}</div>)}
             </div>
-            <Link to="/discover" className="mt-8 inline-flex rounded-xl bg-[primary] px-5 py-3 text-sm font-semibold text-white hover:bg-[primary/90]">Explore the Platform</Link>
+            <Link to="/discover" className="mt-8 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary/90">Explore the Platform</Link>
           </div>
         </section>
       </main>

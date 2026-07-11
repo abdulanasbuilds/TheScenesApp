@@ -32,8 +32,8 @@ function Feed() {
                   onClick={() => { setActive(c.id); setShowChannels(false); }}
                   className={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm ${active === c.id ? "bg-accent font-semibold text-foreground" : "text-muted-foreground hover:bg-accent"}`}
                 >
-                  <span className="flex items-center gap-1.5 truncate"><Hash size={14} className={active === c.id ? "text-[primary]" : "text-muted-foreground"} />{c.name}</span>
-                  {c.unread ? <span className="rounded-full bg-[primary] px-1.5 text-[10px] font-semibold text-white">{c.unread}</span> : null}
+                  <span className="flex items-center gap-1.5 truncate"><Hash size={14} className={active === c.id ? "text-primary" : "text-muted-foreground"} />{c.name}</span>
+                  {c.unread ? <span className="rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white">{c.unread}</span> : null}
                 </button>
               </li>
             ))}
@@ -50,7 +50,7 @@ function Feed() {
             <span className="text-sm font-semibold text-foreground">{active}</span>
             <span className="hidden text-xs text-muted-foreground sm:inline">· 312 posts · 48 online</span>
           </div>
-          <button className="rounded-lg bg-[primary] px-3 py-1.5 text-xs font-semibold text-white">New post</button>
+          <button className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white">New post</button>
         </div>
 
         <div className="space-y-3 p-4">
@@ -77,12 +77,12 @@ function Feed() {
               <h3 className="mt-3 text-base font-semibold text-foreground">{p.title}</h3>
               <p className="mt-1 text-sm text-foreground">{p.body}</p>
               {p.id === 2 && (
-                <div className="mt-3 rounded-lg border border-border bg-[background] p-3">
+                <div className="mt-3 rounded-lg border border-border bg-background p-3">
                   <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground"><BarChart3 size={12} /> POLL · closes in 2d</div>
                   {[{ k: "Outbound cold email", v: 62 }, { k: "Referral partnerships", v: 24 }, { k: "Paid ads", v: 14 }].map((o) => (
                     <div key={o.k} className="mt-2">
                       <div className="mb-0.5 flex items-center justify-between text-xs"><span className="text-foreground">{o.k}</span><span className="font-semibold text-foreground">{o.v}%</span></div>
-                      <div className="h-1.5 rounded-full bg-slate-200"><div className="h-1.5 rounded-full bg-[primary]" style={{ width: `${o.v}%` }} /></div>
+                      <div className="h-1.5 rounded-full bg-slate-200"><div className="h-1.5 rounded-full bg-primary" style={{ width: `${o.v}%` }} /></div>
                     </div>
                   ))}
                 </div>
@@ -101,7 +101,7 @@ function Feed() {
       <aside className="hidden lg:block lg:col-span-3 bg-card p-3">
         <div className="mb-2 flex items-center justify-between px-1">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Online · {MOCK_ONLINE.length}</div>
-          <button className="text-[10px] font-semibold text-[primary]">See all</button>
+          <button className="text-[10px] font-semibold text-primary">See all</button>
         </div>
         <ul className="space-y-1">
           {MOCK_ONLINE.map((u) => (
@@ -111,11 +111,11 @@ function Feed() {
                 <div className="truncate text-sm font-semibold text-foreground">{u.name}</div>
                 <div className="truncate text-xs text-muted-foreground">{u.role}</div>
               </div>
-              {u.status === "leader" && <span className="rounded-md bg-[primary]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[primary]">LEAD</span>}
+              {u.status === "leader" && <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">LEAD</span>}
             </li>
           ))}
         </ul>
-        <div className="mt-4 rounded-xl border border-border bg-[background] p-3">
+        <div className="mt-4 rounded-xl border border-border bg-background p-3">
           <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase text-muted-foreground"><Pin size={11} /> Pinned</div>
           <div className="mt-1 text-xs font-semibold text-foreground">Weekly AMA — Thu 3pm ET</div>
           <div className="text-xs text-muted-foreground">Elena Rostova walks through the automation masterclass roadmap.</div>
@@ -137,7 +137,7 @@ function PostComposer() {
     <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
       <div className="flex items-center gap-2">
         <Avatar initials="YU" tone="sky" size={30} />
-        <input placeholder="Share an insight, ask a question, drop a win…" className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-[primary]" />
+        <input placeholder="Share an insight, ask a question, drop a win…" className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
         <button className="rounded-lg bg-foreground px-3 py-2 text-xs font-semibold text-white">Post</button>
       </div>
     </div>
@@ -172,7 +172,7 @@ function ThreadDrawer({ post, onClose }: { post: { id: number; author: string; a
             ].map((c, i) => (
               <div key={i} className="mt-3 flex items-start gap-2">
                 <Avatar initials={c.av} size={28} />
-                <div className="flex-1 rounded-xl bg-[background] p-2.5">
+                <div className="flex-1 rounded-xl bg-background p-2.5">
                   <div className="text-xs font-semibold text-foreground">{c.a}</div>
                   <div className="mt-0.5 text-sm text-foreground">{c.t}</div>
                 </div>
@@ -183,7 +183,7 @@ function ThreadDrawer({ post, onClose }: { post: { id: number; author: string; a
         <div className="border-t border-border p-3">
           <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-2">
             <input placeholder="Reply to thread…" className="flex-1 bg-transparent px-2 text-sm outline-none" />
-            <button className="rounded-md bg-[primary] p-2 text-white"><Send size={14} /></button>
+            <button className="rounded-md bg-primary p-2 text-white"><Send size={14} /></button>
           </div>
         </div>
       </motion.div>

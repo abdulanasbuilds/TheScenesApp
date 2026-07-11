@@ -22,7 +22,7 @@ const PLANS = [
 
 function PricingPage() {
   return (
-    <div className="min-h-screen bg-[background]">
+    <div className="min-h-screen bg-background">
       <PublicHeader />
       <main className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
         <div className="mx-auto max-w-3xl text-center">
@@ -37,7 +37,7 @@ function PricingPage() {
               <ul className="mt-5 space-y-3 text-sm text-foreground">
                 {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" />{feature}</li>)}
               </ul>
-              <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-xl bg-[primary] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[primary/90]">{plan.cta}</Link>
+              <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white hover:bg-primary/90">{plan.cta}</Link>
             </div>
           ))}
         </div>

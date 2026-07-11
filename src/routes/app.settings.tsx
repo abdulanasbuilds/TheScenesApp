@@ -14,7 +14,7 @@ const SECTIONS = [
 
 function Settings() {
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[background]">
+    <div className="min-h-[calc(100vh-56px)] bg-background">
       <div className="mx-auto max-w-3xl p-6">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
         <p className="text-sm text-muted-foreground">Manage your profile, account, and notifications.</p>

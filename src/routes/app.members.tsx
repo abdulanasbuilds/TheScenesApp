@@ -20,7 +20,7 @@ function MembersPage() {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent"><Download size={14} />Export</button>
-          <button className="inline-flex items-center gap-1.5 rounded-lg bg-[primary] px-3 py-2 text-xs font-semibold text-white hover:bg-[primary/90]"><UserPlus size={14} />Add Member</button>
+          <button className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-primary/90"><UserPlus size={14} />Add Member</button>
         </div>
       </div>
       <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card shadow-sm">

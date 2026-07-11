@@ -31,7 +31,7 @@ export function PublicHeader() {
         <div className="hidden items-center gap-2 md:flex">
           <Link to="/auth" search={{ mode: "signin" }} className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent">Log in</Link>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}>
-            <Link to="/create-community" className="inline-flex items-center rounded-lg bg-[primary] px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-[primary/90]">
+            <Link to="/create-community" className="inline-flex items-center rounded-lg bg-primary px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">
               Get started
             </Link>
           </motion.div>
@@ -55,7 +55,7 @@ export function PublicHeader() {
           </nav>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Link to="/auth" search={{ mode: "signin" }} onClick={() => setOpen(false)} className="rounded-lg border border-border bg-card px-3 py-2 text-center text-sm font-semibold text-foreground">Log in</Link>
-            <Link to="/create-community" onClick={() => setOpen(false)} className="rounded-lg bg-[primary] px-3 py-2 text-center text-sm font-semibold text-white">Get started</Link>
+            <Link to="/create-community" onClick={() => setOpen(false)} className="rounded-lg bg-primary px-3 py-2 text-center text-sm font-semibold text-white">Get started</Link>
           </div>
         </div>
       )}

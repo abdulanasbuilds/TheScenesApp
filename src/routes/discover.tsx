@@ -45,7 +45,16 @@ function Discovery() {
           <h1 className="text-4xl font-bold tracking-tight text-foreground">Discover tech & expert-led communities</h1>
           <p className="mt-3 text-base text-muted-foreground">Join focused spaces dedicated to advancing your skills in engineering, automation, and digital business.</p>
 
-          <div className="mt-8 flex items-center gap-2 rounded-xl border border-primary bg-white p-1 shadow-sm">
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link to="/create-community" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">
+              Create Your Community <Sparkles size={14} />
+            </Link>
+            <Link to="/pricing" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50">
+              See Pricing
+            </Link>
+          </div>
+
+          <div className="mt-6 flex items-center gap-2 rounded-xl border border-primary bg-white p-1 shadow-sm">
             <Search size={20} className="ml-3 text-muted-foreground" />
             <input
               value={query}
@@ -90,14 +99,14 @@ function Discovery() {
               className="w-full max-w-md rounded-t-2xl border border-border bg-card p-6 shadow-lg sm:rounded-2xl"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2"><Sparkles size={16} className="text-[primary]" /><span className="text-sm font-semibold text-900">Join SukaSpace</span></div>
-                <button onClick={() => setModal(false)} className="rounded-md p-1 text-500 hover:bg-slate-100"><X size={16} /></button>
+                <div className="flex items-center gap-2"><Sparkles size={16} className="text-primary" /><span className="text-sm font-semibold text-slate-900">Join SukaSpace</span></div>
+                <button onClick={() => setModal(false)} className="rounded-md p-1 text-slate-500 hover:bg-slate-100"><X size={16} /></button>
               </div>
-              <h3 className="mt-3 text-2xl font-bold tracking-tight text-900">Create an account to continue</h3>
-              <p className="mt-1 text-sm text-600">Sign up in seconds to join this community or launch your own space.</p>
+              <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">Create an account to continue</h3>
+              <p className="mt-1 text-sm text-slate-600">Sign up in seconds to join this community or launch your own space.</p>
               <div className="mt-5 flex flex-col gap-2">
-                <button onClick={() => nav({ to: "/auth", search: { mode: "signup" } })} className="rounded-lg bg-[primary] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0369A1]">Sign up free</button>
-                <button onClick={() => nav({ to: "/auth", search: { mode: "signin" } })} className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-900 hover:bg-slate-50">Log in</button>
+                <button onClick={() => nav({ to: "/auth", search: { mode: "signup" } })} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0369A1]">Sign up free</button>
+                <button onClick={() => nav({ to: "/auth", search: { mode: "signin" } })} className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50">Log in</button>
               </div>
             </motion.div>
           </motion.div>
@@ -111,27 +120,27 @@ function ZeroState({ onClaim }: { onClaim: () => void }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 200, damping: 26 }} className="mx-auto grid max-w-6xl gap-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:grid-cols-5">
       <div className="p-6 sm:p-8 lg:col-span-2 lg:p-10">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-slate-50 px-3 py-1 text-[11px] font-semibold text-600"><Sparkles size={12} className="text-[primary]" /> Day 1 · Early access</span>
-        <h2 className="mt-4 text-3xl font-bold tracking-tight text-900">The next generation of tech communities is launching.</h2>
-        <p className="mt-3 text-base text-600">Be the first expert to claim your niche. AI, LLM engineering, automation, no-code — early creators own the discovery graph as new members flood in.</p>
-        <ul className="mt-5 space-y-2 text-sm text-700">
-          <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-[primary]" />Priority ranking in the Discovery feed</li>
-          <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-[primary]" />Founding creator badge on your profile</li>
-          <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-[primary]" />Direct feedback line with the SukaSpace team</li>
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600"><Sparkles size={12} className="text-primary" /> Day 1 · Early access</span>
+        <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">The next generation of tech communities is launching.</h2>
+        <p className="mt-3 text-base text-slate-600">Be the first expert to claim your niche. AI, LLM engineering, automation, no-code — early creators own the discovery graph as new members flood in.</p>
+        <ul className="mt-5 space-y-2 text-sm text-slate-700">
+          <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />Priority ranking in the Discovery feed</li>
+          <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />Founding creator badge on your profile</li>
+          <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />Direct feedback line with the SukaSpace team</li>
         </ul>
       </div>
       <div className="border-t border-border bg-[#F8FAFC] p-3 lg:col-span-3 lg:border-l lg:border-t-0">
         <img src={UPLOADED_MOCKUPS.discoverZeroState} alt="SukaSpace discovery search zero-state mockup" className="h-full min-h-[280px] w-full rounded-xl border border-border bg-card object-cover" />
       </div>
       <div className="flex flex-col justify-center border-t border-border bg-card p-6 lg:col-span-5 lg:p-8">
-        <div className="text-xs font-semibold uppercase tracking-wider text-500">Launch</div>
-        <div className="mt-2 text-2xl font-bold tracking-tight text-900">Create the first tech space</div>
-        <p className="mt-2 text-sm text-600">2-minute setup. No card required.</p>
+        <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Launch</div>
+        <div className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Create the first tech space</div>
+        <p className="mt-2 text-sm text-slate-600">2-minute setup. No card required.</p>
         <motion.button
           onClick={onClaim}
           whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="mt-4 inline-flex items-center justify-center rounded-xl bg-[primary] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#0369A1]"
+          className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#0369A1]"
         >Create the First Tech Space</motion.button>
       </div>
     </motion.div>
@@ -141,10 +150,10 @@ function ZeroState({ onClaim }: { onClaim: () => void }) {
 function EmptyFilter({ onReset }: { onReset: () => void }) {
   return (
     <div className="mx-auto max-w-md rounded-xl border border-border bg-card p-8 text-center shadow-sm">
-      <div className="mx-auto grid h-10 w-10 place-items-center rounded-lg bg-slate-100 text-500"><Search size={16} /></div>
-      <h3 className="mt-3 text-base font-semibold text-900">No spaces match those filters</h3>
-      <p className="mt-1 text-sm text-500">Try a different category or reset your search.</p>
-      <button onClick={onReset} className="mt-4 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-semibold text-900 hover:bg-slate-50">Reset</button>
+      <div className="mx-auto grid h-10 w-10 place-items-center rounded-lg bg-slate-100 text-slate-500"><Search size={16} /></div>
+      <h3 className="mt-3 text-base font-semibold text-slate-900">No spaces match those filters</h3>
+      <p className="mt-1 text-sm text-slate-500">Try a different category or reset your search.</p>
+      <button onClick={onReset} className="mt-4 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-50">Reset</button>
     </div>
   );
 }

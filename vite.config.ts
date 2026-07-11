@@ -12,4 +12,14 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Override the Lovable sandbox defaults (host "::" / port 8080) for the Replit
+  // container, which doesn't support IPv6 loopback and is proxied over HTTPS.
+  vite: {
+    server: {
+      host: "0.0.0.0",
+      port: 5000,
+      strictPort: true,
+      allowedHosts: true,
+    },
+  },
 });

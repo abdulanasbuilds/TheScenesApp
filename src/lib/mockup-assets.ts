@@ -9,6 +9,13 @@ export const UPLOADED_MOCKUPS = {
   manageAccess: "/design-reference/stitch_sukaspace_learning_platform/sukaspace_manage_access/screen.png",
   onboardingJourney: "/design-reference/stitch_sukaspace_learning_platform/sukaspace_onboarding_journey/screen.png",
   searchZeroState: "/design-reference/stitch_sukaspace_learning_platform/sukaspace_search_zero_state/screen.png",
+  discoverZeroState: "/uploads/discover-zero-state.png",
+  creatorGrowthAnalytics: "/uploads/creator-growth-analytics.png",
+  communityCalendar: "/uploads/community-calendar.png",
+  leaderboard: "/uploads/leaderboard.png",
+  membersTable: "/uploads/members-table.png",
+  payoutsFinancials: "/uploads/payouts-financials.png",
+  searchResults: "/uploads/search-results.png",
 } as const;
 
 // Landing page gallery — every uploaded screen that has real images

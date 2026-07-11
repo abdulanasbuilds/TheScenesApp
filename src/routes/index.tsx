@@ -158,7 +158,7 @@ function CTA() {
         <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Claim your niche before someone else does.</h2>
         <p className="mt-3 text-base text-border">Launch your community + course in a single afternoon. Free while we're in early access.</p>
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link to="/discover" className="rounded-xl border border-white/20 bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-card/20">Explore Communities</Link>
+          <Link to="/discover" className="rounded-xl border border-white/20 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-white/90">Explore Communities</Link>
           <Link to="/create-community" className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-[#0369A1]">Create a Community <ChevronRight className="inline" size={14} /></Link>
         </div>
       </div>

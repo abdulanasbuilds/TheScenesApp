@@ -35,7 +35,7 @@ function Messages() {
                   </div>
                   <div className="mt-0.5 flex items-center gap-2">
                     <div className="truncate text-xs text-muted-foreground">{d.text}</div>
-                    {d.unread && <span className="h-2 w-2 shrink-0 rounded-full bg-[primary]" />}
+                    {d.unread && <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />}
                   </div>
                 </div>
               </button>
@@ -44,7 +44,7 @@ function Messages() {
         </ul>
       </aside>
 
-      <section className="col-span-12 md:col-span-8 lg:col-span-9 flex flex-col bg-[background]">
+      <section className="col-span-12 md:col-span-8 lg:col-span-9 flex flex-col bg-background">
         <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3">
           <div className="flex items-center gap-3">
             <Avatar initials={chat.avatar} size={36} />
@@ -60,7 +60,7 @@ function Messages() {
           <div className="mx-auto w-fit rounded-full bg-card px-3 py-1 text-[10px] font-semibold text-muted-foreground border border-border">Today</div>
           {MOCK_CHAT_STREAM.map((m, i) => (
             <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${m.from === "me" ? "bg-[primary] text-white rounded-br-sm" : "bg-card border border-border text-foreground rounded-bl-sm"}`}>
+              <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${m.from === "me" ? "bg-primary text-white rounded-br-sm" : "bg-card border border-border text-foreground rounded-bl-sm"}`}>
                 <div>{m.text}</div>
                 <div className={`mt-1 text-[10px] ${m.from === "me" ? "text-white/70" : "text-muted-foreground"}`}>{m.time}</div>
               </div>
@@ -82,7 +82,7 @@ function Messages() {
             <button className="text-muted-foreground hover:text-foreground"><Paperclip size={16} /></button>
             <input placeholder="Message David Chen…" className="flex-1 bg-transparent text-sm outline-none" />
             <button className="text-muted-foreground hover:text-foreground"><Smile size={16} /></button>
-            <button className="rounded-lg bg-[primary] p-2 text-white hover:bg-[primary/90]"><Send size={14} /></button>
+            <button className="rounded-lg bg-primary p-2 text-white hover:bg-primary/90"><Send size={14} /></button>
           </div>
         </div>
       </section>

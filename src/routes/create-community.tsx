@@ -26,7 +26,7 @@ const STEPS = [
 
 function CreateCommunityPage() {
   return (
-    <div className="min-h-screen bg-[background]">
+    <div className="min-h-screen bg-background">
       <PublicHeader />
       <main>
         <section className="border-b border-border">
@@ -35,7 +35,7 @@ function CreateCommunityPage() {
               <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Launch a premium learning space in minutes.</h1>
               <p className="mt-4 text-lg font-medium text-muted-foreground">The uploaded SukaSpace mockups are now embedded as production assets to show the exact creator journey.</p>
               <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-                <Link to="/auth" search={{ mode: "signup" }} className="rounded-xl bg-[primary] px-5 py-3 text-sm font-semibold text-white hover:bg-[primary/90]">Start Creator Setup <ArrowRight size={16} className="inline" /></Link>
+                <Link to="/auth" search={{ mode: "signup" }} className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary/90">Start Creator Setup <ArrowRight size={16} className="inline" /></Link>
                 <Link to="/creators" className="rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground hover:bg-accent">View Creator Tools</Link>
               </div>
             </div>
