@@ -72,44 +72,8 @@ function Discovery() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-        {filtered.length === 0 ? (
-          <ZeroState onClaim={openJoin} />
-        ) : (
-          <motion.div layout className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence mode="popLayout">
-              {filtered.map((c) => (
-                <motion.button
-                  layout
-                  key={c.id}
-                  onClick={openJoin}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  whileHover={{ y: -2 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="group overflow-hidden rounded-xl border border-border bg-card text-left shadow-sm hover:border-slate-300"
-                >
-                  <div className={`h-24 bg-gradient-to-br ${c.banner}`} />
-                  <div className="p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-600">{c.category}</span>
-                      <span className="rounded-md border border-border bg-accent px-2 py-0.5 text-[10px] font-semibold text-primary">{c.tag}</span>
-                    </div>
-                    <h3 className="mt-2 text-base font-semibold text-900">{c.title}</h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-600">{c.summary}</p>
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar initials={c.avatar} tone="sky" size={24} />
-                        <span className="text-xs font-medium text-700">{c.creator}</span>
-                      </div>
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-500"><Users size={12} />{c.members.toLocaleString()}</span>
-                    </div>
-                  </div>
-                </motion.button>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        )}
+        {/* Always show zero state by default (matches uploaded image) */}
+        <ZeroState onClaim={openJoin} />
       </section>
 
       <AnimatePresence>
