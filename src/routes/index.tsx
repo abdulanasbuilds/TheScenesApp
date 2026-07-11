@@ -5,7 +5,7 @@ import { ArrowRight, Sparkles, Users, GraduationCap, MessagesSquare, BarChart3, 
 import { PublicHeader } from "@/components/PublicHeader";
 import { BrowserFrame, Avatar } from "@/components/BrowserFrame";
 import { MOCK_COMMUNITY_POSTS, MOCK_CHANNELS, MOCK_ONLINE, MOCK_CLASSROOM_MODULES, MOCK_DIRECT_MESSAGES, MOCK_ANALYTICS, MOCK_GROWTH_SERIES } from "@/lib/mock-data";
-import { MOCKUP_AUDIT, UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
+import { MOCKUP_GALLERY, UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 
 export const Route = createFileRoute("/")({
   head: () => ({
