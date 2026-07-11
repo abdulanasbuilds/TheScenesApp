@@ -38,59 +38,45 @@ function Landing() {
   );
 }
 
-const UPLOADED_MOCKUP_CARDS = [
-  { id: "create", title: "Create community", body: "Foundation setup flow for creators launching a professional space.", image: UPLOADED_MOCKUPS.createCommunityStep1, alt: "SukaSpace create community setup mockup" },
-  { id: "niche", title: "Select niche", body: "Category selection that keeps the discovery engine organized from day one.", image: UPLOADED_MOCKUPS.createCommunityStep2, alt: "SukaSpace niche selection mockup" },
-  { id: "discovery", title: "Discovery search", body: "Premium search and zero-state storefront for early community discovery.", image: UPLOADED_MOCKUPS.searchZeroState, alt: "SukaSpace discovery search mockup" },
-  { id: "onboarding", title: "Onboarding", body: "Role-based learner and creator entry flow with progress tracking.", image: UPLOADED_MOCKUPS.onboardingJourney, alt: "SukaSpace onboarding journey mockup" },
-  { id: "invite", title: "Invite members", body: "Creator invitation workflow with share links and message controls.", image: UPLOADED_MOCKUPS.inviteMembers, alt: "SukaSpace invite members mockup" },
-  { id: "access", title: "Manage access", body: "Role permissions and course access settings for creator operations.", image: UPLOADED_MOCKUPS.manageAccess, alt: "SukaSpace manage access mockup" },
-  { id: "launch", title: "Launch success", body: "Post-launch confirmation that points creators to their next actions.", image: UPLOADED_MOCKUPS.launchSuccess, alt: "SukaSpace launch success mockup" },
-] as const;
-
 function UploadedMockupGallery() {
-  const [zoomedMockup, setZoomedMockup] = useState<(typeof UPLOADED_MOCKUP_CARDS)[number] | null>(null);
-
+  const [zoomed, setZoomed] = useState<(typeof MOCKUP_GALLERY)[number] | null>(null);
   return (
     <section className="border-b border-slate-200 bg-[#F8FAFC]">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#0284C7]">Uploaded product mockups</div>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Real SukaSpace UI screens, embedded as production assets.</h2>
-          <p className="mt-3 text-base font-medium text-slate-500">Every valid uploaded screenshot is stored on a permanent asset URL and placed into a matching product section.</p>
-        </div>
-        <div className="mt-5 mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-3 text-center text-xs font-semibold text-slate-600 shadow-sm">
-          Extracted {MOCKUP_AUDIT.extractedFolders} folders · using {MOCKUP_AUDIT.validProductionAssets} valid PNG mockups · skipped {MOCKUP_AUDIT.invalidUploadPlaceholders} broken upload placeholders.
+          <div className="text-xs font-semibold uppercase tracking-wider text-[#0284C7]">Live workspace previews</div>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Every SukaSpace screen, shipped as a production asset.</h2>
+          <p className="mt-3 text-base font-medium text-slate-500">All {MOCKUP_GALLERY.length} uploaded human-designed mockups are permanently hosted and wired into the matching product route.</p>
         </div>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {UPLOADED_MOCKUP_CARDS.map((card) => (
+          {MOCKUP_GALLERY.map((card) => (
             <motion.button
               key={card.id}
-              onClick={() => setZoomedMockup(card)}
+              onClick={() => setZoomed(card)}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className="overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm hover:border-slate-300"
             >
-              <img src={card.image} alt={card.alt} loading="lazy" className="aspect-[5/4] w-full border-b border-slate-200 object-cover" />
+              <img src={card.src} alt={`SukaSpace ${card.label} mockup`} loading="lazy" className="aspect-[5/4] w-full border-b border-slate-200 object-cover" />
               <div className="p-4">
-                <h3 className="text-base font-semibold text-slate-900">{card.title}</h3>
-                <p className="mt-1 text-sm text-slate-600">{card.body}</p>
+                <h3 className="text-base font-semibold text-slate-900">{card.label}</h3>
+                <p className="mt-1 text-sm text-slate-600">{card.caption}</p>
               </div>
             </motion.button>
           ))}
         </div>
       </div>
       <AnimatePresence>
-        {zoomedMockup && (
-          <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm md:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setZoomedMockup(null)}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }} onClick={(event) => event.stopPropagation()} className="max-h-[88vh] w-full max-w-5xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+        {zoomed && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm md:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setZoomed(null)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }} onClick={(e) => e.stopPropagation()} className="max-h-[88vh] w-full max-w-5xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-slate-200 px-4 py-3">
-                <div className="min-w-0"><div className="truncate text-sm font-semibold text-slate-900">{zoomedMockup.title}</div><div className="truncate text-xs text-slate-500">{zoomedMockup.body}</div></div>
-                <button onClick={() => setZoomedMockup(null)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Close</button>
+                <div className="min-w-0"><div className="truncate text-sm font-semibold text-slate-900">{zoomed.label}</div><div className="truncate text-xs text-slate-500">{zoomed.caption}</div></div>
+                <button onClick={() => setZoomed(null)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Close</button>
               </div>
               <div className="max-h-[78vh] overflow-auto bg-[#F8FAFC] p-2">
-                <img src={zoomedMockup.image} alt={zoomedMockup.alt} className="mx-auto w-full max-w-[1600px] rounded-lg border border-slate-200 bg-white" />
+                <img src={zoomed.src} alt={`SukaSpace ${zoomed.label} mockup zoomed`} className="mx-auto w-full max-w-[1600px] rounded-lg border border-slate-200 bg-white" />
               </div>
             </motion.div>
           </motion.div>
