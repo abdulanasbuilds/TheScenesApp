@@ -71,7 +71,7 @@ export function AppShell() {
 
         {/* Mobile bottom nav */}
         <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white px-1 py-1.5 md:hidden">
-          {NAV.map((n) => {
+          {MOBILE_NAV.map((n) => {
             const Icon = n.icon;
             const active = loc.pathname.startsWith(n.to);
             return (
@@ -82,6 +82,19 @@ export function AppShell() {
             );
           })}
         </div>
+
+        {/* Mobile secondary chip nav (horizontally scrollable) */}
+        <nav aria-label="Secondary" className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 md:hidden">
+          {NAV.map((n) => {
+            const active = loc.pathname.startsWith(n.to);
+            const Icon = n.icon;
+            return (
+              <Link key={n.to} to={n.to} className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${active ? "border-[#0284C7] bg-sky-50 text-[#0284C7]" : "border-slate-200 bg-white text-slate-600"}`}>
+                <Icon size={13} />{n.label === "Creator Hub" ? "Creator" : n.label}
+              </Link>
+            );
+          })}
+        </nav>
 
         <main className="min-w-0 flex-1 pb-16 md:pb-0">
           <Outlet />
