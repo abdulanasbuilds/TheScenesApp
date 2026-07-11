@@ -1,4 +1,4 @@
-// All uploaded SukaSpace mockups, wired as permanent production assets.
+// All uploaded SukaSpace mockups - production-ready assets served from public folder
 
 export const UPLOADED_MOCKUPS = {
   // Newly uploaded human-designed mockups mapped to folder structure
