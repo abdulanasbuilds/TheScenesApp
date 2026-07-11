@@ -38,25 +38,25 @@ function Auth() {
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-5">
       {/* Left — marketing */}
-      <div className="relative hidden overflow-hidden border-r border-slate-200 bg-slate-900 p-10 text-white lg:col-span-2 lg:flex lg:flex-col lg:justify-between">
+      <div className="relative hidden overflow-hidden border-r border-border bg-foreground p-10 text-white lg:col-span-2 lg:flex lg:flex-col lg:justify-between">
         <div>
           <Link to="/" className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-white text-sm font-bold text-slate-900">S</span>
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-card text-sm font-bold text-foreground">S</span>
             <span className="text-base font-semibold">SukaSpace</span>
           </Link>
           <h2 className="mt-16 text-4xl font-bold tracking-tight">Community and courses, engineered for the AI era.</h2>
-          <p className="mt-3 text-base text-slate-300">Join thousands of experts and learners building modern tech skills together.</p>
+          <p className="mt-3 text-base text-muted-foreground">Join thousands of experts and learners building modern tech skills together.</p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+        <div className="rounded-2xl border border-white/10 bg-accent p-5 backdrop-blur">
           <AnimatePresence mode="wait">
             <motion.div key={proof} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.4 }}>
               <div className="text-4xl font-bold tracking-tight">{SOCIAL_PROOFS[proof].k}</div>
-              <div className="mt-1 text-sm text-slate-300">{SOCIAL_PROOFS[proof].v}</div>
+              <div className="mt-1 text-sm text-muted-foreground">{SOCIAL_PROOFS[proof].v}</div>
             </motion.div>
           </AnimatePresence>
           <div className="mt-4 flex gap-1.5">
             {SOCIAL_PROOFS.map((_, i) => (
-              <span key={i} className={`h-1 flex-1 rounded-full ${i === proof ? "bg-[#0284C7]" : "bg-white/20"}`} />
+              <span key={i} className={`h-1 flex-1 rounded-full ${i === proof ? "bg-[primary]" : "bg-card/20"}`} />
             ))}
           </div>
         </div>
@@ -65,18 +65,18 @@ function Auth() {
       {/* Right — form */}
       <div className="flex items-center justify-center p-6 lg:col-span-3">
         <div className="w-full max-w-md">
-          <div className="mb-6 inline-flex rounded-lg border border-slate-200 bg-white p-1 text-sm shadow-sm">
+          <div className="mb-6 inline-flex rounded-lg border border-border bg-card p-1 text-sm shadow-sm">
             {(["signup", "signin"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`relative rounded-md px-4 py-1.5 font-semibold transition ${mode === m ? "bg-slate-900 text-white" : "text-slate-600"}`}
+                className={`relative rounded-md px-4 py-1.5 font-semibold transition ${mode === m ? "bg-foreground text-white" : "text-muted-foreground"}`}
               >{m === "signup" ? "Sign up" : "Log in"}</button>
             ))}
           </div>
 
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
-          <p className="mt-1 text-sm text-slate-500">{mode === "signup" ? "Free while we're in early access." : "Log back into your workspace."}</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{mode === "signup" ? "Free while we're in early access." : "Log back into your workspace."}</p>
 
           <form onSubmit={(e) => { e.preventDefault(); nav({ to: mode === "signup" ? "/onboarding" : "/app/feed" }); }} className="mt-6 space-y-3">
             {mode === "signup" && <Field label="Username" placeholder="alex.rivera" />}
@@ -87,17 +87,17 @@ function Auth() {
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               type="submit"
-              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0284C7] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#0369A1]"
+              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[primary] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[primary/90]"
             >{mode === "signup" ? "Create account" : "Log in"} <ArrowRight size={14} /></motion.button>
 
-            <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500">
-              <CheckCircle2 size={12} className="text-emerald-600" /> No card required · Cancel anytime
+            <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+              <CheckCircle2 size={12} className="text-success" /> No card required · Cancel anytime
             </div>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             {mode === "signup" ? "Already have an account? " : "New here? "}
-            <button onClick={() => setMode(mode === "signup" ? "signin" : "signup")} className="font-semibold text-[#0284C7] hover:underline">
+            <button onClick={() => setMode(mode === "signup" ? "signin" : "signup")} className="font-semibold text-[primary] hover:underline">
               {mode === "signup" ? "Log in" : "Sign up"}
             </button>
           </p>
@@ -110,10 +110,10 @@ function Auth() {
 function Field({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold text-slate-700">{label}</span>
+      <span className="mb-1 block text-xs font-semibold text-foreground">{label}</span>
       <input
         {...props}
-        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#0284C7] focus:ring-2 focus:ring-[#0284C7]/20"
+        className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-[primary] focus:ring-2 focus:ring-[primary]/20"
       />
     </label>
   );

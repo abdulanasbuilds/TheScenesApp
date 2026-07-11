@@ -14,25 +14,25 @@ const SECTIONS = [
 
 function Settings() {
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#F8FAFC]">
+    <div className="min-h-[calc(100vh-56px)] bg-[background]">
       <div className="mx-auto max-w-3xl p-6">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Settings</h1>
-        <p className="text-sm text-slate-500">Manage your profile, account, and notifications.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
+        <p className="text-sm text-muted-foreground">Manage your profile, account, and notifications.</p>
 
         <div className="mt-6 space-y-4">
           {SECTIONS.map((s) => (
-            <section key={s.k} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-200 px-4 py-3">
-                <h2 className="text-base font-semibold text-slate-900">{s.k}</h2>
+            <section key={s.k} className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+              <div className="border-b border-border px-4 py-3">
+                <h2 className="text-base font-semibold text-foreground">{s.k}</h2>
               </div>
               <ul>
                 {s.items.map((i) => (
                   <li key={i.l} className="flex items-center justify-between border-b border-slate-100 px-4 py-3 last:border-b-0">
                     <div>
-                      <div className="text-sm font-medium text-slate-900">{i.l}</div>
-                      <div className="text-xs text-slate-500">{i.v}</div>
+                      <div className="text-sm font-medium text-foreground">{i.l}</div>
+                      <div className="text-xs text-muted-foreground">{i.v}</div>
                     </div>
-                    <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Edit</button>
+                    <button className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-accent">Edit</button>
                   </li>
                 ))}
               </ul>

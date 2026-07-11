@@ -36,28 +36,28 @@
 
 :root {
   --radius: 0.75rem;
-  /* SukaSpace tokens - Ocean Blue on off-white */
-  --background: oklch(0.985 0.005 240);      /* #F8FAFC */
-  --foreground: oklch(0.208 0.042 265.755);  /* slate-900 */
-  --card: oklch(1 0 0);                       /* pure white */
-  --card-foreground: oklch(0.208 0.042 265.755);
+  /* SukaSpace Clean Tech Color System */
+  --background: oklch(0.985 0.005 240);      /* #F8FAFC - Light off-white */
+  --foreground: oklch(0.228 0.06 256.848);   /* #374151 - Dark gray for readable typography */
+  --card: oklch(1 0 0);                       /* #FFFFFF - Pure white */
+  --card-foreground: oklch(0.228 0.06 256.848);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.208 0.042 265.755);
-  --primary: oklch(0.612 0.153 240);          /* Ocean Blue #0284C7 */
+  --popover-foreground: oklch(0.228 0.06 256.848);
+  --primary: oklch(0.452 0.246 262.2);        /* #0066CC - Primary Blue: action color only */
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417); /* slate-500 */
-  --accent: oklch(0.955 0.02 240);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --secondary-foreground: oklch(0.228 0.06 256.848);
+  --muted: oklch(0.938 0.009 247.8);          /* #E5E7EB - Muted gray for borders */
+  --muted-foreground: oklch(0.554 0.046 257.417); /* #6B7280 - slate-500 */
+  --accent: oklch(0.938 0.009 247.8);         /* Match muted for borders/accents */
+  --accent-foreground: oklch(0.228 0.06 256.848);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.62 0.15 155);            /* Emerald #059669 */
+  --success: oklch(0.62 0.15 155);            /* Emerald - kept for badges */
   --success-foreground: oklch(1 0 0);
-  --border: oklch(0.929 0.013 255.508);       /* slate-200 #E2E8F0 */
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.612 0.153 240);
+  --border: oklch(0.938 0.009 247.8);         /* #E5E7EB - Muted gray */
+  --input: oklch(0.938 0.009 247.8);
+  --ring: oklch(0.452 0.246 262.2);
 }
 
 @layer base {
