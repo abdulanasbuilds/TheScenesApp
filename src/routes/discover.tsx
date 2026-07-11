@@ -20,7 +20,6 @@ export const Route = createFileRoute("/discover")({
 });
 
 function Discovery() {
-  const [simulateZeroState, setSimulateZeroState] = useState(false);
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState("All");
   const [modal, setModal] = useState(false);
@@ -41,43 +40,31 @@ function Discovery() {
     <div className="min-h-screen bg-background">
       <PublicHeader />
 
-      <div className="mx-auto flex max-w-7xl items-center justify-end gap-2 px-4 pt-3 sm:px-6">
-        <span className="text-[11px] font-medium text-500">Catalog state</span>
-        <button
-          onClick={() => setSimulateZeroState(false)}
-          className={`rounded-md border px-2 py-0.5 text-[11px] font-semibold ${!simulateZeroState ? "border-[primary] bg-[primary] text-white" : "border-border bg-card text-600"}`}
-        >Live</button>
-        <button
-          onClick={() => setSimulateZeroState(true)}
-          className={`rounded-md border px-2 py-0.5 text-[11px] font-semibold ${simulateZeroState ? "border-[primary] bg-[primary] text-white" : "border-border bg-card text-600"}`}
-        >Day 1 zero-state</button>
-      </div>
-
-      <section className="mx-auto max-w-7xl px-4 pt-6 pb-4 sm:px-6">
+      <section className="mx-auto max-w-7xl px-4 pt-12 pb-6 sm:px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-900">Discover tech & expert-led communities <span className="text-400">or create your own</span></h1>
-          <p className="mt-3 text-lg font-medium text-500">AI, engineering, no-code, and modern business — find hyper-focused spaces led by real operators.</p>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Discover tech & expert-led communities</h1>
+          <p className="mt-3 text-base text-muted-foreground">Join focused spaces dedicated to advancing your skills in engineering, automation, and digital business.</p>
 
-          <div className="mt-6 flex items-center gap-2 rounded-xl border border-border bg-card p-2 shadow-sm">
-            <Search size={16} className="ml-2 text-400" />
+          <div className="mt-8 flex items-center gap-2 rounded-xl border border-primary bg-white p-1 shadow-sm">
+            <Search size={20} className="ml-3 text-muted-foreground" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search 'LLM agents', 'no-code', 'growth'…"
-              className="flex-1 bg-transparent px-1 py-1.5 text-sm text-900 outline-none placeholder:text-400"
+              placeholder="Search courses, communities, and documentation..."
+              className="flex-1 bg-transparent px-2 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
-            <button onClick={openJoin} className="rounded-lg bg-[primary] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#0369A1]">Search</button>
+            <kbd className="mr-3 rounded border border-border bg-slate-100 px-2 py-1 text-xs font-semibold text-muted-foreground">⌘ K</kbd>
           </div>
 
-          <div className="mt-4 -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:justify-center sm:px-0">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             {MOCK_CATEGORIES.map((c) => (
               <motion.button
                 key={c}
                 onClick={() => setCat(c)}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className={`snap-start whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${cat === c ? "border-slate-900 bg-slate-900 text-white" : "border-border bg-card text-700 hover:border-slate-300"}`}
+                className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition ${cat === c ? "border-primary bg-primary text-white" : "border-border bg-white text-foreground hover:border-primary/50"}`}
               >{c}</motion.button>
             ))}
           </div>
@@ -85,10 +72,8 @@ function Discovery() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-        {simulateZeroState ? (
+        {filtered.length === 0 ? (
           <ZeroState onClaim={openJoin} />
-        ) : filtered.length === 0 ? (
-          <EmptyFilter onReset={() => { setQuery(""); setCat("All"); }} />
         ) : (
           <motion.div layout className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence mode="popLayout">
