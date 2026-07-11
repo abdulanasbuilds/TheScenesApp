@@ -172,7 +172,7 @@ function ZeroState({ onClaim }: { onClaim: () => void }) {
         </ul>
       </div>
       <div className="border-t border-slate-200 bg-[#F8FAFC] p-3 lg:col-span-3 lg:border-l lg:border-t-0">
-        <img src={UPLOADED_MOCKUPS.searchZeroState} alt="SukaSpace discovery search zero-state mockup" className="h-full min-h-[280px] w-full rounded-xl border border-slate-200 bg-white object-cover" />
+        <img src={UPLOADED_MOCKUPS.discoverZeroState} alt="SukaSpace discovery search zero-state mockup" className="h-full min-h-[280px] w-full rounded-xl border border-slate-200 bg-white object-cover" />
       </div>
       <div className="flex flex-col justify-center border-t border-slate-200 bg-white p-6 lg:col-span-5 lg:p-8">
         <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Launch</div>

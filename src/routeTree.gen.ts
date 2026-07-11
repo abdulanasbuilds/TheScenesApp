@@ -22,10 +22,15 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppSearchRouteImport } from './routes/app.search'
+import { Route as AppPayoutsRouteImport } from './routes/app.payouts'
 import { Route as AppMessagesRouteImport } from './routes/app.messages'
+import { Route as AppMembersRouteImport } from './routes/app.members'
+import { Route as AppLeaderboardRouteImport } from './routes/app.leaderboard'
 import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppCreatorRouteImport } from './routes/app.creator'
 import { Route as AppClassroomRouteImport } from './routes/app.classroom'
+import { Route as AppCalendarRouteImport } from './routes/app.calendar'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -92,9 +97,29 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSearchRoute = AppSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPayoutsRoute = AppPayoutsRouteImport.update({
+  id: '/payouts',
+  path: '/payouts',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMessagesRoute = AppMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMembersRoute = AppMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeaderboardRoute = AppLeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFeedRoute = AppFeedRouteImport.update({
@@ -112,6 +137,11 @@ const AppClassroomRoute = AppClassroomRouteImport.update({
   path: '/classroom',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCalendarRoute = AppCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -125,10 +155,15 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/creator': typeof AppCreatorRoute
   '/app/feed': typeof AppFeedRoute
+  '/app/leaderboard': typeof AppLeaderboardRoute
+  '/app/members': typeof AppMembersRoute
   '/app/messages': typeof AppMessagesRoute
+  '/app/payouts': typeof AppPayoutsRoute
+  '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
 }
@@ -143,10 +178,15 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/creator': typeof AppCreatorRoute
   '/app/feed': typeof AppFeedRoute
+  '/app/leaderboard': typeof AppLeaderboardRoute
+  '/app/members': typeof AppMembersRoute
   '/app/messages': typeof AppMessagesRoute
+  '/app/payouts': typeof AppPayoutsRoute
+  '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
 }
@@ -163,10 +203,15 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/creator': typeof AppCreatorRoute
   '/app/feed': typeof AppFeedRoute
+  '/app/leaderboard': typeof AppLeaderboardRoute
+  '/app/members': typeof AppMembersRoute
   '/app/messages': typeof AppMessagesRoute
+  '/app/payouts': typeof AppPayoutsRoute
+  '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
 }
@@ -184,10 +229,15 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/app/calendar'
     | '/app/classroom'
     | '/app/creator'
     | '/app/feed'
+    | '/app/leaderboard'
+    | '/app/members'
     | '/app/messages'
+    | '/app/payouts'
+    | '/app/search'
     | '/app/settings'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
@@ -202,10 +252,15 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/app/calendar'
     | '/app/classroom'
     | '/app/creator'
     | '/app/feed'
+    | '/app/leaderboard'
+    | '/app/members'
     | '/app/messages'
+    | '/app/payouts'
+    | '/app/search'
     | '/app/settings'
     | '/app'
   id:
@@ -221,10 +276,15 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/app/calendar'
     | '/app/classroom'
     | '/app/creator'
     | '/app/feed'
+    | '/app/leaderboard'
+    | '/app/members'
     | '/app/messages'
+    | '/app/payouts'
+    | '/app/search'
     | '/app/settings'
     | '/app/'
   fileRoutesById: FileRoutesById
@@ -336,11 +396,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/search': {
+      id: '/app/search'
+      path: '/search'
+      fullPath: '/app/search'
+      preLoaderRoute: typeof AppSearchRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/payouts': {
+      id: '/app/payouts'
+      path: '/payouts'
+      fullPath: '/app/payouts'
+      preLoaderRoute: typeof AppPayoutsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/messages': {
       id: '/app/messages'
       path: '/messages'
       fullPath: '/app/messages'
       preLoaderRoute: typeof AppMessagesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/members': {
+      id: '/app/members'
+      path: '/members'
+      fullPath: '/app/members'
+      preLoaderRoute: typeof AppMembersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/leaderboard': {
+      id: '/app/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/app/leaderboard'
+      preLoaderRoute: typeof AppLeaderboardRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/feed': {
@@ -364,23 +452,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppClassroomRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/calendar': {
+      id: '/app/calendar'
+      path: '/calendar'
+      fullPath: '/app/calendar'
+      preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppCalendarRoute: typeof AppCalendarRoute
   AppClassroomRoute: typeof AppClassroomRoute
   AppCreatorRoute: typeof AppCreatorRoute
   AppFeedRoute: typeof AppFeedRoute
+  AppLeaderboardRoute: typeof AppLeaderboardRoute
+  AppMembersRoute: typeof AppMembersRoute
   AppMessagesRoute: typeof AppMessagesRoute
+  AppPayoutsRoute: typeof AppPayoutsRoute
+  AppSearchRoute: typeof AppSearchRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppCalendarRoute: AppCalendarRoute,
   AppClassroomRoute: AppClassroomRoute,
   AppCreatorRoute: AppCreatorRoute,
   AppFeedRoute: AppFeedRoute,
+  AppLeaderboardRoute: AppLeaderboardRoute,
+  AppMembersRoute: AppMembersRoute,
   AppMessagesRoute: AppMessagesRoute,
+  AppPayoutsRoute: AppPayoutsRoute,
+  AppSearchRoute: AppSearchRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
 }
