@@ -108,7 +108,7 @@ function Discovery() {
                   <div className="p-4">
                     <div className="flex items-center justify-between">
                       <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-600">{c.category}</span>
-                      <span className="rounded-md border border-border bg-accent px-2 py-0.5 text-[10px] font-semibold text-success">{c.tag}</span>
+                      <span className="rounded-md border border-border bg-accent px-2 py-0.5 text-[10px] font-semibold text-primary">{c.tag}</span>
                     </div>
                     <h3 className="mt-2 text-base font-semibold text-900">{c.title}</h3>
                     <p className="mt-1 line-clamp-2 text-sm text-600">{c.summary}</p>

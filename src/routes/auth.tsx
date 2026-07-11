@@ -91,7 +91,7 @@ function Auth() {
             >{mode === "signup" ? "Create account" : "Log in"} <ArrowRight size={14} /></motion.button>
 
             <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-              <CheckCircle2 size={12} className="text-success" /> No card required · Cancel anytime
+              <CheckCircle2 size={12} className="text-primary" /> No card required · Cancel anytime
             </div>
           </form>
 

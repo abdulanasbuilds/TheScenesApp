@@ -42,7 +42,7 @@ function LearnersPage() {
         <section className="border-b border-border bg-card">
           <div className="mx-auto grid max-w-7xl gap-4 px-4 py-14 sm:px-6 lg:grid-cols-3">
             <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground"><span className="inline-flex items-center gap-1"><Trophy size={14} className="text-amber-500" /> Level 7</span><span className="inline-flex items-center gap-1"><Flame size={14} className="text-orange-500" /> 12-day streak</span></div>
+              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground"><span className="inline-flex items-center gap-1"><Trophy size={14} className="text-amber-500" /> Level 7</span><span className="inline-flex items-center gap-1"><Flame size={14} className="text-primary" /> 12-day streak</span></div>
               <div className="mt-3 text-3xl font-bold text-foreground">1,240 XP</div>
               <div className="mt-3 h-2 rounded-full bg-accent"><div className="h-2 rounded-full bg-[primary]" style={{ width: "62%" }} /></div>
               <div className="mt-2 text-xs text-muted-foreground">760 XP to Level 8</div>
@@ -68,7 +68,7 @@ function LearnersPage() {
                 <div key={member.name} className="rounded-xl border border-border bg-card p-5 shadow-sm">
                   <div className="flex items-center justify-between"><div className="text-sm font-semibold text-foreground">#{index + 1} {member.name}</div><Zap size={16} className="text-[primary]" /></div>
                   <div className="mt-1 text-xs text-muted-foreground">{member.role} · {(2400 - index * 260).toLocaleString()} XP</div>
-                  <div className="mt-4 flex items-center gap-2 text-sm text-foreground"><CheckCircle2 size={16} className="text-success" /> Completed this week's AI systems sprint</div>
+                  <div className="mt-4 flex items-center gap-2 text-sm text-foreground"><CheckCircle2 size={16} className="text-primary" /> Completed this week's AI systems sprint</div>
                 </div>
               ))}
             </div>

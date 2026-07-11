@@ -19,13 +19,10 @@ export function BrowserFrame({ url, children, className = "" }: { url: string; c
   );
 }
 
-export function Avatar({ initials, size = 32, tone = "slate" }: { initials: string; size?: number; tone?: "slate" | "sky" | "emerald" | "amber" | "rose" }) {
+export function Avatar({ initials, size = 32, tone = "slate" }: { initials: string; size?: number; tone?: "slate" | "primary" }) {
   const tones: Record<string, string> = {
     slate: "bg-foreground text-white",
-    sky: "bg-sky-600 text-white",
-    emerald: "bg-success text-white",
-    amber: "bg-amber-500 text-white",
-    rose: "bg-rose-500 text-white",
+    primary: "bg-primary text-primary-foreground",
   };
   return (
     <span

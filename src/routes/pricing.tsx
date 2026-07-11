@@ -35,7 +35,7 @@ function PricingPage() {
               <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
               <div className="mt-3 text-3xl font-bold text-foreground">{plan.price}</div>
               <ul className="mt-5 space-y-3 text-sm text-foreground">
-                {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-success" />{feature}</li>)}
+                {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" />{feature}</li>)}
               </ul>
               <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-xl bg-[primary] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[primary/90]">{plan.cta}</Link>
             </div>

@@ -56,7 +56,7 @@ function Onboarding() {
       {/* XP reward pop */}
       <AnimatePresence>
         {reward && (
-          <motion.div initial={{ y: -20, opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: -20, opacity: 0 }} transition={{ type: "spring", stiffness: 380, damping: 22 }} className="fixed top-16 left-1/2 z-40 -translate-x-1/2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-success shadow-sm">
+          <motion.div initial={{ y: -20, opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: -20, opacity: 0 }} transition={{ type: "spring", stiffness: 380, damping: 22 }} className="fixed top-16 left-1/2 z-40 -translate-x-1/2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-primary shadow-sm">
             {reward}
           </motion.div>
         )}
@@ -102,7 +102,7 @@ function Onboarding() {
                   <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
                     <span className="grid h-8 w-8 place-items-center rounded-md bg-foreground text-white"><f.icon size={14} /></span>
                     <span className="text-sm font-medium text-foreground">{f.t}</span>
-                    <Check size={14} className="ml-auto text-success" />
+                    <Check size={14} className="ml-auto text-primary" />
                   </div>
                 ))}
               </div>

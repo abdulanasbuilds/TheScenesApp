@@ -36,26 +36,26 @@
 
 :root {
   --radius: 0.75rem;
-  /* SukaSpace Clean Tech Color System */
-  --background: oklch(0.985 0.005 240);      /* #F8FAFC - Light off-white */
-  --foreground: oklch(0.228 0.06 256.848);   /* #374151 - Dark gray for readable typography */
-  --card: oklch(1 0 0);                       /* #FFFFFF - Pure white */
+  /* SukaSpace Clean Tech Color System - ONLY Blue, White, Muted Gray, Dark Gray */
+  --background: oklch(1 0 0);                 /* #FFFFFF - Pure white canvas */
+  --foreground: oklch(0.228 0.06 256.848);    /* #374151 - Dark gray for readable typography */
+  --card: oklch(1 0 0);                       /* #FFFFFF - Pure white cards */
   --card-foreground: oklch(0.228 0.06 256.848);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.228 0.06 256.848);
-  --primary: oklch(0.452 0.246 262.2);        /* #0066CC - Primary Blue: action color only */
+  --primary: oklch(0.452 0.246 262.2);        /* #0066CC - Primary Blue: action color ONLY */
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.968 0.007 247.896);
+  --secondary: oklch(1 0 0);                  /* #FFFFFF - Secondary is white */
   --secondary-foreground: oklch(0.228 0.06 256.848);
-  --muted: oklch(0.938 0.009 247.8);          /* #E5E7EB - Muted gray for borders */
-  --muted-foreground: oklch(0.554 0.046 257.417); /* #6B7280 - slate-500 */
-  --accent: oklch(0.938 0.009 247.8);         /* Match muted for borders/accents */
+  --muted: oklch(0.938 0.009 247.8);          /* #E5E7EB - Muted gray for borders ONLY */
+  --muted-foreground: oklch(0.228 0.06 256.848); /* #374151 - Dark gray text */
+  --accent: oklch(1 0 0);                     /* #FFFFFF - Accent is white */
   --accent-foreground: oklch(0.228 0.06 256.848);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.452 0.246 262.2);    /* #0066CC - Use blue instead of red */
   --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.62 0.15 155);            /* Emerald - kept for badges */
+  --success: oklch(0.452 0.246 262.2);        /* #0066CC - Use blue for all states */
   --success-foreground: oklch(1 0 0);
-  --border: oklch(0.938 0.009 247.8);         /* #E5E7EB - Muted gray */
+  --border: oklch(0.938 0.009 247.8);         /* #E5E7EB - Muted gray borders ONLY */
   --input: oklch(0.938 0.009 247.8);
   --ring: oklch(0.452 0.246 262.2);
 }

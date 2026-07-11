@@ -53,7 +53,7 @@ function CreateCommunityPage() {
               </motion.article>
             ))}
           </div>
-          <div className="mt-6 rounded-xl border border-border bg-accent p-4 text-sm font-semibold text-emerald-800"><CheckCircle2 size={16} className="mr-2 inline" />All valid uploaded mockups are stored as production asset URLs and used in this flow.</div>
+          <div className="mt-6 rounded-xl border border-border bg-accent p-4 text-sm font-semibold text-foreground"><CheckCircle2 size={16} className="mr-2 inline" />All valid uploaded mockups are stored as production asset URLs and used in this flow.</div>
         </section>
       </main>
     </div>

@@ -50,7 +50,7 @@ function Messages() {
             <Avatar initials={chat.avatar} size={36} />
             <div>
               <div className="text-sm font-semibold text-foreground">{chat.sender}</div>
-              <div className="text-xs text-success">● Online · typically replies in minutes</div>
+              <div className="text-xs text-primary">● Online · typically replies in minutes</div>
             </div>
           </div>
           <div className="text-xs text-muted-foreground hidden sm:block">{chat.role}</div>

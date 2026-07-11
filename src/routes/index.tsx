@@ -113,9 +113,9 @@ function Hero() {
             </motion.div>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={12} className="text-success" /> No card required</span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={12} className="text-success" /> Launch in minutes</span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={12} className="text-success" /> Own your audience</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={12} className="text-primary" /> No card required</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={12} className="text-primary" /> Launch in minutes</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={12} className="text-primary" /> Own your audience</span>
           </div>
         </motion.div>
       </div>
@@ -245,9 +245,9 @@ function LearnersMockup() {
           <h3 className="mt-2 text-3xl font-bold tracking-tight text-foreground">Structured tracks, gamified progress, real skills.</h3>
           <p className="mt-3 text-base text-muted-foreground">Track modules, streaks, and XP. Ship real projects and get feedback from peers who are actually operating in the field.</p>
           <ul className="mt-5 space-y-2 text-sm text-foreground">
-            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-success" />Linear module hierarchy with progress meters</li>
-            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-success" />XP, level badges, and daily streak tracking</li>
-            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-success" />Embedded video, resources, and code snippets</li>
+            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-primary" />Linear module hierarchy with progress meters</li>
+            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-primary" />XP, level badges, and daily streak tracking</li>
+            <li className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 text-primary" />Embedded video, resources, and code snippets</li>
           </ul>
         </div>
         <BrowserFrame url="app.sukaspace.com/classroom/llm-operations">
@@ -275,7 +275,7 @@ function LearnersMockup() {
                   <ul className="mt-1.5 space-y-0.5">
                     {m.lessons.map((l) => (
                       <li key={l.title} className="flex items-center gap-2 rounded-md px-1.5 py-1 text-[11px]">
-                        {l.status === "complete" && <CheckCircle2 size={12} className="text-success" />}
+                        {l.status === "complete" && <CheckCircle2 size={12} className="text-primary" />}
                         {l.status === "in_progress" && <span className="h-2 w-2 rounded-full bg-primary" />}
                         {l.status === "locked" && <span className="h-2 w-2 rounded-full bg-border" />}
                         <span className={l.status === "locked" ? "text-muted-foreground" : "text-foreground"}>{l.title}</span>
@@ -306,7 +306,7 @@ function LearnersMockup() {
                   <div><div className="font-semibold text-foreground">state-schema.pdf</div><div className="text-[10px] text-muted-foreground">318 KB</div></div>
                 </button>
               </div>
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-border bg-accent px-3 py-1 text-xs font-semibold text-success">
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-border bg-accent px-3 py-1 text-xs font-semibold text-primary">
                 +50 XP · Lesson in progress
               </div>
             </div>
@@ -347,7 +347,7 @@ function ChannelsMockup() {
             <div className="min-h-[380px] flex flex-col">
               <div className="flex items-center gap-2 border-b border-border p-3">
                 <Avatar initials="DC" tone="slate" size={28} />
-                <div className="min-w-0"><div className="text-xs font-semibold text-foreground">David Chen</div><div className="text-[10px] text-success">Online</div></div>
+                <div className="min-w-0"><div className="text-xs font-semibold text-foreground">David Chen</div><div className="text-[10px] text-primary">Online</div></div>
               </div>
               <div className="flex-1 space-y-2 p-3">
                 <div className="max-w-[80%] rounded-2xl rounded-bl-sm border border-border bg-card px-3 py-2 text-xs text-foreground">Realtime listener works. Zero latency.</div>
@@ -396,7 +396,7 @@ function CreatorMockup() {
             <div className="col-span-12 border-b border-border p-4 md:col-span-8 md:border-b-0 md:border-r">
               <div className="mb-3 flex items-baseline justify-between">
                 <h4 className="text-sm font-semibold text-foreground">Member growth · last 12 weeks</h4>
-                <span className="rounded-md bg-accent px-2 py-0.5 text-[11px] font-semibold text-success">{MOCK_ANALYTICS.growthPercentage}</span>
+                <span className="rounded-md bg-accent px-2 py-0.5 text-[11px] font-semibold text-primary">{MOCK_ANALYTICS.growthPercentage}</span>
               </div>
               <div className="flex h-40 items-end gap-1.5 rounded-lg border border-border bg-background p-3">
                 {MOCK_GROWTH_SERIES.map((v, i) => (

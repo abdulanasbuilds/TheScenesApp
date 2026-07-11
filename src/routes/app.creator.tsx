@@ -9,10 +9,10 @@ export const Route = createFileRoute("/app/creator")({
 });
 
 const METRICS = [
-  { icon: DollarSign, label: "Monthly Recurring Revenue", value: MOCK_ANALYTICS.mrr, change: "+18.4%", tone: "text-success" },
-  { icon: Users, label: "Active members", value: MOCK_ANALYTICS.activeMembers, change: "+126 this week", tone: "text-success" },
-  { icon: GraduationCap, label: "Course completion", value: MOCK_ANALYTICS.courseCompletionRate, change: "+4.2%", tone: "text-success" },
-  { icon: TrendingUp, label: "Discovery impressions", value: "24.6k", change: "+31% MoM", tone: "text-success" },
+  { icon: DollarSign, label: "Monthly Recurring Revenue", value: MOCK_ANALYTICS.mrr, change: "+18.4%", tone: "text-primary" },
+  { icon: Users, label: "Active members", value: MOCK_ANALYTICS.activeMembers, change: "+126 this week", tone: "text-primary" },
+  { icon: GraduationCap, label: "Course completion", value: MOCK_ANALYTICS.courseCompletionRate, change: "+4.2%", tone: "text-primary" },
+  { icon: TrendingUp, label: "Discovery impressions", value: "24.6k", change: "+31% MoM", tone: "text-primary" },
 ];
 
 function CreatorHub() {
@@ -49,7 +49,7 @@ function CreatorHub() {
                 <h2 className="text-base font-semibold text-foreground">Member growth</h2>
                 <p className="text-xs text-muted-foreground">Last 12 weeks · net new members</p>
               </div>
-              <div className="text-xs font-semibold text-success">+82 this week</div>
+              <div className="text-xs font-semibold text-primary">+82 this week</div>
             </div>
             <div className="mt-4 flex h-52 items-end gap-2 rounded-lg border border-border bg-[background] p-4">
               {MOCK_GROWTH_SERIES.map((v, i) => (
@@ -92,7 +92,7 @@ function CreatorHub() {
                       <td className="py-2 px-3"><div className="flex items-center gap-2"><Avatar initials={u.avatar} size={26} /><span className="font-medium text-foreground">{u.name}</span></div></td>
                       <td className="text-foreground">{42 - i * 3}</td>
                       <td className="font-semibold text-foreground">{(2400 - i * 180).toLocaleString()}</td>
-                      <td className="text-right px-3 font-semibold text-orange-500">{28 - i} 🔥</td>
+                      <td className="text-right px-3 font-semibold text-primary">{28 - i} 🔥</td>
                     </tr>
                   ))}
                 </tbody>

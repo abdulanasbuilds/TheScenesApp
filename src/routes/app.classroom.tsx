@@ -29,7 +29,7 @@ function Classroom() {
             <div className="mt-3 rounded-xl border border-border bg-[background] p-3">
               <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
                 <span className="inline-flex items-center gap-1"><Trophy size={12} className="text-amber-500" /> Level 7</span>
-                <span className="inline-flex items-center gap-1"><Flame size={12} className="text-orange-500" /> 12-day streak</span>
+                <span className="inline-flex items-center gap-1"><Flame size={12} className="text-primary" /> 12-day streak</span>
               </div>
               <div className="mt-1 text-2xl font-bold text-foreground">1,240 XP</div>
               <div className="mt-2 h-1.5 rounded-full bg-slate-200"><div className="h-1.5 rounded-full bg-[primary]" style={{ width: "62%" }} /></div>
@@ -62,7 +62,7 @@ function Classroom() {
                         disabled={l.status === "locked"}
                         className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs ${isActive ? "bg-accent font-semibold text-foreground" : "text-foreground hover:bg-accent"} ${l.status === "locked" ? "opacity-50" : ""}`}
                       >
-                        {l.status === "complete" && <CheckCircle2 size={14} className="text-success" />}
+                        {l.status === "complete" && <CheckCircle2 size={14} className="text-primary" />}
                         {l.status === "in_progress" && <span className="grid h-3.5 w-3.5 place-items-center rounded-full border-2 border-[primary]"><span className="h-1 w-1 rounded-full bg-[primary]" /></span>}
                         {l.status === "locked" && <Lock size={12} className="text-muted-foreground" />}
                         <span className="flex-1 truncate">{l.title}</span>
@@ -116,7 +116,7 @@ function Classroom() {
 
           <div className="mt-6 flex items-center justify-between rounded-xl border border-border bg-card p-4">
             <button className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent">← Previous</button>
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-success"><Zap size={12} /> +50 XP on complete</div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-primary"><Zap size={12} /> +50 XP on complete</div>
             <button className="rounded-lg bg-[primary] px-4 py-2 text-sm font-semibold text-white hover:bg-[primary/90]">Mark complete →</button>
           </div>
         </div>
