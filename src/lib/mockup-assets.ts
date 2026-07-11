@@ -2,7 +2,7 @@
 
 export const UPLOADED_MOCKUPS = {
   // Newly uploaded human-designed mockups mapped to folder structure
-  exploreSearchHub: "/design-reference/stitch_sukaspace_learning_platform/sukaspace_precision_system/screen.png",
+  exploreSearchHub: "/design-reference/stitch_sukaspace_learning_platform/sukaspace_landing_page/screen.png",
   searchResults: "/design-reference/stitch_sukaspace_learning_platform/sukaspace_global_search_results/screen.png",
   communityCalendar: "/design-reference/stitch_sukaspace_learning_platform/sukaspace_community_calendar/screen.png",
   signInScreen: "/design-reference/stitch_sukaspace_learning_platform/sukaspace_access_portal_auth/screen.png",
