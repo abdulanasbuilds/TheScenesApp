@@ -1,0 +1,1 @@
+- [SukaSpace client-only data layer](sukaspace-mock-backend.md) — no real backend; a localStorage-backed React context store simulates persistence. Check computed/filtered JSX is actually rendered, not just computed.
