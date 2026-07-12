@@ -31,15 +31,43 @@ export const MOCK_CHANNELS = [
 ];
 
 export const MOCK_ONLINE = [
-  { name: "Alex Rivera", role: "AI Architect", avatar: "AR", status: "leader" },
-  { name: "Sarah Jenkins", role: "Growth Lead", avatar: "SJ", status: "online" },
-  { name: "David Kim", role: "Staff Eng", avatar: "DK", status: "online" },
-  { name: "Elena Rostova", role: "Creator", avatar: "ER", status: "leader" },
-  { name: "Yuki Tanaka", role: "Designer", avatar: "YT", status: "online" },
-  { name: "Priya Nair", role: "ML Eng", avatar: "PN", status: "online" },
-  { name: "Marcus Bell", role: "Marketer", avatar: "MB", status: "online" },
-  { name: "Jonas Weiss", role: "Founder", avatar: "JW", status: "online" },
+  { name: "Alex Rivera", role: "AI Architect", avatar: "AR", status: "leader", xp: 2400, streak: 28, posts: 42 },
+  { name: "Sarah Jenkins", role: "Growth Lead", avatar: "SJ", status: "online", xp: 2220, streak: 27, posts: 39 },
+  { name: "David Kim", role: "Staff Eng", avatar: "DK", status: "online", xp: 2040, streak: 26, posts: 36 },
+  { name: "Elena Rostova", role: "Creator", avatar: "ER", status: "leader", xp: 1860, streak: 25, posts: 33 },
+  { name: "Yuki Tanaka", role: "Designer", avatar: "YT", status: "online", xp: 1680, streak: 24, posts: 30 },
+  { name: "Priya Nair", role: "ML Eng", avatar: "PN", status: "online", xp: 1500, streak: 23, posts: 27 },
+  { name: "Marcus Bell", role: "Marketer", avatar: "MB", status: "online", xp: 1320, streak: 22, posts: 24 },
+  { name: "Jonas Weiss", role: "Founder", avatar: "JW", status: "online", xp: 1140, streak: 21, posts: 21 },
 ];
+
+export const MOCK_CALENDAR_EVENTS = [
+  { id: 1, title: "Weekly Live AMA", date: "2026-07-16", type: "session" },
+  { id: 2, title: "Module 2 deadline: Agent Workflows", date: "2026-07-18", type: "deadline" },
+  { id: 3, title: "Community meetup — SF chapter", date: "2026-07-22", type: "meetup" },
+  { id: 4, title: "Guest lecture: Evals at scale", date: "2026-07-25", type: "session" },
+  { id: 5, title: "Cohort project showcase", date: "2026-07-30", type: "meetup" },
+];
+
+export const MOCK_TRANSACTIONS = [
+  { id: 1, desc: "Membership sale — Priya Nair", amount: 49, date: "2026-07-10", type: "sale" },
+  { id: 2, desc: "Membership sale — Jonas Weiss", amount: 49, date: "2026-07-08", type: "sale" },
+  { id: 3, desc: "Course bundle — LLM Systems Guild", amount: 129, date: "2026-07-05", type: "sale" },
+  { id: 4, desc: "Membership sale — David Kim", amount: 49, date: "2026-07-03", type: "sale" },
+  { id: 5, desc: "Membership sale — Marcus Bell", amount: 49, date: "2026-06-29", type: "sale" },
+  { id: 6, desc: "Membership sale — Yuki Tanaka", amount: 49, date: "2026-06-27", type: "sale" },
+  { id: 7, desc: "Course bundle — Prompt Engineering Lab", amount: 129, date: "2026-06-24", type: "sale" },
+  { id: 8, desc: "Membership sale — Elena Rostova", amount: 49, date: "2026-06-20", type: "sale" },
+  { id: 9, desc: "Payout to bank ••4821", amount: -320, date: "2026-06-15", type: "payout" },
+];
+
+export function xpToTier(xp: number) {
+  if (xp >= 2200) return { name: "Diamond I", color: "text-sky-600 bg-sky-100" };
+  if (xp >= 1800) return { name: "Gold I", color: "text-amber-600 bg-amber-100" };
+  if (xp >= 1400) return { name: "Gold III", color: "text-amber-600 bg-amber-100" };
+  if (xp >= 1000) return { name: "Silver I", color: "text-slate-600 bg-slate-200" };
+  return { name: "Bronze I", color: "text-orange-700 bg-orange-100" };
+}
 
 export const MOCK_CLASSROOM_MODULES = [
   { id: 1, name: "Module 1: Large Language Model Operations", progress: 100, lessons: [

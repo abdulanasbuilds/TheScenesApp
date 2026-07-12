@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { MOCK_COMMUNITIES, MOCK_COMMUNITY_POSTS } from "./mock-data";
+import { MOCK_COMMUNITY_POSTS } from "./mock-data";
 
 export type Community = {
   id: number;
@@ -71,11 +71,10 @@ function defaultState(): PersistedState {
     userCommunities: [],
     extraPosts: [],
     likedPostIds: [],
-    joinedCommunityIds: [1],
+    joinedCommunityIds: [],
     notifications: [
       { id: 1, text: "Welcome to SukaSpace! Complete your profile to get discovered.", time: "Just now", read: false },
-      { id: 2, text: "Your community discovery impressions are up 31% this month.", time: "2h ago", read: false },
-      { id: 3, text: "New member joined AI Automation Architects.", time: "Yesterday", read: true },
+      { id: 2, text: "No communities have launched yet — be the first to claim your niche on Discover.", time: "Just now", read: false },
     ],
   };
 }
@@ -148,8 +147,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   }, [state, isHydrated]);
 
   const communities = useMemo<Community[]>(() => {
-    const seeded: Community[] = MOCK_COMMUNITIES.map((c) => ({ ...c, tag: c.tag as "FREE" | "PAID", createdAt: 0 }));
-    return [...state.userCommunities, ...seeded].sort((a, b) => b.createdAt - a.createdAt);
+    return [...state.userCommunities].sort((a, b) => b.createdAt - a.createdAt);
   }, [state.userCommunities]);
 
   const posts = useMemo<FeedPost[]>(() => {

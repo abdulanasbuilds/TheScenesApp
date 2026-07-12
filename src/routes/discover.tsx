@@ -38,7 +38,7 @@ function Discovery() {
   }, [store.communities, query, cat]);
 
   const hasFilters = query.trim() !== "" || cat !== "All";
-  const showPromo = !hasFilters;
+  const hasCommunities = store.communities.length > 0;
 
   const resetFilters = () => { setQuery(""); setCat("All"); };
   const handleJoin = (community: Community) => {
@@ -92,18 +92,18 @@ function Discovery() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-        {showPromo && <ZeroState onClaim={() => setModal(true)} />}
-
-        {filtered.length === 0 ? (
+        {!hasCommunities ? (
+          <ZeroState onClaim={() => setModal(true)} />
+        ) : filtered.length === 0 ? (
           <EmptyFilter onReset={resetFilters} />
         ) : (
-          <div className={showPromo ? "mt-8" : ""}>
+          <div>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-900">{filtered.length} {filtered.length === 1 ? "community" : "communities"}{hasFilters ? " matching your search" : ""}</h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((c) => (
-                <CommunityCard key={c.id} community={c} isNew={c.createdAt > 0} joined={store.isJoined(c.id)} onJoin={() => handleJoin(c)} />
+                <CommunityCard key={c.id} community={c} isNew={Date.now() - c.createdAt < 1000 * 60 * 60 * 24} joined={store.isJoined(c.id)} onJoin={() => handleJoin(c)} />
               ))}
             </div>
           </div>
