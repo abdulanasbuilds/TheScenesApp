@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { MOCK_COMMUNITY_POSTS } from "./mock-data";
 
 export type Community = {
   id: number;
@@ -42,7 +41,14 @@ export type AppNotification = {
   read: boolean;
 };
 
-const STORAGE_KEY = "sukaspace_app_state_v1";
+type StoredAccount = {
+  email: string;
+  name: string;
+  password: string;
+  role: "creator" | "learner";
+};
+
+const STORAGE_KEY = "sukaspace_app_state_v2";
 const BANNERS = [
   "from-sky-100 to-blue-50",
   "from-emerald-100 to-teal-50",
@@ -58,6 +64,7 @@ export function randomBanner() {
 
 type PersistedState = {
   session: SessionUser | null;
+  accounts: StoredAccount[];
   userCommunities: Community[];
   extraPosts: FeedPost[];
   likedPostIds: number[];
@@ -68,14 +75,12 @@ type PersistedState = {
 function defaultState(): PersistedState {
   return {
     session: null,
+    accounts: [],
     userCommunities: [],
     extraPosts: [],
     likedPostIds: [],
     joinedCommunityIds: [],
-    notifications: [
-      { id: 1, text: "Welcome to SukaSpace! Complete your profile to get discovered.", time: "Just now", read: false },
-      { id: 2, text: "No communities have launched yet — be the first to claim your niche on Discover.", time: "Just now", read: false },
-    ],
+    notifications: [],
   };
 }
 
@@ -105,6 +110,9 @@ type AddPostInput = {
   category: string;
 };
 
+export type SignInResult = SessionUser | "not_found" | "wrong_password";
+export type SignUpResult = SessionUser | "email_taken";
+
 type AppStoreValue = {
   session: SessionUser | null;
   communities: Community[];
@@ -113,8 +121,8 @@ type AppStoreValue = {
   unreadCount: number;
   isHydrated: boolean;
   joinedCommunityIds: number[];
-  signIn: (email: string, name?: string) => SessionUser;
-  signUp: (name: string, email: string, role: "creator" | "learner") => SessionUser;
+  signIn: (email: string, password: string) => SignInResult;
+  signUp: (name: string, email: string, password: string, role: "creator" | "learner") => SignUpResult;
   signOut: () => void;
   createCommunity: (input: CreateCommunityInput) => Community;
   addPost: (input: AddPostInput) => FeedPost;
@@ -151,9 +159,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   }, [state.userCommunities]);
 
   const posts = useMemo<FeedPost[]>(() => {
-    const seeded: FeedPost[] = MOCK_COMMUNITY_POSTS.map((p) => ({ ...p, createdAt: 0 }));
-    const merged = [...state.extraPosts, ...seeded].sort((a, b) => b.createdAt - a.createdAt);
-    return merged.map((p) => (state.likedPostIds.includes(p.id) ? { ...p, likes: p.likes + 1 } : p));
+    return [...state.extraPosts]
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .map((p) => (state.likedPostIds.includes(p.id) ? { ...p, likes: p.likes + 1 } : p));
   }, [state.extraPosts, state.likedPostIds]);
 
   const value: AppStoreValue = {
@@ -164,17 +172,32 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     unreadCount: state.notifications.filter((n) => !n.read).length,
     isHydrated,
     joinedCommunityIds: state.joinedCommunityIds,
-    signIn: (email, name) => {
-      const user: SessionUser = { name: name || email.split("@")[0], email, avatar: (name || email).slice(0, 2).toUpperCase(), role: "learner" };
+
+    signIn: (email, password) => {
+      const account = state.accounts.find((a) => a.email.toLowerCase() === email.toLowerCase());
+      if (!account) return "not_found";
+      if (account.password !== password) return "wrong_password";
+      const user: SessionUser = { name: account.name, email: account.email, avatar: account.name.slice(0, 2).toUpperCase(), role: account.role };
       setState((s) => ({ ...s, session: user }));
       return user;
     },
-    signUp: (name, email, role) => {
+
+    signUp: (name, email, password, role) => {
+      const exists = state.accounts.find((a) => a.email.toLowerCase() === email.toLowerCase());
+      if (exists) return "email_taken";
       const user: SessionUser = { name, email, avatar: name.slice(0, 2).toUpperCase() || "YU", role };
-      setState((s) => ({ ...s, session: user }));
+      const account: StoredAccount = { email, name, password, role };
+      setState((s) => ({
+        ...s,
+        session: user,
+        accounts: [...s.accounts, account],
+        notifications: [{ id: Date.now(), text: `Welcome to SukaSpace, ${name}! Explore communities or create your own.`, time: "Just now", read: false }],
+      }));
       return user;
     },
+
     signOut: () => setState((s) => ({ ...s, session: null })),
+
     createCommunity: (input) => {
       const community: Community = {
         id: Date.now(),
@@ -197,6 +220,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       }));
       return community;
     },
+
     addPost: (input) => {
       const post: FeedPost = {
         id: Date.now(),
@@ -213,20 +237,26 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       setState((s) => ({ ...s, extraPosts: [post, ...s.extraPosts] }));
       return post;
     },
+
     toggleLike: (postId) => {
       setState((s) => ({
         ...s,
         likedPostIds: s.likedPostIds.includes(postId) ? s.likedPostIds.filter((id) => id !== postId) : [...s.likedPostIds, postId],
       }));
     },
+
     isLiked: (postId) => state.likedPostIds.includes(postId),
+
     joinCommunity: (id) => {
       setState((s) => (s.joinedCommunityIds.includes(id) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, id] }));
     },
+
     isJoined: (id) => state.joinedCommunityIds.includes(id),
+
     markAllNotificationsRead: () => {
       setState((s) => ({ ...s, notifications: s.notifications.map((n) => ({ ...n, read: true })) }));
     },
+
     pushNotification: (text) => {
       setState((s) => ({ ...s, notifications: [{ id: Date.now(), text, time: "Just now", read: false }, ...s.notifications] }));
     },

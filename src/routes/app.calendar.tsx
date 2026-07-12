@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, X, ChevronLeft, ChevronRight, Trash2, Radio, Clock3, Users2, StickyNote } from "lucide-react";
 import { useMemo, useState } from "react";
-import { MOCK_CALENDAR_EVENTS } from "@/lib/mock-data";
 import { useAppStore } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/calendar")({
@@ -27,6 +26,11 @@ function pad(n: number) { return n.toString().padStart(2, "0"); }
 function toKey(y: number, m: number, d: number) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
 function parseKey(key: string) { const [y, m, d] = key.split("-").map(Number); return new Date(y, m - 1, d); }
 
+function getTodayKey() {
+  const d = new Date();
+  return toKey(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 function CalendarPage() {
   const store = useAppStore();
   const [open, setOpen] = useState(false);
@@ -34,10 +38,13 @@ function CalendarPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [type, setType] = useState<CalKey>("session");
-  const [events, setEvents] = useState<CalEvent[]>(MOCK_CALENDAR_EVENTS as CalEvent[]);
+  const [events, setEvents] = useState<CalEvent[]>([]);
   const [view, setView] = useState<ViewMode>("month");
-  const [cursor, setCursor] = useState(() => { const d = new Date(2026, 6, 1); return { year: d.getFullYear(), month: d.getMonth() }; });
-  const todayKey = "2026-07-12";
+  const [cursor, setCursor] = useState(() => {
+    const d = new Date();
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+  const todayKey = getTodayKey();
   const [selected, setSelected] = useState<string>(todayKey);
   const [visible, setVisible] = useState<Record<CalKey, boolean>>({ session: true, deadline: true, meetup: true, personal: true });
 
@@ -59,7 +66,6 @@ function CalendarPage() {
   const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   while (cells.length % 7 !== 0) cells.push(null);
 
-  // Mini "jump to" calendar for the same month
   const miniFirstDay = firstDay;
   const miniCells: (number | null)[] = [...Array(miniFirstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   while (miniCells.length % 7 !== 0) miniCells.push(null);
@@ -68,7 +74,7 @@ function CalendarPage() {
     if (!title.trim() || !date) return;
     const created: CalEvent = { id: Date.now(), title: title.trim(), date, time: time.trim() || undefined, type };
     setEvents((e) => [...e, created]);
-    store.pushNotification(`Event "${created.title}" was added to the calendar on ${created.date}.`);
+    store.pushNotification(`Event "${created.title}" added to calendar on ${created.date}.`);
     setTitle(""); setDate(""); setTime(""); setType("session"); setOpen(false);
     setSelected(created.date);
   };
@@ -187,11 +193,7 @@ function CalendarPage() {
                   const isToday = key === todayKey;
                   const isSelected = key === selected;
                   return (
-                    <button
-                      key={i}
-                      onClick={() => setSelected(key)}
-                      className={`flex h-20 flex-col items-start gap-1 border-b border-r border-border p-1.5 text-left transition sm:h-24 ${isSelected ? "bg-sky-50" : "hover:bg-accent"}`}
-                    >
+                    <button key={i} onClick={() => setSelected(key)} className={`flex h-20 flex-col items-start gap-1 border-b border-r border-border p-1.5 text-left transition sm:h-24 ${isSelected ? "bg-sky-50" : "hover:bg-accent"}`}>
                       <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] font-semibold ${isToday ? "bg-primary text-white" : "text-foreground"}`}>{day}</span>
                       <div className="flex w-full flex-1 flex-col gap-0.5 overflow-hidden">
                         {dayEvents.slice(0, 2).map((e) => (

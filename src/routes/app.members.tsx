@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Download, UserPlus, X, Check, Search, MoreVertical, Trash2, ChevronDown, ChevronLeft, ChevronRight, ArrowDown } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Avatar } from "@/components/BrowserFrame";
-import { MOCK_ONLINE } from "@/lib/mock-data";
 import { useAppStore } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/members")({
@@ -17,20 +16,6 @@ type Role = "Instructor" | "Moderator" | "Student";
 type Status = "Online" | "Offline";
 type Member = { id: string; name: string; email: string; role: Role; avatar: string; status: Status; xp: number; joinedDate: string; lastActive: string; pending?: boolean };
 
-function seedMembers(): Member[] {
-  return MOCK_ONLINE.map((m, i) => ({
-    id: `seed-${i}`,
-    name: m.name,
-    email: m.email,
-    role: i === 0 ? "Instructor" : i < 3 ? "Moderator" : "Student",
-    avatar: m.avatar,
-    status: m.status === "offline" ? "Offline" : "Online",
-    xp: m.xp,
-    joinedDate: m.joinedDate,
-    lastActive: m.lastActive,
-  }));
-}
-
 const ROLE_STYLES: Record<Role, string> = {
   Instructor: "bg-emerald-100 text-emerald-700",
   Moderator: "bg-sky-100 text-sky-700",
@@ -41,9 +26,26 @@ const PAGE_SIZE = 6;
 
 function MembersPage() {
   const store = useAppStore();
+
+  function makeInitialMembers(): Member[] {
+    if (!store.session) return [];
+    const today = new Date().toISOString().split("T")[0];
+    return [{
+      id: "self",
+      name: store.session.name,
+      email: store.session.email,
+      role: store.session.role === "creator" ? "Instructor" : "Student",
+      avatar: store.session.avatar,
+      status: "Online",
+      xp: 0,
+      joinedDate: today,
+      lastActive: "Just now",
+    }];
+  }
+
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [members, setMembers] = useState<Member[]>(seedMembers());
+  const [members, setMembers] = useState<Member[]>(makeInitialMembers());
   const [exported, setExported] = useState(false);
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"All" | Role>("All");
@@ -82,6 +84,7 @@ function MembersPage() {
   const sendInvite = () => {
     if (!email.trim()) return;
     const name = email.split("@")[0];
+    const today = new Date().toISOString().split("T")[0];
     const pending: Member = {
       id: `invite-${Date.now()}`,
       name: email.trim(),
@@ -90,7 +93,7 @@ function MembersPage() {
       avatar: name.slice(0, 2).toUpperCase(),
       status: "Offline",
       xp: 0,
-      joinedDate: "2026-07-12",
+      joinedDate: today,
       lastActive: "Just invited",
       pending: true,
     };
@@ -131,7 +134,7 @@ function MembersPage() {
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="min-w-0">
           <h1 className="truncate text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Members</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Manage classroom participants, roles, and progress.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Manage community participants, roles, and progress.</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button onClick={handleExport} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent">
@@ -242,7 +245,7 @@ function MembersPage() {
           </table>
         </div>
         <div className="flex items-center justify-between border-t border-border px-4 py-3 text-xs text-muted-foreground">
-          <span>Showing {filtered.length === 0 ? 0 : (pageSafe - 1) * PAGE_SIZE + 1} to {Math.min(pageSafe * PAGE_SIZE, filtered.length)} of {filtered.length} members</span>
+          <span>Showing {filtered.length === 0 ? 0 : (pageSafe - 1) * PAGE_SIZE + 1} to {Math.min(pageSafe * PAGE_SIZE, filtered.length)} of {filtered.length} member{filtered.length === 1 ? "" : "s"}</span>
           <div className="flex items-center gap-1">
             <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={pageSafe === 1} className="grid h-7 w-7 place-items-center rounded-md border border-border disabled:opacity-30 hover:enabled:bg-accent"><ChevronLeft size={13} /></button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (

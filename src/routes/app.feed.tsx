@@ -1,9 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Hash, Heart, MessageSquare, Share2, MoreHorizontal, Send, X, Pin, BarChart3 } from "lucide-react";
+import { Hash, Heart, MessageSquare, Share2, MoreHorizontal, Send, X } from "lucide-react";
 import { Avatar } from "@/components/BrowserFrame";
-import { MOCK_CHANNELS, MOCK_ONLINE } from "@/lib/mock-data";
 import { useAppStore, type FeedPost } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/feed")({
@@ -11,33 +10,59 @@ export const Route = createFileRoute("/app/feed")({
   component: Feed,
 });
 
+const DEFAULT_CHANNELS = [
+  { id: "announcements", name: "announcements" },
+  { id: "general", name: "general" },
+  { id: "questions", name: "questions" },
+  { id: "wins", name: "wins" },
+];
+
 function Feed() {
-  const [active, setActive] = useState("ai-automation-engineering");
+  const [active, setActive] = useState("general");
   const [thread, setThread] = useState<number | null>(null);
   const [showChannels, setShowChannels] = useState(false);
   const store = useAppStore();
+  const nav = useNavigate();
 
+  const community = store.communities[0] ?? null;
   const threadPost = store.posts.find((p) => p.id === thread) || null;
+
+  if (!community) {
+    return (
+      <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-8 text-center">
+        <div className="max-w-sm">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-accent">
+            <Hash size={24} className="text-muted-foreground" />
+          </div>
+          <h2 className="mt-4 text-lg font-semibold text-foreground">No community yet</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Create your own community or explore existing ones to start engaging in discussions.</p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <button onClick={() => nav({ to: "/create-community" })} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Create a community</button>
+            <button onClick={() => nav({ to: "/discover" })} className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-accent">Explore communities</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-12 min-h-[calc(100vh-56px)]">
-      {/* Channels rail */}
       <aside className={`col-span-12 md:col-span-3 lg:col-span-2 border-r border-border bg-card ${showChannels ? "" : "hidden md:block"}`}>
         <div className="border-b border-border p-3">
-          <div className="text-sm font-semibold text-foreground">AI Automation Architects</div>
-          <div className="text-xs text-muted-foreground">4,820 members</div>
+          <div className="truncate text-sm font-semibold text-foreground">{community.title}</div>
+          <div className="text-xs text-muted-foreground">{community.members.toLocaleString()} {community.members === 1 ? "member" : "members"}</div>
         </div>
         <div className="p-2">
           <div className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Spaces</div>
           <ul className="space-y-0.5">
-            {MOCK_CHANNELS.map((c) => (
+            {DEFAULT_CHANNELS.map((c) => (
               <li key={c.id}>
                 <button
                   onClick={() => { setActive(c.id); setShowChannels(false); }}
-                  className={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm ${active === c.id ? "bg-accent font-semibold text-foreground" : "text-muted-foreground hover:bg-accent"}`}
+                  className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-sm ${active === c.id ? "bg-accent font-semibold text-foreground" : "text-muted-foreground hover:bg-accent"}`}
                 >
-                  <span className="flex items-center gap-1.5 truncate"><Hash size={14} className={active === c.id ? "text-primary" : "text-muted-foreground"} />{c.name}</span>
-                  {c.unread ? <span className="rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white">{c.unread}</span> : null}
+                  <Hash size={14} className={active === c.id ? "text-primary" : "text-muted-foreground"} />
+                  {c.name}
                 </button>
               </li>
             ))}
@@ -45,50 +70,54 @@ function Feed() {
         </div>
       </aside>
 
-      {/* Center feed */}
       <main className="col-span-12 md:col-span-6 lg:col-span-7 border-r border-border">
         <div className="sticky top-14 z-10 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-2">
             <button onClick={() => setShowChannels((v) => !v)} className="md:hidden rounded border border-border px-2 py-1 text-xs">Channels</button>
             <Hash size={16} className="text-muted-foreground" />
             <span className="text-sm font-semibold text-foreground">{active}</span>
-            <span className="hidden text-xs text-muted-foreground sm:inline">· {store.posts.length} posts · 48 online</span>
+            <span className="hidden text-xs text-muted-foreground sm:inline">· {store.posts.length} {store.posts.length === 1 ? "post" : "posts"}</span>
           </div>
         </div>
 
         <div className="space-y-3 p-4">
           <PostComposer />
-          {store.posts.map((p) => (
-            <FeedPostCard key={p.id} post={p} onOpenThread={() => setThread(p.id)} />
-          ))}
+          {store.posts.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
+              <p className="text-sm font-semibold text-foreground">No posts yet</p>
+              <p className="mt-1 text-xs text-muted-foreground">Be the first to share an insight, ask a question, or drop a win.</p>
+            </div>
+          ) : (
+            store.posts.map((p) => (
+              <FeedPostCard key={p.id} post={p} onOpenThread={() => setThread(p.id)} />
+            ))
+          )}
         </div>
       </main>
 
-      {/* Members rail */}
       <aside className="hidden lg:block lg:col-span-3 bg-card p-3">
-        <div className="mb-2 flex items-center justify-between px-1">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Online · {MOCK_ONLINE.length}</div>
+        <div className="mb-2 px-1">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Online · {store.session ? 1 : 0}</div>
         </div>
-        <ul className="space-y-1">
-          {MOCK_ONLINE.map((u) => (
-            <li key={u.name} className="flex items-center gap-2 rounded-md p-1.5 hover:bg-accent">
-              <div className="relative"><Avatar initials={u.avatar} tone={u.status === "leader" ? "sky" : "slate"} size={30} /><span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white bg-accent0" /></div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold text-foreground">{u.name}</div>
-                <div className="truncate text-xs text-muted-foreground">{u.role}</div>
+        {store.session ? (
+          <ul className="space-y-1">
+            <li className="flex items-center gap-2 rounded-md p-1.5 hover:bg-accent">
+              <div className="relative">
+                <Avatar initials={store.session.avatar} tone="sky" size={30} />
+                <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white bg-emerald-500" />
               </div>
-              {u.status === "leader" && <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">LEAD</span>}
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold text-foreground">{store.session.name}</div>
+                <div className="truncate text-xs capitalize text-muted-foreground">{store.session.role}</div>
+              </div>
+              <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">YOU</span>
             </li>
-          ))}
-        </ul>
-        <div className="mt-4 rounded-xl border border-border bg-background p-3">
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase text-muted-foreground"><Pin size={11} /> Pinned</div>
-          <div className="mt-1 text-xs font-semibold text-foreground">Weekly AMA — Thu 3pm ET</div>
-          <div className="text-xs text-muted-foreground">Elena Rostova walks through the automation masterclass roadmap.</div>
-        </div>
+          </ul>
+        ) : (
+          <p className="px-1 text-xs text-muted-foreground">No members online.</p>
+        )}
       </aside>
 
-      {/* Thread drawer */}
       <AnimatePresence>
         {threadPost && (
           <ThreadDrawer post={threadPost} onClose={() => setThread(null)} />
@@ -114,7 +143,7 @@ function FeedPostCard({ post, onOpenThread }: { post: FeedPost; onOpenThread: ()
           <Avatar initials={post.avatar} size={36} tone="slate" />
           <div>
             <div className="text-sm font-semibold text-foreground">{post.author} <span className="font-normal text-muted-foreground">· {post.role}</span></div>
-            <div className="text-xs text-muted-foreground">{post.category} · {post.createdAt ? "Just now" : "2h ago"}</div>
+            <div className="text-xs text-muted-foreground">{post.category} · Just now</div>
           </div>
         </div>
         <button onClick={(e) => e.stopPropagation()} className="rounded-md p-1 text-muted-foreground hover:bg-accent"><MoreHorizontal size={16} /></button>
@@ -123,17 +152,6 @@ function FeedPostCard({ post, onOpenThread }: { post: FeedPost; onOpenThread: ()
         <h3 className="mt-3 text-base font-semibold text-foreground">{post.title}</h3>
         <p className="mt-1 text-sm text-foreground">{post.body}</p>
       </div>
-      {post.id === 2 && (
-        <div className="mt-3 rounded-lg border border-border bg-background p-3">
-          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground"><BarChart3 size={12} /> POLL · closes in 2d</div>
-          {[{ k: "Outbound cold email", v: 62 }, { k: "Referral partnerships", v: 24 }, { k: "Paid ads", v: 14 }].map((o) => (
-            <div key={o.k} className="mt-2">
-              <div className="mb-0.5 flex items-center justify-between text-xs"><span className="text-foreground">{o.k}</span><span className="font-semibold text-foreground">{o.v}%</span></div>
-              <div className="h-1.5 rounded-full bg-slate-200"><div className="h-1.5 rounded-full bg-primary" style={{ width: `${o.v}%` }} /></div>
-            </div>
-          ))}
-        </div>
-      )}
       <div className="mt-3 flex items-center gap-4 border-t border-slate-100 pt-3 text-xs text-muted-foreground">
         <button onClick={() => store.toggleLike(post.id)} className={`inline-flex items-center gap-1.5 hover:text-foreground ${liked ? "font-semibold text-red-500" : ""}`}>
           <Heart size={14} fill={liked ? "currentColor" : "none"} /> {post.likes}
@@ -175,11 +193,7 @@ function PostComposer() {
 function ThreadDrawer({ post, onClose }: { post: FeedPost; onClose: () => void }) {
   const store = useAppStore();
   const [reply, setReply] = useState("");
-  const [localComments, setLocalComments] = useState<{ a: string; av: string; t: string }[]>([
-    { a: "David Kim", av: "DK", t: "The routing meta-agent pattern is 🔑. Curious how you handle tool-call caching." },
-    { a: "Priya Nair", av: "PN", t: "We wired LangSmith for evals and it caught 3 silent regressions. Recommend." },
-    { a: "Elena Rostova", av: "ER", t: "Sharing this in our #ai-automation-engineering channel — really clean." },
-  ]);
+  const [localComments, setLocalComments] = useState<{ a: string; av: string; t: string }[]>([]);
 
   const sendReply = () => {
     if (!reply.trim()) return;
@@ -201,12 +215,21 @@ function ThreadDrawer({ post, onClose }: { post: FeedPost; onClose: () => void }
         </div>
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           <div>
-            <div className="flex items-center gap-2"><Avatar initials={post.avatar} size={32} /><div><div className="text-sm font-semibold text-foreground">{post.author}</div><div className="text-xs text-muted-foreground">2h ago</div></div></div>
+            <div className="flex items-center gap-2">
+              <Avatar initials={post.avatar} size={32} />
+              <div>
+                <div className="text-sm font-semibold text-foreground">{post.author}</div>
+                <div className="text-xs text-muted-foreground">Just now</div>
+              </div>
+            </div>
             <h3 className="mt-3 text-base font-semibold text-foreground">{post.title}</h3>
             <p className="mt-2 text-sm text-foreground">{post.body}</p>
           </div>
           <div className="border-t border-slate-100 pt-4">
-            <div className="text-xs font-semibold text-muted-foreground">{localComments.length} comments</div>
+            <div className="text-xs font-semibold text-muted-foreground">{localComments.length} {localComments.length === 1 ? "comment" : "comments"}</div>
+            {localComments.length === 0 && (
+              <p className="mt-3 text-xs text-muted-foreground">No replies yet. Be the first to respond.</p>
+            )}
             {localComments.map((c, i) => (
               <div key={i} className="mt-3 flex items-start gap-2">
                 <Avatar initials={c.av} size={28} />

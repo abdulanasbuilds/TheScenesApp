@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Download, Check, Wallet, TrendingUp, X, ArrowUpRight, ArrowDownRight, Plus, Landmark, CreditCard, Search } from "lucide-react";
+import { Download, Check, Wallet, X, ArrowUpRight, ArrowDownRight, Plus, Landmark, CreditCard, Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import { MOCK_MONTHLY_EARNINGS, MOCK_PAYMENT_METHODS, MOCK_TRANSACTIONS } from "@/lib/mock-data";
 import { useAppStore } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/payouts")({
@@ -13,25 +12,38 @@ export const Route = createFileRoute("/app/payouts")({
 });
 
 type Txn = { id: number; desc: string; amount: number; date: string; type: "sale" | "payout" };
+type PaymentMethod = { id: number; label: string; detail: string; type: "bank" | "card"; isDefault: boolean };
+
 const STATUS_STYLES: Record<string, string> = { Completed: "bg-emerald-100 text-emerald-700", Processing: "bg-amber-100 text-amber-700" };
+
+function getNextMonthFirst() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth() + 1, 1).toISOString().split("T")[0];
+}
+
+function getLastSixMonths() {
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - (5 - i));
+    return { month: d.toLocaleDateString("en-US", { month: "short" }), amount: 0 };
+  });
+}
 
 function PayoutsPage() {
   const store = useAppStore();
   const [exported, setExported] = useState(false);
-  const [txns, setTxns] = useState<Txn[]>(MOCK_TRANSACTIONS as Txn[]);
+  const [txns, setTxns] = useState<Txn[]>([]);
   const [txnQuery, setTxnQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
-  const [methods, setMethods] = useState(MOCK_PAYMENT_METHODS);
+  const [methods, setMethods] = useState<PaymentMethod[]>([]);
   const [addMethodOpen, setAddMethodOpen] = useState(false);
   const [methodLabel, setMethodLabel] = useState("");
   const [methodDetail, setMethodDetail] = useState("");
 
   const balance = useMemo(() => txns.reduce((sum, t) => sum + t.amount, 0), [txns]);
-  const prevBalance = balance - txns.filter((t) => t.type === "sale").slice(0, 2).reduce((s, t) => s + t.amount, 0);
-  const growthPct = prevBalance > 0 ? (((balance - prevBalance) / prevBalance) * 100).toFixed(1) : "0.0";
-  const maxMonth = Math.max(...MOCK_MONTHLY_EARNINGS.map((m) => m.amount));
-  const nextPayoutDate = "2026-07-25";
+  const nextPayoutDate = getNextMonthFirst();
+  const earningsMonths = getLastSixMonths();
 
   const filteredTxns = useMemo(() => {
     const q = txnQuery.trim().toLowerCase();
@@ -39,6 +51,7 @@ function PayoutsPage() {
   }, [txns, txnQuery]);
 
   const handleExport = () => {
+    if (txns.length === 0) return;
     const rows = ["date,description,type,amount", ...txns.map((t) => `${t.date},"${t.desc}",${t.type},${t.amount}`)];
     const blob = new Blob([rows.join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -54,7 +67,8 @@ function PayoutsPage() {
   const withdraw = () => {
     const value = Math.round(Number(amount));
     if (!value || value <= 0 || value > balance) return;
-    const txn: Txn = { id: Date.now(), desc: `Withdrawal to ${defaultMethod?.label ?? "bank"}`, amount: -value, date: "2026-07-12", type: "payout" };
+    const today = new Date().toISOString().split("T")[0];
+    const txn: Txn = { id: Date.now(), desc: `Withdrawal to ${defaultMethod?.label ?? "bank"}`, amount: -value, date: today, type: "payout" };
     setTxns((t) => [txn, ...t]);
     store.pushNotification(`Withdrawal of $${value.toLocaleString()} initiated to ${defaultMethod?.label ?? "your account"}.`);
     setAmount(""); setOpen(false);
@@ -62,7 +76,7 @@ function PayoutsPage() {
 
   const addMethod = () => {
     if (!methodLabel.trim() || !methodDetail.trim()) return;
-    setMethods((m) => [...m, { id: Date.now(), label: methodLabel.trim(), detail: methodDetail.trim(), type: "bank", isDefault: false }]);
+    setMethods((m) => [...m, { id: Date.now(), label: methodLabel.trim(), detail: methodDetail.trim(), type: "bank", isDefault: m.length === 0 }]);
     store.pushNotification(`Added payment method "${methodLabel.trim()}".`);
     setMethodLabel(""); setMethodDetail(""); setAddMethodOpen(false);
   };
@@ -76,7 +90,7 @@ function PayoutsPage() {
           <h1 className="truncate text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Payouts & Financials</h1>
           <p className="mt-1 text-sm text-muted-foreground">Manage your earnings, view history, and configure withdrawals.</p>
         </div>
-        <button onClick={handleExport} className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent">
+        <button onClick={handleExport} disabled={txns.length === 0} className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent disabled:opacity-40">
           {exported ? <Check size={14} className="text-emerald-600" /> : <Download size={14} />}{exported ? "Exported" : "Export CSV"}
         </button>
       </div>
@@ -85,9 +99,9 @@ function PayoutsPage() {
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="flex items-center gap-2 text-[10px] font-semibold uppercase text-muted-foreground"><Wallet size={13} />Available balance</div>
           <div className="mt-3 text-3xl font-bold text-foreground">${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-          <div className={`mt-1 inline-flex items-center gap-1 text-xs font-semibold ${Number(growthPct) >= 0 ? "text-emerald-600" : "text-rose-600"}`}><TrendingUp size={12} />{growthPct}% from last month</div>
+          <div className="mt-1 text-xs text-muted-foreground">No sales yet</div>
           <div className="mt-6 text-xs text-muted-foreground">Next scheduled payout: <span className="font-semibold text-foreground">{nextPayoutDate}</span></div>
-          <button onClick={() => setOpen(true)} className="mt-3 w-full rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Withdraw Funds</button>
+          <button onClick={() => setOpen(true)} disabled={balance <= 0} className="mt-3 w-full rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-40">Withdraw Funds</button>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
@@ -96,14 +110,15 @@ function PayoutsPage() {
             <span className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted-foreground">Last 6 Months</span>
           </div>
           <div className="mt-4 flex h-40 items-end gap-3">
-            {MOCK_MONTHLY_EARNINGS.map((m, i) => (
+            {earningsMonths.map((m, i) => (
               <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
-                <span className="text-[10px] font-semibold text-muted-foreground">${(m.amount / 1000).toFixed(1)}k</span>
-                <div className="w-full rounded-t-md bg-gradient-to-t from-primary/70 to-primary" style={{ height: `${Math.max(10, Math.round((m.amount / maxMonth) * 120))}px` }} title={`${m.month}: $${m.amount.toLocaleString()}`} />
+                <span className="text-[10px] font-semibold text-muted-foreground">$0</span>
+                <div className="w-full rounded-t-md bg-slate-100" style={{ height: "8px" }} title={`${m.month}: $0`} />
                 <span className="text-[10px] text-muted-foreground">{m.month}</span>
               </div>
             ))}
           </div>
+          <p className="mt-3 text-center text-xs text-muted-foreground">Revenue will appear here once you make your first sale.</p>
         </div>
       </div>
 
@@ -113,18 +128,26 @@ function PayoutsPage() {
             <h2 className="text-sm font-semibold text-foreground">Payment Methods</h2>
             <button onClick={() => setAddMethodOpen(true)} className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"><Plus size={12} />Add</button>
           </div>
-          <div className="mt-3 space-y-2">
-            {methods.map((m) => (
-              <button key={m.id} onClick={() => makeDefault(m.id)} className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left ${m.isDefault ? "border-primary bg-sky-50" : "border-border hover:bg-accent"}`}>
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-accent text-foreground">{m.type === "bank" ? <Landmark size={15} /> : <CreditCard size={15} />}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-foreground">{m.label}</div>
-                  <div className="truncate text-xs text-muted-foreground">{m.detail}</div>
-                </div>
-                {m.isDefault && <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">DEFAULT</span>}
-              </button>
-            ))}
-          </div>
+          {methods.length === 0 ? (
+            <div className="mt-4 flex flex-col items-center justify-center py-6 text-center">
+              <Landmark size={20} className="text-muted-foreground/50" />
+              <p className="mt-2 text-xs font-semibold text-foreground">No payment methods</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">Add a bank account or card to enable withdrawals.</p>
+            </div>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {methods.map((m) => (
+                <button key={m.id} onClick={() => makeDefault(m.id)} className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left ${m.isDefault ? "border-primary bg-sky-50" : "border-border hover:bg-accent"}`}>
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-accent text-foreground">{m.type === "bank" ? <Landmark size={15} /> : <CreditCard size={15} />}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold text-foreground">{m.label}</div>
+                    <div className="truncate text-xs text-muted-foreground">{m.detail}</div>
+                  </div>
+                  {m.isDefault && <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">DEFAULT</span>}
+                </button>
+              ))}
+            </div>
+          )}
           <p className="mt-3 text-[11px] text-muted-foreground">Minimum withdrawal amount is $50.00. Processing times vary by method.</p>
         </div>
 
@@ -158,7 +181,7 @@ function PayoutsPage() {
                   </tr>
                 ))}
                 {filteredTxns.length === 0 && (
-                  <tr><td colSpan={4} className="py-6 text-center text-sm text-muted-foreground">No transactions match your search.</td></tr>
+                  <tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">{txnQuery ? "No transactions match your search." : "No transactions yet."}</td></tr>
                 )}
               </tbody>
             </table>

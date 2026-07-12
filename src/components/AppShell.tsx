@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { Home, GraduationCap, MessagesSquare, BarChart3, Settings, Bell, Search, Trophy, Calendar, Users, Wallet } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar } from "./BrowserFrame";
 import { useAppStore } from "@/lib/app-store";
 
@@ -25,13 +25,30 @@ export function AppShell() {
   const store = useAppStore();
   const [showNotifs, setShowNotifs] = useState(false);
 
-  const displayName = store.session?.name || "You";
-  const displayInitials = store.session?.avatar || "YU";
-  const displayRole = store.session ? (store.session.role === "creator" ? "Creator · Free" : "Learner · Free") : "Learner · Free";
+  useEffect(() => {
+    if (store.isHydrated && !store.session) {
+      nav({ to: "/auth" });
+    }
+  }, [store.isHydrated, store.session, nav]);
+
+  if (!store.isHydrated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-primary" />
+      </div>
+    );
+  }
+
+  if (!store.session) {
+    return null;
+  }
+
+  const displayName = store.session.name;
+  const displayInitials = store.session.avatar;
+  const displayRole = store.session.role === "creator" ? "Creator · Free" : "Learner · Free";
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Left rail */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-card md:flex">
         <div className="flex h-14 items-center gap-2 border-b border-border px-4">
           <span className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-xs font-bold text-white">S</span>
@@ -66,7 +83,6 @@ export function AppShell() {
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 grid h-14 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-border bg-card/90 px-3 backdrop-blur sm:gap-3 sm:px-4">
           <Link
@@ -113,7 +129,6 @@ export function AppShell() {
           </button>
         </header>
 
-        {/* Mobile bottom nav */}
         <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-card px-1 py-1.5 md:hidden">
           {MOBILE_NAV.map((n) => {
             const Icon = n.icon;
@@ -127,7 +142,6 @@ export function AppShell() {
           })}
         </div>
 
-        {/* Mobile secondary chip nav (horizontally scrollable) */}
         <nav aria-label="Secondary" className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto border-b border-border bg-card px-3 py-2 md:hidden">
           {NAV.map((n) => {
             const active = loc.pathname.startsWith(n.to);

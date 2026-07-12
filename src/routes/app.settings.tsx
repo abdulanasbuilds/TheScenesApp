@@ -10,13 +10,14 @@ export const Route = createFileRoute("/app/settings")({
 
 function Settings() {
   const store = useAppStore();
+  const usernameDefault = store.session?.email ? "@" + store.session.email.split("@")[0] : "";
   const [values, setValues] = useState<Record<string, string>>({
-    "Display name": store.session?.name || "Alex Rivera",
-    Username: "@alex.rivera",
-    Bio: "AI systems engineer. Building agentic workflows in production.",
-    Email: store.session?.email || "alex@company.com",
+    "Display name": store.session?.name || "",
+    Username: usernameDefault,
+    Bio: "",
+    Email: store.session?.email || "",
     Password: "•••••••••",
-    "Two-factor auth": "Enabled",
+    "Two-factor auth": "Not enabled",
     "New posts in my channels": "Instant",
     "Direct messages": "Instant",
     "Weekly digest": "Every Monday",
@@ -62,7 +63,7 @@ function Settings() {
                           className="mt-1 w-full rounded-md border border-border bg-card px-2 py-1 text-xs outline-none focus:border-primary"
                         />
                       ) : (
-                        <div className="text-xs text-muted-foreground">{values[label]}</div>
+                        <div className="text-xs text-muted-foreground">{values[label] || <span className="italic opacity-60">Not set</span>}</div>
                       )}
                     </div>
                     {editing === label ? (
