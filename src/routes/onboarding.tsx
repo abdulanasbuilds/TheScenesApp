@@ -27,7 +27,8 @@ function Onboarding() {
 
   const finishOnboarding = (to: "/app/feed" = "/app/feed") => {
     if (!store.session) {
-      store.signUp(name.trim() || "You", `${(name.trim() || "you").toLowerCase().replace(/\s+/g, ".")}@sukaspace.io`, role === "creator" ? "creator" : "learner");
+      nav({ to: "/auth", search: { mode: "signup" } });
+      return;
     }
     nav({ to });
   };
