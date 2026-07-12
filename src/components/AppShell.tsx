@@ -1,6 +1,8 @@
-import { Link, Outlet, useLocation } from "@tanstack/react-router";
+import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { Home, GraduationCap, MessagesSquare, BarChart3, Settings, Bell, Search, Trophy, Calendar, Users, Wallet } from "lucide-react";
+import { useState } from "react";
 import { Avatar } from "./BrowserFrame";
+import { useAppStore } from "@/lib/app-store";
 
 const NAV = [
   { to: "/app/feed", label: "Home", icon: Home },
@@ -19,6 +21,14 @@ const MOBILE_NAV = NAV.filter((n) => ["/app/feed", "/app/classroom", "/app/messa
 
 export function AppShell() {
   const loc = useLocation();
+  const nav = useNavigate();
+  const store = useAppStore();
+  const [showNotifs, setShowNotifs] = useState(false);
+
+  const displayName = store.session?.name || "You";
+  const displayInitials = store.session?.avatar || "YU";
+  const displayRole = store.session ? (store.session.role === "creator" ? "Creator · Free" : "Learner · Free") : "Learner · Free";
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Left rail */}
@@ -46,27 +56,61 @@ export function AppShell() {
           })}
         </nav>
         <div className="border-t border-border p-3">
-          <div className="flex items-center gap-2">
-            <Avatar initials="YU" tone="sky" size={32} />
+          <Link to="/app/settings" className="flex items-center gap-2 rounded-lg p-1 hover:bg-accent">
+            <Avatar initials={displayInitials} tone="sky" size={32} />
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-foreground">You</div>
-              <div className="truncate text-xs text-muted-foreground">Learner · Free</div>
+              <div className="truncate text-sm font-semibold text-foreground">{displayName}</div>
+              <div className="truncate text-xs text-muted-foreground">{displayRole}</div>
             </div>
-          </div>
+          </Link>
         </div>
       </aside>
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 grid h-14 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-border bg-card/90 px-3 backdrop-blur sm:gap-3 sm:px-4">
-          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-accent px-3 py-1.5 text-sm text-muted-foreground md:max-w-md">
+          <Link
+            to="/app/search"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-accent px-3 py-1.5 text-sm text-muted-foreground hover:border-primary/40 md:max-w-md"
+          >
             <Search size={14} className="shrink-0" />
             <span className="truncate">Search communities, lessons, people…</span>
+          </Link>
+          <div className="relative shrink-0">
+            <button
+              aria-label="Notifications"
+              onClick={() => setShowNotifs((v) => !v)}
+              className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground hover:bg-accent"
+            >
+              <Bell size={16} />
+              {store.unreadCount > 0 && (
+                <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-primary text-[9px] font-bold text-white">{store.unreadCount}</span>
+              )}
+            </button>
+            {showNotifs && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowNotifs(false)} />
+                <div className="absolute right-0 top-11 z-40 w-80 rounded-xl border border-border bg-card p-2 shadow-lg">
+                  <div className="flex items-center justify-between px-2 py-1.5">
+                    <span className="text-sm font-semibold text-foreground">Notifications</span>
+                    <button onClick={() => store.markAllNotificationsRead()} className="text-xs font-semibold text-primary hover:underline">Mark all read</button>
+                  </div>
+                  <div className="max-h-80 space-y-1 overflow-y-auto">
+                    {store.notifications.length === 0 && <div className="px-2 py-4 text-center text-xs text-muted-foreground">You're all caught up.</div>}
+                    {store.notifications.map((n) => (
+                      <div key={n.id} className={`rounded-lg px-2 py-2 text-sm ${n.read ? "text-muted-foreground" : "bg-accent font-medium text-foreground"}`}>
+                        <div>{n.text}</div>
+                        <div className="mt-0.5 text-[10px] text-muted-foreground">{n.time}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-          <button aria-label="Notifications" className="shrink-0 rounded-lg border border-border bg-card p-2 text-muted-foreground hover:bg-accent">
-            <Bell size={16} />
+          <button onClick={() => nav({ to: "/app/settings" })} className="shrink-0" aria-label="Account settings">
+            <Avatar initials={displayInitials} tone="sky" size={30} />
           </button>
-          <Avatar initials="YU" tone="sky" size={30} />
         </header>
 
         {/* Mobile bottom nav */}

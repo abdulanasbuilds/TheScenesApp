@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
-import { Search, Users, Sparkles, X } from "lucide-react";
+import { Search, Users, Sparkles, X, CheckCircle2 } from "lucide-react";
 import { PublicHeader } from "@/components/PublicHeader";
 import { Avatar } from "@/components/BrowserFrame";
-import { MOCK_COMMUNITIES, MOCK_CATEGORIES } from "@/lib/mock-data";
+import { MOCK_CATEGORIES } from "@/lib/mock-data";
 import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
+import { useAppStore, type Community } from "@/lib/app-store";
 
 export const Route = createFileRoute("/discover")({
   head: () => ({
@@ -23,18 +24,28 @@ function Discovery() {
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState("All");
   const [modal, setModal] = useState(false);
+  const [joinTarget, setJoinTarget] = useState<Community | null>(null);
   const nav = useNavigate();
+  const store = useAppStore();
 
   const filtered = useMemo(() => {
-    return MOCK_COMMUNITIES.filter((c) => {
+    return store.communities.filter((c) => {
       const catOk = cat === "All" || c.category === cat;
       const q = query.trim().toLowerCase();
       const qOk = !q || c.title.toLowerCase().includes(q) || c.summary.toLowerCase().includes(q) || c.category.toLowerCase().includes(q);
       return catOk && qOk;
     });
-  }, [query, cat]);
+  }, [store.communities, query, cat]);
 
-  const openJoin = () => setModal(true);
+  const hasFilters = query.trim() !== "" || cat !== "All";
+  const showPromo = !hasFilters;
+
+  const resetFilters = () => { setQuery(""); setCat("All"); };
+  const handleJoin = (community: Community) => {
+    if (!store.session) { setJoinTarget(community); setModal(true); return; }
+    store.joinCommunity(community.id);
+    nav({ to: "/app/feed" });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,8 +92,22 @@ function Discovery() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-        {/* Always show zero state by default (matches uploaded image) */}
-        <ZeroState onClaim={openJoin} />
+        {showPromo && <ZeroState onClaim={() => setModal(true)} />}
+
+        {filtered.length === 0 ? (
+          <EmptyFilter onReset={resetFilters} />
+        ) : (
+          <div className={showPromo ? "mt-8" : ""}>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-900">{filtered.length} {filtered.length === 1 ? "community" : "communities"}{hasFilters ? " matching your search" : ""}</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((c) => (
+                <CommunityCard key={c.id} community={c} isNew={c.createdAt > 0} joined={store.isJoined(c.id)} onJoin={() => handleJoin(c)} />
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <AnimatePresence>
@@ -103,9 +128,9 @@ function Discovery() {
                 <button onClick={() => setModal(false)} className="rounded-md p-1 text-slate-500 hover:bg-slate-100"><X size={16} /></button>
               </div>
               <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">Create an account to continue</h3>
-              <p className="mt-1 text-sm text-slate-600">Sign up in seconds to join this community or launch your own space.</p>
+              <p className="mt-1 text-sm text-slate-600">Sign up in seconds to join {joinTarget ? `"${joinTarget.title}"` : "this community"} or launch your own space.</p>
               <div className="mt-5 flex flex-col gap-2">
-                <button onClick={() => nav({ to: "/auth", search: { mode: "signup" } })} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0369A1]">Sign up free</button>
+                <button onClick={() => nav({ to: "/auth", search: { mode: "signup" } })} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Sign up free</button>
                 <button onClick={() => nav({ to: "/auth", search: { mode: "signin" } })} className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50">Log in</button>
               </div>
             </motion.div>
@@ -113,6 +138,40 @@ function Discovery() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function CommunityCard({ community, isNew, joined, onJoin }: { community: Community; isNew: boolean; joined: boolean; onJoin: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 260, damping: 26 }}
+      className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+    >
+      <div className={`relative h-20 bg-gradient-to-br ${community.banner}`}>
+        {isNew && <span className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">New</span>}
+      </div>
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-center gap-2">
+          <Avatar initials={community.avatar} size={28} tone="primary" />
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold text-slate-900">{community.title}</div>
+            <div className="truncate text-xs text-slate-500">by {community.creator}</div>
+          </div>
+        </div>
+        <p className="mt-2 line-clamp-2 flex-1 text-sm text-slate-600">{community.summary}</p>
+        <div className="mt-3 flex items-center justify-between">
+          <span className="inline-flex items-center gap-1 text-xs text-slate-500"><Users size={12} /> {community.members.toLocaleString()} members</span>
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${community.tag === "FREE" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{community.tag === "FREE" ? "FREE" : community.price || "PAID"}</span>
+        </div>
+        <button
+          onClick={onJoin}
+          className={`mt-3 w-full rounded-lg px-3 py-2 text-sm font-semibold ${joined ? "border border-border bg-slate-50 text-slate-500" : "bg-primary text-white hover:bg-primary/90"}`}
+        >
+          {joined ? <span className="inline-flex items-center justify-center gap-1"><CheckCircle2 size={14} /> Joined</span> : "Join community"}
+        </button>
+      </div>
+    </motion.div>
   );
 }
 
@@ -135,12 +194,12 @@ function ZeroState({ onClaim }: { onClaim: () => void }) {
       <div className="flex flex-col justify-center border-t border-border bg-card p-6 lg:col-span-5 lg:p-8">
         <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Launch</div>
         <div className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Create the first tech space</div>
-        <p className="mt-2 text-sm text-slate-600">2-minute setup. No card required.</p>
+        <p className="mt-2 text-sm text-slate-600">2-minute setup. No card required. It shows up below and in search the moment you launch it.</p>
         <motion.button
           onClick={onClaim}
           whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#0369A1]"
+          className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary/90"
         >Create the First Tech Space</motion.button>
       </div>
     </motion.div>

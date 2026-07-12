@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Sparkles, Rocket, GraduationCap, Check, Upload, ArrowRight, ArrowLeft, Zap, Trophy, MessagesSquare, Lock } from "lucide-react";
 import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
+import { useAppStore } from "@/lib/app-store";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Welcome to SukaSpace · Onboarding" }] }),
@@ -22,6 +23,14 @@ function Onboarding() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [reward, setReward] = useState<string | null>(null);
   const nav = useNavigate();
+  const store = useAppStore();
+
+  const finishOnboarding = (to: "/app/feed" = "/app/feed") => {
+    if (!store.session) {
+      store.signUp(name.trim() || "You", `${(name.trim() || "you").toLowerCase().replace(/\s+/g, ".")}@sukaspace.io`, role === "creator" ? "creator" : "learner");
+    }
+    nav({ to });
+  };
 
   const total = 4;
   const pct = ((step + 1) / total) * 100;
@@ -109,10 +118,10 @@ function Onboarding() {
               <div className="border-t border-border p-6">
                 <motion.button
                   animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                  onClick={() => nav({ to: "/app/feed" })}
+                  onClick={() => finishOnboarding()}
                   className="w-full rounded-xl bg-primary px-5 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-primary/90"
                 >Claim Full Platform Access & Unlock My Dashboard</motion.button>
-                <button onClick={() => nav({ to: "/app/feed" })} className="mt-2 w-full text-center text-xs font-medium text-muted-foreground hover:text-foreground">Continue with Free Base Access</button>
+                <button onClick={() => finishOnboarding()} className="mt-2 w-full text-center text-xs font-medium text-muted-foreground hover:text-foreground">Continue with Free Base Access</button>
               </div>
             </motion.div>
           </motion.div>

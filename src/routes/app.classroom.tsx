@@ -11,8 +11,24 @@ export const Route = createFileRoute("/app/classroom")({
 function Classroom() {
   const [role, setRole] = useState<"learner" | "creator">("learner");
   const [active, setActive] = useState({ m: 2, l: 0 });
+  const [tab, setTab] = useState<"resources" | "discussion">("resources");
+  const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [downloading, setDownloading] = useState<string | null>(null);
 
+  const flatLessons = MOCK_CLASSROOM_MODULES.flatMap((m) => m.lessons.map((l, li) => ({ m: m.id, l: li, title: l.title, status: l.status })));
+  const currentIndex = flatLessons.findIndex((l) => l.m === active.m && l.l === active.l);
   const lesson = MOCK_CLASSROOM_MODULES.find((m) => m.id === active.m)?.lessons[active.l];
+
+  const goPrev = () => { if (currentIndex > 0) { const t = flatLessons[currentIndex - 1]; setActive({ m: t.m, l: t.l }); } };
+  const goNext = () => { if (currentIndex < flatLessons.length - 1) { const t = flatLessons[currentIndex + 1]; setActive({ m: t.m, l: t.l }); } };
+  const markComplete = () => {
+    if (lesson) setCompleted((s) => new Set(s).add(lesson.title));
+    goNext();
+  };
+  const handleDownload = (name: string) => {
+    setDownloading(name);
+    setTimeout(() => setDownloading(null), 1200);
+  };
 
   return (
     <div className="grid grid-cols-12 min-h-[calc(100vh-56px)]">
@@ -103,21 +119,44 @@ function Classroom() {
           </div>
 
           <div className="mt-6">
-            <div className="mb-2 text-xs font-semibold text-muted-foreground">Resources</div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {[{ n: "agent-graph.py", s: "2.4 KB" }, { n: "state-schema.pdf", s: "318 KB" }, { n: "project-files.zip", s: "1.2 MB" }, { n: "slide-deck.pdf", s: "4.7 MB" }].map((r) => (
-                <button key={r.n} className="flex items-center gap-2.5 rounded-lg border border-border bg-card p-3 text-left text-sm hover:border-slate-300">
-                  <Download size={16} className="text-primary" />
-                  <div className="min-w-0 flex-1"><div className="truncate font-semibold text-foreground">{r.n}</div><div className="text-xs text-muted-foreground">{r.s}</div></div>
-                </button>
+            <div className="inline-flex rounded-lg border border-border bg-accent p-0.5 text-xs">
+              {(["resources", "discussion"] as const).map((t) => (
+                <button key={t} onClick={() => setTab(t)} className={`rounded-md px-3 py-1.5 font-semibold capitalize ${tab === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>{t}</button>
               ))}
             </div>
+
+            {tab === "resources" ? (
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {[{ n: "agent-graph.py", s: "2.4 KB" }, { n: "state-schema.pdf", s: "318 KB" }, { n: "project-files.zip", s: "1.2 MB" }, { n: "slide-deck.pdf", s: "4.7 MB" }].map((r) => (
+                  <button key={r.n} onClick={() => handleDownload(r.n)} className="flex items-center gap-2.5 rounded-lg border border-border bg-card p-3 text-left text-sm hover:border-slate-300">
+                    <Download size={16} className="text-primary" />
+                    <div className="min-w-0 flex-1"><div className="truncate font-semibold text-foreground">{r.n}</div><div className="text-xs text-muted-foreground">{downloading === r.n ? "Downloading…" : r.s}</div></div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-3 space-y-3">
+                {[
+                  { a: "Priya Nair", t: "How do you handle checkpoint replay when a tool call has side effects (e.g. sent an email)?" },
+                  { a: "David Kim", t: "Idempotency keys on every tool call — happy to share our wrapper in #resources." },
+                ].map((c, i) => (
+                  <div key={i} className="rounded-lg border border-border bg-card p-3 text-sm">
+                    <div className="font-semibold text-foreground">{c.a}</div>
+                    <div className="mt-0.5 text-muted-foreground">{c.t}</div>
+                  </div>
+                ))}
+                <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-2">
+                  <input placeholder="Ask a question about this lesson…" className="flex-1 bg-transparent px-2 text-sm outline-none" />
+                  <button className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white">Post</button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="mt-6 flex items-center justify-between rounded-xl border border-border bg-card p-4">
-            <button className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent">← Previous</button>
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-primary"><Zap size={12} /> +50 XP on complete</div>
-            <button className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90">Mark complete →</button>
+            <button onClick={goPrev} disabled={currentIndex <= 0} className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent disabled:opacity-40">← Previous</button>
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-primary"><Zap size={12} /> {lesson && completed.has(lesson.title) ? "Completed" : "+50 XP on complete"}</div>
+            <button onClick={markComplete} disabled={currentIndex >= flatLessons.length - 1 && !!lesson && completed.has(lesson.title)} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50">Mark complete →</button>
           </div>
         </div>
       </section>

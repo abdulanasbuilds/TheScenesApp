@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { TrendingUp, Users, DollarSign, GraduationCap, Eye, ChevronRight, Maximize2, X } from "lucide-react";
 import { useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -26,6 +26,8 @@ const GROWTH_CHART_DATA = MOCK_GROWTH_SERIES.map((members, i) => ({
 
 function CreatorHub() {
   const [showMockup, setShowMockup] = useState(false);
+  const [visibility, setVisibility] = useState<Record<string, boolean>>({ "AI & Automation": true, "Software Engineering": true, "No-Code Tech": false, "Digital Business": true, Marketing: false });
+  const nav = useNavigate();
   return (
     <div className="min-h-[calc(100vh-56px)] bg-background">
       <div className="mx-auto max-w-7xl p-6">
@@ -35,7 +37,7 @@ function CreatorHub() {
             <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground">AI Automation Architects</h1>
             <p className="text-sm text-muted-foreground">Owned by you · Public · Free access</p>
           </div>
-          <button className="rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-white">Preview as visitor</button>
+          <button onClick={() => nav({ to: "/app/feed" })} className="rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-white">Preview as visitor</button>
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -94,12 +96,16 @@ function CreatorHub() {
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
             <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase text-muted-foreground"><Eye size={12} /> Discovery visibility</div>
             <div className="mt-3 space-y-2">
-              {[{ k: "AI & Automation", on: true }, { k: "Software Engineering", on: true }, { k: "No-Code Tech", on: false }, { k: "Digital Business", on: true }, { k: "Marketing", on: false }].map((c) => (
-                <div key={c.k} className="flex items-center justify-between rounded-lg border border-border bg-card p-2.5">
-                  <span className="text-sm font-medium text-foreground">{c.k}</span>
-                  <span className={`relative h-5 w-9 rounded-full transition ${c.on ? "bg-primary" : "bg-slate-200"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-card shadow transition ${c.on ? "left-4" : "left-0.5"}`} />
-                  </span>
+              {Object.entries(visibility).map(([k, on]) => (
+                <div key={k} className="flex items-center justify-between rounded-lg border border-border bg-card p-2.5">
+                  <span className="text-sm font-medium text-foreground">{k}</span>
+                  <button
+                    aria-label={`Toggle visibility for ${k}`}
+                    onClick={() => setVisibility((v) => ({ ...v, [k]: !v[k] }))}
+                    className={`relative h-5 w-9 rounded-full transition ${on ? "bg-primary" : "bg-slate-200"}`}
+                  >
+                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-card shadow transition ${on ? "left-4" : "left-0.5"}`} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -110,7 +116,7 @@ function CreatorHub() {
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm lg:col-span-2">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-foreground">Top members this month</h2>
-              <button className="text-xs font-semibold text-primary">See all <ChevronRight size={12} className="inline" /></button>
+              <button onClick={() => nav({ to: "/app/members" })} className="text-xs font-semibold text-primary">See all <ChevronRight size={12} className="inline" /></button>
             </div>
             <div className="mt-3 overflow-hidden rounded-lg border border-border">
               <table className="w-full text-sm">
