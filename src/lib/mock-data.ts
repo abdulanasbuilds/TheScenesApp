@@ -31,14 +31,45 @@ export const MOCK_CHANNELS = [
 ];
 
 export const MOCK_ONLINE = [
-  { name: "Alex Rivera", role: "AI Architect", avatar: "AR", status: "leader", xp: 2400, streak: 28, posts: 42 },
-  { name: "Sarah Jenkins", role: "Growth Lead", avatar: "SJ", status: "online", xp: 2220, streak: 27, posts: 39 },
-  { name: "David Kim", role: "Staff Eng", avatar: "DK", status: "online", xp: 2040, streak: 26, posts: 36 },
-  { name: "Elena Rostova", role: "Creator", avatar: "ER", status: "leader", xp: 1860, streak: 25, posts: 33 },
-  { name: "Yuki Tanaka", role: "Designer", avatar: "YT", status: "online", xp: 1680, streak: 24, posts: 30 },
-  { name: "Priya Nair", role: "ML Eng", avatar: "PN", status: "online", xp: 1500, streak: 23, posts: 27 },
-  { name: "Marcus Bell", role: "Marketer", avatar: "MB", status: "online", xp: 1320, streak: 22, posts: 24 },
-  { name: "Jonas Weiss", role: "Founder", avatar: "JW", status: "online", xp: 1140, streak: 21, posts: 21 },
+  { name: "Alex Rivera", role: "AI Architect", avatar: "AR", status: "leader", xp: 2400, streak: 28, posts: 42, email: "alex.rivera@example.com", joinedDate: "2025-10-12", lastActive: "2 mins ago" },
+  { name: "Sarah Jenkins", role: "Growth Lead", avatar: "SJ", status: "online", xp: 2220, streak: 27, posts: 39, email: "sarah.jenkins@example.com", joinedDate: "2025-11-04", lastActive: "4 hours ago" },
+  { name: "David Kim", role: "Staff Eng", avatar: "DK", status: "online", xp: 2040, streak: 26, posts: 36, email: "david.kim@example.com", joinedDate: "2026-01-15", lastActive: "1 day ago" },
+  { name: "Elena Rostova", role: "Creator", avatar: "ER", status: "leader", xp: 1860, streak: 25, posts: 33, email: "elena.rostova@example.com", joinedDate: "2026-01-22", lastActive: "Just now" },
+  { name: "Yuki Tanaka", role: "Designer", avatar: "YT", status: "online", xp: 1680, streak: 24, posts: 30, email: "yuki.tanaka@example.com", joinedDate: "2026-02-08", lastActive: "3 hours ago" },
+  { name: "Priya Nair", role: "ML Eng", avatar: "PN", status: "online", xp: 1500, streak: 23, posts: 27, email: "priya.nair@example.com", joinedDate: "2026-03-01", lastActive: "1 hour ago" },
+  { name: "Marcus Bell", role: "Marketer", avatar: "MB", status: "offline", xp: 1320, streak: 22, posts: 24, email: "marcus.bell@example.com", joinedDate: "2026-03-19", lastActive: "2 days ago" },
+  { name: "Jonas Weiss", role: "Founder", avatar: "JW", status: "offline", xp: 1140, streak: 21, posts: 21, email: "jonas.weiss@example.com", joinedDate: "2026-04-02", lastActive: "5 days ago" },
+];
+
+export const MOCK_BADGES = [
+  { id: 1, name: "30 Day Streak", desc: "Logged in consecutively for 30 days.", icon: "flame", tone: "emerald", earned: true, meta: "Earned today" },
+  { id: 2, name: "Course Master", desc: "Completed 5 advanced modules.", icon: "graduation", tone: "sky", earned: true, meta: "Earned 2 days ago" },
+  { id: 3, name: "Top Contributor", desc: "Receive 50 upvotes on forum posts.", icon: "message", tone: "slate", earned: false, progress: 40, target: 50 },
+  { id: 4, name: "Bug Hunter", desc: "Report a confirmed platform bug.", icon: "bug", tone: "slate", earned: false, locked: true },
+];
+
+export const MOCK_COMMUNITY_RANKS = [
+  { id: 1, name: "AI Automation Architects", rank: 12, members: 1240, progressToTop10: 78, pointsToTop10: 450, tone: "emerald" },
+  { id: 2, name: "Full-Stack Engineers", rank: 45, members: 890, progressToTop10: 32, pointsToTop10: 1200, tone: "amber" },
+];
+
+export const MOCK_PAYMENT_METHODS = [
+  { id: 1, label: "Chase Checking", detail: "•••• 4567", type: "bank", isDefault: true },
+  { id: 2, label: "PayPal", detail: "user@example.com", type: "paypal", isDefault: false },
+];
+
+export const MOCK_MONTHLY_EARNINGS = [
+  { month: "Feb", amount: 4100 },
+  { month: "Mar", amount: 5200 },
+  { month: "Apr", amount: 4700 },
+  { month: "May", amount: 6300 },
+  { month: "Jun", amount: 5900 },
+  { month: "Jul", amount: 7550 },
+];
+
+export const MOCK_SEARCH_COURSES = [
+  { id: 1, title: "Designing for High-Density Data", desc: "Learn to structure complex enterprise applications using modern CSS grid and layout systems.", lessons: 12, progress: 45, tone: "from-sky-200 to-blue-100", tag: "PRO" },
+  { id: 2, title: "Design Systems Fundamentals", desc: "Build robust shared component libraries that scale across multiple product teams.", lessons: 8, progress: 0, tone: "from-violet-200 to-indigo-100", instructor: "Sarah Jenkins" },
 ];
 
 export const MOCK_CALENDAR_EVENTS = [

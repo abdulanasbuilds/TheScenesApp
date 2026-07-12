@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, X, ChevronLeft, ChevronRight, Trash2, Radio, Clock3, Users2 } from "lucide-react";
+import { Plus, X, ChevronLeft, ChevronRight, Trash2, Radio, Clock3, Users2, StickyNote } from "lucide-react";
 import { useMemo, useState } from "react";
 import { MOCK_CALENDAR_EVENTS } from "@/lib/mock-data";
 import { useAppStore } from "@/lib/app-store";
@@ -12,51 +12,64 @@ export const Route = createFileRoute("/app/calendar")({
   component: CalendarPage,
 });
 
-type CalEvent = { id: number; title: string; date: string; type: "session" | "deadline" | "meetup" };
+type CalEvent = { id: number; title: string; date: string; time?: string; type: "session" | "deadline" | "meetup" | "personal" };
+type ViewMode = "month" | "week" | "day";
+type CalKey = "session" | "deadline" | "meetup" | "personal";
 
-const TYPE_STYLES: Record<CalEvent["type"], { dot: string; chip: string; label: string; icon: typeof Radio }> = {
-  session: { dot: "bg-primary", chip: "bg-sky-100 text-sky-700", label: "Live session", icon: Radio },
-  deadline: { dot: "bg-rose-500", chip: "bg-rose-100 text-rose-700", label: "Deadline", icon: Clock3 },
-  meetup: { dot: "bg-emerald-500", chip: "bg-emerald-100 text-emerald-700", label: "Meetup", icon: Users2 },
+const TYPE_STYLES: Record<CalKey, { dot: string; chip: string; label: string; listLabel: string; icon: typeof Radio }> = {
+  session: { dot: "bg-sky-500", chip: "bg-sky-100 text-sky-700", label: "Live session", listLabel: "Live Sessions", icon: Radio },
+  deadline: { dot: "bg-emerald-500", chip: "bg-emerald-100 text-emerald-700", label: "Deadline", listLabel: "Course Deadlines", icon: Clock3 },
+  meetup: { dot: "bg-amber-500", chip: "bg-amber-100 text-amber-700", label: "Meetup", listLabel: "Community Meetups", icon: Users2 },
+  personal: { dot: "bg-violet-500", chip: "bg-violet-100 text-violet-700", label: "Personal note", listLabel: "Personal Notes", icon: StickyNote },
 };
 
 function pad(n: number) { return n.toString().padStart(2, "0"); }
 function toKey(y: number, m: number, d: number) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
+function parseKey(key: string) { const [y, m, d] = key.split("-").map(Number); return new Date(y, m - 1, d); }
 
 function CalendarPage() {
   const store = useAppStore();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
-  const [type, setType] = useState<CalEvent["type"]>("session");
+  const [time, setTime] = useState("");
+  const [type, setType] = useState<CalKey>("session");
   const [events, setEvents] = useState<CalEvent[]>(MOCK_CALENDAR_EVENTS as CalEvent[]);
+  const [view, setView] = useState<ViewMode>("month");
   const [cursor, setCursor] = useState(() => { const d = new Date(2026, 6, 1); return { year: d.getFullYear(), month: d.getMonth() }; });
-  const [selected, setSelected] = useState<string | null>(null);
+  const todayKey = "2026-07-12";
+  const [selected, setSelected] = useState<string>(todayKey);
+  const [visible, setVisible] = useState<Record<CalKey, boolean>>({ session: true, deadline: true, meetup: true, personal: true });
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalEvent[]>();
     for (const e of events) {
+      if (!visible[e.type]) continue;
       const list = map.get(e.date) || [];
       list.push(e);
       map.set(e.date, list);
     }
     return map;
-  }, [events]);
+  }, [events, visible]);
 
   const monthLabel = new Date(cursor.year, cursor.month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
   const firstDay = new Date(cursor.year, cursor.month, 1).getDay();
   const daysInMonth = new Date(cursor.year, cursor.month + 1, 0).getDate();
-  const todayKey = "2026-07-12";
 
   const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   while (cells.length % 7 !== 0) cells.push(null);
 
+  // Mini "jump to" calendar for the same month
+  const miniFirstDay = firstDay;
+  const miniCells: (number | null)[] = [...Array(miniFirstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+  while (miniCells.length % 7 !== 0) miniCells.push(null);
+
   const submit = () => {
     if (!title.trim() || !date) return;
-    const created: CalEvent = { id: Date.now(), title: title.trim(), date, type };
+    const created: CalEvent = { id: Date.now(), title: title.trim(), date, time: time.trim() || undefined, type };
     setEvents((e) => [...e, created]);
     store.pushNotification(`Event "${created.title}" was added to the calendar on ${created.date}.`);
-    setTitle(""); setDate(""); setType("session"); setOpen(false);
+    setTitle(""); setDate(""); setTime(""); setType("session"); setOpen(false);
     setSelected(created.date);
   };
 
@@ -72,92 +85,172 @@ function CalendarPage() {
     });
   };
 
-  const upcoming = [...events].sort((a, b) => a.date.localeCompare(b.date)).filter((e) => e.date >= todayKey).slice(0, 5);
-  const selectedEvents = selected ? eventsByDate.get(selected) || [] : [];
+  const changeWeek = (delta: number) => {
+    const d = parseKey(selected);
+    d.setDate(d.getDate() + delta * 7);
+    setSelected(toKey(d.getFullYear(), d.getMonth(), d.getDate()));
+    setCursor({ year: d.getFullYear(), month: d.getMonth() });
+  };
+
+  const changeDay = (delta: number) => {
+    const d = parseKey(selected);
+    d.setDate(d.getDate() + delta);
+    setSelected(toKey(d.getFullYear(), d.getMonth(), d.getDate()));
+    setCursor({ year: d.getFullYear(), month: d.getMonth() });
+  };
+
+  const jumpTo = (day: number) => {
+    const key = toKey(cursor.year, cursor.month, day);
+    setSelected(key);
+  };
+
+  const weekDates = useMemo(() => {
+    const d = parseKey(selected);
+    const start = new Date(d);
+    start.setDate(d.getDate() - d.getDay());
+    return Array.from({ length: 7 }, (_, i) => { const dd = new Date(start); dd.setDate(start.getDate() + i); return dd; });
+  }, [selected]);
+
+  const selectedEvents = eventsByDate.get(selected) || [];
+  const toggleVisible = (k: CalKey) => setVisible((v) => ({ ...v, [k]: !v[k] }));
 
   return (
     <div className="mx-auto max-w-7xl px-3 py-6 sm:px-6 sm:py-8">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="truncate text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Community Calendar</h1>
           <p className="mt-1 text-sm text-muted-foreground">Live sessions, course deadlines, and community meetups.</p>
         </div>
-        <button onClick={() => { setDate(""); setOpen(true); }} className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-primary/90"><Plus size={14} />Add Event</button>
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="flex rounded-lg border border-border bg-card p-0.5">
+            {(["month", "week", "day"] as ViewMode[]).map((v) => (
+              <button key={v} onClick={() => setView(v)} className={`rounded-md px-2.5 py-1.5 text-xs font-semibold capitalize ${view === v ? "bg-primary text-white" : "text-muted-foreground hover:bg-accent"}`}>{v}</button>
+            ))}
+          </div>
+          <button onClick={() => { setDate(selected); setOpen(true); }} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-primary/90"><Plus size={14} />Add Event</button>
+        </div>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_280px]">
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <button onClick={() => changeMonth(-1)} aria-label="Previous month" className="rounded-md p-1.5 text-muted-foreground hover:bg-accent"><ChevronLeft size={16} /></button>
-            <div className="text-sm font-semibold text-foreground">{monthLabel}</div>
-            <button onClick={() => changeMonth(1)} aria-label="Next month" className="rounded-md p-1.5 text-muted-foreground hover:bg-accent"><ChevronRight size={16} /></button>
+      <div className="mt-6 grid gap-4 lg:grid-cols-[220px_1fr]">
+        <div className="space-y-4">
+          <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] font-semibold uppercase text-muted-foreground">Jump to</span>
+            </div>
+            <div className="mt-2 grid grid-cols-7 gap-y-1 text-center text-[10px]">
+              {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => <div key={d} className="font-semibold text-muted-foreground">{d}</div>)}
+              {miniCells.map((day, i) => {
+                if (day === null) return <div key={i} />;
+                const key = toKey(cursor.year, cursor.month, day);
+                const isToday = key === todayKey;
+                const isSelected = key === selected;
+                return (
+                  <button key={i} onClick={() => jumpTo(day)} className={`mx-auto grid h-6 w-6 place-items-center rounded-full text-[11px] ${isSelected ? "bg-primary text-white font-semibold" : isToday ? "border border-primary text-primary font-semibold" : "text-foreground hover:bg-accent"}`}>{day}</button>
+                );
+              })}
+            </div>
           </div>
-          <div className="grid grid-cols-7 border-b border-border text-center text-[10px] font-semibold uppercase text-muted-foreground">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <div key={d} className="py-2">{d}</div>)}
-          </div>
-          <div className="grid grid-cols-7">
-            {cells.map((day, i) => {
-              if (day === null) return <div key={i} className="h-20 border-b border-r border-border bg-background/40 sm:h-24" />;
-              const key = toKey(cursor.year, cursor.month, day);
-              const dayEvents = eventsByDate.get(key) || [];
-              const isToday = key === todayKey;
-              const isSelected = key === selected;
-              return (
-                <button
-                  key={i}
-                  onClick={() => setSelected(key)}
-                  className={`flex h-20 flex-col items-start gap-1 border-b border-r border-border p-1.5 text-left transition sm:h-24 ${isSelected ? "bg-sky-50" : "hover:bg-accent"}`}
-                >
-                  <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] font-semibold ${isToday ? "bg-primary text-white" : "text-foreground"}`}>{day}</span>
-                  <div className="flex w-full flex-1 flex-col gap-0.5 overflow-hidden">
-                    {dayEvents.slice(0, 2).map((e) => (
-                      <span key={e.id} className={`truncate rounded px-1 text-[9px] font-semibold ${TYPE_STYLES[e.type].chip}`}>{e.title}</span>
-                    ))}
-                    {dayEvents.length > 2 && <span className="text-[9px] font-semibold text-muted-foreground">+{dayEvents.length - 2} more</span>}
-                  </div>
-                </button>
-              );
-            })}
+
+          <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+            <span className="px-1 text-[11px] font-semibold uppercase text-muted-foreground">Calendars</span>
+            <div className="mt-2 space-y-2">
+              {(Object.keys(TYPE_STYLES) as CalKey[]).map((k) => (
+                <label key={k} className="flex cursor-pointer items-center gap-2 px-1 text-xs font-medium text-foreground">
+                  <input type="checkbox" checked={visible[k]} onChange={() => toggleVisible(k)} className="h-3.5 w-3.5 accent-primary" />
+                  <span className={`h-2 w-2 rounded-full ${TYPE_STYLES[k].dot}`} />
+                  {TYPE_STYLES[k].listLabel}
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-            <h2 className="text-sm font-semibold text-foreground">Upcoming</h2>
-            {upcoming.length === 0 && <p className="mt-2 text-xs text-muted-foreground">No upcoming events.</p>}
-            <ul className="mt-2 space-y-2">
-              {upcoming.map((e) => {
-                const Icon = TYPE_STYLES[e.type].icon;
-                return (
-                  <li key={e.id} className="flex items-start gap-2 rounded-lg border border-border p-2">
-                    <span className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md ${TYPE_STYLES[e.type].chip}`}><Icon size={12} /></span>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-xs font-semibold text-foreground">{e.title}</div>
-                      <div className="text-[10px] text-muted-foreground">{e.date}</div>
-                    </div>
-                    <button onClick={() => removeEvent(e.id)} aria-label="Remove event" className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-rose-600"><Trash2 size={12} /></button>
-                  </li>
-                );
-              })}
-            </ul>
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <button onClick={() => (view === "month" ? changeMonth(-1) : view === "week" ? changeWeek(-1) : changeDay(-1))} aria-label="Previous" className="rounded-md p-1.5 text-muted-foreground hover:bg-accent"><ChevronLeft size={16} /></button>
+            <div className="text-sm font-semibold text-foreground">
+              {view === "month" ? monthLabel : view === "week" ? `Week of ${weekDates[0].toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : parseKey(selected).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+            </div>
+            <button onClick={() => (view === "month" ? changeMonth(1) : view === "week" ? changeWeek(1) : changeDay(1))} aria-label="Next" className="rounded-md p-1.5 text-muted-foreground hover:bg-accent"><ChevronRight size={16} /></button>
           </div>
 
-          {selected && (
-            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-foreground">{selected}</h2>
-                <button onClick={() => setSelected(null)} className="rounded p-1 text-muted-foreground hover:bg-accent"><X size={12} /></button>
+          {view === "month" && (
+            <>
+              <div className="grid grid-cols-7 border-b border-border text-center text-[10px] font-semibold uppercase text-muted-foreground">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <div key={d} className="py-2">{d}</div>)}
               </div>
+              <div className="grid grid-cols-7">
+                {cells.map((day, i) => {
+                  if (day === null) return <div key={i} className="h-20 border-b border-r border-border bg-background/40 sm:h-24" />;
+                  const key = toKey(cursor.year, cursor.month, day);
+                  const dayEvents = eventsByDate.get(key) || [];
+                  const isToday = key === todayKey;
+                  const isSelected = key === selected;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setSelected(key)}
+                      className={`flex h-20 flex-col items-start gap-1 border-b border-r border-border p-1.5 text-left transition sm:h-24 ${isSelected ? "bg-sky-50" : "hover:bg-accent"}`}
+                    >
+                      <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] font-semibold ${isToday ? "bg-primary text-white" : "text-foreground"}`}>{day}</span>
+                      <div className="flex w-full flex-1 flex-col gap-0.5 overflow-hidden">
+                        {dayEvents.slice(0, 2).map((e) => (
+                          <span key={e.id} className={`truncate rounded px-1 text-[9px] font-semibold ${TYPE_STYLES[e.type].chip}`}>{e.time ? `${e.time} - ${e.title}` : e.title}</span>
+                        ))}
+                        {dayEvents.length > 2 && <span className="text-[9px] font-semibold text-muted-foreground">+{dayEvents.length - 2} more</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {view === "week" && (
+            <div className="grid grid-cols-7">
+              {weekDates.map((d, i) => {
+                const key = toKey(d.getFullYear(), d.getMonth(), d.getDate());
+                const dayEvents = eventsByDate.get(key) || [];
+                const isToday = key === todayKey;
+                const isSelected = key === selected;
+                return (
+                  <button key={i} onClick={() => setSelected(key)} className={`flex min-h-[260px] flex-col items-start gap-1.5 border-b border-r border-border p-2 text-left align-top last:border-r-0 ${isSelected ? "bg-sky-50" : "hover:bg-accent"}`}>
+                    <div className="flex w-full items-center justify-between">
+                      <span className="text-[10px] font-semibold uppercase text-muted-foreground">{d.toLocaleDateString("en-US", { weekday: "short" })}</span>
+                      <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] font-semibold ${isToday ? "bg-primary text-white" : "text-foreground"}`}>{d.getDate()}</span>
+                    </div>
+                    <div className="flex w-full flex-col gap-1">
+                      {dayEvents.map((e) => (
+                        <span key={e.id} className={`truncate rounded px-1.5 py-1 text-[10px] font-semibold ${TYPE_STYLES[e.type].chip}`}>{e.time ? `${e.time} · ` : ""}{e.title}</span>
+                      ))}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {view === "day" && (
+            <div className="p-4">
               {selectedEvents.length === 0 ? (
-                <p className="mt-2 text-xs text-muted-foreground">No events this day.</p>
+                <p className="py-8 text-center text-sm text-muted-foreground">No events scheduled for this day.</p>
               ) : (
-                <ul className="mt-2 space-y-1.5">
-                  {selectedEvents.map((e) => (
-                    <li key={e.id} className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ${TYPE_STYLES[e.type].chip}`}>{e.title}</li>
-                  ))}
+                <ul className="space-y-2">
+                  {selectedEvents.map((e) => {
+                    const Icon = TYPE_STYLES[e.type].icon;
+                    return (
+                      <li key={e.id} className="flex items-start gap-3 rounded-lg border border-border p-3">
+                        <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md ${TYPE_STYLES[e.type].chip}`}><Icon size={14} /></span>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-semibold text-foreground">{e.title}</div>
+                          <div className="text-xs text-muted-foreground">{e.time ? `${e.time} · ` : ""}{TYPE_STYLES[e.type].label}</div>
+                        </div>
+                        <button onClick={() => removeEvent(e.id)} aria-label="Remove event" className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-rose-600"><Trash2 size={14} /></button>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
-              <button onClick={() => { setDate(selected); setOpen(true); }} className="mt-3 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground hover:bg-accent">+ Add event on this day</button>
             </div>
           )}
         </div>
@@ -175,14 +268,20 @@ function CalendarPage() {
                 <label className="text-xs font-semibold text-muted-foreground">Title</label>
                 <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Weekly AMA" className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
               </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground">Date</label>
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground">Time (optional)</label>
+                  <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
+                </div>
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground">Type</label>
-                <div className="mt-1 flex gap-1.5">
-                  {(Object.keys(TYPE_STYLES) as CalEvent["type"][]).map((t) => (
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {(Object.keys(TYPE_STYLES) as CalKey[]).map((t) => (
                     <button key={t} onClick={() => setType(t)} className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold ${type === t ? "border-primary bg-sky-50 text-primary" : "border-border text-muted-foreground"}`}>{TYPE_STYLES[t].label}</button>
                   ))}
                 </div>
