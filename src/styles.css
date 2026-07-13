@@ -125,15 +125,12 @@
     display: none;
   }
   
-  /* Native mobile scroll snap behavior */
+}
+
+/* Native mobile scroll snap behavior */
+@layer components {
   .snap-scroll {
-    @apply overflow-x-auto snap-x snap-mandatory;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .snap-scroll::-webkit-scrollbar {
-    display: none;
+    @apply overflow-x-auto snap-x snap-mandatory scrollbar-hide;
   }
   
   .snap-item {
