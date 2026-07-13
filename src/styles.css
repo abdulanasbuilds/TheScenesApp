@@ -69,9 +69,33 @@
     @apply font-extrabold tracking-tighter text-[#151515];
   }
   
+  h1 {
+    @apply text-4xl sm:text-5xl;
+  }
+  
+  h2 {
+    @apply text-3xl sm:text-4xl;
+  }
+  
+  h3 {
+    @apply text-2xl sm:text-3xl;
+  }
+  
+  h4 {
+    @apply text-xl;
+  }
+  
+  h5 {
+    @apply text-lg;
+  }
+  
+  h6 {
+    @apply text-base;
+  }
+  
   /* Remove excessive vertical margins for high-density layouts */
   h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p {
-    @apply mt-1.5;
+    @apply mt-2.5;
   }
   
   /* Crisp borders instead of shadows */
@@ -83,6 +107,14 @@
     @apply shadow-none border border-neutral-100;
   }
   
+  .shadow-lg {
+    @apply shadow-none border border-neutral-100;
+  }
+  
+  .shadow-md {
+    @apply shadow-none border border-neutral-100;
+  }
+  
   /* Hide default scrollbars for horizontal scroll areas */
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -91,5 +123,14 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* Native mobile scroll snap behavior */
+  .snap-scroll {
+    @apply overflow-x-auto snap-x snap-mandatory scrollbar-hide;
+  }
+  
+  .snap-item {
+    @apply snap-start shrink-0;
   }
 }

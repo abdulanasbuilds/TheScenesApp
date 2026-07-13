@@ -26,18 +26,18 @@ function PricingPage() {
       <PublicHeader />
       <main className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Simple pricing for the launch era.</h1>
-          <p className="mt-4 text-lg font-medium text-muted-foreground">Start free, validate your niche, then upgrade when your community needs more control.</p>
+          <h1 className="text-4xl font-extrabold tracking-tighter text-[#151515] sm:text-5xl">Simple pricing for the launch era.</h1>
+          <p className="mt-2.5 text-base font-medium text-muted-foreground">Start free, validate your niche, then upgrade when your community needs more control.</p>
         </div>
         <div className="mt-10 grid gap-4 lg:grid-cols-3">
           {PLANS.map((plan) => (
-            <div key={plan.name} className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
-              <div className="mt-3 text-3xl font-bold text-foreground">{plan.price}</div>
+            <div key={plan.name} className="rounded-xl border border-neutral-100 bg-card p-6">
+              <h2 className="text-xl font-extrabold tracking-tighter text-[#151515]">{plan.name}</h2>
+              <div className="mt-2.5 text-3xl font-extrabold text-foreground">{plan.price}</div>
               <ul className="mt-5 space-y-3 text-sm text-foreground">
                 {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" />{feature}</li>)}
               </ul>
-              <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white hover:bg-primary/90">{plan.cta}</Link>
+              <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-full bg-primary px-4 py-3 text-center text-sm font-extrabold text-white border border-transparent hover:bg-primary/90">{plan.cta}</Link>
             </div>
           ))}
         </div>

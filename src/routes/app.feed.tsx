@@ -67,9 +67,9 @@ function CommunityHubInner() {
           </div>
           <h2 className="mt-4 text-lg font-semibold text-foreground">No community yet</h2>
           <p className="mt-2 text-sm text-muted-foreground">Create your own community to get started.</p>
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
-            <button onClick={() => nav({ to: "/create-community" })} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Create a community</button>
-            <button onClick={() => nav({ to: "/discover" })} className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-accent">Explore</button>
+          <div className="mt-4 flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-center">
+            <button onClick={() => nav({ to: "/create-community" })} className="rounded-full bg-primary px-4 py-2.5 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90">Create a community</button>
+            <button onClick={() => nav({ to: "/discover" })} className="rounded-full border border-neutral-200 bg-card px-4 py-2.5 text-sm font-extrabold text-foreground hover:bg-neutral-50">Explore</button>
           </div>
         </div>
       </div>

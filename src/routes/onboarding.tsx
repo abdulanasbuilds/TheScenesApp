@@ -51,7 +51,7 @@ function Onboarding() {
   return (
     <div className="min-h-screen bg-background">
       {/* Progress */}
-      <div className="sticky top-0 z-30 border-b border-border bg-card">
+      <div className="sticky top-0 z-30 border-b border-neutral-100 bg-card">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           <span className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-xs font-bold text-white">S</span>
           <div className="flex-1">
