@@ -41,8 +41,8 @@ function UploadedMockupGallery() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <div className="text-xs font-semibold uppercase tracking-wider text-primary">Live workspace previews</div>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Every SukaSpace screen, shipped as a production asset.</h2>
-          <p className="mt-3 text-base font-medium text-muted-foreground">All {MOCKUP_GALLERY.length} uploaded human-designed mockups are permanently hosted and wired into the matching product route.</p>
+          <h2 className="mt-1.5 text-3xl font-extrabold tracking-tighter text-[#151515] sm:text-4xl">Every SukaSpace screen, shipped as a production asset.</h2>
+          <p className="mt-2 text-base font-medium text-muted-foreground">All {MOCKUP_GALLERY.length} uploaded human-designed mockups are permanently hosted and wired into the matching product route.</p>
         </div>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {MOCKUP_GALLERY.map((card) => (
@@ -52,7 +52,7 @@ function UploadedMockupGallery() {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="overflow-hidden rounded-xl border border-border bg-card text-left shadow-sm hover:border-border/80"
+              className="overflow-hidden rounded-xl border border-neutral-100 bg-card text-left hover:border-neutral-200"
             >
               <img src={card.src} alt={`SukaSpace ${card.label} mockup`} loading="lazy" className="aspect-[5/4] w-full border-b border-border object-cover" />
               <div className="p-4">
@@ -87,23 +87,23 @@ function Hero() {
     <section className="relative overflow-hidden border-b border-border">
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-14 sm:px-6 sm:pt-24 sm:pb-20">
         <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 120, damping: 20 }} className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
             <Sparkles size={12} className="text-primary" /> Now onboarding AI, engineering & tech creators
           </span>
-          <h1 className="mt-5 text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
+          <h1 className="mt-4 text-4xl font-extrabold tracking-tighter text-[#151515] sm:text-6xl">
             Community <span className="text-primary">and</span> courses,<br className="hidden sm:block" /> engineered for the AI era.
           </h1>
-          <p className="mt-5 text-lg font-medium text-muted-foreground">
+          <p className="mt-3 text-base font-medium text-muted-foreground">
             SukaSpace fuses linear course tracking with rich multi-channel spaces so experts can teach, monetize, and build a real community — without the tech friction.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}>
-              <Link to="/discover" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">
+          <div className="mt-8 flex w-full flex-col items-center justify-center gap-2.5 sm:w-auto sm:flex-row">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="w-full sm:w-auto">
+              <Link to="/discover" className="flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90 w-full">
                 Explore Communities <ArrowRight size={16} />
               </Link>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}>
-          <Link to="/create-community" className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-sm hover:bg-accent">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="w-full sm:w-auto">
+          <Link to="/create-community" className="flex items-center justify-center gap-2 rounded-full border border-neutral-200 bg-card px-6 py-3 text-sm font-extrabold text-foreground hover:bg-neutral-50 w-full">
                 Create a Community
               </Link>
             </motion.div>
@@ -131,16 +131,16 @@ function FeatureMatrix() {
     <section id="features" className="border-b border-border bg-card">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">One platform. Community + courses.</h2>
-          <p className="mt-3 text-lg font-medium text-muted-foreground">The rigor of Skool. The channel depth of Circle. The polish of a Linear-grade utility.</p>
+          <h2 className="text-3xl font-extrabold tracking-tighter text-foreground sm:text-4xl">One platform. Community + courses.</h2>
+          <p className="mt-1.5 text-base font-medium text-muted-foreground">The rigor of Skool. The channel depth of Circle. The polish of a Linear-grade utility.</p>
         </div>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f) => (
-            <div key={f.title} className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <div key={f.title} className="rounded-xl border border-neutral-100 bg-card p-5">
               <div className="grid h-9 w-9 place-items-center rounded-lg bg-foreground text-primary-foreground">
                 <f.icon size={16} />
               </div>
-              <div className="mt-4 text-base font-semibold text-foreground">{f.title}</div>
+              <div className="mt-3 text-base font-extrabold tracking-tighter text-foreground">{f.title}</div>
               <div className="mt-1 text-sm text-muted-foreground">{f.body}</div>
             </div>
           ))}
@@ -155,11 +155,11 @@ function CTA() {
   return (
     <section className="bg-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Claim your niche before someone else does.</h2>
-        <p className="mt-3 text-base text-border">Launch your community + course in a single afternoon. Free while we're in early access.</p>
-        <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link to="/discover" className="rounded-xl border border-white/20 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-white/90">Explore Communities</Link>
-          <Link to="/create-community" className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-[#0369A1]">Create a Community <ChevronRight className="inline" size={14} /></Link>
+        <h2 className="text-3xl font-extrabold tracking-tighter text-white sm:text-4xl">Claim your niche before someone else does.</h2>
+        <p className="mt-2.5 text-base text-neutral-300">Launch your community + course in a single afternoon. Free while we're in early access.</p>
+        <div className="mt-7 flex w-full flex-col items-center justify-center gap-2.5 sm:w-auto sm:flex-row">
+          <Link to="/discover" className="rounded-full border border-white/20 bg-white px-6 py-3 text-sm font-extrabold text-slate-900 hover:bg-white/90 w-full sm:w-auto">Explore Communities</Link>
+          <Link to="/create-community" className="rounded-full bg-primary px-6 py-3 text-sm font-extrabold text-white hover:bg-primary/90 border border-transparent w-full sm:w-auto flex items-center justify-center gap-2">Create a Community <ChevronRight size={14} /></Link>
         </div>
       </div>
     </section>
@@ -169,12 +169,12 @@ function CTA() {
 function Footer() {
   return (
     <footer className="border-t border-border bg-card">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-8 sm:flex-row sm:px-6">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2.5 px-4 py-6 sm:flex-row sm:px-6">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           <span className="grid h-6 w-6 place-items-center rounded-md bg-slate-900 text-[10px] font-bold text-white">S</span>
           <span>© 2026 SukaSpace — Community + Courses for the AI era.</span>
         </div>
-        <div className="flex gap-5 text-xs text-muted-foreground">
+        <div className="flex gap-5 text-xs font-medium text-muted-foreground">
           <Link to="/about" className="hover:text-foreground">About</Link>
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link to="/discover" className="hover:text-foreground">Discover</Link>

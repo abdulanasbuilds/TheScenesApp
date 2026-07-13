@@ -48,9 +48,9 @@ export function AppShell() {
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-card md:flex">
-        <div className="flex h-14 items-center gap-2 border-b border-border px-4">
+        <div className="flex h-14 items-center gap-2 border-b border-neutral-100 px-4">
           <span className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-xs font-bold text-white">S</span>
-          <span className="text-sm font-semibold tracking-tight text-foreground">SukaSpace</span>
+          <span className="text-sm font-extrabold tracking-tighter text-foreground">SukaSpace</span>
         </div>
         <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
           {NAV.map(item => {
@@ -60,7 +60,7 @@ export function AppShell() {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${active ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-semibold transition-colors ${active ? "bg-neutral-100 text-foreground" : "text-muted-foreground hover:bg-neutral-50 hover:text-foreground"}`}
               >
                 <Icon size={16} className={active ? "text-primary" : "text-muted-foreground"} />
                 {item.label}
@@ -85,10 +85,10 @@ export function AppShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 grid h-14 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-border bg-card/90 px-3 backdrop-blur sm:gap-3 sm:px-4">
+        <header className="sticky top-0 z-30 grid h-14 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-neutral-100 bg-card/90 px-3 backdrop-blur sm:gap-3 sm:px-4">
           <Link
             to="/app/search"
-            className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-accent px-3 py-1.5 text-sm text-muted-foreground hover:border-primary/40 md:max-w-md"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-sm text-muted-foreground hover:border-neutral-300 md:max-w-md"
           >
             <Search size={14} className="shrink-0" />
             <span className="truncate">Search communities, courses, people…</span>
@@ -97,7 +97,7 @@ export function AppShell() {
             <button
               aria-label="Notifications"
               onClick={() => setShowNotifs(v => !v)}
-              className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground hover:bg-accent"
+              className="relative rounded-lg border border-neutral-200 bg-card p-2 text-muted-foreground hover:bg-neutral-50"
             >
               <Bell size={16} />
               {store.unreadCount > 0 && (
@@ -109,7 +109,7 @@ export function AppShell() {
             {showNotifs && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setShowNotifs(false)} />
-                <div className="absolute right-0 top-11 z-40 w-80 rounded-xl border border-border bg-card p-2 shadow-lg">
+                <div className="absolute right-0 top-11 z-40 w-80 rounded-xl border border-neutral-100 bg-card p-2">
                   <div className="flex items-center justify-between px-2 py-1.5">
                     <span className="text-sm font-semibold text-foreground">Notifications</span>
                     <button onClick={() => store.markAllNotificationsRead()} className="text-xs font-semibold text-primary hover:underline">Mark all read</button>
@@ -137,12 +137,12 @@ export function AppShell() {
         </header>
 
         {/* Mobile bottom nav */}
-        <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-card px-1 py-1.5 md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-neutral-100 bg-card px-1 py-1.5 md:hidden">
           {MOBILE_NAV.map(n => {
             const Icon = n.icon;
             const active = loc.pathname.startsWith(n.to);
             return (
-              <Link key={n.to} to={n.to} className={`flex min-w-0 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[10px] font-medium ${active ? "bg-sky-50 text-primary" : "text-muted-foreground"}`}>
+              <Link key={n.to} to={n.to} className={`flex min-w-0 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[10px] font-semibold ${active ? "bg-neutral-100 text-primary" : "text-muted-foreground"}`}>
                 <Icon size={18} className="shrink-0" />
                 <span className="max-w-full truncate">{n.label === "Creator Hub" ? "Creator" : n.label}</span>
               </Link>
@@ -151,12 +151,12 @@ export function AppShell() {
         </div>
 
         {/* Mobile scrollable nav */}
-        <nav className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto border-b border-border bg-card px-3 py-2 md:hidden">
+        <nav className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto scrollbar-hide border-b border-neutral-100 bg-card px-3 py-2 md:hidden snap-x snap-mandatory">
           {NAV.map(n => {
             const active = loc.pathname.startsWith(n.to);
             const Icon = n.icon;
             return (
-              <Link key={n.to} to={n.to} className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${active ? "border-primary bg-sky-50 text-primary" : "border-border bg-card text-muted-foreground"}`}>
+              <Link key={n.to} to={n.to} className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-extrabold ${active ? "border-primary bg-neutral-100 text-primary" : "border-neutral-200 bg-card text-muted-foreground"}`}>
                 <Icon size={13} />{n.label === "Creator Hub" ? "Creator" : n.label}
               </Link>
             );
