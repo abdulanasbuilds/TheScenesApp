@@ -87,10 +87,7 @@ function Hero() {
     <section className="relative overflow-hidden border-b border-border">
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-14 sm:px-6 sm:pt-24 sm:pb-20">
         <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 120, damping: 20 }} className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            <Sparkles size={12} className="text-primary" /> Now onboarding AI, engineering & tech creators
-          </span>
-          <h1 className="mt-4 text-4xl font-extrabold tracking-tighter text-[#151515] sm:text-6xl">
+          <h1 className="text-4xl font-extrabold tracking-tighter text-[#151515] sm:text-6xl">
             Community <span className="text-primary">and</span> courses,<br className="hidden sm:block" /> engineered for the AI era.
           </h1>
           <p className="mt-3 text-base font-medium text-muted-foreground">
