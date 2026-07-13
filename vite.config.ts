@@ -10,7 +10,7 @@ export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
-    server: { entry: "server" },
+    server: { entry: "src/server" },
   },
   // Override the Lovable sandbox defaults (host "::" / port 8080) for the Replit
   // container, which doesn't support IPv6 loopback and is proxied over HTTPS.
@@ -20,6 +20,9 @@ export default defineConfig({
       port: 5000,
       strictPort: true,
       allowedHosts: true,
+    },
+    ssr: {
+      noExternal: ["@tanstack/react-start"],
     },
   },
 });
