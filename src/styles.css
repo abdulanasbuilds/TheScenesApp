@@ -127,7 +127,13 @@
   
   /* Native mobile scroll snap behavior */
   .snap-scroll {
-    @apply overflow-x-auto snap-x snap-mandatory scrollbar-hide;
+    @apply overflow-x-auto snap-x snap-mandatory;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .snap-scroll::-webkit-scrollbar {
+    display: none;
   }
   
   .snap-item {
