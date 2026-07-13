@@ -37,7 +37,7 @@ function PricingPage() {
               <ul className="mt-5 space-y-3 text-sm text-foreground">
                 {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" />{feature}</li>)}
               </ul>
-              <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-full bg-primary px-4 py-3 text-center text-sm font-extrabold text-white border border-transparent hover:bg-primary/90">{plan.cta}</Link>
+              <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-3xl bg-primary px-6 py-2.5 text-center text-base font-extrabold text-white border border-transparent hover:bg-primary/85 h-12 flex items-center justify-center">{plan.cta}</Link>
             </div>
           ))}
         </div>

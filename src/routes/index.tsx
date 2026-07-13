@@ -96,14 +96,14 @@ function Hero() {
           <p className="mt-3 text-base font-medium text-muted-foreground">
             SukaSpace fuses linear course tracking with rich multi-channel spaces so experts can teach, monetize, and build a real community — without the tech friction.
           </p>
-          <div className="mt-8 flex w-full flex-col items-center justify-center gap-2.5 sm:w-auto sm:flex-row">
+          <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="w-full sm:w-auto">
-              <Link to="/discover" className="flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90 w-full">
-                Explore Communities <ArrowRight size={16} />
+              <Link to="/discover" className="flex items-center justify-center gap-2 rounded-3xl bg-primary px-6 py-2.5 text-base font-extrabold text-white border border-transparent hover:bg-primary/85 w-full h-12">
+                Explore Communities <ArrowRight size={18} />
               </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="w-full sm:w-auto">
-          <Link to="/create-community" className="flex items-center justify-center gap-2 rounded-full border border-neutral-200 bg-card px-6 py-3 text-sm font-extrabold text-foreground hover:bg-neutral-50 w-full">
+          <Link to="/create-community" className="flex items-center justify-center gap-2 rounded-3xl border border-gray-300 bg-card px-6 py-2.5 text-base font-extrabold text-foreground hover:bg-gray-50 w-full h-12">
                 Create a Community
               </Link>
             </motion.div>
@@ -157,9 +157,9 @@ function CTA() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 text-center">
         <h2 className="text-3xl font-extrabold tracking-tighter text-white sm:text-4xl">Claim your niche before someone else does.</h2>
         <p className="mt-2.5 text-base text-neutral-300">Launch your community + course in a single afternoon. Free while we're in early access.</p>
-        <div className="mt-7 flex w-full flex-col items-center justify-center gap-2.5 sm:w-auto sm:flex-row">
-          <Link to="/discover" className="rounded-full border border-white/20 bg-white px-6 py-3 text-sm font-extrabold text-slate-900 hover:bg-white/90 w-full sm:w-auto">Explore Communities</Link>
-          <Link to="/create-community" className="rounded-full bg-primary px-6 py-3 text-sm font-extrabold text-white hover:bg-primary/90 border border-transparent w-full sm:w-auto flex items-center justify-center gap-2">Create a Community <ChevronRight size={14} /></Link>
+        <div className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
+          <Link to="/discover" className="rounded-3xl border border-white/30 bg-white px-6 py-2.5 text-base font-extrabold text-slate-900 hover:bg-white/85 w-full sm:w-auto h-12 flex items-center justify-center">Explore Communities</Link>
+          <Link to="/create-community" className="rounded-3xl bg-primary px-6 py-2.5 text-base font-extrabold text-white hover:bg-primary/85 border border-transparent w-full sm:w-auto h-12 flex items-center justify-center gap-2">Create a Community <ChevronRight size={16} /></Link>
         </div>
       </div>
     </section>
