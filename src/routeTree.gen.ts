@@ -29,6 +29,7 @@ import { Route as AppMembersRouteImport } from './routes/app.members'
 import { Route as AppLeaderboardRouteImport } from './routes/app.leaderboard'
 import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppCreatorRouteImport } from './routes/app.creator'
+import { Route as AppCoursesRouteImport } from './routes/app.courses'
 import { Route as AppClassroomRouteImport } from './routes/app.classroom'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
 
@@ -132,6 +133,11 @@ const AppCreatorRoute = AppCreatorRouteImport.update({
   path: '/creator',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCoursesRoute = AppCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppClassroomRoute = AppClassroomRouteImport.update({
   id: '/classroom',
   path: '/classroom',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
+  '/app/courses': typeof AppCoursesRoute
   '/app/creator': typeof AppCreatorRoute
   '/app/feed': typeof AppFeedRoute
   '/app/leaderboard': typeof AppLeaderboardRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
+  '/app/courses': typeof AppCoursesRoute
   '/app/creator': typeof AppCreatorRoute
   '/app/feed': typeof AppFeedRoute
   '/app/leaderboard': typeof AppLeaderboardRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
+  '/app/courses': typeof AppCoursesRoute
   '/app/creator': typeof AppCreatorRoute
   '/app/feed': typeof AppFeedRoute
   '/app/leaderboard': typeof AppLeaderboardRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/app/calendar'
     | '/app/classroom'
+    | '/app/courses'
     | '/app/creator'
     | '/app/feed'
     | '/app/leaderboard'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/app/calendar'
     | '/app/classroom'
+    | '/app/courses'
     | '/app/creator'
     | '/app/feed'
     | '/app/leaderboard'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/app/calendar'
     | '/app/classroom'
+    | '/app/courses'
     | '/app/creator'
     | '/app/feed'
     | '/app/leaderboard'
@@ -445,6 +457,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCreatorRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/courses': {
+      id: '/app/courses'
+      path: '/courses'
+      fullPath: '/app/courses'
+      preLoaderRoute: typeof AppCoursesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/classroom': {
       id: '/app/classroom'
       path: '/classroom'
@@ -465,6 +484,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppCalendarRoute: typeof AppCalendarRoute
   AppClassroomRoute: typeof AppClassroomRoute
+  AppCoursesRoute: typeof AppCoursesRoute
   AppCreatorRoute: typeof AppCreatorRoute
   AppFeedRoute: typeof AppFeedRoute
   AppLeaderboardRoute: typeof AppLeaderboardRoute
@@ -479,6 +499,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppCalendarRoute: AppCalendarRoute,
   AppClassroomRoute: AppClassroomRoute,
+  AppCoursesRoute: AppCoursesRoute,
   AppCreatorRoute: AppCreatorRoute,
   AppFeedRoute: AppFeedRoute,
   AppLeaderboardRoute: AppLeaderboardRoute,
