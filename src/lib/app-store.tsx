@@ -21,6 +21,18 @@ export type SessionUser = {
   email: string;
   avatar: string;
   role: "creator" | "learner";
+  photoUrl?: string;
+  bio?: string;
+};
+
+export type AccessRecord = {
+  id: number;
+  resourceId: number;
+  resourceTitle: string;
+  resourceType: "lesson" | "community";
+  communityId?: number;
+  userEmail: string;
+  accessedAt: number;
 };
 
 export type FeedPost = {
@@ -132,6 +144,8 @@ type StoredAccount = {
   name: string;
   password: string;
   role: "creator" | "learner";
+  photoUrl?: string;
+  bio?: string;
 };
 
 export type SignInResult = SessionUser | "not_found" | "wrong_password";
@@ -190,6 +204,7 @@ type PersistedState = {
   communityEvents: CommunityEvent[];
   communityResources: CommunityResource[];
   enrollments: Enrollment[];
+  accessRecords: AccessRecord[];
 };
 
 function defaultState(): PersistedState {
@@ -207,6 +222,7 @@ function defaultState(): PersistedState {
     communityEvents: [],
     communityResources: [],
     enrollments: [],
+    accessRecords: [],
   };
 }
 
@@ -248,6 +264,11 @@ type AppStoreValue = {
   signIn: (email: string, password: string) => SignInResult;
   signUp: (name: string, email: string, password: string, role: "creator" | "learner") => SignUpResult;
   signOut: () => void;
+  updateProfile: (patch: { name?: string; bio?: string; photoUrl?: string }) => void;
+  // access records
+  accessRecords: AccessRecord[];
+  trackResourceAccess: (input: { resourceId: number; resourceTitle: string; resourceType: "lesson" | "community"; communityId?: number }) => void;
+  getAccessRecords: (resourceType?: "lesson" | "community") => AccessRecord[];
   // communities
   createCommunity: (input: CreateCommunityInput) => Community;
   joinCommunity: (id: number) => void;
@@ -351,13 +372,14 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     communityResources: state.communityResources,
     communityEvents: state.communityEvents,
     enrollments: state.enrollments,
+    accessRecords: state.accessRecords,
 
     // ── auth ──
     signIn: (email, password) => {
       const account = state.accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
       if (!account) return "not_found";
       if (account.password !== password) return "wrong_password";
-      const user: SessionUser = { name: account.name, email: account.email, avatar: account.name.slice(0, 2).toUpperCase(), role: account.role };
+      const user: SessionUser = { name: account.name, email: account.email, avatar: account.name.slice(0, 2).toUpperCase(), role: account.role, photoUrl: account.photoUrl, bio: account.bio };
       setState(s => ({ ...s, session: user }));
       return user;
     },
@@ -375,6 +397,15 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       return user;
     },
     signOut: () => setState(s => ({ ...s, session: null })),
+    updateProfile: (patch) => {
+      setState(s => {
+        const updatedSession = s.session ? { ...s.session, ...patch } : s.session;
+        const updatedAccounts = s.accounts.map(a =>
+          a.email.toLowerCase() === s.session?.email.toLowerCase() ? { ...a, ...patch } : a
+        );
+        return { ...s, session: updatedSession, accounts: updatedAccounts };
+      });
+    },
 
     // ── communities ──
     createCommunity: (input) => {
@@ -567,6 +598,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       const total = course?.modules.flatMap(m => m.lessons).length || 0;
       const e = state.enrollments.find(e => e.courseId === courseId && e.userEmail === state.session?.email);
       return { completed: e?.completedLessonIds.length || 0, total };
+    },
+
+    // ── access records ──
+    trackResourceAccess: (input) => {
+      const record: AccessRecord = {
+        id: Date.now(),
+        resourceId: input.resourceId,
+        resourceTitle: input.resourceTitle,
+        resourceType: input.resourceType,
+        communityId: input.communityId,
+        userEmail: state.session?.email || "anon",
+        accessedAt: Date.now(),
+      };
+      setState(s => ({ ...s, accessRecords: [record, ...s.accessRecords] }));
+    },
+    getAccessRecords: (resourceType) => {
+      if (!resourceType) return state.accessRecords;
+      return state.accessRecords.filter(r => r.resourceType === resourceType);
     },
 
     // ── notifications ──

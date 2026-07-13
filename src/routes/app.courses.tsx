@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, ChevronRight, Edit2, Trash2, Eye, EyeOff, Check,
   BookOpen, Video, Link2, X, GripVertical, ExternalLink, PlayCircle,
+  MonitorPlay, Rocket, Users, FileText,
 } from "lucide-react";
 import { useAppStore, type Course, type CourseModule, type Lesson, getVideoEmbed, detectResourceSource } from "@/lib/app-store";
 
@@ -11,7 +13,7 @@ export const Route = createFileRoute("/app/courses")({
   component: CoursesPage,
 });
 
-type View = "list" | "edit";
+type View = "list" | "edit" | "preview";
 
 const SOURCE_META: Record<string, { label: string; color: string }> = {
   gdrive: { label: "Drive", color: "bg-green-100 text-green-700" },
@@ -39,7 +41,19 @@ function CoursesPage() {
   if (view === "edit" && activeCourseId) {
     const course = store.courses.find(c => c.id === activeCourseId);
     if (!course) return null;
-    return <CourseEditor course={course} onBack={() => setView("list")} />;
+    return (
+      <CourseEditor
+        course={course}
+        onBack={() => setView("list")}
+        onPreview={() => setView("preview")}
+      />
+    );
+  }
+
+  if (view === "preview" && activeCourseId) {
+    const course = store.courses.find(c => c.id === activeCourseId);
+    if (!course) return null;
+    return <CoursePreview course={course} onBack={() => setView("edit")} />;
   }
 
   return <CourseList courses={myCourses} onOpen={openCourse} onCreate={(id) => openCourse(id)} />;
@@ -50,6 +64,7 @@ function CoursesPage() {
 function CourseList({ courses, onOpen, onCreate }: { courses: Course[]; onOpen: (id: number) => void; onCreate: (id: number) => void }) {
   const store = useAppStore();
   const [showCreate, setShowCreate] = useState(false);
+  const [publishedCourse, setPublishedCourse] = useState<Course | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [communityId, setCommunityId] = useState<number | null>(store.communities[0]?.id ?? null);
@@ -59,6 +74,11 @@ function CourseList({ courses, onOpen, onCreate }: { courses: Course[]; onOpen: 
     const course = store.createCourse({ title: title.trim(), description: description.trim(), communityId });
     setTitle(""); setDescription(""); setShowCreate(false);
     onCreate(course.id);
+  };
+
+  const handlePublish = (c: Course) => {
+    store.publishCourse(c.id);
+    setPublishedCourse(c);
   };
 
   return (
@@ -106,7 +126,7 @@ function CourseList({ courses, onOpen, onCreate }: { courses: Course[]; onOpen: 
                     <button onClick={() => onOpen(c.id)} className="flex-1 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white text-center">
                       Edit course
                     </button>
-                    <button onClick={() => c.published ? store.unpublishCourse(c.id) : store.publishCourse(c.id)} className={`rounded-lg border px-3 py-2 text-xs font-semibold ${c.published ? "border-border text-muted-foreground" : "border-primary text-primary"}`}>
+                    <button onClick={() => c.published ? store.unpublishCourse(c.id) : handlePublish(c)} className={`rounded-lg border px-3 py-2 text-xs font-semibold ${c.published ? "border-border text-muted-foreground" : "border-primary text-primary"}`}>
                       {c.published ? "Unpublish" : "Publish"}
                     </button>
                     <button onClick={() => { if (confirm("Delete this course?")) store.deleteCourse(c.id); }} className="rounded-lg border border-border p-2 text-muted-foreground hover:bg-rose-50 hover:text-rose-600">
@@ -152,13 +172,66 @@ function CourseList({ courses, onOpen, onCreate }: { courses: Course[]; onOpen: 
           </div>
         </div>
       )}
+
+      {/* Publish confirmation modal */}
+      <AnimatePresence>
+        {publishedCourse && (
+          <motion.div
+            className="fixed inset-0 z-50 grid place-items-center bg-slate-900/40 backdrop-blur-sm"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              className="relative mx-4 w-full max-w-md overflow-hidden rounded-2xl border border-border bg-white p-8 shadow-xl text-center"
+            >
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
+                <Rocket size={28} className="text-emerald-600" />
+              </div>
+              <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Course published!</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                <span className="font-semibold">"{publishedCourse.title}"</span> is now live and visible to learners in your community.
+              </p>
+              <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+                {[
+                  { label: "Modules", value: publishedCourse.modules.length },
+                  { label: "Lessons", value: publishedCourse.modules.flatMap(m => m.lessons).length },
+                  { label: "Enrolled", value: publishedCourse.enrollmentCount },
+                ].map(s => (
+                  <div key={s.label} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-2xl font-bold text-slate-900">{s.value}</div>
+                    <div className="text-[11px] text-slate-500">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 flex flex-col gap-2">
+                <button
+                  onClick={() => setPublishedCourse(null)}
+                  className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary/90"
+                >
+                  Done
+                </button>
+                <button
+                  onClick={() => { setPublishedCourse(null); onOpen(publishedCourse.id); }}
+                  className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Continue editing
+                </button>
+              </div>
+              <p className="mt-4 text-[11px] text-slate-500">
+                Learners can enroll from your community's Courses tab.
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 // ─── Course Editor ────────────────────────────────────────────────────────────
 
-function CourseEditor({ course, onBack }: { course: Course; onBack: () => void }) {
+function CourseEditor({ course, onBack, onPreview }: { course: Course; onBack: () => void; onPreview: () => void }) {
   const store = useAppStore();
   const [selectedModuleId, setSelectedModuleId] = useState<number | null>(course.modules[0]?.id ?? null);
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
@@ -167,6 +240,12 @@ function CourseEditor({ course, onBack }: { course: Course; onBack: () => void }
   const [editingCourse, setEditingCourse] = useState(false);
   const [courseTitle, setCourseTitle] = useState(course.title);
   const [courseDesc, setCourseDesc] = useState(course.description);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+
+  const handlePublish = () => {
+    store.publishCourse(course.id);
+    setShowPublishConfirm(true);
+  };
 
   const selectedModule = course.modules.find(m => m.id === selectedModuleId) ?? null;
   const selectedLesson = selectedModule?.lessons.find(l => l.id === selectedLessonId) ?? null;
@@ -201,13 +280,64 @@ function CourseEditor({ course, onBack }: { course: Course; onBack: () => void }
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
-            onClick={() => course.published ? store.unpublishCourse(course.id) : store.publishCourse(course.id)}
+            onClick={onPreview}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent"
+          >
+            <MonitorPlay size={13} />Preview
+          </button>
+          <button
+            onClick={() => course.published ? store.unpublishCourse(course.id) : handlePublish()}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold ${course.published ? "border border-border text-muted-foreground hover:bg-accent" : "bg-primary text-white hover:bg-primary/90"}`}
           >
             {course.published ? <><EyeOff size={13} />Unpublish</> : <><Eye size={13} />Publish</>}
           </button>
         </div>
       </div>
+
+      {/* Publish confirmation modal (inside editor) */}
+      <AnimatePresence>
+        {showPublishConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 grid place-items-center bg-slate-900/40 backdrop-blur-sm"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              className="mx-4 w-full max-w-md rounded-2xl border border-border bg-white p-8 text-center shadow-xl"
+            >
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
+                <Rocket size={28} className="text-emerald-600" />
+              </div>
+              <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Course published!</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                <span className="font-semibold">"{course.title}"</span> is now live and visible to learners.
+              </p>
+              <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+                {[
+                  { label: "Modules", value: course.modules.length, icon: <BookOpen size={14} /> },
+                  { label: "Lessons", value: course.modules.flatMap(m => m.lessons).length, icon: <FileText size={14} /> },
+                  { label: "Enrolled", value: course.enrollmentCount, icon: <Users size={14} /> },
+                ].map(s => (
+                  <div key={s.label} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="mx-auto mb-1 text-slate-400">{s.icon}</div>
+                    <div className="text-2xl font-bold text-slate-900">{s.value}</div>
+                    <div className="text-[11px] text-slate-500">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 flex flex-col gap-2">
+                <button onClick={() => { setShowPublishConfirm(false); onPreview(); }} className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary/90">
+                  <span className="inline-flex items-center justify-center gap-1.5"><MonitorPlay size={14} />Preview as learner</span>
+                </button>
+                <button onClick={() => setShowPublishConfirm(false)} className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                  Keep editing
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Course outline */}
@@ -408,6 +538,181 @@ function ModuleSettingsPanel({ mod, courseId, onAddLesson }: { mod: CourseModule
           <input value={title} onChange={e => setTitle(e.target.value)} onKeyDown={e => { if (e.key === "Enter") addLesson(); }} placeholder="Lesson title" className="flex-1 rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary" />
           <button onClick={addLesson} disabled={!title.trim()} className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-40">Add</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Course Preview (learner view) ────────────────────────────────────────────
+
+function CoursePreview({ course, onBack }: { course: Course; onBack: () => void }) {
+  const allLessons = course.modules.flatMap(m => m.lessons.map(l => ({ ...l, moduleTitle: m.title })));
+  const [activeLesson, setActiveLesson] = useState(allLessons[0] ?? null);
+  const embedUrl = activeLesson?.videoUrl ? getVideoEmbed(activeLesson.videoUrl) : null;
+
+  return (
+    <div className="flex min-h-[calc(100vh-56px)] flex-col">
+      {/* Preview banner */}
+      <div className="sticky top-14 z-20 flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <MonitorPlay size={15} className="text-amber-600 shrink-0" />
+          <span className="text-sm font-semibold text-amber-800">Creator preview</span>
+          <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-semibold text-amber-700">LEARNER VIEW</span>
+        </div>
+        <button onClick={onBack} className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-50">
+          ← Back to editor
+        </button>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar: course outline */}
+        <aside className="w-72 shrink-0 overflow-y-auto border-r border-border bg-card">
+          <div className="border-b border-border p-4">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-100 to-blue-50">
+                <BookOpen size={16} className="text-sky-500" />
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold text-foreground">{course.title}</div>
+                <div className="text-xs text-muted-foreground">{allLessons.length} lessons · {course.modules.length} modules</div>
+              </div>
+            </div>
+          </div>
+          <div className="p-3 space-y-4">
+            {course.modules.map((mod, mi) => (
+              <div key={mod.id}>
+                <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {mi + 1}. {mod.title}
+                </div>
+                <div className="space-y-0.5">
+                  {mod.lessons.map((lesson, li) => {
+                    const embed = getVideoEmbed(lesson.videoUrl);
+                    const isActive = activeLesson?.id === lesson.id;
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => setActiveLesson({ ...lesson, moduleTitle: mod.title })}
+                        className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${isActive ? "bg-sky-50 text-primary font-semibold" : "text-muted-foreground hover:bg-accent"}`}
+                      >
+                        {embed ? <PlayCircle size={14} className="shrink-0" /> : <FileText size={14} className="shrink-0" />}
+                        <span className="flex-1 truncate">{li + 1}. {lesson.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+            {course.modules.length === 0 && (
+              <p className="px-2 py-4 text-center text-xs text-muted-foreground">No modules in this course yet.</p>
+            )}
+          </div>
+        </aside>
+
+        {/* Main: lesson viewer */}
+        <main className="flex-1 overflow-y-auto bg-background p-6">
+          {!activeLesson ? (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
+                <BookOpen size={32} className="mx-auto text-muted-foreground/40" />
+                <p className="mt-2 text-sm text-muted-foreground">No lessons to preview yet. Add lessons in the editor.</p>
+                <button onClick={onBack} className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Go to editor</button>
+              </div>
+            </div>
+          ) : (
+            <div className="mx-auto max-w-3xl space-y-6">
+              {/* Breadcrumb */}
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span>{course.title}</span>
+                <ChevronRight size={12} />
+                <span>{(activeLesson as any).moduleTitle}</span>
+                <ChevronRight size={12} />
+                <span className="font-medium text-foreground">{activeLesson.title}</span>
+              </div>
+
+              {/* Video */}
+              {embedUrl ? (
+                <div className="overflow-hidden rounded-xl border border-border aspect-video bg-black shadow-sm">
+                  <iframe src={embedUrl} className="h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={activeLesson.title} />
+                </div>
+              ) : activeLesson.videoUrl ? (
+                <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-border bg-card">
+                  <div className="text-center text-sm text-muted-foreground">
+                    <PlayCircle size={24} className="mx-auto mb-2 text-primary" />
+                    Video URL saved but not yet a recognized embed.<br />
+                    <span className="text-xs">(YouTube, Vimeo, or Loom will auto-embed)</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-border bg-card">
+                  <div className="text-center text-sm text-muted-foreground">
+                    <Video size={24} className="mx-auto mb-2 opacity-30" />
+                    No video attached to this lesson.
+                  </div>
+                </div>
+              )}
+
+              {/* Title + description */}
+              <div>
+                <h1 className="text-xl font-bold tracking-tight text-foreground">{activeLesson.title}</h1>
+                {activeLesson.description && (
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{activeLesson.description}</p>
+                )}
+              </div>
+
+              {/* Resources */}
+              {activeLesson.resources.length > 0 && (
+                <div>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Lesson resources</h3>
+                  <div className="space-y-2">
+                    {activeLesson.resources.map(r => {
+                      const meta = SOURCE_META[r.source];
+                      return (
+                        <a
+                          key={r.id}
+                          href={r.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 hover:border-primary/40 hover:bg-sky-50 transition"
+                        >
+                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${meta.color}`}>{meta.label}</span>
+                          <span className="flex-1 truncate text-sm font-medium text-foreground">{r.title}</span>
+                          <ExternalLink size={13} className="shrink-0 text-muted-foreground" />
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation */}
+              <div className="flex items-center justify-between border-t border-border pt-4">
+                <button
+                  onClick={() => {
+                    const idx = allLessons.findIndex(l => l.id === activeLesson.id);
+                    if (idx > 0) setActiveLesson(allLessons[idx - 1]);
+                  }}
+                  disabled={allLessons.findIndex(l => l.id === activeLesson.id) === 0}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground disabled:opacity-40 hover:bg-accent"
+                >
+                  ← Previous
+                </button>
+                <span className="text-xs text-muted-foreground">
+                  Lesson {allLessons.findIndex(l => l.id === activeLesson.id) + 1} of {allLessons.length}
+                </span>
+                <button
+                  onClick={() => {
+                    const idx = allLessons.findIndex(l => l.id === activeLesson.id);
+                    if (idx < allLessons.length - 1) setActiveLesson(allLessons[idx + 1]);
+                  }}
+                  disabled={allLessons.findIndex(l => l.id === activeLesson.id) === allLessons.length - 1}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 hover:bg-primary/90"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

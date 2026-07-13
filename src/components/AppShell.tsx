@@ -42,6 +42,7 @@ export function AppShell() {
   const displayName = store.session.name;
   const displayInitials = store.session.avatar;
   const displayRole = store.session.role === "creator" ? "Creator" : "Learner";
+  const photoUrl = store.session.photoUrl;
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -69,7 +70,11 @@ export function AppShell() {
         </nav>
         <div className="border-t border-border p-3">
           <Link to="/app/settings" className="flex items-center gap-2 rounded-lg p-1 hover:bg-accent">
-            <Avatar initials={displayInitials} tone="sky" size={32} />
+            {photoUrl ? (
+              <img src={photoUrl} alt={displayName} className="h-8 w-8 rounded-full border border-border object-cover shrink-0" />
+            ) : (
+              <Avatar initials={displayInitials} tone="sky" size={32} />
+            )}
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold text-foreground">{displayName}</div>
               <div className="truncate text-xs text-muted-foreground">{displayRole}</div>
@@ -123,7 +128,11 @@ export function AppShell() {
             )}
           </div>
           <button onClick={() => nav({ to: "/app/settings" })} className="shrink-0" aria-label="Account settings">
-            <Avatar initials={displayInitials} tone="sky" size={30} />
+            {photoUrl ? (
+              <img src={photoUrl} alt={displayName} className="h-8 w-8 rounded-full border border-border object-cover" />
+            ) : (
+              <Avatar initials={displayInitials} tone="sky" size={30} />
+            )}
           </button>
         </header>
 
