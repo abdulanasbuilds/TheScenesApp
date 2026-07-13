@@ -63,4 +63,83 @@
 @layer base {
   * { border-color: var(--color-border); }
   html, body { background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  
+  /* Premium mobile app typography system */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-extrabold tracking-tighter text-[#151515];
+  }
+  
+  h1 {
+    @apply text-4xl sm:text-5xl;
+  }
+  
+  h2 {
+    @apply text-3xl sm:text-4xl;
+  }
+  
+  h3 {
+    @apply text-2xl sm:text-3xl;
+  }
+  
+  h4 {
+    @apply text-xl;
+  }
+  
+  h5 {
+    @apply text-lg;
+  }
+  
+  h6 {
+    @apply text-base;
+  }
+  
+  /* Remove excessive vertical margins for high-density layouts */
+  h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p {
+    @apply mt-2.5;
+  }
+  
+  /* Crisp borders instead of shadows */
+  .shadow-sm {
+    @apply shadow-none border border-neutral-100;
+  }
+  
+  .shadow { 
+    @apply shadow-none border border-neutral-100;
+  }
+  
+  .shadow-lg {
+    @apply shadow-none border border-neutral-100;
+  }
+  
+  .shadow-md {
+    @apply shadow-none border border-neutral-100;
+  }
+  
+  /* Hide default scrollbars for horizontal scroll areas */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+}
+
+/* Native mobile scroll snap behavior */
+@layer components {
+  .snap-scroll {
+    @apply overflow-x-auto snap-x snap-mandatory;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .snap-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .snap-item {
+    @apply snap-start shrink-0;
+  }
 }

@@ -65,16 +65,16 @@ function Auth() {
   if (forgotMode) {
     return (
       <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 pb-24">
-        <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-sm">
+        <div className="w-full max-w-sm rounded-2xl border border-neutral-100 bg-card p-8">
           <div className="mb-8 text-center">
             <Link to="/" className="inline-flex items-center justify-center gap-2 mb-4">
               <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm font-bold text-white">S</span>
-              <span className="text-base font-semibold text-foreground">SUKASPACE</span>
+              <span className="text-base font-extrabold tracking-tighter text-foreground">SUKASPACE</span>
             </Link>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Reset password</h1>
+            <h1 className="text-2xl font-extrabold tracking-tighter text-[#151515]">Reset password</h1>
             <p className="mt-2 text-sm text-muted-foreground">Password recovery is not yet available in this early access version.</p>
           </div>
-          <div className="rounded-xl border border-border bg-accent p-4 text-sm text-muted-foreground">
+          <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-muted-foreground">
             If you've forgotten your password, please create a new account or contact support. Full password recovery will be available in a future release.
           </div>
           <button

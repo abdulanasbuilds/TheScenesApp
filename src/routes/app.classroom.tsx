@@ -73,7 +73,7 @@ function CourseCatalog({ onOpen }: { onOpen: (id: number) => void }) {
     <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Classroom</h1>
+          <h1 className="text-2xl font-extrabold tracking-tighter text-[#151515]">Classroom</h1>
           <p className="mt-1 text-sm text-muted-foreground">Your learning space.</p>
         </div>
       </div>

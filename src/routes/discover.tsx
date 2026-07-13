@@ -52,14 +52,14 @@ function Discovery() {
 
       {/* Hero search section */}
       <section className="mx-auto max-w-3xl px-4 pt-14 pb-8 text-center sm:px-6">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+        <h1 className="text-4xl font-extrabold tracking-tighter text-[#151515] sm:text-5xl">
           Discover tech &amp; expert-led communities
         </h1>
-        <p className="mt-4 text-base text-slate-600">
+        <p className="mt-2.5 text-base text-slate-600">
           Join focused spaces dedicated to advancing your skills in engineering, automation, and digital business.
         </p>
 
-        <div className="mt-8 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+        <div className="mt-8 flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
           <Search size={18} className="shrink-0 text-slate-400" />
           <input
             value={query}
@@ -70,7 +70,7 @@ function Discovery() {
           {query && (
             <button onClick={() => setQuery("")} className="shrink-0 text-slate-400 hover:text-slate-600"><X size={15} /></button>
           )}
-          <button className="shrink-0 rounded-lg bg-primary px-4 py-1.5 text-sm font-semibold text-white hover:bg-primary/90">Find</button>
+          <button className="shrink-0 rounded-full bg-primary px-4 py-1.5 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90">Find</button>
         </div>
 
         {/* Category filters */}

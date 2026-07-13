@@ -58,22 +58,22 @@ function CreateCommunityPage() {
       ) : (
         <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
           <div className="mx-auto max-w-2xl text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Launch a premium learning space in minutes.</h1>
-            <p className="mt-3 text-base text-muted-foreground">Fill this out and your community goes live on Discover the moment you finish.</p>
+            <h1 className="text-3xl font-extrabold tracking-tighter text-[#151515] sm:text-4xl">Launch a premium learning space in minutes.</h1>
+            <p className="mt-2 text-base text-muted-foreground">Fill this out and your community goes live on Discover the moment you finish.</p>
           </div>
 
           <div className="mx-auto mt-8 max-w-2xl">
-            <div className="h-1.5 overflow-hidden rounded-full bg-accent">
+            <div className="h-1.5 overflow-hidden rounded-full bg-neutral-200">
               <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }} transition={{ type: "spring", stiffness: 200, damping: 26 }} />
             </div>
             <div className="mt-1.5 text-right text-xs font-semibold text-muted-foreground">Step {step + 1} / {TOTAL_STEPS}</div>
           </div>
 
-          <div className="mx-auto mt-6 grid max-w-5xl gap-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:grid-cols-2">
+          <div className="mx-auto mt-6 grid max-w-5xl gap-0 overflow-hidden rounded-2xl border border-neutral-100 bg-card lg:grid-cols-2">
             <div className="p-6 sm:p-8">
               <div className="mb-4 flex items-center gap-2">
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-foreground text-xs font-bold text-white">{step + 1}</span>
-                <h2 className="text-lg font-semibold text-foreground">{STEP_META[step].title}</h2>
+                <h2 className="text-lg font-extrabold tracking-tighter text-[#151515]">{STEP_META[step].title}</h2>
               </div>
 
               <AnimatePresence mode="wait">
