@@ -28,6 +28,7 @@ import { Route as AppMessagesRouteImport } from './routes/app.messages'
 import { Route as AppMembersRouteImport } from './routes/app.members'
 import { Route as AppLeaderboardRouteImport } from './routes/app.leaderboard'
 import { Route as AppFeedRouteImport } from './routes/app.feed'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppCreatorRouteImport } from './routes/app.creator'
 import { Route as AppCoursesRouteImport } from './routes/app.courses'
 import { Route as AppClassroomRouteImport } from './routes/app.classroom'
@@ -128,6 +129,11 @@ const AppFeedRoute = AppFeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCreatorRoute = AppCreatorRouteImport.update({
   id: '/creator',
   path: '/creator',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/app/classroom': typeof AppClassroomRoute
   '/app/courses': typeof AppCoursesRoute
   '/app/creator': typeof AppCreatorRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/feed': typeof AppFeedRoute
   '/app/leaderboard': typeof AppLeaderboardRoute
   '/app/members': typeof AppMembersRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/app/classroom': typeof AppClassroomRoute
   '/app/courses': typeof AppCoursesRoute
   '/app/creator': typeof AppCreatorRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/feed': typeof AppFeedRoute
   '/app/leaderboard': typeof AppLeaderboardRoute
   '/app/members': typeof AppMembersRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/app/classroom': typeof AppClassroomRoute
   '/app/courses': typeof AppCoursesRoute
   '/app/creator': typeof AppCreatorRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/feed': typeof AppFeedRoute
   '/app/leaderboard': typeof AppLeaderboardRoute
   '/app/members': typeof AppMembersRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/app/classroom'
     | '/app/courses'
     | '/app/creator'
+    | '/app/dashboard'
     | '/app/feed'
     | '/app/leaderboard'
     | '/app/members'
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/app/classroom'
     | '/app/courses'
     | '/app/creator'
+    | '/app/dashboard'
     | '/app/feed'
     | '/app/leaderboard'
     | '/app/members'
@@ -291,6 +302,7 @@ export interface FileRouteTypes {
     | '/app/classroom'
     | '/app/courses'
     | '/app/creator'
+    | '/app/dashboard'
     | '/app/feed'
     | '/app/leaderboard'
     | '/app/members'
@@ -450,6 +462,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFeedRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/creator': {
       id: '/app/creator'
       path: '/creator'
@@ -486,6 +505,7 @@ interface AppRouteChildren {
   AppClassroomRoute: typeof AppClassroomRoute
   AppCoursesRoute: typeof AppCoursesRoute
   AppCreatorRoute: typeof AppCreatorRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppFeedRoute: typeof AppFeedRoute
   AppLeaderboardRoute: typeof AppLeaderboardRoute
   AppMembersRoute: typeof AppMembersRoute
@@ -501,6 +521,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppClassroomRoute: AppClassroomRoute,
   AppCoursesRoute: AppCoursesRoute,
   AppCreatorRoute: AppCreatorRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppFeedRoute: AppFeedRoute,
   AppLeaderboardRoute: AppLeaderboardRoute,
   AppMembersRoute: AppMembersRoute,

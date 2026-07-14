@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
+import { GraduationCap, Rocket } from "lucide-react";
 import { useAppStore } from "@/lib/app-store";
 
 const searchSchema = z.object({ mode: z.enum(["signup", "signin"]).catch("signup") });
@@ -17,9 +18,12 @@ export const Route = createFileRoute("/auth")({
   component: Auth,
 });
 
+type Role = "learner" | "creator";
+
 function Auth() {
   const { mode: initialMode } = Route.useSearch();
   const [mode, setMode] = useState<"signup" | "signin">(initialMode);
+  const [role, setRole] = useState<Role>("learner");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,6 +31,13 @@ function Auth() {
   const [forgotMode, setForgotMode] = useState(false);
   const nav = useNavigate();
   const store = useAppStore();
+
+  useEffect(() => {
+    if (store.isHydrated && store.session) {
+      const dest = store.session.role === "creator" ? "/app/creator" : "/app/dashboard";
+      window.location.replace(dest);
+    }
+  }, [store.isHydrated, store.session]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,13 +47,14 @@ function Auth() {
 
     if (mode === "signup") {
       if (!name.trim()) { setError("Enter your name to create an account."); return; }
-      const result = store.signUp(name.trim(), email.trim(), password, "learner");
+      const result = store.signUp(name.trim(), email.trim(), password, role);
       if (result === "email_taken") {
         setError("An account with that email already exists. Sign in instead.");
         return;
       }
       nav({ to: "/onboarding" });
     } else {
+      const account = store.accounts.find(a => a.email === email.trim());
       const result = store.signIn(email.trim(), password);
       if (result === "not_found") {
         setError("No account found for that email. Sign up to get started.");
@@ -52,7 +64,8 @@ function Auth() {
         setError("Incorrect password. Please try again.");
         return;
       }
-      nav({ to: "/app/feed" });
+      const dest = account?.role === "creator" ? "/app/creator" : "/app/dashboard";
+      nav({ to: dest });
     }
   };
 
@@ -75,12 +88,9 @@ function Auth() {
             <p className="mt-2 text-sm text-muted-foreground">Password recovery is not yet available in this early access version.</p>
           </div>
           <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-muted-foreground">
-            If you've forgotten your password, please create a new account or contact support. Full password recovery will be available in a future release.
+            If you've forgotten your password, please create a new account or contact support.
           </div>
-          <button
-            onClick={() => setForgotMode(false)}
-            className="mt-6 w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-accent"
-          >
+          <button onClick={() => setForgotMode(false)} className="mt-6 w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-accent">
             Back to sign in
           </button>
         </div>
@@ -92,14 +102,64 @@ function Auth() {
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 pb-24">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-sm">
-        <div className="mb-8 text-center">
+        <div className="mb-6 text-center">
           <Link to="/" className="inline-flex items-center justify-center gap-2 mb-4">
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm font-bold text-white">S</span>
             <span className="text-base font-semibold text-foreground">SUKASPACE</span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-primary">SUKASPACE</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{mode === "signup" ? "Create your professional workspace" : "Sign in to your professional workspace"}</p>
+          <h1 className="text-xl font-bold tracking-tight text-primary">
+            {mode === "signup" ? "Create your account" : "Welcome back"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {mode === "signup" ? "Join your professional learning community" : "Sign in to your workspace"}
+          </p>
         </div>
+
+        {/* Role selector — only on signup */}
+        <AnimatePresence>
+          {mode === "signup" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-5"
+            >
+              <p className="mb-2 text-xs font-semibold text-foreground">I want to…</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRole("learner")}
+                  className={`flex flex-col items-center gap-2 rounded-xl border p-3 text-left transition ${
+                    role === "learner" ? "border-primary bg-sky-50" : "border-border bg-card hover:border-slate-300"
+                  }`}
+                >
+                  <div className={`grid h-8 w-8 place-items-center rounded-lg ${role === "learner" ? "bg-primary/10 text-primary" : "bg-slate-100 text-muted-foreground"}`}>
+                    <GraduationCap size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">Learn</div>
+                    <div className="text-[10px] text-muted-foreground">Join communities</div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("creator")}
+                  className={`flex flex-col items-center gap-2 rounded-xl border p-3 text-left transition ${
+                    role === "creator" ? "border-primary bg-sky-50" : "border-border bg-card hover:border-slate-300"
+                  }`}
+                >
+                  <div className={`grid h-8 w-8 place-items-center rounded-lg ${role === "creator" ? "bg-primary/10 text-primary" : "bg-slate-100 text-muted-foreground"}`}>
+                    <Rocket size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">Create</div>
+                    <div className="text-[10px] text-muted-foreground">Build &amp; teach</div>
+                  </div>
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <AnimatePresence>
@@ -140,6 +200,7 @@ function Auth() {
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               placeholder="••••••••"
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
               className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
@@ -152,7 +213,7 @@ function Auth() {
             type="submit"
             className="mt-6 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
-            {mode === "signup" ? "Create account" : "Sign In"}
+            {mode === "signup" ? `Create ${role === "creator" ? "creator" : "learner"} account` : "Sign In"}
           </motion.button>
         </form>
 

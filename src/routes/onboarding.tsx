@@ -25,12 +25,15 @@ function Onboarding() {
   const nav = useNavigate();
   const store = useAppStore();
 
-  const finishOnboarding = (to: "/app/feed" = "/app/feed") => {
+  const finishOnboarding = () => {
     if (!store.session) {
       nav({ to: "/auth", search: { mode: "signup" } });
       return;
     }
-    nav({ to });
+    if (name.trim()) store.updateProfile({ name: name.trim() });
+    if (bio.trim()) store.updateProfile({ bio: bio.trim() });
+    const dest = (role ?? store.session.role) === "creator" ? "/app/creator" : "/app/dashboard";
+    nav({ to: dest });
   };
 
   const total = 4;

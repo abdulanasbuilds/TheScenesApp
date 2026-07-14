@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Rocket } from "lucide-react";
 import { PublicHeader } from "@/components/PublicHeader";
 import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
@@ -26,6 +26,10 @@ function CreateCommunityPage() {
   const store = useAppStore();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (store.isHydrated && !store.session) window.location.replace("/auth");
+  }, [store.isHydrated, store.session]);
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);

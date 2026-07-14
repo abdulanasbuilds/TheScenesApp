@@ -1,23 +1,35 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, GraduationCap, MessagesSquare, BarChart3, Settings, Bell, Search, BookOpen, Calendar, Users, Wallet } from "lucide-react";
+import {
+  Home, GraduationCap, MessagesSquare, BarChart3, Settings,
+  Bell, Search, BookOpen, Calendar, Users, Wallet, LayoutDashboard,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Avatar } from "./BrowserFrame";
 import { useAppStore } from "@/lib/app-store";
 
-const NAV = [
+const CREATOR_NAV = [
+  { to: "/app/creator", label: "Creator Hub", icon: BarChart3 },
   { to: "/app/feed", label: "Community", icon: Home },
   { to: "/app/courses", label: "Courses", icon: BookOpen },
   { to: "/app/classroom", label: "Classroom", icon: GraduationCap },
-  { to: "/app/messages", label: "Messages", icon: MessagesSquare },
   { to: "/app/members", label: "Members", icon: Users },
   { to: "/app/calendar", label: "Calendar", icon: Calendar },
+  { to: "/app/messages", label: "Messages", icon: MessagesSquare },
   { to: "/app/payouts", label: "Payouts", icon: Wallet },
-  { to: "/app/creator", label: "Creator Hub", icon: BarChart3 },
   { to: "/app/search", label: "Search", icon: Search },
   { to: "/app/settings", label: "Settings", icon: Settings },
 ] as const;
 
-const MOBILE_NAV = NAV.filter(n => ["/app/feed", "/app/courses", "/app/classroom", "/app/messages", "/app/creator"].includes(n.to));
+const LEARNER_NAV = [
+  { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/app/feed", label: "Community", icon: Home },
+  { to: "/app/classroom", label: "Classroom", icon: GraduationCap },
+  { to: "/app/courses", label: "Courses", icon: BookOpen },
+  { to: "/app/calendar", label: "Calendar", icon: Calendar },
+  { to: "/app/messages", label: "Messages", icon: MessagesSquare },
+  { to: "/app/search", label: "Search", icon: Search },
+  { to: "/app/settings", label: "Settings", icon: Settings },
+] as const;
 
 export function AppShell() {
   const loc = useLocation();
@@ -39,9 +51,15 @@ export function AppShell() {
 
   if (!store.session) return null;
 
+  const isCreator = store.session.role === "creator";
+  const NAV = isCreator ? CREATOR_NAV : LEARNER_NAV;
+  const MOBILE_NAV = isCreator
+    ? CREATOR_NAV.filter(n => ["/app/creator", "/app/feed", "/app/courses", "/app/classroom", "/app/members"].includes(n.to))
+    : LEARNER_NAV.filter(n => ["/app/dashboard", "/app/feed", "/app/classroom", "/app/courses", "/app/calendar"].includes(n.to));
+
   const displayName = store.session.name;
   const displayInitials = store.session.avatar;
-  const displayRole = store.session.role === "creator" ? "Creator" : "Learner";
+  const displayRole = isCreator ? "Creator" : "Learner";
   const photoUrl = store.session.photoUrl;
 
   return (
@@ -137,14 +155,15 @@ export function AppShell() {
         </header>
 
         {/* Mobile bottom nav */}
-        <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-neutral-100 bg-card px-1 py-1.5 md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-neutral-100 bg-card md:hidden">
           {MOBILE_NAV.map(n => {
             const Icon = n.icon;
             const active = loc.pathname.startsWith(n.to);
+            const label = n.label === "Creator Hub" ? "Creator" : n.label;
             return (
-              <Link key={n.to} to={n.to} className={`flex min-w-0 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[10px] font-semibold ${active ? "bg-neutral-100 text-primary" : "text-muted-foreground"}`}>
+              <Link key={n.to} to={n.to} className={`flex flex-1 min-w-0 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-semibold ${active ? "bg-neutral-100 text-primary" : "text-muted-foreground"}`}>
                 <Icon size={18} className="shrink-0" />
-                <span className="max-w-full truncate">{n.label === "Creator Hub" ? "Creator" : n.label}</span>
+                <span className="max-w-full truncate">{label}</span>
               </Link>
             );
           })}
@@ -155,9 +174,10 @@ export function AppShell() {
           {NAV.map(n => {
             const active = loc.pathname.startsWith(n.to);
             const Icon = n.icon;
+            const label = n.label === "Creator Hub" ? "Creator" : n.label;
             return (
               <Link key={n.to} to={n.to} className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-extrabold ${active ? "border-primary bg-neutral-100 text-primary" : "border-neutral-200 bg-card text-muted-foreground"}`}>
-                <Icon size={13} />{n.label === "Creator Hub" ? "Creator" : n.label}
+                <Icon size={13} />{label}
               </Link>
             );
           })}
