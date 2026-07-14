@@ -6,7 +6,7 @@ import {
   PlayCircle, ChevronRight, Bell, Clock, ArrowRight,
   CheckCircle2, Circle, Rocket, TrendingUp,
 } from "lucide-react";
-import { useAppStore } from "@/lib/app-store";
+import { useAppStore, type CommunityEvent } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard · SukaSpace" }] }),
@@ -134,7 +134,7 @@ function LearnerDashboard() {
 function OverviewTab({ enrolledCourses, joinedCommunities, upcomingEvents, recentPosts }: {
   enrolledCourses: ReturnType<typeof useAppStore>["courses"];
   joinedCommunities: ReturnType<typeof useAppStore>["communities"];
-  upcomingEvents: any[];
+  upcomingEvents: CommunityEvent[];
   recentPosts: ReturnType<typeof useAppStore>["posts"];
 }) {
   const store = useAppStore();
@@ -363,7 +363,7 @@ function CommunitiesTab({ communities }: { communities: ReturnType<typeof useApp
 
 // ─── Calendar Tab ─────────────────────────────────────────────────────────────
 
-function CalendarTab({ events }: { events: any[] }) {
+function CalendarTab({ events }: { events: CommunityEvent[] }) {
   const sorted = [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const now = new Date(new Date().toDateString());
   const upcoming = sorted.filter(e => new Date(e.date) >= now);
@@ -438,7 +438,10 @@ function CalendarTab({ events }: { events: any[] }) {
 
 // ─── Messages Tab ─────────────────────────────────────────────────────────────
 
-function MessagesTab({ posts, notifications }: { posts: any[]; notifications: any[] }) {
+function MessagesTab({ posts, notifications }: {
+  posts: ReturnType<typeof useAppStore>["posts"];
+  notifications: ReturnType<typeof useAppStore>["notifications"];
+}) {
   const [activeView, setActiveView] = useState<"notifications" | "activity">("notifications");
   const store = useAppStore();
 

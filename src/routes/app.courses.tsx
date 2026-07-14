@@ -624,7 +624,7 @@ function CoursePreview({ course, onBack }: { course: Course; onBack: () => void 
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span>{course.title}</span>
                 <ChevronRight size={12} />
-                <span>{(activeLesson as any).moduleTitle}</span>
+                <span>{activeLesson.moduleTitle}</span>
                 <ChevronRight size={12} />
                 <span className="font-medium text-foreground">{activeLesson.title}</span>
               </div>

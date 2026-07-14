@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 // ─── Core Types ──────────────────────────────────────────────────────────────
 
@@ -8,6 +9,7 @@ export type Community = {
   category: string;
   members: number;
   creator: string;
+  creatorEmail: string;
   avatar: string;
   banner: string;
   tag: "FREE" | "PAID";
@@ -168,6 +170,18 @@ export function randomBanner() {
   return BANNERS[Math.floor(Math.random() * BANNERS.length)];
 }
 
+// Monotonically increasing ID generator. Date.now() alone can produce the same
+// millisecond timestamp for two records created back-to-back (e.g. rapid
+// clicks, scripted/automated actions), which caused duplicate IDs. This
+// guarantees uniqueness within a session by bumping a counter whenever the
+// clock hasn't advanced since the last call.
+let lastGeneratedId = 0;
+export function generateId(): number {
+  const now = Date.now();
+  lastGeneratedId = now > lastGeneratedId ? now : lastGeneratedId + 1;
+  return lastGeneratedId;
+}
+
 export function detectResourceSource(url: string): ResourceSource {
   if (url.includes("drive.google.com")) return "gdrive";
   if (url.includes("dropbox.com")) return "dropbox";
@@ -265,12 +279,14 @@ type AppStoreValue = {
   signUp: (name: string, email: string, password: string, role: "creator" | "learner") => SignUpResult;
   signOut: () => void;
   updateProfile: (patch: { name?: string; bio?: string; photoUrl?: string }) => void;
+  getAccountRole: (email: string) => "creator" | "learner" | undefined;
   // access records
   accessRecords: AccessRecord[];
   trackResourceAccess: (input: { resourceId: number; resourceTitle: string; resourceType: "lesson" | "community"; communityId?: number }) => void;
   getAccessRecords: (resourceType?: "lesson" | "community") => AccessRecord[];
   // communities
   createCommunity: (input: CreateCommunityInput) => Community;
+  deleteCommunity: (id: number) => void;
   joinCommunity: (id: number) => void;
   isJoined: (id: number) => boolean;
   // posts
@@ -336,7 +352,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     if (!isHydrated) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {}
+    } catch (err) {
+      // Saving can fail if storage is full or disabled (private browsing, etc).
+      // Surface it instead of silently losing the user's changes.
+      console.error("Failed to save SukaSpace data to this browser:", err);
+      toast.error("Couldn't save your latest changes on this device. Free up storage or try a different browser.");
+    }
   }, [state, isHydrated]);
 
   const communities = useMemo(() =>
@@ -392,11 +413,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         ...s,
         session: user,
         accounts: [...s.accounts, account],
-        notifications: [{ id: Date.now(), text: `Welcome to SukaSpace, ${name}!`, time: "Just now", read: false }],
+        notifications: [{ id: generateId(), text: `Welcome to SukaSpace, ${name}!`, time: "Just now", read: false }],
       }));
       return user;
     },
     signOut: () => setState(s => ({ ...s, session: null })),
+    getAccountRole: (email) => state.accounts.find(a => a.email.toLowerCase() === email.toLowerCase())?.role,
     updateProfile: (patch) => {
       setState(s => {
         const updatedSession = s.session ? { ...s.session, ...patch } : s.session;
@@ -410,8 +432,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     // ── communities ──
     createCommunity: (input) => {
       const community: Community = {
-        id: Date.now(), title: input.title, category: input.category,
+        id: generateId(), title: input.title, category: input.category,
         members: 1, creator: state.session?.name || "You",
+        creatorEmail: state.session?.email || "",
         avatar: state.session?.avatar || "YU", banner: randomBanner(),
         tag: input.tag, price: input.price, summary: input.summary, createdAt: Date.now(),
       };
@@ -419,17 +442,32 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         ...s,
         userCommunities: [community, ...s.userCommunities],
         joinedCommunityIds: [community.id, ...s.joinedCommunityIds],
-        notifications: [{ id: Date.now(), text: `"${community.title}" is now live on Discover.`, time: "Just now", read: false }, ...s.notifications],
+        notifications: [{ id: generateId(), text: `"${community.title}" is now live on Discover.`, time: "Just now", read: false }, ...s.notifications],
       }));
       return community;
     },
+    deleteCommunity: (id) => setState(s => {
+      // Cascade: remove everything that hangs off this community so deleting
+      // it doesn't leave orphaned posts/courses/resources/events behind.
+      const courseIdsToRemove = new Set(s.courses.filter(c => c.communityId === id).map(c => c.id));
+      return {
+        ...s,
+        userCommunities: s.userCommunities.filter(c => c.id !== id),
+        joinedCommunityIds: s.joinedCommunityIds.filter(cid => cid !== id),
+        courses: s.courses.filter(c => c.communityId !== id),
+        enrollments: s.enrollments.filter(e => !courseIdsToRemove.has(e.courseId)),
+        extraPosts: s.extraPosts.filter(p => p.communityId !== id),
+        communityResources: s.communityResources.filter(r => r.communityId !== id),
+        communityEvents: s.communityEvents.filter(e => e.communityId !== id),
+      };
+    }),
     joinCommunity: (id) => setState(s => s.joinedCommunityIds.includes(id) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, id] }),
     isJoined: (id) => state.joinedCommunityIds.includes(id),
 
     // ── posts ──
     addPost: (input) => {
       const post: FeedPost = {
-        id: Date.now(), communityId: input.communityId, channel: input.channel,
+        id: generateId(), communityId: input.communityId, channel: input.channel,
         author: state.session?.name || "You", role: state.session?.role === "creator" ? "Creator" : "Member",
         avatar: state.session?.avatar || "YU", title: input.title, category: input.category,
         likes: 0, comments: 0, body: input.body, createdAt: Date.now(),
@@ -448,7 +486,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     // ── comments ──
     addComment: (postId, body) => {
       const comment: Comment = {
-        id: Date.now(), postId, body,
+        id: generateId(), postId, body,
         author: state.session?.name || "You",
         avatar: state.session?.avatar || "YU",
         createdAt: Date.now(),
@@ -488,7 +526,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     // ── courses ──
     createCourse: (input) => {
       const course: Course = {
-        id: Date.now(), communityId: input.communityId,
+        id: generateId(), communityId: input.communityId,
         title: input.title, description: input.description,
         creatorEmail: state.session?.email || "",
         modules: [], published: false, enrollmentCount: 0, createdAt: Date.now(),
@@ -503,16 +541,21 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       if (course) setState(s => ({
         ...s,
         courses: s.courses.map(c => c.id === id ? { ...c, published: true } : c),
-        notifications: [{ id: Date.now(), text: `"${course.title}" is now published.`, time: "Just now", read: false }, ...s.notifications],
+        notifications: [{ id: generateId(), text: `"${course.title}" is now published.`, time: "Just now", read: false }, ...s.notifications],
       }));
     },
     unpublishCourse: (id) => mutateCourse(id, c => ({ ...c, published: false })),
-    deleteCourse: (id) => setState(s => ({ ...s, courses: s.courses.filter(c => c.id !== id) })),
+    deleteCourse: (id) => setState(s => ({
+      ...s,
+      courses: s.courses.filter(c => c.id !== id),
+      // Cascade: a deleted course can't leave orphaned enrollments/progress behind.
+      enrollments: s.enrollments.filter(e => e.courseId !== id),
+    })),
 
     // ── modules ──
     addModule: (courseId, title) => {
       const mod: CourseModule = {
-        id: Date.now(), title, lessons: [],
+        id: generateId(), title, lessons: [],
         order: (state.courses.find(c => c.id === courseId)?.modules.length || 0) + 1,
       };
       mutateCourse(courseId, c => ({ ...c, modules: [...c.modules, mod] }));
@@ -525,7 +568,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     addLesson: (courseId, moduleId, input) => {
       const mod = state.courses.find(c => c.id === courseId)?.modules.find(m => m.id === moduleId);
       const lesson: Lesson = {
-        id: Date.now(), title: input.title, description: input.description || "",
+        id: generateId(), title: input.title, description: input.description || "",
         videoUrl: input.videoUrl || "", resources: [], published: false,
         order: (mod?.lessons.length || 0) + 1,
       };
@@ -538,7 +581,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     // ── lesson resources ──
     addResourceToLesson: (courseId, moduleId, lessonId, input) => {
       const resource: LessonResource = {
-        id: Date.now(), title: input.title, url: input.url,
+        id: generateId(), title: input.title, url: input.url,
         source: detectResourceSource(input.url), addedAt: Date.now(),
       };
       mutateLesson(courseId, moduleId, lessonId, l => ({ ...l, resources: [...l.resources, resource] }));
@@ -550,7 +593,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     // ── community resources ──
     addCommunityResource: (communityId, input) => {
       const resource: CommunityResource = {
-        id: Date.now(), communityId, title: input.title, url: input.url,
+        id: generateId(), communityId, title: input.title, url: input.url,
         source: detectResourceSource(input.url), addedAt: Date.now(),
       };
       setState(s => ({ ...s, communityResources: [resource, ...s.communityResources] }));
@@ -561,7 +604,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
     // ── community events ──
     addCommunityEvent: (communityId, input) => {
-      const event: CommunityEvent = { id: Date.now(), communityId, ...input, createdAt: Date.now() };
+      const event: CommunityEvent = { id: generateId(), communityId, ...input, createdAt: Date.now() };
       setState(s => ({ ...s, communityEvents: [event, ...s.communityEvents] }));
       return event;
     },
@@ -603,7 +646,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     // ── access records ──
     trackResourceAccess: (input) => {
       const record: AccessRecord = {
-        id: Date.now(),
+        id: generateId(),
         resourceId: input.resourceId,
         resourceTitle: input.resourceTitle,
         resourceType: input.resourceType,
@@ -622,7 +665,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     markAllNotificationsRead: () => setState(s => ({ ...s, notifications: s.notifications.map(n => ({ ...n, read: true })) })),
     pushNotification: (text) => setState(s => ({
       ...s,
-      notifications: [{ id: Date.now(), text, time: "Just now", read: false }, ...s.notifications],
+      notifications: [{ id: generateId(), text, time: "Just now", read: false }, ...s.notifications],
     })),
   };
 

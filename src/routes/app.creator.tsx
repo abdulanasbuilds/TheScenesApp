@@ -10,7 +10,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
 } from "recharts";
-import { useAppStore } from "@/lib/app-store";
+import { useAppStore, type Community, type Course } from "@/lib/app-store";
 import { Avatar } from "@/components/BrowserFrame";
 
 export const Route = createFileRoute("/app/creator")({
@@ -137,7 +137,7 @@ function CreatorDashboard() {
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
 function OverviewTab({ community, myCourses, publishedCourses, totalEnrollments, totalMembers }: {
-  community: any; myCourses: any[]; publishedCourses: any[]; totalEnrollments: number; totalMembers: number;
+  community: Community; myCourses: Course[]; publishedCourses: Course[]; totalEnrollments: number; totalMembers: number;
 }) {
   const store = useAppStore();
   const nav = useNavigate();
@@ -268,7 +268,7 @@ function OverviewTab({ community, myCourses, publishedCourses, totalEnrollments,
 
 // ─── Communities Tab ──────────────────────────────────────────────────────────
 
-function CommunitiesTab({ communities }: { communities: any[] }) {
+function CommunitiesTab({ communities }: { communities: Community[] }) {
   const nav = useNavigate();
   return (
     <div className="space-y-4">
@@ -308,7 +308,7 @@ function CommunitiesTab({ communities }: { communities: any[] }) {
 
 // ─── Courses Tab ──────────────────────────────────────────────────────────────
 
-function CoursesTab({ courses }: { courses: any[] }) {
+function CoursesTab({ courses }: { courses: Course[] }) {
   const nav = useNavigate();
   return (
     <div className="space-y-4">
@@ -338,7 +338,7 @@ function CoursesTab({ courses }: { courses: any[] }) {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {courses.map(c => {
-                const lessons = c.modules.flatMap((m: any) => m.lessons).length;
+                const lessons = c.modules.flatMap((m) => m.lessons).length;
                 return (
                   <tr key={c.id} className="hover:bg-accent/30 transition">
                     <td className="py-3 px-4 font-medium text-foreground">{c.title}</td>
@@ -365,7 +365,7 @@ function CoursesTab({ courses }: { courses: any[] }) {
 
 // ─── Members Tab ──────────────────────────────────────────────────────────────
 
-function MembersTab({ communities }: { communities: any[] }) {
+function MembersTab({ communities }: { communities: Community[] }) {
   const store = useAppStore();
   const [search, setSearch] = useState("");
   const session = store.session;
@@ -439,7 +439,7 @@ function MembersTab({ communities }: { communities: any[] }) {
 
 // ─── Payments Tab ─────────────────────────────────────────────────────────────
 
-function PaymentsTab({ communities }: { communities: any[] }) {
+function PaymentsTab({ communities }: { communities: Community[] }) {
   const hasPaid = communities.some(c => c.tag === "PAID");
   return (
     <div className="space-y-5">
@@ -491,7 +491,7 @@ function PaymentsTab({ communities }: { communities: any[] }) {
 
 // ─── Analytics Tab ────────────────────────────────────────────────────────────
 
-function AnalyticsTab({ courses, community }: { courses: any[]; community: any }) {
+function AnalyticsTab({ courses, community }: { courses: Course[]; community: Community | undefined }) {
   const enrollmentData = useMemo(() => {
     const weeks = ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"];
     let running = 0;
@@ -568,7 +568,7 @@ function AnalyticsTab({ courses, community }: { courses: any[]; community: any }
             <span key={cat} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-muted-foreground">{cat}</span>
           ))}
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">Your community is listed in: <span className="font-semibold text-foreground">{community.category}</span></p>
+        <p className="mt-3 text-xs text-muted-foreground">Your community is listed in: <span className="font-semibold text-foreground">{community?.category ?? "—"}</span></p>
       </div>
 
       <p className="text-xs text-muted-foreground">

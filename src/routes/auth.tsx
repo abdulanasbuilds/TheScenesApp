@@ -54,7 +54,7 @@ function Auth() {
       }
       nav({ to: "/onboarding" });
     } else {
-      const account = store.accounts.find(a => a.email === email.trim());
+      const accountRole = store.getAccountRole(email.trim());
       const result = store.signIn(email.trim(), password);
       if (result === "not_found") {
         setError("No account found for that email. Sign up to get started.");
@@ -64,7 +64,7 @@ function Auth() {
         setError("Incorrect password. Please try again.");
         return;
       }
-      const dest = account?.role === "creator" ? "/app/creator" : "/app/dashboard";
+      const dest = accountRole === "creator" ? "/app/creator" : "/app/dashboard";
       nav({ to: dest });
     }
   };

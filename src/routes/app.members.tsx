@@ -81,8 +81,17 @@ function MembersPage() {
     setTimeout(() => setExported(false), 2000);
   };
 
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
   const sendInvite = () => {
-    if (!email.trim()) return;
+    const trimmed = email.trim();
+    if (!trimmed) { setInviteError("Enter an email address."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) { setInviteError("Enter a valid email address."); return; }
+    if (members.some((m) => m.email.toLowerCase() === trimmed.toLowerCase())) {
+      setInviteError("That email is already a member or has a pending invite.");
+      return;
+    }
+    setInviteError(null);
     const name = email.split("@")[0];
     const today = new Date().toISOString().split("T")[0];
     const pending: Member = {
@@ -266,7 +275,13 @@ function MembersPage() {
             <div className="mt-4 space-y-3">
               <div>
                 <label className="text-xs font-semibold text-muted-foreground">Email address</label>
-                <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="member@company.com" className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
+                <input
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setInviteError(null); }}
+                  placeholder="member@company.com"
+                  className={`mt-1 w-full rounded-lg border bg-card px-3 py-2 text-sm outline-none focus:border-primary ${inviteError ? "border-destructive" : "border-border"}`}
+                />
+                {inviteError && <p className="mt-1 text-xs font-medium text-destructive">{inviteError}</p>}
               </div>
               <button onClick={sendInvite} disabled={!email.trim()} className="w-full rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-40">Send invite</button>
             </div>
