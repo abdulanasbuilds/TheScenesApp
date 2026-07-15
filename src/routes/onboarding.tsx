@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Sparkles, Rocket, GraduationCap, Check, Upload, ArrowRight, ArrowLeft, Zap, Trophy, MessagesSquare, Lock } from "lucide-react";
 import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 import { useAppStore } from "@/lib/app-store";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Welcome to SukaSpace · Onboarding" }] }),
@@ -56,7 +57,7 @@ function Onboarding() {
       {/* Progress */}
       <div className="sticky top-0 z-30 border-b border-neutral-100 bg-card">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-xs font-bold text-white">S</span>
+          <Logo variant="icon" className="h-7 w-7" />
           <div className="flex-1">
             <div className="h-1.5 overflow-hidden rounded-full bg-accent">
               <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 200, damping: 26 }} />

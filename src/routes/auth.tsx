@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { GraduationCap, Rocket } from "lucide-react";
 import { useAppStore } from "@/lib/app-store";
+import { Logo } from "@/components/Logo";
 
 const searchSchema = z.object({ mode: z.enum(["signup", "signin"]).catch("signup") });
 
@@ -81,8 +82,7 @@ function Auth() {
         <div className="w-full max-w-sm rounded-2xl border border-neutral-100 bg-card p-8">
           <div className="mb-8 text-center">
             <Link to="/" className="inline-flex items-center justify-center gap-2 mb-4">
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm font-bold text-white">S</span>
-              <span className="text-base font-extrabold tracking-tighter text-foreground">SUKASPACE</span>
+              <Logo className="h-7 w-auto" />
             </Link>
             <h1 className="text-2xl font-extrabold tracking-tighter text-[#151515]">Reset password</h1>
             <p className="mt-2 text-sm text-muted-foreground">Password recovery is not yet available in this early access version.</p>
@@ -104,8 +104,7 @@ function Auth() {
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-sm">
         <div className="mb-6 text-center">
           <Link to="/" className="inline-flex items-center justify-center gap-2 mb-4">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm font-bold text-white">S</span>
-            <span className="text-base font-semibold text-foreground">SUKASPACE</span>
+            <Logo className="h-7 w-auto" />
           </Link>
           <h1 className="text-xl font-bold tracking-tight text-primary">
             {mode === "signup" ? "Create your account" : "Welcome back"}

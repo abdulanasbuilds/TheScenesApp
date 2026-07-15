@@ -1,22 +1,9 @@
 ---
 name: SukaSpace client-only data layer
-description: This project (SukaSpace, TanStack Start community+course app) has no backend — persistence is a client-side React context store. Read before adding features that seem to need a database.
+description: No real backend for app data; localStorage store. Auth guard quirk. De-lovabled build config.
 ---
 
-The app was imported with only static `MOCK_*` arrays (`src/lib/mock-data.ts`) and no persistence layer, no zustand/redux. Per explicit user constraint, no real backend/integrations (Supabase, auth providers, etc.) should be wired in — everything must be mocked/local until the user connects their own backend.
-
-A lightweight fake backend was added: React Context (`AppStoreProvider`/`useAppStore`) holding session, communities, posts, likes, joins, and notifications, persisted to `localStorage`. It merges user-created data with the original seed arrays rather than replacing them.
-
-**Why:** keeps the interactive demo fully functional (create community → shows in Discover, post → shows in feed, etc.) without touching any real service, matching the "everything client-side, no integrations" requirement.
-
-**How to apply:** any new feature needing "persisted" state in this app should extend the existing store (add a field to `PersistedState` + actions), not introduce a new state system or a real database. SSR-safety pattern: guard `typeof window`, seed with a deterministic default on first render, then hydrate from `localStorage` in a `useEffect`, and gate the localStorage _write_ effect on an `isHydrated` flag — otherwise SSR/client hydration mismatches or accidental overwrites of stored state occur.
-
-**Bug pattern to watch for:** one page (`discover.tsx`) computed a `filtered` list from state/search but the JSX unconditionally rendered a hardcoded `ZeroState` component instead of the computed list — the computation was correct but never consumed. When auditing "why doesn't X show up" bugs, check that filtered/derived data is actually reached by the render path, not just computed.
-
-**Discover marketplace vs. "your workspace" data are intentionally separate.** Discover (`/discover`) sources `communities` purely from `store.userCommunities` (real zero-state: empty until someone creates one via Create Community, and any new one appears immediately since both pages read the same context). The `/app/*` dashboard pages (feed, classroom, creator hub, calendar, members, payouts, leaderboard, search) still use static `MOCK_*` seed data to represent "your own already-populated community" as a demo — this is deliberate, not a bug: it's the difference between the empty public marketplace and a pre-populated personal workspace.
-
-**Community vs Course creator-matching bug pattern:** `Community` didn't originally have a `creatorEmail` field (only a display-name `creator` string), while `Course` did — any "my communities" filter comparing `c.creatorEmail === session.email` silently returned empty because the field never existed. When adding ownership-filtering logic, confirm the field actually exists on that specific type rather than assuming parallel entities share the same shape.
-
-**ID generation:** entity IDs were `Date.now()`, which collides when two records are created in the same millisecond. Replaced with `generateId()` in `app-store.tsx` (monotonic counter, bumps if the clock hasn't advanced) — use this instead of `Date.now()` for any new entity ID in this store.
-
-**No page should render a static screenshot/mockup image as its main content.** Earlier the calendar, members, payouts, leaderboard, and search pages showed an uploaded reference PNG with a few real buttons layered on top ("visual reference" tradeoff). Per explicit user instruction, all of those were rebuilt as fully interactive components (real month-grid calendar, sortable member table with role/XP management, payouts dashboard with CSS-bar chart + real withdraw flow, ranking table with real tiers, unified cross-entity search) with zero leftover `<img>` mockups. Only keep a reference image if it's clearly framed as a "sample/preview" in a modal (e.g. creator hub's "View sample" button), never as the page's substance.
+- No real backend for app data: a localStorage-backed store (key `sukaspace_app_state_v3`) is the entire persistence layer for communities/courses/etc.
+- `AppShell`'s auth guard uses `window.location.replace("/auth")`, not TanStack Router's `navigate()` — intentional, don't "fix" it to use `navigate()` without checking why (likely to force a full remount past router state).
+- Project was imported from Lovable. All `@lovable.dev/*` packages, the sandbox-only Vite config wrapper, the Lovable error reporter, and the AGENTS.md Lovable banner were removed — `vite.config.ts` is now a plain `defineConfig` (nitro build preset set to `node-server`, not the old `cloudflare-module` default, since this runs on Replit/Node not Cloudflare). Brand mark lives in `src/components/Logo.tsx` (`src/assets/logo-icon.png` / `logo-full.png`) — use it instead of hand-rolled "S" badges or text wordmarks.
+- Real persistence (Replit Postgres, 7 tables, `pg` installed) was set up in an earlier session but the app UI still only reads/writes localStorage — the DB isn't wired into the app yet (tracked as a separate proposed task).

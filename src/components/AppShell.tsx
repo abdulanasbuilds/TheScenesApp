@@ -6,6 +6,7 @@ import {
 import { useEffect, useState } from "react";
 import { Avatar } from "./BrowserFrame";
 import { useAppStore } from "@/lib/app-store";
+import { Logo } from "@/components/Logo";
 
 const CREATOR_NAV = [
   { to: "/app/creator", label: "Creator Hub", icon: BarChart3 },
@@ -67,8 +68,7 @@ export function AppShell() {
       {/* Desktop sidebar */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-card md:flex">
         <div className="flex h-14 items-center gap-2 border-b border-neutral-100 px-4">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-xs font-bold text-white">S</span>
-          <span className="text-sm font-extrabold tracking-tighter text-foreground">SukaSpace</span>
+          <Logo className="h-6 w-auto" />
         </div>
         <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
           {NAV.map(item => {

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { Logo } from "@/components/Logo";
 
 const PUBLIC_NAV = [
   { to: "/discover", label: "Discover" },
@@ -18,8 +19,7 @@ export function PublicHeader() {
     <header className="sticky top-0 z-40 border-b border-neutral-100 bg-card/80 backdrop-blur">
       <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 md:flex md:justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-foreground text-sm font-bold text-white">S</span>
-          <span className="truncate text-base font-extrabold tracking-tighter text-foreground">SukaSpace</span>
+          <Logo className="h-7 w-auto" />
         </Link>
         <nav className="hidden items-center gap-6 text-sm font-semibold text-muted-foreground md:flex">
           {PUBLIC_NAV.map((item) => (
