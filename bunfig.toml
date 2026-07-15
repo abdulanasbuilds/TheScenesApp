@@ -1,4 +1,8 @@
 [install]
+# Use the public npm registry so bun.lock URLs work in all environments
+# (Cloudflare Pages, local dev, CI). The Replit package-firewall proxy is
+# only reachable inside Replit and must not be baked into the lockfile.
+registry = "https://registry.npmjs.org"
 saveTextLockfile = true
 # 24h supply-chain guard: skip package versions published less than a day ago.
 minimumReleaseAge = 86400
