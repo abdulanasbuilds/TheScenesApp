@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { Avatar } from "./BrowserFrame";
 import { useAppStore } from "@/lib/app-store";
 import { Logo } from "@/components/Logo";
+import { GlobalFeedbackDrawer, openFeedbackDrawer } from "@/components/GlobalFeedbackDrawer";
+import { MessageCircle } from "lucide-react";
 
 const CREATOR_NAV = [
   { to: "/app/creator", label: "Creator Hub", icon: BarChart3 },
@@ -86,6 +88,16 @@ export function AppShell() {
             );
           })}
         </nav>
+        <div className="border-t border-border p-2">
+          <button
+            type="button"
+            onClick={() => openFeedbackDrawer()}
+            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-neutral-50 hover:text-foreground"
+          >
+            <MessageCircle size={16} className="text-muted-foreground" />
+            Report a Bug / Give Feedback
+          </button>
+        </div>
         <div className="border-t border-border p-3">
           <Link to="/app/settings" className="flex items-center gap-2 rounded-lg p-1 hover:bg-accent">
             {photoUrl ? (
@@ -187,6 +199,8 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+
+      <GlobalFeedbackDrawer />
     </div>
   );
 }
