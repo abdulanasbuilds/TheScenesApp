@@ -2,41 +2,64 @@ import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   Home, GraduationCap, MessagesSquare, BarChart3, Settings,
   Bell, Search, BookOpen, Calendar, Users, Wallet, LayoutDashboard,
+  Radio, Zap, Share2, MessageCircle, type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Avatar } from "./BrowserFrame";
 import { useAppStore } from "@/lib/app-store";
 import { Logo } from "@/components/Logo";
 import { GlobalFeedbackDrawer, openFeedbackDrawer } from "@/components/GlobalFeedbackDrawer";
-import { MessageCircle } from "lucide-react";
+import { xpToTier } from "@/lib/mock-data";
 
-const CREATOR_NAV = [
-  { to: "/app/creator", label: "Creator Hub", icon: BarChart3 },
-  { to: "/app/feed", label: "Community", icon: Home },
-  { to: "/app/courses", label: "Courses", icon: BookOpen },
-  { to: "/app/classroom", label: "Classroom", icon: GraduationCap },
-  { to: "/app/members", label: "Members", icon: Users },
-  { to: "/app/calendar", label: "Calendar", icon: Calendar },
-  { to: "/app/messages", label: "Messages", icon: MessagesSquare },
-  { to: "/app/payouts", label: "Payouts", icon: Wallet },
-  { to: "/app/search", label: "Search", icon: Search },
-  { to: "/app/settings", label: "Settings", icon: Settings },
-] as const;
+// ─── Nav item type ─────────────────────────────────────────────────────────────
 
-const LEARNER_NAV = [
-  { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/app/feed", label: "Community", icon: Home },
-  { to: "/app/classroom", label: "Classroom", icon: GraduationCap },
-  { to: "/app/courses", label: "Courses", icon: BookOpen },
-  { to: "/app/calendar", label: "Calendar", icon: Calendar },
-  { to: "/app/messages", label: "Messages", icon: MessagesSquare },
-  { to: "/app/search", label: "Search", icon: Search },
-  { to: "/app/settings", label: "Settings", icon: Settings },
-] as const;
+interface NavItem {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  comingSoon?: boolean;
+}
+
+// ─── Nav definitions ───────────────────────────────────────────────────────────
+
+const CREATOR_NAV: NavItem[] = [
+  { to: "/app/creator",      label: "Creator Hub",  icon: BarChart3 },
+  { to: "/app/feed",         label: "Community",    icon: Home },
+  { to: "/app/courses",      label: "Courses",      icon: BookOpen },
+  { to: "/app/classroom",    label: "Classroom",    icon: GraduationCap },
+  { to: "/app/members",      label: "Members",      icon: Users },
+  { to: "/app/calendar",     label: "Calendar",     icon: Calendar },
+  { to: "/app/messages",     label: "Messages",     icon: MessagesSquare },
+  { to: "/app/payouts",      label: "Payouts",      icon: Wallet },
+  { to: "/app/live",         label: "Live",         icon: Radio,    comingSoon: true },
+  { to: "/app/automations",  label: "Automations",  icon: Zap,      comingSoon: true },
+  { to: "/app/affiliate",    label: "Affiliate",    icon: Share2,   comingSoon: true },
+  { to: "/app/leaderboard",  label: "Leaderboard",  icon: BarChart3 },
+  { to: "/app/search",       label: "Search",       icon: Search },
+  { to: "/app/settings",     label: "Settings",     icon: Settings },
+];
+
+const LEARNER_NAV: NavItem[] = [
+  { to: "/app/dashboard",   label: "Dashboard",  icon: LayoutDashboard },
+  { to: "/app/feed",        label: "Community",  icon: Home },
+  { to: "/app/classroom",   label: "Classroom",  icon: GraduationCap },
+  { to: "/app/courses",     label: "Courses",    icon: BookOpen },
+  { to: "/app/leaderboard", label: "Leaderboard", icon: BarChart3 },
+  { to: "/app/calendar",    label: "Calendar",   icon: Calendar },
+  { to: "/app/messages",    label: "Messages",   icon: MessagesSquare },
+  { to: "/app/live",        label: "Live",       icon: Radio,   comingSoon: true },
+  { to: "/app/search",      label: "Search",     icon: Search },
+  { to: "/app/settings",    label: "Settings",   icon: Settings },
+];
+
+const CREATOR_MOBILE = ["/app/creator", "/app/feed", "/app/courses", "/app/classroom", "/app/members"];
+const LEARNER_MOBILE  = ["/app/dashboard", "/app/feed", "/app/classroom", "/app/courses", "/app/calendar"];
+
+// ─── AppShell ─────────────────────────────────────────────────────────────────
 
 export function AppShell() {
-  const loc = useLocation();
-  const nav = useNavigate();
+  const loc  = useLocation();
+  const nav  = useNavigate();
   const store = useAppStore();
   const [showNotifs, setShowNotifs] = useState(false);
 
@@ -51,59 +74,92 @@ export function AppShell() {
       </div>
     );
   }
-
   if (!store.session) return null;
 
   const isCreator = store.session.role === "creator";
-  const NAV = isCreator ? CREATOR_NAV : LEARNER_NAV;
-  const MOBILE_NAV = isCreator
-    ? CREATOR_NAV.filter(n => ["/app/creator", "/app/feed", "/app/courses", "/app/classroom", "/app/members"].includes(n.to))
-    : LEARNER_NAV.filter(n => ["/app/dashboard", "/app/feed", "/app/classroom", "/app/courses", "/app/calendar"].includes(n.to));
+  const NAV         = isCreator ? CREATOR_NAV : LEARNER_NAV;
+  const MOBILE_TOPS = isCreator ? CREATOR_MOBILE : LEARNER_MOBILE;
+  const MOBILE_NAV  = NAV.filter((n) => MOBILE_TOPS.includes(n.to));
 
   const displayName = store.session.name;
-  const displayInitials = store.session.avatar;
+  const initials    = store.session.avatar;
   const displayRole = isCreator ? "Creator" : "Learner";
-  const photoUrl = store.session.photoUrl;
+  const photoUrl    = store.session.photoUrl;
+
+  const tier = xpToTier(0); // XP will be dynamic when tracking is wired
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop sidebar */}
+      {/* ── Desktop sidebar ── */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-card md:flex">
+        {/* Logo */}
         <div className="flex h-14 items-center gap-2 border-b border-neutral-100 px-4">
           <Logo className="h-6 w-auto" />
         </div>
+
+        {/* Nav links */}
         <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
-          {NAV.map(item => {
-            const active = loc.pathname.startsWith(item.to);
+          {NAV.map((item) => {
+            const active = loc.pathname === item.to || loc.pathname.startsWith(item.to + "/");
             const Icon = item.icon;
             return (
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-semibold transition-colors ${active ? "bg-neutral-100 text-foreground" : "text-muted-foreground hover:bg-neutral-50 hover:text-foreground"}`}
+                className={`group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-semibold transition-colors ${
+                  active
+                    ? "bg-neutral-100 text-foreground"
+                    : "text-muted-foreground hover:bg-neutral-50 hover:text-foreground"
+                }`}
               >
-                <Icon size={16} className={active ? "text-primary" : "text-muted-foreground"} />
-                {item.label}
+                <Icon size={15} className={active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"} />
+                <span className="flex-1 truncate">{item.label}</span>
+                {item.comingSoon && (
+                  <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-amber-700">
+                    Soon
+                  </span>
+                )}
               </Link>
             );
           })}
         </nav>
+
+        {/* Feedback link */}
         <div className="border-t border-border p-2">
           <button
             type="button"
             onClick={() => openFeedbackDrawer()}
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-neutral-50 hover:text-foreground"
           >
-            <MessageCircle size={16} className="text-muted-foreground" />
+            <MessageCircle size={15} className="text-muted-foreground" />
             Report a Bug / Give Feedback
           </button>
         </div>
-        <div className="border-t border-border p-3">
-          <Link to="/app/settings" className="flex items-center gap-2 rounded-lg p-1 hover:bg-accent">
+
+        {/* Profile + XP tier */}
+        <div className="border-t border-border p-3 space-y-2">
+          {/* XP tier badge */}
+          <div className="rounded-lg border border-border bg-background px-2.5 py-2">
+            <div className="flex items-center justify-between gap-1">
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${tier.color}`}>
+                {tier.emoji} {tier.name}
+              </span>
+              <Link to="/app/leaderboard" className="text-[10px] font-semibold text-primary hover:underline">
+                Rank →
+              </Link>
+            </div>
+            <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full w-0 rounded-full bg-primary" />
+            </div>
+            <div className="mt-0.5 text-[9px] text-muted-foreground">0 / {tier.nextAt ?? 500} XP</div>
+          </div>
+
+          {/* User card */}
+          <Link to="/app/settings" className="flex items-center gap-2 rounded-lg p-1 hover:bg-accent transition-colors">
             {photoUrl ? (
-              <img src={photoUrl} alt={displayName} className="h-8 w-8 rounded-full border border-border object-cover shrink-0" />
+              <img src={photoUrl} alt={displayName} className="h-8 w-8 shrink-0 rounded-full border border-border object-cover" />
             ) : (
-              <Avatar initials={displayInitials} tone="sky" size={32} />
+              <Avatar initials={initials} tone="sky" size={32} />
             )}
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold text-foreground">{displayName}</div>
@@ -113,6 +169,7 @@ export function AppShell() {
         </div>
       </aside>
 
+      {/* ── Main content area ── */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
         <header className="sticky top-0 z-30 grid h-14 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-neutral-100 bg-card/90 px-3 backdrop-blur sm:gap-3 sm:px-4">
@@ -123,57 +180,83 @@ export function AppShell() {
             <Search size={14} className="shrink-0" />
             <span className="truncate">Search communities, courses, people…</span>
           </Link>
+
+          {/* Notifications */}
           <div className="relative shrink-0">
             <button
               aria-label="Notifications"
-              onClick={() => setShowNotifs(v => !v)}
-              className="relative rounded-lg border border-neutral-200 bg-card p-2 text-muted-foreground hover:bg-neutral-50"
+              onClick={() => setShowNotifs((v) => !v)}
+              className="relative rounded-lg border border-neutral-200 bg-card p-2 text-muted-foreground hover:bg-neutral-50 transition-colors"
             >
               <Bell size={16} />
               {store.unreadCount > 0 && (
                 <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-primary text-[9px] font-bold text-white">
-                  {store.unreadCount}
+                  {store.unreadCount > 9 ? "9+" : store.unreadCount}
                 </span>
               )}
             </button>
+
             {showNotifs && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setShowNotifs(false)} />
-                <div className="absolute right-0 top-11 z-40 w-80 rounded-xl border border-neutral-100 bg-card p-2">
-                  <div className="flex items-center justify-between px-2 py-1.5">
+                <div className="absolute right-0 top-11 z-40 w-80 rounded-xl border border-neutral-100 bg-card shadow-lg">
+                  <div className="flex items-center justify-between border-b border-border px-3 py-2">
                     <span className="text-sm font-semibold text-foreground">Notifications</span>
-                    <button onClick={() => store.markAllNotificationsRead()} className="text-xs font-semibold text-primary hover:underline">Mark all read</button>
+                    <button
+                      onClick={() => store.markAllNotificationsRead()}
+                      className="text-xs font-semibold text-primary hover:underline"
+                    >
+                      Mark all read
+                    </button>
                   </div>
-                  <div className="max-h-80 space-y-1 overflow-y-auto">
-                    {store.notifications.length === 0 && <div className="px-2 py-4 text-center text-xs text-muted-foreground">You're all caught up.</div>}
-                    {store.notifications.map(n => (
-                      <div key={n.id} className={`rounded-lg px-2 py-2 text-sm ${n.read ? "text-muted-foreground" : "bg-accent font-medium text-foreground"}`}>
-                        <div>{n.text}</div>
-                        <div className="mt-0.5 text-[10px] text-muted-foreground">{n.time}</div>
-                      </div>
-                    ))}
+                  <div className="max-h-80 space-y-px overflow-y-auto p-1.5">
+                    {store.notifications.length === 0 ? (
+                      <div className="px-2 py-6 text-center text-xs text-muted-foreground">You're all caught up.</div>
+                    ) : (
+                      store.notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className={`rounded-lg px-3 py-2.5 text-sm ${n.read ? "text-muted-foreground" : "bg-accent font-medium text-foreground"}`}
+                        >
+                          <div className="text-xs">{n.text}</div>
+                          <div className="mt-0.5 text-[10px] text-muted-foreground">{n.time}</div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </>
             )}
           </div>
-          <button onClick={() => nav({ to: "/app/settings" })} className="shrink-0" aria-label="Account settings">
+
+          {/* Avatar */}
+          <button
+            onClick={() => nav({ to: "/app/settings" })}
+            className="shrink-0"
+            aria-label="Account settings"
+          >
             {photoUrl ? (
               <img src={photoUrl} alt={displayName} className="h-8 w-8 rounded-full border border-border object-cover" />
             ) : (
-              <Avatar initials={displayInitials} tone="sky" size={30} />
+              <Avatar initials={initials} tone="sky" size={30} />
             )}
           </button>
         </header>
 
         {/* Mobile bottom nav */}
         <div className="fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-neutral-100 bg-card md:hidden">
-          {MOBILE_NAV.map(n => {
+          {MOBILE_NAV.map((n) => {
             const Icon = n.icon;
             const active = loc.pathname.startsWith(n.to);
             const label = n.label === "Creator Hub" ? "Creator" : n.label;
             return (
-              <Link key={n.to} to={n.to} className={`flex flex-1 min-w-0 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-semibold ${active ? "bg-neutral-100 text-primary" : "text-muted-foreground"}`}>
+              <Link
+                key={n.to}
+                to={n.to}
+                className={`flex flex-1 min-w-0 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-semibold transition-colors ${
+                  active ? "bg-neutral-100 text-primary" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
                 <Icon size={18} className="shrink-0" />
                 <span className="max-w-full truncate">{label}</span>
               </Link>
@@ -182,14 +265,26 @@ export function AppShell() {
         </div>
 
         {/* Mobile scrollable nav */}
-        <nav className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto scrollbar-hide border-b border-neutral-100 bg-card px-3 py-2 md:hidden snap-x snap-mandatory">
-          {NAV.map(n => {
+        <nav className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto border-b border-neutral-100 bg-card px-3 py-2 scrollbar-hide snap-x snap-mandatory md:hidden">
+          {NAV.map((n) => {
             const active = loc.pathname.startsWith(n.to);
             const Icon = n.icon;
             const label = n.label === "Creator Hub" ? "Creator" : n.label;
             return (
-              <Link key={n.to} to={n.to} className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-extrabold ${active ? "border-primary bg-neutral-100 text-primary" : "border-neutral-200 bg-card text-muted-foreground"}`}>
-                <Icon size={13} />{label}
+              <Link
+                key={n.to}
+                to={n.to}
+                className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-extrabold transition-colors ${
+                  active
+                    ? "border-primary bg-neutral-100 text-primary"
+                    : "border-neutral-200 bg-card text-muted-foreground hover:border-neutral-300 hover:text-foreground"
+                }`}
+              >
+                <Icon size={13} />
+                {label}
+                {n.comingSoon && (
+                  <span className="rounded-full bg-amber-100 px-1 text-[8px] font-bold text-amber-700">soon</span>
+                )}
               </Link>
             );
           })}

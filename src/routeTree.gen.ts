@@ -26,6 +26,7 @@ import { Route as AppSearchRouteImport } from './routes/app.search'
 import { Route as AppPayoutsRouteImport } from './routes/app.payouts'
 import { Route as AppMessagesRouteImport } from './routes/app.messages'
 import { Route as AppMembersRouteImport } from './routes/app.members'
+import { Route as AppLiveRouteImport } from './routes/app.live'
 import { Route as AppLeaderboardRouteImport } from './routes/app.leaderboard'
 import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
@@ -33,6 +34,8 @@ import { Route as AppCreatorRouteImport } from './routes/app.creator'
 import { Route as AppCoursesRouteImport } from './routes/app.courses'
 import { Route as AppClassroomRouteImport } from './routes/app.classroom'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
+import { Route as AppAutomationsRouteImport } from './routes/app.automations'
+import { Route as AppAffiliateRouteImport } from './routes/app.affiliate'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -119,6 +122,11 @@ const AppMembersRoute = AppMembersRouteImport.update({
   path: '/members',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLiveRoute = AppLiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLeaderboardRoute = AppLeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
@@ -154,6 +162,16 @@ const AppCalendarRoute = AppCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAutomationsRoute = AppAutomationsRouteImport.update({
+  id: '/automations',
+  path: '/automations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAffiliateRoute = AppAffiliateRouteImport.update({
+  id: '/affiliate',
+  path: '/affiliate',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -167,6 +185,8 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/affiliate': typeof AppAffiliateRoute
+  '/app/automations': typeof AppAutomationsRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/courses': typeof AppCoursesRoute
@@ -174,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/app/dashboard': typeof AppDashboardRoute
   '/app/feed': typeof AppFeedRoute
   '/app/leaderboard': typeof AppLeaderboardRoute
+  '/app/live': typeof AppLiveRoute
   '/app/members': typeof AppMembersRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/payouts': typeof AppPayoutsRoute
@@ -192,6 +213,8 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/affiliate': typeof AppAffiliateRoute
+  '/app/automations': typeof AppAutomationsRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/courses': typeof AppCoursesRoute
@@ -199,6 +222,7 @@ export interface FileRoutesByTo {
   '/app/dashboard': typeof AppDashboardRoute
   '/app/feed': typeof AppFeedRoute
   '/app/leaderboard': typeof AppLeaderboardRoute
+  '/app/live': typeof AppLiveRoute
   '/app/members': typeof AppMembersRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/payouts': typeof AppPayoutsRoute
@@ -219,6 +243,8 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/affiliate': typeof AppAffiliateRoute
+  '/app/automations': typeof AppAutomationsRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/courses': typeof AppCoursesRoute
@@ -226,6 +252,7 @@ export interface FileRoutesById {
   '/app/dashboard': typeof AppDashboardRoute
   '/app/feed': typeof AppFeedRoute
   '/app/leaderboard': typeof AppLeaderboardRoute
+  '/app/live': typeof AppLiveRoute
   '/app/members': typeof AppMembersRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/payouts': typeof AppPayoutsRoute
@@ -247,6 +274,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/app/affiliate'
+    | '/app/automations'
     | '/app/calendar'
     | '/app/classroom'
     | '/app/courses'
@@ -254,6 +283,7 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/feed'
     | '/app/leaderboard'
+    | '/app/live'
     | '/app/members'
     | '/app/messages'
     | '/app/payouts'
@@ -272,6 +302,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/app/affiliate'
+    | '/app/automations'
     | '/app/calendar'
     | '/app/classroom'
     | '/app/courses'
@@ -279,6 +311,7 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/feed'
     | '/app/leaderboard'
+    | '/app/live'
     | '/app/members'
     | '/app/messages'
     | '/app/payouts'
@@ -298,6 +331,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/app/affiliate'
+    | '/app/automations'
     | '/app/calendar'
     | '/app/classroom'
     | '/app/courses'
@@ -305,6 +340,7 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/feed'
     | '/app/leaderboard'
+    | '/app/live'
     | '/app/members'
     | '/app/messages'
     | '/app/payouts'
@@ -448,6 +484,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMembersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/live': {
+      id: '/app/live'
+      path: '/live'
+      fullPath: '/app/live'
+      preLoaderRoute: typeof AppLiveRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leaderboard': {
       id: '/app/leaderboard'
       path: '/leaderboard'
@@ -497,10 +540,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCalendarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/automations': {
+      id: '/app/automations'
+      path: '/automations'
+      fullPath: '/app/automations'
+      preLoaderRoute: typeof AppAutomationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/affiliate': {
+      id: '/app/affiliate'
+      path: '/affiliate'
+      fullPath: '/app/affiliate'
+      preLoaderRoute: typeof AppAffiliateRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAffiliateRoute: typeof AppAffiliateRoute
+  AppAutomationsRoute: typeof AppAutomationsRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppClassroomRoute: typeof AppClassroomRoute
   AppCoursesRoute: typeof AppCoursesRoute
@@ -508,6 +567,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppFeedRoute: typeof AppFeedRoute
   AppLeaderboardRoute: typeof AppLeaderboardRoute
+  AppLiveRoute: typeof AppLiveRoute
   AppMembersRoute: typeof AppMembersRoute
   AppMessagesRoute: typeof AppMessagesRoute
   AppPayoutsRoute: typeof AppPayoutsRoute
@@ -517,6 +577,8 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAffiliateRoute: AppAffiliateRoute,
+  AppAutomationsRoute: AppAutomationsRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppClassroomRoute: AppClassroomRoute,
   AppCoursesRoute: AppCoursesRoute,
@@ -524,6 +586,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppFeedRoute: AppFeedRoute,
   AppLeaderboardRoute: AppLeaderboardRoute,
+  AppLiveRoute: AppLiveRoute,
   AppMembersRoute: AppMembersRoute,
   AppMessagesRoute: AppMessagesRoute,
   AppPayoutsRoute: AppPayoutsRoute,

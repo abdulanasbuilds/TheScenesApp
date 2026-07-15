@@ -1,42 +1,56 @@
 ---
-name: SukaSpace dashboards + auth
-description: Learner and Creator dashboard architecture, auth flow, and DB schema details
+name: SukaSpace Dashboards & Auth
+description: Routing, auth guard, role-based navigation, Paystack integration, and Coming Soon routes.
 ---
 
-## Learner Dashboard — /app/dashboard
+## Auth
+- Auth guard is in `AppShell.tsx` via `window.location.replace("/auth")` when `!store.session`.
+- Role-based redirect post-login: creator → `/app/creator`, learner → `/app/dashboard`.
+- `create-community` route has its own auth guard.
 
-- 5 tabs: Overview | Learning | Communities | Calendar | Messages
-- Data sourced from useAppStore(): enrolled courses via isEnrolled(), joined communities via isJoined(), events via getCommunityEvents(), posts/notifications
-- CourseProgressCard reads getCourseProgress(courseId) for progress bars
-- EmptySection component reused across tabs
+## Navigation
+- `CREATOR_NAV` and `LEARNER_NAV` are typed `NavItem[]` arrays (not `as const`) with optional `comingSoon?: boolean`.
+- Nav items with `comingSoon: true` show an amber "Soon" badge in both desktop sidebar and mobile scrollable nav.
+- Mobile bottom nav shows only top 5 routes (no coming-soon items).
+- Mobile scrollable nav (horizontal scroll below top bar) shows ALL nav items including coming-soon.
+- XP tier badge shown in sidebar above profile card; uses `xpToTier(0)` placeholder — wire real XP when tracking is implemented.
 
-## Creator Dashboard — /app/creator
+## Key routes
+- `/app/dashboard` — Learner dashboard (5 tabs)
+- `/app/creator` — Creator Hub (7 tabs)
+- `/app/leaderboard` — Full leaderboard with podium, rankings table, achievements, tier progression
+- `/app/payouts` — Payouts with Paystack connection banner, earnings chart, withdrawal modal
+- `/app/live` — Coming Soon (Radio icon, rose gradient)
+- `/app/automations` — Coming Soon (Zap icon, amber gradient), creator-only nav
+- `/app/affiliate` — Coming Soon (Share2 icon, emerald gradient), creator-only nav
 
-- 7 tabs: Overview | Communities | Courses | Members | Payments | Analytics | Settings
-- recharts LineChart (enrollment trend) + BarChart (per-course) in Analytics tab
-- Payments tab shows $0 balance card + empty transaction table, ready to wire
-- Members tab shows a table populated from store.session + mock member rows; grows as real members join
+## Paystack Integration
+- `src/lib/paystack.ts` — client-side SDK loader, `initiatePaystackPayment()`, `isPaystackConfigured()`, `priceStringToAmount()`
+- `src/lib/paystack.functions.ts` — server-side `verifyPaystackPayment` createServerFn; calls `https://api.paystack.co/transaction/verify/{ref}`
+- Public key: `VITE_PAYSTACK_PUBLIC_KEY` (client-safe); Secret key: `PAYSTACK_SECRET_KEY` (server only).
+- When Paystack is NOT configured, discover page shows "Demo Mode" — joins community without real payment (graceful fallback).
+- Verify flow: popup callback → call `verifyPaystackPayment` server fn → on success call `store.joinCommunity(id)`.
+- **Why:** Paystack chosen over Flutterwave (simpler popup API); Stripe = "Coming Soon" note in UI.
 
-## Auth fixes
+## Replit PostgreSQL schema
+- 7 tables created from `MIGRATION_SQL` in `src/lib/db.ts`.
+- App functions fully in localStorage-only mode (Supabase keys absent — intentional).
 
-- Signup now has role selector (Learn/Create cards) — passes role to store.signUp()
-- After signin: reads account.role from store.accounts BEFORE signIn() call, then navigates creator→/app/creator, learner→/app/dashboard
-- create-community.tsx: useEffect guard redirects to /auth if !store.session
-- auth.tsx: useEffect guard redirects logged-in users away from /auth to their dashboard
-- onboarding.tsx: finishOnboarding() now navigates to role-based dashboard
+## Coming Soon component
+- `src/components/ComingSoon.tsx` — accepts `icon`, `title`, `subtitle`, `description`, `features[]`, `badge`, `backTo`, `backLabel`, `gradientClass`.
+- "Notify me" button calls `store.pushNotification()` + toast (no email).
 
-## AppShell nav — role-based
+## xpToTier function
+- Updated to return `{ name, color, emoji, nextAt: number | null }`.
+- Tiers: Bronze (0) → Silver (500) → Gold I (900) → Gold II (1400) → Platinum (2000) → Diamond I (2800) → Diamond Elite (4000).
+- **Why:** Added `nextAt` for progress bar rendering in leaderboard and sidebar.
 
-- CREATOR_NAV: Creator Hub first, then Community, Courses, Classroom, Members, Calendar, Messages, Payouts, Search, Settings
-- LEARNER_NAV: Dashboard first, then Community, Classroom, Courses, Calendar, Messages, Search, Settings
-- Mobile bottom nav is dynamically built from the role-appropriate set
+## Mock data additions
+- `MOCK_LEADERBOARD_MEMBERS` — 10 members with `xp`, `weekXp`, `monthXp`, `streak`, `postsCount`, `coursesCompleted`.
+- `MOCK_TESTIMONIALS` — 3 testimonials used on landing page.
+- `XP_EVENTS` — XP rewards table for different actions.
 
-## PostgreSQL (Replit native)
-
-- 7 tables created: profiles, communities, courses, enrollments, messages, payments, notifications
-- Indexes on: communities.creator_email, courses.creator_email, enrollments.user_email, notifications.user_email, payments.to_email
-- Full schema with extended tables (course_modules, lessons, lesson_resources, community_members, community_resources, enrollment_progress, access_records) documented in src/lib/db.ts
-- pg package installed (v8.22.0)
-- Migration ran successfully via Bun script against DATABASE_URL
-
-**Why:** pg cannot be imported in browser/client code — it's server-only. Dashboards use localStorage store for display. DB is the write-through layer for production wiring via TanStack Start createServerFn.
+## Landing page (index.tsx)
+- Sections: Hero → Stats bar → Core features (8) → How it works (3 steps) → Comparison table vs Skool/Circle → Coming Soon strip → Testimonials → Pricing teaser → Final CTA → Footer.
+- `CellVal = boolean | "soon"` type used for comparison table cells.
+- Avatar `tone` valid values: `"slate" | "primary" | "sky"` (NOT "default").

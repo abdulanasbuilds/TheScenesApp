@@ -92,12 +92,14 @@ export const MOCK_TRANSACTIONS = [
   { id: 9, desc: "Payout to bank ••4821", amount: -320, date: "2026-06-15", type: "payout" },
 ];
 
-export function xpToTier(xp: number) {
-  if (xp >= 2200) return { name: "Diamond I", color: "text-sky-600 bg-sky-100" };
-  if (xp >= 1800) return { name: "Gold I", color: "text-amber-600 bg-amber-100" };
-  if (xp >= 1400) return { name: "Gold III", color: "text-amber-600 bg-amber-100" };
-  if (xp >= 1000) return { name: "Silver I", color: "text-slate-600 bg-slate-200" };
-  return { name: "Bronze I", color: "text-orange-700 bg-orange-100" };
+export function xpToTier(xp: number): { name: string; color: string; emoji: string; nextAt: number | null } {
+  if (xp >= 4000) return { name: "Diamond Elite", color: "text-sky-600 bg-sky-100",     emoji: "💎", nextAt: null  };
+  if (xp >= 2800) return { name: "Diamond I",     color: "text-sky-600 bg-sky-100",     emoji: "💎", nextAt: 4000 };
+  if (xp >= 2000) return { name: "Platinum",      color: "text-slate-600 bg-slate-200", emoji: "⚡", nextAt: 2800 };
+  if (xp >= 1400) return { name: "Gold II",       color: "text-amber-600 bg-amber-100", emoji: "🥇", nextAt: 2000 };
+  if (xp >= 900)  return { name: "Gold I",        color: "text-amber-600 bg-amber-100", emoji: "🥇", nextAt: 1400 };
+  if (xp >= 500)  return { name: "Silver",        color: "text-slate-500 bg-slate-100", emoji: "🥈", nextAt: 900  };
+  return                  { name: "Bronze",        color: "text-orange-700 bg-orange-100", emoji: "🥉", nextAt: 500  };
 }
 
 export const MOCK_CLASSROOM_MODULES = [
@@ -142,3 +144,34 @@ export const MOCK_ANALYTICS = {
 };
 
 export const MOCK_GROWTH_SERIES = [12, 18, 22, 28, 30, 38, 44, 52, 58, 66, 71, 82];
+
+export const MOCK_LEADERBOARD_MEMBERS = [
+  { id: 1, name: "Alex Rivera",   avatar: "AR", xp: 4820, streak: 45, postsCount: 156, coursesCompleted: 12, joinDate: "Oct '25", weekXp: 420, monthXp: 1680 },
+  { id: 2, name: "Sarah Jenkins", avatar: "SJ", xp: 3990, streak: 32, postsCount: 129, coursesCompleted: 9,  joinDate: "Nov '25", weekXp: 380, monthXp: 1540 },
+  { id: 3, name: "David Kim",     avatar: "DK", xp: 3450, streak: 28, postsCount: 108, coursesCompleted: 8,  joinDate: "Jan '26", weekXp: 310, monthXp: 1250 },
+  { id: 4, name: "Elena Rostova", avatar: "ER", xp: 2890, streak: 24, postsCount: 92,  coursesCompleted: 7,  joinDate: "Jan '26", weekXp: 270, monthXp: 1080 },
+  { id: 5, name: "Yuki Tanaka",   avatar: "YT", xp: 2440, streak: 21, postsCount: 78,  coursesCompleted: 6,  joinDate: "Feb '26", weekXp: 230, monthXp:  920 },
+  { id: 6, name: "Priya Nair",    avatar: "PN", xp: 2200, streak: 19, postsCount: 65,  coursesCompleted: 5,  joinDate: "Mar '26", weekXp: 190, monthXp:  780 },
+  { id: 7, name: "Marcus Bell",   avatar: "MB", xp: 1870, streak: 15, postsCount: 54,  coursesCompleted: 4,  joinDate: "Mar '26", weekXp: 150, monthXp:  620 },
+  { id: 8, name: "Jonas Weiss",   avatar: "JW", xp: 1580, streak: 12, postsCount: 43,  coursesCompleted: 3,  joinDate: "Apr '26", weekXp: 120, monthXp:  490 },
+  { id: 9, name: "Amara Osei",    avatar: "AO", xp: 1240, streak: 8,  postsCount: 32,  coursesCompleted: 2,  joinDate: "May '26", weekXp:  90, monthXp:  360 },
+  { id: 10, name: "Kwame Asante", avatar: "KA", xp:  980, streak: 5,  postsCount: 21,  coursesCompleted: 1,  joinDate: "Jun '26", weekXp:  60, monthXp:  240 },
+];
+
+export type LeaderboardMember = (typeof MOCK_LEADERBOARD_MEMBERS)[number];
+
+export const MOCK_TESTIMONIALS = [
+  { name: "Zara Mensah",      avatar: "ZM", role: "AI Product Manager", body: "SukaSpace replaced four separate tools for me. The course builder is genuinely better than what I used on Teachable — and the community feed actually keeps people engaged.", community: "AI Automation Architects" },
+  { name: "Riku Hashimoto",   avatar: "RH", role: "Senior SWE @ Shopify", body: "Finally, a platform that doesn't treat creators as an afterthought. The analytics alone are worth it. My cohort completion rate went from 31% to 74% in one launch cycle.", community: "Full-Stack Engineers" },
+  { name: "Fatou Diallo",     avatar: "FD", role: "Growth Operator",    body: "We moved our entire paid community off Circle last quarter. Onboarding is half the friction, and the leaderboard gamification actually drives real daily logins.", community: "SaaS Growth Circle" },
+];
+
+export const XP_EVENTS = [
+  { action: "post",            xp: 15, label: "Post in community" },
+  { action: "comment",         xp: 8,  label: "Leave a comment" },
+  { action: "lesson_complete", xp: 25, label: "Complete a lesson" },
+  { action: "login_streak",    xp: 10, label: "Daily login streak" },
+  { action: "community_join",  xp: 20, label: "Join a community" },
+  { action: "course_enroll",   xp: 30, label: "Enroll in a course" },
+  { action: "receive_upvote",  xp: 5,  label: "Post upvoted" },
+] as const;
