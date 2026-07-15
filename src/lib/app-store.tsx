@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 // ─── Core Types ──────────────────────────────────────────────────────────────
 
@@ -251,6 +252,112 @@ function loadState(): PersistedState {
   }
 }
 
+// ─── Supabase <-> app-shape mapping ────────────────────────────────────────────
+// Row ids stay client-generated numbers (see generateId above) so nested
+// module/lesson updates don't need to change shape when a real database is
+// wired in — see supabase/schema.sql for the table definitions these map to.
+
+function communityToRow(c: Community) {
+  return {
+    id: c.id, title: c.title, category: c.category, members: c.members,
+    creator: c.creator, creator_email: c.creatorEmail, avatar: c.avatar,
+    banner: c.banner, tag: c.tag, price: c.price ?? null, summary: c.summary,
+    created_at: c.createdAt,
+  };
+}
+function communityFromRow(r: any): Community {
+  return {
+    id: r.id, title: r.title, category: r.category, members: r.members,
+    creator: r.creator, creatorEmail: r.creator_email, avatar: r.avatar,
+    banner: r.banner, tag: r.tag, price: r.price ?? undefined, summary: r.summary,
+    createdAt: r.created_at,
+  };
+}
+function postToRow(p: FeedPost) {
+  return {
+    id: p.id, community_id: p.communityId, channel: p.channel, author: p.author,
+    role: p.role, avatar: p.avatar, title: p.title, category: p.category,
+    likes: p.likes, comments: p.comments, body: p.body, created_at: p.createdAt,
+  };
+}
+function postFromRow(r: any): FeedPost {
+  return {
+    id: r.id, communityId: r.community_id, channel: r.channel, author: r.author,
+    role: r.role, avatar: r.avatar, title: r.title, category: r.category,
+    likes: r.likes, comments: r.comments, body: r.body, createdAt: r.created_at,
+  };
+}
+function commentToRow(c: Comment, postId: number) {
+  return { id: c.id, post_id: postId, author: c.author, avatar: c.avatar, body: c.body, created_at: c.createdAt };
+}
+function commentFromRow(r: any): Comment {
+  return { id: r.id, postId: r.post_id, author: r.author, avatar: r.avatar, body: r.body, createdAt: r.created_at };
+}
+function eventToRow(e: CommunityEvent) {
+  return {
+    id: e.id, community_id: e.communityId, title: e.title, event_date: e.date,
+    event_time: e.time ?? null, type: e.type, created_at: e.createdAt,
+  };
+}
+function eventFromRow(r: any): CommunityEvent {
+  return {
+    id: r.id, communityId: r.community_id, title: r.title, date: r.event_date,
+    time: r.event_time ?? undefined, type: r.type, createdAt: r.created_at,
+  };
+}
+function communityResourceToRow(res: CommunityResource) {
+  return { id: res.id, community_id: res.communityId, title: res.title, url: res.url, source: res.source, added_at: res.addedAt };
+}
+function communityResourceFromRow(r: any): CommunityResource {
+  return { id: r.id, communityId: r.community_id, title: r.title, url: r.url, source: r.source, addedAt: r.added_at };
+}
+function courseToRow(c: Course) {
+  return {
+    id: c.id, community_id: c.communityId, title: c.title, description: c.description,
+    creator_email: c.creatorEmail, published: c.published, enrollment_count: c.enrollmentCount,
+    created_at: c.createdAt,
+  };
+}
+function courseFromRow(r: any): Course {
+  const modules = (r.modules || [])
+    .slice()
+    .sort((a: any, b: any) => a.sort_order - b.sort_order)
+    .map((m: any): CourseModule => ({
+      id: m.id, title: m.title, order: m.sort_order,
+      lessons: (m.lessons || [])
+        .slice()
+        .sort((a: any, b: any) => a.sort_order - b.sort_order)
+        .map((l: any): Lesson => ({
+          id: l.id, title: l.title, description: l.description || "", videoUrl: l.video_url || "",
+          published: l.published, order: l.sort_order,
+          resources: (l.lesson_resources || []).map((res: any): LessonResource => ({
+            id: res.id, title: res.title, url: res.url, source: res.source, addedAt: res.added_at,
+          })),
+        })),
+    }));
+  return {
+    id: r.id, communityId: r.community_id, title: r.title, description: r.description || "",
+    creatorEmail: r.creator_email || "", published: r.published, enrollmentCount: r.enrollment_count,
+    createdAt: r.created_at, modules,
+  };
+}
+
+// Fire a Supabase write in the background. State is already updated
+// optimistically before this runs, so a failure here means "not synced to
+// the database yet", not "the UI is wrong" — surface it without blocking.
+function sync(promise: PromiseLike<{ error: unknown }> | undefined, label: string) {
+  if (!promise) return;
+  promise.then(
+    (res) => {
+      if (res?.error) {
+        console.error(`[SukaSpace] Supabase ${label} failed:`, res.error);
+        toast.error(`Couldn't sync "${label}" to your database. It's saved on this device for now.`);
+      }
+    },
+    (err: unknown) => console.error(`[SukaSpace] Supabase ${label} failed:`, err),
+  );
+}
+
 // ─── Store Interface ──────────────────────────────────────────────────────────
 
 type CreateCommunityInput = {
@@ -275,8 +382,8 @@ type AppStoreValue = {
   communityEvents: CommunityEvent[];
   enrollments: Enrollment[];
   // auth
-  signIn: (email: string, password: string) => SignInResult;
-  signUp: (name: string, email: string, password: string, role: "creator" | "learner") => SignUpResult;
+  signIn: (email: string, password: string) => Promise<SignInResult>;
+  signUp: (name: string, email: string, password: string, role: "creator" | "learner") => Promise<SignUpResult>;
   signOut: () => void;
   updateProfile: (patch: { name?: string; bio?: string; photoUrl?: string }) => void;
   getAccountRole: (email: string) => "creator" | "learner" | undefined;
@@ -339,13 +446,103 @@ type AppStoreValue = {
 
 const AppStoreContext = createContext<AppStoreValue | null>(null);
 
+async function fetchProfile(userId: string, fallbackEmail: string, meta: Record<string, unknown>): Promise<SessionUser | null> {
+  if (!supabase) return null;
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  if (profile) {
+    return {
+      name: profile.name, email: profile.email,
+      avatar: profile.avatar || profile.name.slice(0, 2).toUpperCase(),
+      role: profile.role, photoUrl: profile.photo_url || undefined, bio: profile.bio || undefined,
+    };
+  }
+  // First sign-in after signup (or a project with email confirmation delay):
+  // bootstrap the profile row from the auth user's metadata instead of failing.
+  const name = (meta.name as string) || fallbackEmail.split("@")[0] || "User";
+  const role: "creator" | "learner" = meta.role === "creator" ? "creator" : "learner";
+  const avatar = name.slice(0, 2).toUpperCase() || "YU";
+  const { data: created } = await supabase
+    .from("profiles")
+    .upsert({ id: userId, email: fallbackEmail, name, role, avatar })
+    .select()
+    .maybeSingle();
+  if (!created) return { name, email: fallbackEmail, avatar, role };
+  return { name: created.name, email: created.email, avatar: created.avatar, role: created.role, photoUrl: created.photo_url || undefined, bio: created.bio || undefined };
+}
+
 export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedState>(defaultState);
   const [isHydrated, setIsHydrated] = useState(false);
+  const bootingRef = useRef(false);
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function bootFromSupabase() {
+      if (!supabase) return;
+      if (bootingRef.current) return;
+      bootingRef.current = true;
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const authUser = sessionData.session?.user ?? null;
+        const session = authUser?.email
+          ? await fetchProfile(authUser.id, authUser.email, authUser.user_metadata || {})
+          : null;
+        const email = session?.email;
+
+        const [
+          communitiesRes, joinedRes, postsRes, likedRes, commentsRes, reactionsRes,
+          coursesRes, resourcesRes, eventsRes, enrollmentsRes, accessRes, notificationsRes,
+        ] = await Promise.all([
+          supabase.from("communities").select("*"),
+          email ? supabase.from("joined_communities").select("community_id").eq("user_email", email) : Promise.resolve({ data: [] as any[] }),
+          supabase.from("posts").select("*"),
+          email ? supabase.from("liked_posts").select("post_id").eq("user_email", email) : Promise.resolve({ data: [] as any[] }),
+          supabase.from("comments").select("*"),
+          supabase.from("reactions").select("*"),
+          supabase.from("courses").select("*, modules(*, lessons(*, lesson_resources(*)))"),
+          supabase.from("community_resources").select("*"),
+          supabase.from("community_events").select("*"),
+          email ? supabase.from("enrollments").select("*").eq("user_email", email) : Promise.resolve({ data: [] as any[] }),
+          email ? supabase.from("access_records").select("*").eq("user_email", email) : Promise.resolve({ data: [] as any[] }),
+          email ? supabase.from("notifications").select("*").eq("user_email", email).order("created_at", { ascending: false }) : Promise.resolve({ data: [] as any[] }),
+        ]);
+
+        if (cancelled) return;
+
+        setState({
+          session,
+          accounts: [],
+          userCommunities: (communitiesRes.data || []).map(communityFromRow),
+          extraPosts: (postsRes.data || []).map(postFromRow),
+          likedPostIds: (likedRes.data || []).map((r: any) => r.post_id),
+          joinedCommunityIds: (joinedRes.data || []).map((r: any) => r.community_id),
+          notifications: (notificationsRes.data || []).map((r: any): AppNotification => ({ id: r.id, text: r.text, time: r.time, read: r.read })),
+          courses: (coursesRes.data || []).map(courseFromRow),
+          comments: (commentsRes.data || []).map(commentFromRow),
+          reactions: (reactionsRes.data || []).map((r: any): Reaction => ({ postId: r.post_id, userEmail: r.user_email, emoji: r.emoji })),
+          communityEvents: (eventsRes.data || []).map(eventFromRow),
+          communityResources: (resourcesRes.data || []).map(communityResourceFromRow),
+          enrollments: (enrollmentsRes.data || []).map((r: any): Enrollment => ({ courseId: r.course_id, userEmail: r.user_email, completedLessonIds: r.completed_lesson_ids || [], enrolledAt: r.enrolled_at })),
+          accessRecords: (accessRes.data || []).map((r: any): AccessRecord => ({ id: r.id, resourceId: r.resource_id, resourceTitle: r.resource_title, resourceType: r.resource_type, communityId: r.community_id ?? undefined, userEmail: r.user_email, accessedAt: r.accessed_at })),
+        });
+      } catch (err) {
+        console.error("[SukaSpace] Failed to load from Supabase, falling back to this device's local cache:", err);
+        setState(loadState());
+      } finally {
+        bootingRef.current = false;
+      }
+    }
+
+    if (isSupabaseConfigured && supabase) {
+      bootFromSupabase().finally(() => { if (!cancelled) setIsHydrated(true); });
+      const { data: sub } = supabase.auth.onAuthStateChange(() => { bootFromSupabase(); });
+      return () => { cancelled = true; sub.subscription.unsubscribe(); };
+    }
+
     setState(loadState());
     setIsHydrated(true);
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -396,28 +593,57 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     accessRecords: state.accessRecords,
 
     // ── auth ──
-    signIn: (email, password) => {
-      const account = state.accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
-      if (!account) return "not_found";
-      if (account.password !== password) return "wrong_password";
-      const user: SessionUser = { name: account.name, email: account.email, avatar: account.name.slice(0, 2).toUpperCase(), role: account.role, photoUrl: account.photoUrl, bio: account.bio };
+    signIn: async (email, password) => {
+      if (!supabase) {
+        const account = state.accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+        if (!account) return "not_found";
+        if (account.password !== password) return "wrong_password";
+        const user: SessionUser = { name: account.name, email: account.email, avatar: account.name.slice(0, 2).toUpperCase(), role: account.role, photoUrl: account.photoUrl, bio: account.bio };
+        setState(s => ({ ...s, session: user }));
+        return user;
+      }
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error || !data.user) return "wrong_password";
+      const user = await fetchProfile(data.user.id, data.user.email || email, data.user.user_metadata || {});
+      if (!user) return "not_found";
       setState(s => ({ ...s, session: user }));
       return user;
     },
-    signUp: (name, email, password, role) => {
-      const exists = state.accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
-      if (exists) return "email_taken";
-      const user: SessionUser = { name, email, avatar: name.slice(0, 2).toUpperCase() || "YU", role };
-      const account: StoredAccount = { email, name, password, role };
+    signUp: async (name, email, password, role) => {
+      if (!supabase) {
+        const exists = state.accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+        if (exists) return "email_taken";
+        const user: SessionUser = { name, email, avatar: name.slice(0, 2).toUpperCase() || "YU", role };
+        const account: StoredAccount = { email, name, password, role };
+        setState(s => ({
+          ...s,
+          session: user,
+          accounts: [...s.accounts, account],
+          notifications: [{ id: generateId(), text: `Welcome to SukaSpace, ${name}!`, time: "Just now", read: false }],
+        }));
+        return user;
+      }
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name, role } } });
+      if (error) {
+        if (error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("already exists")) return "email_taken";
+        throw error;
+      }
+      if (!data.user) return "email_taken";
+      const avatar = name.slice(0, 2).toUpperCase() || "YU";
+      await supabase.from("profiles").upsert({ id: data.user.id, email, name, role, avatar });
+      const user: SessionUser = { name, email, avatar, role };
       setState(s => ({
         ...s,
         session: user,
-        accounts: [...s.accounts, account],
         notifications: [{ id: generateId(), text: `Welcome to SukaSpace, ${name}!`, time: "Just now", read: false }],
       }));
+      sync(supabase.from("notifications").insert({ id: generateId(), user_email: email, text: `Welcome to SukaSpace, ${name}!`, time: "Just now", read: false, created_at: Date.now() }), "welcome notification");
       return user;
     },
-    signOut: () => setState(s => ({ ...s, session: null })),
+    signOut: () => {
+      if (supabase) supabase.auth.signOut();
+      setState(s => ({ ...s, session: null }));
+    },
     getAccountRole: (email) => state.accounts.find(a => a.email.toLowerCase() === email.toLowerCase())?.role,
     updateProfile: (patch) => {
       setState(s => {
@@ -427,6 +653,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         );
         return { ...s, session: updatedSession, accounts: updatedAccounts };
       });
+      if (supabase && state.session) {
+        sync(supabase.from("profiles").update({
+          ...(patch.name !== undefined ? { name: patch.name } : {}),
+          ...(patch.bio !== undefined ? { bio: patch.bio } : {}),
+          ...(patch.photoUrl !== undefined ? { photo_url: patch.photoUrl } : {}),
+        }).eq("email", state.session.email), "profile update");
+      }
     },
 
     // ── communities ──
@@ -444,24 +677,38 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         joinedCommunityIds: [community.id, ...s.joinedCommunityIds],
         notifications: [{ id: generateId(), text: `"${community.title}" is now live on Discover.`, time: "Just now", read: false }, ...s.notifications],
       }));
+      if (supabase) {
+        sync(supabase.from("communities").insert(communityToRow(community)), "community create");
+        if (state.session?.email) sync(supabase.from("joined_communities").insert({ community_id: community.id, user_email: state.session.email }), "community join");
+      }
       return community;
     },
-    deleteCommunity: (id) => setState(s => {
-      // Cascade: remove everything that hangs off this community so deleting
-      // it doesn't leave orphaned posts/courses/resources/events behind.
-      const courseIdsToRemove = new Set(s.courses.filter(c => c.communityId === id).map(c => c.id));
-      return {
-        ...s,
-        userCommunities: s.userCommunities.filter(c => c.id !== id),
-        joinedCommunityIds: s.joinedCommunityIds.filter(cid => cid !== id),
-        courses: s.courses.filter(c => c.communityId !== id),
-        enrollments: s.enrollments.filter(e => !courseIdsToRemove.has(e.courseId)),
-        extraPosts: s.extraPosts.filter(p => p.communityId !== id),
-        communityResources: s.communityResources.filter(r => r.communityId !== id),
-        communityEvents: s.communityEvents.filter(e => e.communityId !== id),
-      };
-    }),
-    joinCommunity: (id) => setState(s => s.joinedCommunityIds.includes(id) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, id] }),
+    deleteCommunity: (id) => {
+      const courseIdsToRemove = state.courses.filter(c => c.communityId === id).map(c => c.id);
+      setState(s => {
+        const removeSet = new Set(courseIdsToRemove);
+        return {
+          ...s,
+          userCommunities: s.userCommunities.filter(c => c.id !== id),
+          joinedCommunityIds: s.joinedCommunityIds.filter(cid => cid !== id),
+          courses: s.courses.filter(c => c.communityId !== id),
+          enrollments: s.enrollments.filter(e => !removeSet.has(e.courseId)),
+          extraPosts: s.extraPosts.filter(p => p.communityId !== id),
+          communityResources: s.communityResources.filter(r => r.communityId !== id),
+          communityEvents: s.communityEvents.filter(e => e.communityId !== id),
+        };
+      });
+      if (supabase) {
+        if (courseIdsToRemove.length) sync(supabase.from("courses").delete().in("id", courseIdsToRemove), "course cascade delete");
+        sync(supabase.from("communities").delete().eq("id", id), "community delete");
+      }
+    },
+    joinCommunity: (id) => {
+      setState(s => s.joinedCommunityIds.includes(id) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, id] });
+      if (supabase && state.session?.email && !state.joinedCommunityIds.includes(id)) {
+        sync(supabase.from("joined_communities").insert({ community_id: id, user_email: state.session.email }), "community join");
+      }
+    },
     isJoined: (id) => state.joinedCommunityIds.includes(id),
 
     // ── posts ──
@@ -473,14 +720,27 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         likes: 0, comments: 0, body: input.body, createdAt: Date.now(),
       };
       setState(s => ({ ...s, extraPosts: [post, ...s.extraPosts] }));
+      if (supabase) sync(supabase.from("posts").insert(postToRow(post)), "post create");
       return post;
     },
-    toggleLike: (postId) => setState(s => ({
-      ...s,
-      likedPostIds: s.likedPostIds.includes(postId)
-        ? s.likedPostIds.filter(id => id !== postId)
-        : [...s.likedPostIds, postId],
-    })),
+    toggleLike: (postId) => {
+      const email = state.session?.email;
+      const wasLiked = state.likedPostIds.includes(postId);
+      setState(s => ({
+        ...s,
+        likedPostIds: wasLiked
+          ? s.likedPostIds.filter(id => id !== postId)
+          : [...s.likedPostIds, postId],
+      }));
+      if (supabase && email) {
+        sync(
+          wasLiked
+            ? supabase.from("liked_posts").delete().eq("post_id", postId).eq("user_email", email)
+            : supabase.from("liked_posts").insert({ post_id: postId, user_email: email }),
+          "post like",
+        );
+      }
+    },
     isLiked: (postId) => state.likedPostIds.includes(postId),
 
     // ── comments ──
@@ -491,11 +751,16 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         avatar: state.session?.avatar || "YU",
         createdAt: Date.now(),
       };
+      const newCount = (state.extraPosts.find(p => p.id === postId)?.comments ?? 0) + 1;
       setState(s => ({
         ...s,
         comments: [...s.comments, comment],
         extraPosts: s.extraPosts.map(p => p.id === postId ? { ...p, comments: p.comments + 1 } : p),
       }));
+      if (supabase) {
+        sync(supabase.from("comments").insert(commentToRow(comment, postId)), "comment create");
+        sync(supabase.from("posts").update({ comments: newCount }).eq("id", postId), "post comment count");
+      }
       return comment;
     },
     getComments: (postId) => state.comments.filter(c => c.postId === postId),
@@ -503,15 +768,21 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     // ── reactions ──
     toggleReaction: (postId, emoji) => {
       const email = state.session?.email || "anon";
-      setState(s => {
-        const existing = s.reactions.find(r => r.postId === postId && r.userEmail === email && r.emoji === emoji);
-        return {
-          ...s,
-          reactions: existing
-            ? s.reactions.filter(r => !(r.postId === postId && r.userEmail === email && r.emoji === emoji))
-            : [...s.reactions, { postId, userEmail: email, emoji }],
-        };
-      });
+      const existing = state.reactions.find(r => r.postId === postId && r.userEmail === email && r.emoji === emoji);
+      setState(s => ({
+        ...s,
+        reactions: existing
+          ? s.reactions.filter(r => !(r.postId === postId && r.userEmail === email && r.emoji === emoji))
+          : [...s.reactions, { postId, userEmail: email, emoji }],
+      }));
+      if (supabase && state.session?.email) {
+        sync(
+          existing
+            ? supabase.from("reactions").delete().eq("post_id", postId).eq("user_email", email).eq("emoji", emoji)
+            : supabase.from("reactions").insert({ post_id: postId, user_email: email, emoji }),
+          "reaction",
+        );
+      }
     },
     getReactions: (postId) => {
       const email = state.session?.email || "anon";
@@ -532,25 +803,40 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         modules: [], published: false, enrollmentCount: 0, createdAt: Date.now(),
       };
       setState(s => ({ ...s, courses: [course, ...s.courses] }));
+      if (supabase) sync(supabase.from("courses").insert(courseToRow(course)), "course create");
       return course;
     },
-    updateCourse: (id, patch) => mutateCourse(id, c => ({ ...c, ...patch })),
+    updateCourse: (id, patch) => {
+      mutateCourse(id, c => ({ ...c, ...patch }));
+      if (supabase) {
+        const row: Record<string, unknown> = {};
+        if (patch.title !== undefined) row.title = patch.title;
+        if (patch.description !== undefined) row.description = patch.description;
+        if (patch.communityId !== undefined) row.community_id = patch.communityId;
+        sync(supabase.from("courses").update(row).eq("id", id), "course update");
+      }
+    },
     publishCourse: (id) => {
-      mutateCourse(id, c => ({ ...c, published: true }));
       const course = state.courses.find(c => c.id === id);
-      if (course) setState(s => ({
+      setState(s => ({
         ...s,
         courses: s.courses.map(c => c.id === id ? { ...c, published: true } : c),
-        notifications: [{ id: generateId(), text: `"${course.title}" is now published.`, time: "Just now", read: false }, ...s.notifications],
+        notifications: course ? [{ id: generateId(), text: `"${course.title}" is now published.`, time: "Just now", read: false }, ...s.notifications] : s.notifications,
       }));
+      if (supabase) sync(supabase.from("courses").update({ published: true }).eq("id", id), "course publish");
     },
-    unpublishCourse: (id) => mutateCourse(id, c => ({ ...c, published: false })),
-    deleteCourse: (id) => setState(s => ({
-      ...s,
-      courses: s.courses.filter(c => c.id !== id),
-      // Cascade: a deleted course can't leave orphaned enrollments/progress behind.
-      enrollments: s.enrollments.filter(e => e.courseId !== id),
-    })),
+    unpublishCourse: (id) => {
+      mutateCourse(id, c => ({ ...c, published: false }));
+      if (supabase) sync(supabase.from("courses").update({ published: false }).eq("id", id), "course unpublish");
+    },
+    deleteCourse: (id) => {
+      setState(s => ({
+        ...s,
+        courses: s.courses.filter(c => c.id !== id),
+        enrollments: s.enrollments.filter(e => e.courseId !== id),
+      }));
+      if (supabase) sync(supabase.from("courses").delete().eq("id", id), "course delete");
+    },
 
     // ── modules ──
     addModule: (courseId, title) => {
@@ -559,10 +845,17 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         order: (state.courses.find(c => c.id === courseId)?.modules.length || 0) + 1,
       };
       mutateCourse(courseId, c => ({ ...c, modules: [...c.modules, mod] }));
+      if (supabase) sync(supabase.from("modules").insert({ id: mod.id, course_id: courseId, title: mod.title, sort_order: mod.order }), "module create");
       return mod;
     },
-    updateModule: (courseId, moduleId, title) => mutateModule(courseId, moduleId, m => ({ ...m, title })),
-    deleteModule: (courseId, moduleId) => mutateCourse(courseId, c => ({ ...c, modules: c.modules.filter(m => m.id !== moduleId) })),
+    updateModule: (courseId, moduleId, title) => {
+      mutateModule(courseId, moduleId, m => ({ ...m, title }));
+      if (supabase) sync(supabase.from("modules").update({ title }).eq("id", moduleId), "module update");
+    },
+    deleteModule: (courseId, moduleId) => {
+      mutateCourse(courseId, c => ({ ...c, modules: c.modules.filter(m => m.id !== moduleId) }));
+      if (supabase) sync(supabase.from("modules").delete().eq("id", moduleId), "module delete");
+    },
 
     // ── lessons ──
     addLesson: (courseId, moduleId, input) => {
@@ -573,10 +866,27 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         order: (mod?.lessons.length || 0) + 1,
       };
       mutateModule(courseId, moduleId, m => ({ ...m, lessons: [...m.lessons, lesson] }));
+      if (supabase) sync(supabase.from("lessons").insert({
+        id: lesson.id, module_id: moduleId, course_id: courseId, title: lesson.title,
+        description: lesson.description, video_url: lesson.videoUrl, published: lesson.published, sort_order: lesson.order,
+      }), "lesson create");
       return lesson;
     },
-    updateLesson: (courseId, moduleId, lessonId, patch) => mutateLesson(courseId, moduleId, lessonId, l => ({ ...l, ...patch })),
-    deleteLesson: (courseId, moduleId, lessonId) => mutateModule(courseId, moduleId, m => ({ ...m, lessons: m.lessons.filter(l => l.id !== lessonId) })),
+    updateLesson: (courseId, moduleId, lessonId, patch) => {
+      mutateLesson(courseId, moduleId, lessonId, l => ({ ...l, ...patch }));
+      if (supabase) {
+        const row: Record<string, unknown> = {};
+        if (patch.title !== undefined) row.title = patch.title;
+        if (patch.description !== undefined) row.description = patch.description;
+        if (patch.videoUrl !== undefined) row.video_url = patch.videoUrl;
+        if (patch.published !== undefined) row.published = patch.published;
+        sync(supabase.from("lessons").update(row).eq("id", lessonId), "lesson update");
+      }
+    },
+    deleteLesson: (courseId, moduleId, lessonId) => {
+      mutateModule(courseId, moduleId, m => ({ ...m, lessons: m.lessons.filter(l => l.id !== lessonId) }));
+      if (supabase) sync(supabase.from("lessons").delete().eq("id", lessonId), "lesson delete");
+    },
 
     // ── lesson resources ──
     addResourceToLesson: (courseId, moduleId, lessonId, input) => {
@@ -585,10 +895,15 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         source: detectResourceSource(input.url), addedAt: Date.now(),
       };
       mutateLesson(courseId, moduleId, lessonId, l => ({ ...l, resources: [...l.resources, resource] }));
+      if (supabase) sync(supabase.from("lesson_resources").insert({
+        id: resource.id, lesson_id: lessonId, title: resource.title, url: resource.url, source: resource.source, added_at: resource.addedAt,
+      }), "lesson resource create");
       return resource;
     },
-    removeResourceFromLesson: (courseId, moduleId, lessonId, resourceId) =>
-      mutateLesson(courseId, moduleId, lessonId, l => ({ ...l, resources: l.resources.filter(r => r.id !== resourceId) })),
+    removeResourceFromLesson: (courseId, moduleId, lessonId, resourceId) => {
+      mutateLesson(courseId, moduleId, lessonId, l => ({ ...l, resources: l.resources.filter(r => r.id !== resourceId) }));
+      if (supabase) sync(supabase.from("lesson_resources").delete().eq("id", resourceId), "lesson resource delete");
+    },
 
     // ── community resources ──
     addCommunityResource: (communityId, input) => {
@@ -597,40 +912,57 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         source: detectResourceSource(input.url), addedAt: Date.now(),
       };
       setState(s => ({ ...s, communityResources: [resource, ...s.communityResources] }));
+      if (supabase) sync(supabase.from("community_resources").insert(communityResourceToRow(resource)), "community resource create");
       return resource;
     },
-    removeCommunityResource: (id) => setState(s => ({ ...s, communityResources: s.communityResources.filter(r => r.id !== id) })),
+    removeCommunityResource: (id) => {
+      setState(s => ({ ...s, communityResources: s.communityResources.filter(r => r.id !== id) }));
+      if (supabase) sync(supabase.from("community_resources").delete().eq("id", id), "community resource delete");
+    },
     getCommunityResources: (communityId) => state.communityResources.filter(r => r.communityId === communityId),
 
     // ── community events ──
     addCommunityEvent: (communityId, input) => {
       const event: CommunityEvent = { id: generateId(), communityId, ...input, createdAt: Date.now() };
       setState(s => ({ ...s, communityEvents: [event, ...s.communityEvents] }));
+      if (supabase) sync(supabase.from("community_events").insert(eventToRow(event)), "community event create");
       return event;
     },
-    removeCommunityEvent: (id) => setState(s => ({ ...s, communityEvents: s.communityEvents.filter(e => e.id !== id) })),
+    removeCommunityEvent: (id) => {
+      setState(s => ({ ...s, communityEvents: s.communityEvents.filter(e => e.id !== id) }));
+      if (supabase) sync(supabase.from("community_events").delete().eq("id", id), "community event delete");
+    },
     getCommunityEvents: (communityId) => state.communityEvents.filter(e => e.communityId === communityId),
 
     // ── enrollments ──
     enrollInCourse: (courseId) => {
       if (state.enrollments.find(e => e.courseId === courseId && e.userEmail === state.session?.email)) return;
       const enrollment: Enrollment = { courseId, userEmail: state.session?.email || "", completedLessonIds: [], enrolledAt: Date.now() };
+      const newCount = (state.courses.find(c => c.id === courseId)?.enrollmentCount ?? 0) + 1;
       setState(s => ({
         ...s,
         enrollments: [...s.enrollments, enrollment],
         courses: s.courses.map(c => c.id === courseId ? { ...c, enrollmentCount: c.enrollmentCount + 1 } : c),
       }));
+      if (supabase) {
+        sync(supabase.from("enrollments").insert({ course_id: courseId, user_email: enrollment.userEmail, completed_lesson_ids: [], enrolled_at: enrollment.enrolledAt }), "enrollment create");
+        sync(supabase.from("courses").update({ enrollment_count: newCount }).eq("id", courseId), "course enrollment count");
+      }
     },
     isEnrolled: (courseId) => state.enrollments.some(e => e.courseId === courseId && e.userEmail === state.session?.email),
     completeLesson: (courseId, lessonId) => {
+      const email = state.session?.email;
+      const existing = state.enrollments.find(e => e.courseId === courseId && e.userEmail === email);
+      const nextIds = existing ? (existing.completedLessonIds.includes(lessonId) ? existing.completedLessonIds : [...existing.completedLessonIds, lessonId]) : [lessonId];
       setState(s => ({
         ...s,
         enrollments: s.enrollments.map(e =>
-          e.courseId === courseId && e.userEmail === state.session?.email
-            ? { ...e, completedLessonIds: e.completedLessonIds.includes(lessonId) ? e.completedLessonIds : [...e.completedLessonIds, lessonId] }
+          e.courseId === courseId && e.userEmail === email
+            ? { ...e, completedLessonIds: nextIds }
             : e
         ),
       }));
+      if (supabase && email) sync(supabase.from("enrollments").update({ completed_lesson_ids: nextIds }).eq("course_id", courseId).eq("user_email", email), "lesson completion");
     },
     isLessonComplete: (courseId, lessonId) => {
       const e = state.enrollments.find(e => e.courseId === courseId && e.userEmail === state.session?.email);
@@ -655,6 +987,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         accessedAt: Date.now(),
       };
       setState(s => ({ ...s, accessRecords: [record, ...s.accessRecords] }));
+      if (supabase) sync(supabase.from("access_records").insert({
+        id: record.id, resource_id: record.resourceId, resource_title: record.resourceTitle,
+        resource_type: record.resourceType, community_id: record.communityId ?? null,
+        user_email: record.userEmail, accessed_at: record.accessedAt,
+      }), "resource access record");
     },
     getAccessRecords: (resourceType) => {
       if (!resourceType) return state.accessRecords;
@@ -662,11 +999,17 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     },
 
     // ── notifications ──
-    markAllNotificationsRead: () => setState(s => ({ ...s, notifications: s.notifications.map(n => ({ ...n, read: true })) })),
-    pushNotification: (text) => setState(s => ({
-      ...s,
-      notifications: [{ id: generateId(), text, time: "Just now", read: false }, ...s.notifications],
-    })),
+    markAllNotificationsRead: () => {
+      setState(s => ({ ...s, notifications: s.notifications.map(n => ({ ...n, read: true })) }));
+      if (supabase && state.session?.email) sync(supabase.from("notifications").update({ read: true }).eq("user_email", state.session.email), "notifications read");
+    },
+    pushNotification: (text) => {
+      const notification: AppNotification = { id: generateId(), text, time: "Just now", read: false };
+      setState(s => ({ ...s, notifications: [notification, ...s.notifications] }));
+      if (supabase && state.session?.email) sync(supabase.from("notifications").insert({
+        id: notification.id, user_email: state.session.email, text, time: "Just now", read: false, created_at: notification.id,
+      }), "notification create");
+    },
   };
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>;

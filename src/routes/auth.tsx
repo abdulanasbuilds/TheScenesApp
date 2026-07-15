@@ -40,33 +40,41 @@ function Auth() {
     }
   }, [store.isHydrated, store.session]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!email.trim() || !email.includes("@")) { setError("Enter a valid email address."); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
 
-    if (mode === "signup") {
-      if (!name.trim()) { setError("Enter your name to create an account."); return; }
-      const result = store.signUp(name.trim(), email.trim(), password, role);
-      if (result === "email_taken") {
-        setError("An account with that email already exists. Sign in instead.");
-        return;
+    setSubmitting(true);
+    try {
+      if (mode === "signup") {
+        if (!name.trim()) { setError("Enter your name to create an account."); return; }
+        const result = await store.signUp(name.trim(), email.trim(), password, role);
+        if (result === "email_taken") {
+          setError("An account with that email already exists. Sign in instead.");
+          return;
+        }
+        nav({ to: "/onboarding" });
+      } else {
+        const result = await store.signIn(email.trim(), password);
+        if (result === "not_found") {
+          setError("No account found for that email. Sign up to get started.");
+          return;
+        }
+        if (result === "wrong_password") {
+          setError("Incorrect email or password. Please try again.");
+          return;
+        }
+        const dest = result.role === "creator" ? "/app/creator" : "/app/dashboard";
+        nav({ to: dest });
       }
-      nav({ to: "/onboarding" });
-    } else {
-      const accountRole = store.getAccountRole(email.trim());
-      const result = store.signIn(email.trim(), password);
-      if (result === "not_found") {
-        setError("No account found for that email. Sign up to get started.");
-        return;
-      }
-      if (result === "wrong_password") {
-        setError("Incorrect password. Please try again.");
-        return;
-      }
-      const dest = accountRole === "creator" ? "/app/creator" : "/app/dashboard";
-      nav({ to: dest });
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -210,9 +218,10 @@ function Auth() {
             whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
             type="submit"
-            className="mt-6 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            disabled={submitting}
+            className="mt-6 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60"
           >
-            {mode === "signup" ? `Create ${role === "creator" ? "creator" : "learner"} account` : "Sign In"}
+            {submitting ? "Please wait…" : mode === "signup" ? `Create ${role === "creator" ? "creator" : "learner"} account` : "Sign In"}
           </motion.button>
         </form>
 
