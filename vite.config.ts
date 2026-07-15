@@ -30,7 +30,7 @@ async function config({ mode, command }: ConfigEnv): Promise<UserConfig> {
 
   if (command === "build") {
     const { nitro } = await import("nitro/vite");
-    plugins.push(nitro({ preset: "node-server" }));
+    plugins.push(nitro({ preset: "cloudflare-module" }));
   }
 
   return {
