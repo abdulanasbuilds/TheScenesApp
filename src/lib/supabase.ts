@@ -11,9 +11,10 @@ export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
  * activate it. Until then the app keeps working from its localStorage
  * cache, so nothing breaks — data just won't survive a different browser.
  */
-export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(SUPABASE_URL as string, SUPABASE_ANON_KEY as string)
-  : null;
+export const supabase: SupabaseClient | null =
+  isSupabaseConfigured && typeof window !== "undefined"
+    ? createClient(SUPABASE_URL as string, SUPABASE_ANON_KEY as string)
+    : null;
 
 if (typeof window !== "undefined" && !isSupabaseConfigured) {
   console.warn(
