@@ -26,16 +26,26 @@ function CreateCommunityPage() {
   const store = useAppStore();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    if (store.isHydrated && !store.session) window.location.replace("/auth");
-  }, [store.isHydrated, store.session]);
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [tag, setTag] = useState<"FREE" | "PAID">("FREE");
   const [price, setPrice] = useState("$19/mo");
   const [launched, setLaunched] = useState<{ title: string } | null>(null);
+
+  // Auth guard — redirect unauthenticated users to signup (no flash)
+  useEffect(() => {
+    if (store.isHydrated && !store.session) window.location.replace("/auth");
+  }, [store.isHydrated, store.session]);
+
+  // Show nothing until hydration confirms auth state (prevents wizard flash for guests)
+  if (!store.isHydrated || !store.session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-7 w-7 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   const canContinue = step === 0 ? title.trim().length > 1 && summary.trim().length > 3 : true;
 

@@ -1,6 +1,25 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PublicHeader } from "@/components/PublicHeader";
 import { GraduationCap, Users, Wallet, ShieldCheck, Layers, Sparkles } from "lucide-react";
+import { useAppStore } from "@/lib/app-store";
+
+function useGoCreate() {
+  const store = useAppStore();
+  const nav = useNavigate();
+  return () => {
+    if (store.isHydrated && store.session) nav({ to: "/create-community" });
+    else nav({ to: "/auth", search: { mode: "signup" } });
+  };
+}
+
+function GoCreateBtn({ label, className = "" }: { label: string; className?: string }) {
+  const go = useGoCreate();
+  return (
+    <button onClick={go} className={`inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary/90 ${className}`}>
+      {label}
+    </button>
+  );
+}
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -36,7 +55,7 @@ function AboutPage() {
             <h1 className="mt-5 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">The first community and course platform built for the AI era.</h1>
             <p className="mt-5 text-lg font-medium text-muted-foreground">SukaSpace takes what works from community platforms like Circle and course-driven platforms like Skool, and fuses them into one workspace — so experts can teach, build an audience, and get paid for it without juggling five separate tools.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/create-community" className="inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary/90">Launch your community</Link>
+              <GoCreateBtn label="Launch your community" />
               <Link to="/discover" className="inline-flex rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground hover:bg-accent">Explore the platform</Link>
             </div>
           </div>
@@ -94,7 +113,7 @@ function AboutPage() {
             <div className="mt-10 rounded-2xl border border-border bg-background p-8 text-center">
               <h2 className="text-2xl font-bold tracking-tight text-foreground">Ready to build your space?</h2>
               <p className="mt-2 text-sm text-muted-foreground">It takes about two minutes to go from idea to a live, discoverable community.</p>
-              <Link to="/create-community" className="mt-5 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary/90">Create your community</Link>
+              <GoCreateBtn label="Create your community" className="mt-5" />
             </div>
           </div>
         </section>

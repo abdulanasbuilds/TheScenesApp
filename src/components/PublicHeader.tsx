@@ -1,8 +1,9 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "@/components/Logo";
+import { useAppStore } from "@/lib/app-store";
 
 const PUBLIC_NAV = [
   { to: "/discover", label: "Discover" },
@@ -14,6 +15,14 @@ const PUBLIC_NAV = [
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
+  const store = useAppStore();
+  const nav = useNavigate();
+
+  const goCreate = () => {
+    setOpen(false);
+    if (store.isHydrated && store.session) nav({ to: "/create-community" });
+    else nav({ to: "/auth", search: { mode: "signup" } });
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-100 bg-card/80 backdrop-blur">
@@ -31,9 +40,9 @@ export function PublicHeader() {
         <div className="hidden items-center gap-2 md:flex">
           <Link to="/auth" search={{ mode: "signin" }} className="rounded-full px-4 py-2 text-sm font-extrabold text-foreground border border-neutral-200 hover:bg-neutral-50">Log in</Link>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}>
-            <Link to="/create-community" className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90">
+            <button onClick={goCreate} className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90">
               Get started
-            </Link>
+            </button>
           </motion.div>
         </div>
         <button
@@ -55,7 +64,7 @@ export function PublicHeader() {
           </nav>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Link to="/auth" search={{ mode: "signin" }} onClick={() => setOpen(false)} className="rounded-full border border-neutral-200 bg-card px-3 py-2 text-center text-sm font-extrabold text-foreground">Log in</Link>
-            <Link to="/create-community" onClick={() => setOpen(false)} className="rounded-full bg-primary px-3 py-2 text-center text-sm font-extrabold text-white border border-transparent">Get started</Link>
+            <button onClick={goCreate} className="rounded-full bg-primary px-3 py-2 text-center text-sm font-extrabold text-white border border-transparent">Get started</button>
           </div>
         </div>
       )}

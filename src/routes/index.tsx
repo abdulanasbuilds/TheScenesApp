@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import { useAppStore } from "@/lib/app-store";
 import { ArrowRight, Sparkles, Users, GraduationCap, MessagesSquare, BarChart3, CheckCircle2, Hash, ChevronRight, PlayCircle, Download } from "lucide-react";
 import { PublicHeader } from "@/components/PublicHeader";
 import { BrowserFrame, Avatar } from "@/components/BrowserFrame";
@@ -83,6 +84,12 @@ function UploadedMockupGallery() {
 }
 
 function Hero() {
+  const store = useAppStore();
+  const nav = useNavigate();
+  const goCreate = () => {
+    if (store.isHydrated && store.session) nav({ to: "/create-community" });
+    else nav({ to: "/auth", search: { mode: "signup" } });
+  };
   return (
     <section className="relative overflow-hidden border-b border-border">
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-14 sm:px-6 sm:pt-24 sm:pb-20">
@@ -100,9 +107,9 @@ function Hero() {
               </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="w-full sm:w-auto">
-          <Link to="/create-community" className="flex items-center justify-center gap-2 rounded-3xl border border-gray-300 bg-card px-6 py-2.5 text-base font-extrabold text-foreground hover:bg-gray-50 w-full h-12">
+          <button onClick={goCreate} className="flex items-center justify-center gap-2 rounded-3xl border border-gray-300 bg-card px-6 py-2.5 text-base font-extrabold text-foreground hover:bg-gray-50 w-full h-12">
                 Create a Community
-              </Link>
+              </button>
             </motion.div>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-muted-foreground">
@@ -149,6 +156,12 @@ function FeatureMatrix() {
 
 
 function CTA() {
+  const store = useAppStore();
+  const nav = useNavigate();
+  const goCreate = () => {
+    if (store.isHydrated && store.session) nav({ to: "/create-community" });
+    else nav({ to: "/auth", search: { mode: "signup" } });
+  };
   return (
     <section className="bg-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 text-center">
@@ -156,7 +169,7 @@ function CTA() {
         <p className="mt-2.5 text-base text-neutral-300">Launch your community + course in a single afternoon. Free while we're in early access.</p>
         <div className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
           <Link to="/discover" className="rounded-3xl border border-white/30 bg-white px-6 py-2.5 text-base font-extrabold text-slate-900 hover:bg-white/85 w-full sm:w-auto h-12 flex items-center justify-center">Explore Communities</Link>
-          <Link to="/create-community" className="rounded-3xl bg-primary px-6 py-2.5 text-base font-extrabold text-white hover:bg-primary/85 border border-transparent w-full sm:w-auto h-12 flex items-center justify-center gap-2">Create a Community <ChevronRight size={16} /></Link>
+          <button onClick={goCreate} className="rounded-3xl bg-primary px-6 py-2.5 text-base font-extrabold text-white hover:bg-primary/85 border border-transparent w-full sm:w-auto h-12 flex items-center justify-center gap-2">Create a Community <ChevronRight size={16} /></button>
         </div>
       </div>
     </section>

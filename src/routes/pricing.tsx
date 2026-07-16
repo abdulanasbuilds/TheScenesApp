@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { CheckCircle2 } from "lucide-react";
 import { PublicHeader } from "@/components/PublicHeader";
+import { useAppStore } from "@/lib/app-store";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -21,6 +22,12 @@ const PLANS = [
 ] as const;
 
 function PricingPage() {
+  const store = useAppStore();
+  const nav = useNavigate();
+  const goCreate = () => {
+    if (store.isHydrated && store.session) nav({ to: "/create-community" });
+    else nav({ to: "/auth", search: { mode: "signup" } });
+  };
   return (
     <div className="min-h-screen bg-background">
       <PublicHeader />
@@ -37,7 +44,10 @@ function PricingPage() {
               <ul className="mt-5 space-y-3 text-sm text-foreground">
                 {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" />{feature}</li>)}
               </ul>
-              <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-3xl bg-primary px-6 py-2.5 text-center text-base font-extrabold text-white border border-transparent hover:bg-primary/85 h-12 flex items-center justify-center">{plan.cta}</Link>
+              {plan.name === "Creator"
+                ? <button onClick={goCreate} className="mt-6 block w-full rounded-3xl bg-primary px-6 py-2.5 text-center text-base font-extrabold text-white border border-transparent hover:bg-primary/85 h-12 flex items-center justify-center">{plan.cta}</button>
+                : <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-3xl bg-primary px-6 py-2.5 text-center text-base font-extrabold text-white border border-transparent hover:bg-primary/85 h-12 flex items-center justify-center">{plan.cta}</Link>
+              }
             </div>
           ))}
         </div>

@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { BarChart3, CheckCircle2, Settings, Users } from "lucide-react";
 import { PublicHeader } from "@/components/PublicHeader";
 import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 import { MOCK_ANALYTICS, MOCK_GROWTH_SERIES } from "@/lib/mock-data";
+import { useAppStore } from "@/lib/app-store";
 
 export const Route = createFileRoute("/creators")({
   head: () => ({
@@ -17,6 +18,12 @@ export const Route = createFileRoute("/creators")({
 });
 
 function CreatorsPage() {
+  const store = useAppStore();
+  const nav = useNavigate();
+  const goCreate = () => {
+    if (store.isHydrated && store.session) nav({ to: "/create-community" });
+    else nav({ to: "/auth", search: { mode: "signup" } });
+  };
   const max = Math.max(...MOCK_GROWTH_SERIES);
   return (
     <div className="min-h-screen bg-background">
@@ -29,7 +36,7 @@ function CreatorsPage() {
               <h1 className="mt-3 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Launch the community, course, and access model in one flow.</h1>
               <p className="mt-4 text-lg font-medium text-muted-foreground">SukaSpace gives experts a premium command center for setup, members, lessons, revenue signals, and discoverability.</p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Link to="/create-community" className="rounded-xl bg-primary px-5 py-3 text-center text-sm font-semibold text-white hover:bg-primary/90">Create a Community</Link>
+                <button onClick={goCreate} className="rounded-xl bg-primary px-5 py-3 text-center text-sm font-semibold text-white hover:bg-primary/90">Create a Community</button>
                 <Link to="/app/creator" className="rounded-xl border border-border bg-card px-5 py-3 text-center text-sm font-semibold text-foreground hover:bg-accent">View Creator Hub</Link>
               </div>
             </div>

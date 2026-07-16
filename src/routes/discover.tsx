@@ -105,14 +105,14 @@ function Discovery() {
               <p className="text-sm font-medium text-slate-600">
                 <span className="font-semibold text-slate-900">{filtered.length}</span> {filtered.length === 1 ? "community" : "communities"}{hasFilters ? " found" : ""}
               </p>
-              <Link to="/create-community" className="text-sm font-semibold text-primary hover:underline">+ Create yours</Link>
+              <button onClick={() => { if (store.isHydrated && store.session) nav({ to: "/create-community" }); else nav({ to: "/auth", search: { mode: "signup" } }); }} className="text-sm font-semibold text-primary hover:underline">+ Create yours</button>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((c) => (
                 <CommunityCard
                   key={c.id}
                   community={c}
-                  isNew={Date.now() - c.createdAt < 1000 * 60 * 60 * 24}
+                  isNew={store.isHydrated && Date.now() - c.createdAt < 1000 * 60 * 60 * 24}
                   joined={store.isJoined(c.id)}
                   onJoin={() => handleJoin(c)}
                 />
@@ -161,6 +161,12 @@ function Discovery() {
 // ─── Zero State ───────────────────────────────────────────────────────────────
 
 function ZeroState() {
+  const store = useAppStore();
+  const nav = useNavigate();
+  const goCreate = () => {
+    if (store.isHydrated && store.session) nav({ to: "/create-community" });
+    else nav({ to: "/auth", search: { mode: "signup" } });
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -183,12 +189,12 @@ function ZeroState() {
         </p>
 
         {/* CTA */}
-        <Link
-          to="/create-community"
+        <button
+          onClick={goCreate}
           className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary/90"
         >
           Create the First Tech Space <ArrowRight size={15} />
-        </Link>
+        </button>
 
         {/* Benefit note */}
         <p className="mt-4 text-xs font-medium text-slate-500">
