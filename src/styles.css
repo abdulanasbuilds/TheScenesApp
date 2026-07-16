@@ -62,7 +62,17 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html, body { background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  html, body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    /* PWA: prevent pull-to-refresh and elastic bounce on iOS/Android */
+    overscroll-behavior-y: none;
+    /* Safe area insets for notched / dynamic island devices */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
   
   /* Premium mobile app typography system */
   h1, h2, h3, h4, h5, h6 {

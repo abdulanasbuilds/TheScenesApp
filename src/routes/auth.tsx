@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { z } from "zod";
 import { GraduationCap, Rocket } from "lucide-react";
 import { useAppStore } from "@/lib/app-store";
 import { Logo } from "@/components/Logo";
+import { hapticTap, hapticError, SPRING_FAST, SPRING_PAGE } from "@/lib/pwa";
 
 const searchSchema = z.object({ mode: z.enum(["signup", "signin"]).catch("signup") });
 
@@ -21,6 +22,31 @@ export const Route = createFileRoute("/auth")({
 
 type Role = "learner" | "creator";
 
+// Background prefetch: warm the store cache while user types credentials
+function useBackgroundPrefetch(email: string) {
+  const store = useAppStore();
+  const triggered = useRef(false);
+
+  useEffect(() => {
+    // Fire once the user has entered a valid-looking email
+    if (triggered.current) return;
+    if (!email.includes("@") || email.length < 5) return;
+
+    triggered.current = true;
+
+    // Trigger localStorage hydration (already happens on mount, but
+    // calling this ensures the store is fully ready before we navigate)
+    if (store.isHydrated) return;
+
+    // Pre-warm any images the dashboard will need
+    const topImages = ["/favicon-256.png", "/apple-touch-icon.png"];
+    topImages.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, [email, store.isHydrated]);
+}
+
 function Auth() {
   const { mode: initialMode } = Route.useSearch();
   const [mode, setMode] = useState<"signup" | "signin">(initialMode);
@@ -32,6 +58,9 @@ function Auth() {
   const [forgotMode, setForgotMode] = useState(false);
   const nav = useNavigate();
   const store = useAppStore();
+
+  // Background preload while user types
+  useBackgroundPrefetch(email);
 
   useEffect(() => {
     if (store.isHydrated && store.session) {
@@ -45,26 +74,45 @@ function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email.trim() || !email.includes("@")) { setError("Enter a valid email address."); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    if (!email.trim() || !email.includes("@")) {
+      hapticError();
+      setError("Enter a valid email address.");
+      return;
+    }
+    if (password.length < 6) {
+      hapticError();
+      setError("Password must be at least 6 characters.");
+      return;
+    }
 
+    hapticTap();
     setSubmitting(true);
     try {
       if (mode === "signup") {
-        if (!name.trim()) { setError("Enter your name to create an account."); return; }
+        if (!name.trim()) {
+          hapticError();
+          setError("Enter your name to create an account.");
+          return;
+        }
         const result = await store.signUp(name.trim(), email.trim(), password, role);
         if (result === "email_taken") {
+          hapticError();
           setError("An account with that email already exists. Sign in instead.");
           return;
         }
-        nav({ to: "/onboarding" });
+        // ── Instant provisioning: skip onboarding, route straight to feed ──
+        // Profile picture and bio can be set later in Settings.
+        const dest = role === "creator" ? "/app/creator" : "/app/dashboard";
+        nav({ to: dest });
       } else {
         const result = await store.signIn(email.trim(), password);
         if (result === "not_found") {
+          hapticError();
           setError("No account found for that email. Sign up to get started.");
           return;
         }
         if (result === "wrong_password") {
+          hapticError();
           setError("Incorrect email or password. Please try again.");
           return;
         }
@@ -72,6 +120,7 @@ function Auth() {
         nav({ to: dest });
       }
     } catch {
+      hapticError();
       setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
@@ -79,6 +128,7 @@ function Auth() {
   };
 
   const toggleMode = () => {
+    hapticTap();
     setError(null);
     setForgotMode(false);
     setMode((m) => (m === "signup" ? "signin" : "signup"));
@@ -86,7 +136,12 @@ function Auth() {
 
   if (forgotMode) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 pb-24">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={SPRING_PAGE}
+        className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 pb-24"
+      >
         <div className="w-full max-w-sm rounded-2xl border border-neutral-100 bg-card p-8">
           <div className="mb-8 text-center">
             <Link to="/" className="inline-flex items-center justify-center gap-2 mb-4">
@@ -98,17 +153,27 @@ function Auth() {
           <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-muted-foreground">
             If you've forgotten your password, please create a new account or contact support.
           </div>
-          <button onClick={() => setForgotMode(false)} className="mt-6 w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-accent">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            transition={SPRING_FAST}
+            onClick={() => { hapticTap(); setForgotMode(false); }}
+            className="mt-6 w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-accent"
+          >
             Back to sign in
-          </button>
+          </motion.button>
         </div>
         <Footer />
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 pb-24">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={SPRING_PAGE}
+      className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 pb-24"
+    >
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-sm">
         <div className="mb-6 text-center">
           <Link to="/" className="inline-flex items-center justify-center gap-2 mb-4">
@@ -256,7 +321,7 @@ function Auth() {
       </div>
 
       <Footer />
-    </div>
+    </motion.div>
   );
 }
 

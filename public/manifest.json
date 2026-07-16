@@ -1,0 +1,45 @@
+{
+  "name": "SukaSpace",
+  "short_name": "SukaSpace",
+  "description": "Community and courses, engineered for the AI era.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1D4ED8",
+  "background_color": "#F8FAFC",
+  "categories": ["education", "productivity", "social"],
+  "icons": [
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-256.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Community Feed",
+      "url": "/app/feed",
+      "description": "Jump into the community feed"
+    },
+    {
+      "name": "My Courses",
+      "url": "/app/courses",
+      "description": "Continue your learning"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

@@ -5,11 +5,15 @@ import {
   Radio, Zap, Share2, MessageCircle, type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Drawer } from "vaul";
 import { Avatar } from "./BrowserFrame";
 import { useAppStore } from "@/lib/app-store";
 import { Logo } from "@/components/Logo";
 import { GlobalFeedbackDrawer, openFeedbackDrawer } from "@/components/GlobalFeedbackDrawer";
 import { xpToTier } from "@/lib/mock-data";
+import { hapticTap, SPRING_FAST, SPRING_STRUCTURAL } from "@/lib/pwa";
+import { AppLoadingSkeleton } from "@/components/PageSkeleton";
 
 // ─── Nav item type ─────────────────────────────────────────────────────────────
 
@@ -55,6 +59,99 @@ const LEARNER_NAV: NavItem[] = [
 const CREATOR_MOBILE = ["/app/creator", "/app/feed", "/app/courses", "/app/classroom", "/app/members"];
 const LEARNER_MOBILE  = ["/app/dashboard", "/app/feed", "/app/classroom", "/app/courses", "/app/calendar"];
 
+// ─── Notification Bottom Sheet (mobile) ───────────────────────────────────────
+
+function NotificationsDrawer({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const store = useAppStore();
+
+  return (
+    <Drawer.Root open={open} onOpenChange={(v) => !v && onClose()} shouldScaleBackground>
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" />
+        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl border-t border-neutral-100 bg-card focus:outline-none md:hidden"
+          style={{ maxHeight: "75vh" }}>
+          {/* Drag handle */}
+          <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-neutral-200" />
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <span className="text-sm font-semibold text-foreground">Notifications</span>
+            <button
+              onClick={() => { store.markAllNotificationsRead(); hapticTap(); }}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              Mark all read
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 pb-8 space-y-1">
+            {store.notifications.length === 0 ? (
+              <div className="px-2 py-10 text-center text-xs text-muted-foreground">
+                You&apos;re all caught up.
+              </div>
+            ) : (
+              store.notifications.map((n) => (
+                <div
+                  key={n.id}
+                  className={`rounded-lg px-3 py-2.5 text-sm ${n.read ? "text-muted-foreground" : "bg-accent font-medium text-foreground"}`}
+                >
+                  <div className="text-xs">{n.text}</div>
+                  <div className="mt-0.5 text-[10px] text-muted-foreground">{n.time}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
+  );
+}
+
+// Desktop notifications popover
+function NotificationsPopover({ onClose }: { onClose: () => void }) {
+  const store = useAppStore();
+  return (
+    <>
+      <div className="fixed inset-0 z-30" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, y: -6, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -6, scale: 0.97 }}
+        transition={SPRING_FAST}
+        className="absolute right-0 top-11 z-40 w-80 rounded-xl border border-neutral-100 bg-card"
+      >
+        <div className="flex items-center justify-between border-b border-border px-3 py-2">
+          <span className="text-sm font-semibold text-foreground">Notifications</span>
+          <button
+            onClick={() => store.markAllNotificationsRead()}
+            className="text-xs font-semibold text-primary hover:underline"
+          >
+            Mark all read
+          </button>
+        </div>
+        <div className="max-h-80 space-y-px overflow-y-auto p-1.5">
+          {store.notifications.length === 0 ? (
+            <div className="px-2 py-6 text-center text-xs text-muted-foreground">You&apos;re all caught up.</div>
+          ) : (
+            store.notifications.map((n) => (
+              <div
+                key={n.id}
+                className={`rounded-lg px-3 py-2.5 text-sm ${n.read ? "text-muted-foreground" : "bg-accent font-medium text-foreground"}`}
+              >
+                <div className="text-xs">{n.text}</div>
+                <div className="mt-0.5 text-[10px] text-muted-foreground">{n.time}</div>
+              </div>
+            ))
+          )}
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
 // ─── AppShell ─────────────────────────────────────────────────────────────────
 
 export function AppShell() {
@@ -62,17 +159,21 @@ export function AppShell() {
   const nav  = useNavigate();
   const store = useAppStore();
   const [showNotifs, setShowNotifs] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     if (store.isHydrated && !store.session) window.location.replace("/auth");
   }, [store.isHydrated, store.session]);
 
   if (!store.isHydrated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-primary" />
-      </div>
-    );
+    return <AppLoadingSkeleton />;
   }
   if (!store.session) return null;
 
@@ -86,7 +187,12 @@ export function AppShell() {
   const displayRole = isCreator ? "Creator" : "Learner";
   const photoUrl    = store.session.photoUrl;
 
-  const tier = xpToTier(0); // XP will be dynamic when tracking is wired
+  const tier = xpToTier(0);
+
+  const handleNotifClick = () => {
+    hapticTap();
+    setShowNotifs((v) => !v);
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -106,6 +212,7 @@ export function AppShell() {
               <Link
                 key={item.to}
                 to={item.to}
+                onClick={() => hapticTap()}
                 className={`group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-semibold transition-colors ${
                   active
                     ? "bg-neutral-100 text-foreground"
@@ -128,7 +235,7 @@ export function AppShell() {
         <div className="border-t border-border p-2">
           <button
             type="button"
-            onClick={() => openFeedbackDrawer()}
+            onClick={() => { openFeedbackDrawer(); hapticTap(); }}
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-neutral-50 hover:text-foreground"
           >
             <MessageCircle size={15} className="text-muted-foreground" />
@@ -138,7 +245,6 @@ export function AppShell() {
 
         {/* Profile + XP tier */}
         <div className="border-t border-border p-3 space-y-2">
-          {/* XP tier badge */}
           <div className="rounded-lg border border-border bg-background px-2.5 py-2">
             <div className="flex items-center justify-between gap-1">
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${tier.color}`}>
@@ -154,8 +260,7 @@ export function AppShell() {
             <div className="mt-0.5 text-[9px] text-muted-foreground">0 / {tier.nextAt ?? 500} XP</div>
           </div>
 
-          {/* User card */}
-          <Link to="/app/settings" className="flex items-center gap-2 rounded-lg p-1 hover:bg-accent transition-colors">
+          <Link to="/app/settings" className="flex items-center gap-2 rounded-lg p-1 hover:bg-accent transition-colors" onClick={() => hapticTap()}>
             {photoUrl ? (
               <img src={photoUrl} alt={displayName} className="h-8 w-8 shrink-0 rounded-full border border-border object-cover" />
             ) : (
@@ -175,6 +280,7 @@ export function AppShell() {
         <header className="sticky top-0 z-30 grid h-14 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-neutral-100 bg-card/90 px-3 backdrop-blur sm:gap-3 sm:px-4">
           <Link
             to="/app/search"
+            onClick={() => hapticTap()}
             className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-sm text-muted-foreground hover:border-neutral-300 md:max-w-md"
           >
             <Search size={14} className="shrink-0" />
@@ -183,55 +289,39 @@ export function AppShell() {
 
           {/* Notifications */}
           <div className="relative shrink-0">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              transition={SPRING_FAST}
               aria-label="Notifications"
-              onClick={() => setShowNotifs((v) => !v)}
+              onClick={handleNotifClick}
               className="relative rounded-lg border border-neutral-200 bg-card p-2 text-muted-foreground hover:bg-neutral-50 transition-colors"
             >
               <Bell size={16} />
               {store.unreadCount > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-primary text-[9px] font-bold text-white">
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={SPRING_FAST}
+                  className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-primary text-[9px] font-bold text-white"
+                >
                   {store.unreadCount > 9 ? "9+" : store.unreadCount}
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
 
-            {showNotifs && (
-              <>
-                <div className="fixed inset-0 z-30" onClick={() => setShowNotifs(false)} />
-                <div className="absolute right-0 top-11 z-40 w-80 rounded-xl border border-neutral-100 bg-card shadow-lg">
-                  <div className="flex items-center justify-between border-b border-border px-3 py-2">
-                    <span className="text-sm font-semibold text-foreground">Notifications</span>
-                    <button
-                      onClick={() => store.markAllNotificationsRead()}
-                      className="text-xs font-semibold text-primary hover:underline"
-                    >
-                      Mark all read
-                    </button>
-                  </div>
-                  <div className="max-h-80 space-y-px overflow-y-auto p-1.5">
-                    {store.notifications.length === 0 ? (
-                      <div className="px-2 py-6 text-center text-xs text-muted-foreground">You're all caught up.</div>
-                    ) : (
-                      store.notifications.map((n) => (
-                        <div
-                          key={n.id}
-                          className={`rounded-lg px-3 py-2.5 text-sm ${n.read ? "text-muted-foreground" : "bg-accent font-medium text-foreground"}`}
-                        >
-                          <div className="text-xs">{n.text}</div>
-                          <div className="mt-0.5 text-[10px] text-muted-foreground">{n.time}</div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
+            {/* Desktop popover */}
+            <AnimatePresence>
+              {showNotifs && !isMobile && (
+                <NotificationsPopover onClose={() => setShowNotifs(false)} />
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Avatar */}
-          <button
-            onClick={() => nav({ to: "/app/settings" })}
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            transition={SPRING_FAST}
+            onClick={() => { hapticTap(); nav({ to: "/app/settings" }); }}
             className="shrink-0"
             aria-label="Account settings"
           >
@@ -240,7 +330,7 @@ export function AppShell() {
             ) : (
               <Avatar initials={initials} tone="sky" size={30} />
             )}
-          </button>
+          </motion.button>
         </header>
 
         {/* Mobile bottom nav */}
@@ -253,11 +343,17 @@ export function AppShell() {
               <Link
                 key={n.to}
                 to={n.to}
+                onClick={() => hapticTap()}
                 className={`flex flex-1 min-w-0 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-semibold transition-colors ${
                   active ? "bg-neutral-100 text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon size={18} className="shrink-0" />
+                <motion.div
+                  animate={active ? { scale: [1, 1.2, 1] } : { scale: 1 }}
+                  transition={SPRING_FAST}
+                >
+                  <Icon size={18} className="shrink-0" />
+                </motion.div>
                 <span className="max-w-full truncate">{label}</span>
               </Link>
             );
@@ -274,6 +370,7 @@ export function AppShell() {
               <Link
                 key={n.to}
                 to={n.to}
+                onClick={() => hapticTap()}
                 className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-extrabold transition-colors ${
                   active
                     ? "border-primary bg-neutral-100 text-primary"
@@ -294,6 +391,12 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile notifications bottom sheet */}
+      <NotificationsDrawer
+        open={showNotifs && isMobile}
+        onClose={() => setShowNotifs(false)}
+      />
 
       <GlobalFeedbackDrawer />
     </div>

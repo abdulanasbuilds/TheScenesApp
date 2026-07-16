@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { AppStoreProvider } from "../lib/app-store";
 import { Toaster } from "../components/ui/sonner";
+import { registerServiceWorker } from "../lib/pwa";
 
 function NotFoundComponent() {
   return (
@@ -78,19 +79,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      // Full-viewport, no zoom — critical for PWA standalone feel
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "SukaSpace — Community + Courses for the AI Era" },
       { name: "description", content: "Launch a premium learning community with linear course tracking and rich multi-channel discussions. Built for AI, engineering, and tech creators." },
+      // PWA / iOS
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: "SukaSpace" },
+      { name: "application-name", content: "SukaSpace" },
+      { name: "theme-color", content: "#1D4ED8" },
+      // OG / Twitter
       { property: "og:title", content: "SukaSpace — Community + Courses for the AI Era" },
       { property: "og:description", content: "Community meets courses. Ship your knowledge empire with SukaSpace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.json" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "icon", href: "/favicon-32.png", type: "image/png", sizes: "32x32" },
       { rel: "icon", href: "/favicon-256.png", type: "image/png", sizes: "256x256" },
@@ -119,6 +127,11 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    // Register service worker once on first client mount
+    registerServiceWorker();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
