@@ -1,6 +1,10 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { sendWelcomeEmail, sendEnrollmentEmail, sendCommunityJoinEmail, sendPaymentReceiptEmail } from "@/lib/email.functions";
+import { recordPayment } from "@/lib/payments.functions";
+import { initiatePaystackPayment, isPaystackConfigured, priceStringToAmount } from "@/lib/paystack";
+import { verifyPaystackPayment } from "@/lib/paystack.functions";
 
 // ─── Core Types ──────────────────────────────────────────────────────────────
 
@@ -75,6 +79,21 @@ export type AppNotification = {
   read: boolean;
 };
 
+export type DirectMessage = {
+  id: number;
+  fromEmail: string;
+  toEmail: string;
+  body: string;
+  read: boolean;
+  createdAt: number;
+};
+
+export type Conversation = {
+  peerEmail: string;
+  lastMessage: DirectMessage;
+  unreadCount: number;
+};
+
 export type ResourceSource = "gdrive" | "dropbox" | "onedrive" | "notion" | "github" | "canva" | "figma" | "other";
 
 export type LessonResource = {
@@ -93,6 +112,7 @@ export type Lesson = {
   resources: LessonResource[];
   published: boolean;
   order: number;
+  dripDays: number; // 0 = available immediately; N = unlocks N days after enrollment
 };
 
 export type CourseModule = {
@@ -220,6 +240,7 @@ type PersistedState = {
   communityResources: CommunityResource[];
   enrollments: Enrollment[];
   accessRecords: AccessRecord[];
+  directMessages: DirectMessage[];
 };
 
 function defaultState(): PersistedState {
@@ -238,6 +259,7 @@ function defaultState(): PersistedState {
     communityResources: [],
     enrollments: [],
     accessRecords: [],
+    directMessages: [],
   };
 }
 
@@ -311,6 +333,12 @@ function communityResourceToRow(res: CommunityResource) {
 function communityResourceFromRow(r: any): CommunityResource {
   return { id: r.id, communityId: r.community_id, title: r.title, url: r.url, source: r.source, addedAt: r.added_at };
 }
+function dmToRow(dm: DirectMessage) {
+  return { id: dm.id, from_email: dm.fromEmail, to_email: dm.toEmail, body: dm.body, read: dm.read, created_at: dm.createdAt };
+}
+function dmFromRow(r: any): DirectMessage {
+  return { id: r.id, fromEmail: r.from_email, toEmail: r.to_email, body: r.body, read: r.read, createdAt: r.created_at };
+}
 function courseToRow(c: Course) {
   return {
     id: c.id, community_id: c.communityId, title: c.title, description: c.description,
@@ -329,7 +357,7 @@ function courseFromRow(r: any): Course {
         .sort((a: any, b: any) => a.sort_order - b.sort_order)
         .map((l: any): Lesson => ({
           id: l.id, title: l.title, description: l.description || "", videoUrl: l.video_url || "",
-          published: l.published, order: l.sort_order,
+          published: l.published, order: l.sort_order, dripDays: l.drip_days ?? 0,
           resources: (l.lesson_resources || []).map((res: any): LessonResource => ({
             id: res.id, title: res.title, url: res.url, source: res.source, addedAt: res.added_at,
           })),
@@ -418,7 +446,7 @@ type AppStoreValue = {
   deleteModule: (courseId: number, moduleId: number) => void;
   // lessons
   addLesson: (courseId: number, moduleId: number, input: { title: string; description?: string; videoUrl?: string }) => Lesson;
-  updateLesson: (courseId: number, moduleId: number, lessonId: number, patch: Partial<Pick<Lesson, "title" | "description" | "videoUrl" | "published">>) => void;
+  updateLesson: (courseId: number, moduleId: number, lessonId: number, patch: Partial<Pick<Lesson, "title" | "description" | "videoUrl" | "published" | "dripDays">>) => void;
   deleteLesson: (courseId: number, moduleId: number, lessonId: number) => void;
   // lesson resources
   addResourceToLesson: (courseId: number, moduleId: number, lessonId: number, input: { title: string; url: string }) => LessonResource;
@@ -440,6 +468,17 @@ type AppStoreValue = {
   // notifications
   markAllNotificationsRead: () => void;
   pushNotification: (text: string) => void;
+  // direct messages
+  directMessages: DirectMessage[];
+  sendDM: (toEmail: string, body: string) => Promise<DirectMessage>;
+  getConversations: () => Conversation[];
+  getMessagesWithUser: (peerEmail: string) => DirectMessage[];
+  markDMsRead: (fromEmail: string) => void;
+  dmUnreadCount: number;
+  // drip
+  isLessonUnlocked: (courseId: number, lessonId: number) => boolean;
+  // payment helpers
+  joinPaidCommunity: (communityId: number, onError?: (msg: string) => void) => Promise<void>;
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -474,9 +513,64 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedState>(defaultState);
   const [isHydrated, setIsHydrated] = useState(false);
   const bootingRef = useRef(false);
+  const realtimeChannelRef = useRef<ReturnType<NonNullable<typeof supabase>["channel"]> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
+    function setupRealtime(email: string | undefined) {
+      if (!supabase) return;
+      // Clean up previous channel before creating a new one
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+        realtimeChannelRef.current = null;
+      }
+
+      const channel = supabase
+        .channel("sukaspace-live")
+        // New posts — update the feed in real time
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, (payload) => {
+          if (cancelled) return;
+          const post = postFromRow(payload.new);
+          setState((s) => {
+            // Dedupe: don't add if we already have it (we may have inserted it ourselves)
+            if (s.extraPosts.some((p) => p.id === post.id)) return s;
+            return { ...s, extraPosts: [post, ...s.extraPosts] };
+          });
+        })
+        // New notifications for this user
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "notifications", filter: email ? `user_email=eq.${email}` : undefined },
+          (payload) => {
+            if (cancelled) return;
+            const n: AppNotification = { id: payload.new.id, text: payload.new.text, time: payload.new.time, read: payload.new.read };
+            setState((s) => {
+              if (s.notifications.some((x) => x.id === n.id)) return s;
+              return { ...s, notifications: [n, ...s.notifications] };
+            });
+          },
+        )
+        // New DMs delivered to this user
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "direct_messages", filter: email ? `to_email=eq.${email}` : undefined },
+          (payload) => {
+            if (cancelled) return;
+            const dm = dmFromRow(payload.new);
+            setState((s) => {
+              if (s.directMessages.some((x) => x.id === dm.id)) return s;
+              return { ...s, directMessages: [dm, ...s.directMessages] };
+            });
+          },
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") console.info("[SukaSpace] Realtime subscribed");
+          if (status === "CHANNEL_ERROR") console.warn("[SukaSpace] Realtime channel error — live updates paused");
+        });
+
+      realtimeChannelRef.current = channel;
+    }
 
     async function bootFromSupabase() {
       if (!supabase) return;
@@ -492,11 +586,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
         const [
           communitiesRes, joinedRes, postsRes, likedRes, commentsRes, reactionsRes,
-          coursesRes, resourcesRes, eventsRes, enrollmentsRes, accessRes, notificationsRes,
+          coursesRes, resourcesRes, eventsRes, enrollmentsRes, accessRes, notificationsRes, dmsRes,
         ] = await Promise.all([
           supabase.from("communities").select("*"),
           email ? supabase.from("joined_communities").select("community_id").eq("user_email", email) : Promise.resolve({ data: [] as any[] }),
-          supabase.from("posts").select("*"),
+          supabase.from("posts").select("*").order("created_at", { ascending: false }).limit(200),
           email ? supabase.from("liked_posts").select("post_id").eq("user_email", email) : Promise.resolve({ data: [] as any[] }),
           supabase.from("comments").select("*"),
           supabase.from("reactions").select("*"),
@@ -506,6 +600,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           email ? supabase.from("enrollments").select("*").eq("user_email", email) : Promise.resolve({ data: [] as any[] }),
           email ? supabase.from("access_records").select("*").eq("user_email", email) : Promise.resolve({ data: [] as any[] }),
           email ? supabase.from("notifications").select("*").eq("user_email", email).order("created_at", { ascending: false }) : Promise.resolve({ data: [] as any[] }),
+          email
+            ? supabase.from("direct_messages").select("*").or(`from_email.eq.${email},to_email.eq.${email}`).order("created_at", { ascending: false }).limit(500)
+            : Promise.resolve({ data: [] as any[] }),
         ]);
 
         if (cancelled) return;
@@ -525,7 +622,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           communityResources: (resourcesRes.data || []).map(communityResourceFromRow),
           enrollments: (enrollmentsRes.data || []).map((r: any): Enrollment => ({ courseId: r.course_id, userEmail: r.user_email, completedLessonIds: r.completed_lesson_ids || [], enrolledAt: r.enrolled_at })),
           accessRecords: (accessRes.data || []).map((r: any): AccessRecord => ({ id: r.id, resourceId: r.resource_id, resourceTitle: r.resource_title, resourceType: r.resource_type, communityId: r.community_id ?? undefined, userEmail: r.user_email, accessedAt: r.accessed_at })),
+          directMessages: (dmsRes.data || []).map(dmFromRow),
         });
+
+        // Set up realtime subscriptions for this user
+        if (!cancelled) setupRealtime(email);
       } catch (err) {
         console.error("[SukaSpace] Failed to load from Supabase, falling back to this device's local cache:", err);
         setState(loadState());
@@ -537,7 +638,14 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     if (isSupabaseConfigured && supabase) {
       bootFromSupabase().finally(() => { if (!cancelled) setIsHydrated(true); });
       const { data: sub } = supabase.auth.onAuthStateChange(() => { bootFromSupabase(); });
-      return () => { cancelled = true; sub.subscription.unsubscribe(); };
+      return () => {
+        cancelled = true;
+        sub.subscription.unsubscribe();
+        if (supabase && realtimeChannelRef.current) {
+          supabase.removeChannel(realtimeChannelRef.current);
+          realtimeChannelRef.current = null;
+        }
+      };
     }
 
     setState(loadState());
@@ -591,6 +699,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     communityEvents: state.communityEvents,
     enrollments: state.enrollments,
     accessRecords: state.accessRecords,
+    directMessages: state.directMessages,
+    dmUnreadCount: state.directMessages.filter(dm => !dm.read && dm.toEmail === state.session?.email).length,
 
     // ── auth ──
     signIn: async (email, password) => {
@@ -638,6 +748,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         notifications: [{ id: generateId(), text: `Welcome to SukaSpace, ${name}!`, time: "Just now", read: false }],
       }));
       sync(supabase.from("notifications").insert({ id: generateId(), user_email: email, text: `Welcome to SukaSpace, ${name}!`, time: "Just now", read: false, created_at: Date.now() }), "welcome notification");
+      // Fire-and-forget welcome email — never blocks the sign-up flow
+      sendWelcomeEmail({ data: { email, name } }).catch((err) => console.warn("[email] welcome email failed:", err));
       return user;
     },
     signOut: () => {
@@ -707,6 +819,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       setState(s => s.joinedCommunityIds.includes(id) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, id] });
       if (supabase && state.session?.email && !state.joinedCommunityIds.includes(id)) {
         sync(supabase.from("joined_communities").insert({ community_id: id, user_email: state.session.email }), "community join");
+      }
+      if (state.session && !state.joinedCommunityIds.includes(id)) {
+        const community = state.userCommunities.find(c => c.id === id);
+        if (community) {
+          sendCommunityJoinEmail({ data: { email: state.session.email, name: state.session.name, communityTitle: community.title, communityTag: community.tag } }).catch(() => {});
+        }
       }
     },
     isJoined: (id) => state.joinedCommunityIds.includes(id),
@@ -863,12 +981,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       const lesson: Lesson = {
         id: generateId(), title: input.title, description: input.description || "",
         videoUrl: input.videoUrl || "", resources: [], published: false,
-        order: (mod?.lessons.length || 0) + 1,
+        order: (mod?.lessons.length || 0) + 1, dripDays: 0,
       };
       mutateModule(courseId, moduleId, m => ({ ...m, lessons: [...m.lessons, lesson] }));
       if (supabase) sync(supabase.from("lessons").insert({
         id: lesson.id, module_id: moduleId, course_id: courseId, title: lesson.title,
-        description: lesson.description, video_url: lesson.videoUrl, published: lesson.published, sort_order: lesson.order,
+        description: lesson.description, video_url: lesson.videoUrl, published: lesson.published, sort_order: lesson.order, drip_days: 0,
       }), "lesson create");
       return lesson;
     },
@@ -880,6 +998,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         if (patch.description !== undefined) row.description = patch.description;
         if (patch.videoUrl !== undefined) row.video_url = patch.videoUrl;
         if (patch.published !== undefined) row.published = patch.published;
+        if (patch.dripDays !== undefined) row.drip_days = patch.dripDays;
         sync(supabase.from("lessons").update(row).eq("id", lessonId), "lesson update");
       }
     },
@@ -948,6 +1067,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         sync(supabase.from("enrollments").insert({ course_id: courseId, user_email: enrollment.userEmail, completed_lesson_ids: [], enrolled_at: enrollment.enrolledAt }), "enrollment create");
         sync(supabase.from("courses").update({ enrollment_count: newCount }).eq("id", courseId), "course enrollment count");
       }
+      if (state.session) {
+        const course = state.courses.find(c => c.id === courseId);
+        if (course) {
+          sendEnrollmentEmail({ data: { email: state.session.email, name: state.session.name, courseTitle: course.title } }).catch(() => {});
+        }
+      }
     },
     isEnrolled: (courseId) => state.enrollments.some(e => e.courseId === courseId && e.userEmail === state.session?.email),
     completeLesson: (courseId, lessonId) => {
@@ -1009,6 +1134,139 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       if (supabase && state.session?.email) sync(supabase.from("notifications").insert({
         id: notification.id, user_email: state.session.email, text, time: "Just now", read: false, created_at: notification.id,
       }), "notification create");
+    },
+
+    // ── direct messages ───────────────────────────────────────────────────
+    getConversations: () => {
+      const email = state.session?.email;
+      if (!email) return [];
+      // Build a map of peer → {lastMessage, unreadCount} (messages already ordered newest-first from boot)
+      const convMap = new Map<string, { lastMessage: DirectMessage; unreadCount: number }>();
+      const sorted = [...state.directMessages].sort((a, b) => b.createdAt - a.createdAt);
+      for (const dm of sorted) {
+        const peer = dm.fromEmail === email ? dm.toEmail : dm.fromEmail;
+        if (!convMap.has(peer)) convMap.set(peer, { lastMessage: dm, unreadCount: 0 });
+        if (!dm.read && dm.toEmail === email) convMap.get(peer)!.unreadCount++;
+      }
+      return Array.from(convMap.entries()).map(([peerEmail, d]): Conversation => ({
+        peerEmail,
+        lastMessage: d.lastMessage,
+        unreadCount: d.unreadCount,
+      }));
+    },
+    getMessagesWithUser: (peerEmail) => {
+      const email = state.session?.email;
+      if (!email) return [];
+      return state.directMessages
+        .filter(dm => (dm.fromEmail === email && dm.toEmail === peerEmail) || (dm.fromEmail === peerEmail && dm.toEmail === email))
+        .sort((a, b) => a.createdAt - b.createdAt);
+    },
+    sendDM: async (toEmail, body) => {
+      const dm: DirectMessage = {
+        id: generateId(),
+        fromEmail: state.session?.email || "",
+        toEmail,
+        body,
+        read: false,
+        createdAt: Date.now(),
+      };
+      setState(s => ({ ...s, directMessages: [dm, ...s.directMessages] }));
+      if (supabase) sync(supabase.from("direct_messages").insert(dmToRow(dm)), "dm send");
+      return dm;
+    },
+    markDMsRead: (fromEmail) => {
+      const email = state.session?.email;
+      if (!email) return;
+      setState(s => ({
+        ...s,
+        directMessages: s.directMessages.map(dm =>
+          dm.fromEmail === fromEmail && dm.toEmail === email ? { ...dm, read: true } : dm,
+        ),
+      }));
+      if (supabase && email) {
+        sync(supabase.from("direct_messages").update({ read: true }).eq("from_email", fromEmail).eq("to_email", email), "dms read");
+      }
+    },
+
+    // ── drip / content gating ─────────────────────────────────────────────
+    isLessonUnlocked: (courseId, lessonId) => {
+      const course = state.courses.find(c => c.id === courseId);
+      const lesson = course?.modules.flatMap(m => m.lessons).find(l => l.id === lessonId);
+      if (!lesson || lesson.dripDays === 0) return true;
+      const enrollment = state.enrollments.find(
+        e => e.courseId === courseId && e.userEmail === state.session?.email,
+      );
+      if (!enrollment) return false;
+      const daysSinceEnrollment = (Date.now() - enrollment.enrolledAt) / (1000 * 60 * 60 * 24);
+      return daysSinceEnrollment >= lesson.dripDays;
+    },
+
+    // ── paid community join ───────────────────────────────────────────────
+    joinPaidCommunity: async (communityId, onError) => {
+      const community = state.userCommunities.find(c => c.id === communityId);
+      if (!community || state.joinedCommunityIds.includes(communityId)) return;
+      const session = state.session;
+
+      // Free community or Paystack not configured → join directly
+      if (community.tag === "FREE" || !isPaystackConfigured() || !session) {
+        setState(s => s.joinedCommunityIds.includes(communityId) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, communityId] });
+        if (supabase && session?.email) {
+          sync(supabase.from("joined_communities").insert({ community_id: communityId, user_email: session.email }), "community join");
+        }
+        if (session) {
+          sendCommunityJoinEmail({ data: { email: session.email, name: session.name, communityTitle: community.title, communityTag: community.tag } }).catch(() => {});
+        }
+        return;
+      }
+
+      // Paid community — open Paystack popup
+      const amount = priceStringToAmount(community.price || "0", "NGN");
+      try {
+        await initiatePaystackPayment({
+          email: session.email,
+          amount,
+          currency: "NGN",
+          metadata: { communityId, communityTitle: community.title },
+          onSuccess: async (reference) => {
+            try {
+              await verifyPaystackPayment({ data: { reference, communityId, expectedEmail: session.email } });
+              await recordPayment({
+                data: {
+                  id: generateId(),
+                  communityId,
+                  fromEmail: session.email,
+                  toEmail: community.creatorEmail,
+                  reference,
+                  amountCents: amount,
+                  currency: "NGN",
+                },
+              });
+              setState(s => s.joinedCommunityIds.includes(communityId) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, communityId] });
+              if (supabase) {
+                sync(supabase.from("joined_communities").insert({ community_id: communityId, user_email: session.email }), "paid community join");
+              }
+              sendPaymentReceiptEmail({
+                data: {
+                  email: session.email,
+                  name: session.name,
+                  communityTitle: community.title,
+                  amountDisplay: community.price || `${(amount / 100).toLocaleString()} NGN`,
+                  reference,
+                },
+              }).catch(() => {});
+              sendCommunityJoinEmail({ data: { email: session.email, name: session.name, communityTitle: community.title, communityTag: "PAID" } }).catch(() => {});
+              toast.success(`Welcome to ${community.title}! Payment confirmed.`);
+            } catch (err: any) {
+              console.error("[payment] post-payment error:", err);
+              onError?.(err?.message ?? "Payment verification failed. Please contact support with your reference.");
+            }
+          },
+          onClose: () => {},
+        });
+      } catch (err: any) {
+        console.error("[payment] Paystack initiation error:", err);
+        onError?.(err?.message ?? "Payment could not be initiated. Please try again.");
+      }
     },
   };
 

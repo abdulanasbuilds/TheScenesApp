@@ -112,7 +112,8 @@ create table if not exists lessons (
   description text,
   video_url text,
   published boolean not null default false,
-  sort_order int not null default 0
+  sort_order int not null default 0,
+  drip_days int not null default 0
 );
 
 create table if not exists lesson_resources (
@@ -170,6 +171,29 @@ create table if not exists notifications (
   created_at bigint not null
 );
 
+-- Direct messages between users
+create table if not exists direct_messages (
+  id bigint primary key,
+  from_email text not null,
+  to_email text not null,
+  body text not null,
+  read boolean not null default false,
+  created_at bigint not null
+);
+
+-- Payment records — written after Paystack verification succeeds
+create table if not exists payments (
+  id bigint primary key,
+  community_id bigint references communities(id) on delete set null,
+  from_email text not null,
+  to_email text not null,
+  reference text not null,
+  amount_cents int not null,
+  currency text not null default 'NGN',
+  status text not null default 'completed' check (status in ('pending','completed','refunded','failed')),
+  created_at bigint not null
+);
+
 -- ─── Row Level Security ─────────────────────────────────────────────────
 
 alter table profiles enable row level security;
@@ -188,6 +212,8 @@ alter table community_events enable row level security;
 alter table enrollments enable row level security;
 alter table access_records enable row level security;
 alter table notifications enable row level security;
+alter table direct_messages enable row level security;
+alter table payments enable row level security;
 
 create policy "profiles are readable by any signed-in user" on profiles for select using (auth.role() = 'authenticated');
 create policy "users manage their own profile" on profiles for insert with check (auth.uid() = id);
@@ -208,3 +234,30 @@ create policy "authenticated read/write community_events" on community_events fo
 create policy "authenticated read/write enrollments" on enrollments for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "authenticated read/write access_records" on access_records for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "authenticated read/write notifications" on notifications for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- DM policies: only sender and recipient can see a message
+create policy "dm participants can read" on direct_messages for select using (
+  auth.role() = 'authenticated' and (auth.email() = from_email or auth.email() = to_email)
+);
+create policy "authenticated users can send dms" on direct_messages for insert with check (
+  auth.role() = 'authenticated' and auth.email() = from_email
+);
+create policy "recipient can mark dms read" on direct_messages for update using (
+  auth.role() = 'authenticated' and auth.email() = to_email
+);
+
+-- Payment policies: participant can read, authenticated can insert (server-verified)
+create policy "payment participants can read" on payments for select using (
+  auth.role() = 'authenticated' and (auth.email() = from_email or auth.email() = to_email)
+);
+create policy "authenticated users can insert payments" on payments for insert with check (
+  auth.role() = 'authenticated'
+);
+
+-- ─── Realtime Publications ──────────────────────────────────────────────
+-- Enable realtime for the tables that need live updates.
+-- Run in Supabase dashboard: Realtime → Tables → enable for posts, notifications, direct_messages
+-- Or run:
+--   alter publication supabase_realtime add table posts;
+--   alter publication supabase_realtime add table notifications;
+--   alter publication supabase_realtime add table direct_messages;

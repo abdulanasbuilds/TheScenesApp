@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { BookOpen, Check, ChevronRight, PlayCircle, Link2, ExternalLink, GraduationCap, ArrowLeft } from "lucide-react";
+import { BookOpen, Check, ChevronRight, PlayCircle, Link2, ExternalLink, GraduationCap, ArrowLeft, Lock, Clock } from "lucide-react";
 import { useAppStore, type Course, type Lesson, getVideoEmbed } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/classroom")({
@@ -30,7 +30,10 @@ function Classroom() {
   const openCourse = (courseId: number) => {
     const course = store.courses.find(c => c.id === courseId);
     if (!course) return;
-    const firstLesson = course.modules[0]?.lessons[0] ?? null;
+    // Auto-select first unlocked lesson, or first lesson if none unlocked yet
+    const allLessons = course.modules.flatMap(m => m.lessons);
+    const firstUnlocked = allLessons.find(l => store.isLessonUnlocked(courseId, l.id));
+    const firstLesson = firstUnlocked ?? allLessons[0] ?? null;
     setActiveCourseId(courseId);
     setActiveLessonId(firstLesson?.id ?? null);
     setView("player");
@@ -58,93 +61,84 @@ function CourseCatalog({ onOpen }: { onOpen: (id: number) => void }) {
   const store = useAppStore();
   const [tab, setTab] = useState<"my" | "all">("my");
 
-  const enrolled = store.enrollments
-    .filter(e => e.userEmail === store.session?.email)
-    .map(e => store.courses.find(c => c.id === e.courseId))
-    .filter(Boolean) as Course[];
+  const myCourseIds = store.enrollments.map(e => e.courseId);
+  const myCourses = store.courses.filter(c => myCourseIds.includes(c.id));
+  const allCourses = store.courses.filter(c => c.published);
 
-  const available = store.courses.filter(
-    c => c.published && !store.isEnrolled(c.id)
-  );
-
-  const displayCourses = tab === "my" ? enrolled : available;
+  const courses = tab === "my" ? myCourses : allCourses;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tighter text-[#151515]">Classroom</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Your learning space.</p>
-        </div>
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground">Classroom</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Your enrolled courses and available curriculum.</p>
       </div>
-
-      <div className="flex gap-1 rounded-xl border border-border bg-card p-1 w-fit mb-6">
+      <div className="flex gap-1 mb-6 rounded-xl bg-accent p-1 w-fit">
         {(["my", "all"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`rounded-lg px-4 py-2 text-sm font-semibold ${tab === t ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"}`}>
-            {t === "my" ? `My Courses (${enrolled.length})` : `Discover (${available.length})`}
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`rounded-lg px-4 py-1.5 text-xs font-semibold transition ${tab === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            {t === "my" ? "My courses" : "All courses"}
           </button>
         ))}
       </div>
 
-      {displayCourses.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
-          <GraduationCap size={32} className="mx-auto text-muted-foreground/40" />
-          <h2 className="mt-3 text-base font-semibold text-foreground">
-            {tab === "my" ? "No courses enrolled yet" : "No courses available yet"}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {tab === "my"
-              ? "Switch to Discover to find and enroll in courses."
-              : "Creators haven't published any courses yet. Check back soon."}
+      {courses.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <GraduationCap size={36} className="text-muted-foreground/40" />
+          <p className="mt-3 text-sm font-semibold text-foreground">
+            {tab === "my" ? "No enrolled courses yet" : "No published courses"}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {tab === "my" ? "Explore communities to find and enroll in courses." : "Check back later."}
           </p>
           {tab === "my" && (
-            <button onClick={() => setTab("all")} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Browse courses</button>
+            <button onClick={() => setTab("all")} className="mt-3 text-xs font-semibold text-primary hover:underline">Browse all courses</button>
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {displayCourses.map(course => {
-            const progress = store.getCourseProgress(course.id);
-            const enrolled = store.isEnrolled(course.id);
-            const totalLessons = course.modules.flatMap(m => m.lessons).length;
-            const pct = progress.total > 0 ? Math.round((progress.completed / progress.total) * 100) : 0;
+        <div className="grid gap-4 sm:grid-cols-2">
+          {courses.map(course => {
+            const allLessons = course.modules.flatMap(m => m.lessons);
+            const enrollment = store.enrollments.find(e => e.courseId === course.id && e.userEmail === store.session?.email);
+            const completed = enrollment ? allLessons.filter(l => enrollment.completedLessonIds.includes(l.id)).length : 0;
+            const pct = allLessons.length > 0 ? (completed / allLessons.length) * 100 : 0;
+            const isEnrolled = !!enrollment;
 
             return (
-              <div key={course.id} className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-                <div className="h-24 bg-gradient-to-br from-sky-100 to-blue-50 flex items-center justify-center relative">
-                  <BookOpen size={28} className="text-sky-400" />
-                  {enrolled && pct === 100 && (
-                    <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700"><Check size={10} />Completed</span>
-                  )}
+              <button
+                key={course.id}
+                onClick={() => onOpen(course.id)}
+                className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/40 transition"
+              >
+                <div className="flex items-start gap-2">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10">
+                    <BookOpen size={18} className="text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-foreground">{course.title}</div>
+                    <div className="text-xs text-muted-foreground">{allLessons.length} lessons</div>
+                  </div>
                 </div>
-                <div className="flex flex-1 flex-col p-4">
-                  <h3 className="text-sm font-semibold text-foreground">{course.title}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground line-clamp-2 flex-1">{course.description || "No description."}</p>
-                  <div className="mt-2 text-xs text-muted-foreground">{totalLessons} lessons · {course.modules.length} modules</div>
-
-                  {enrolled && progress.total > 0 && (
-                    <div className="mt-2">
-                      <div className="h-1.5 rounded-full bg-slate-100">
-                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
-                      </div>
-                      <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                        <span>{progress.completed}/{progress.total} lessons</span>
-                        <span>{pct}%</span>
-                      </div>
+                {isEnrolled && (
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                      <span>{completed}/{allLessons.length} complete</span>
+                      <span>{Math.round(pct)}%</span>
                     </div>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      if (!enrolled) store.enrollInCourse(course.id);
-                      onOpen(course.id);
-                    }}
-                    className="mt-3 w-full rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary/90"
-                  >
-                    {enrolled ? (pct === 100 ? "Review course" : "Continue") : "Enroll & start"}
-                  </button>
-                </div>
-              </div>
+                    <div className="h-1.5 rounded-full bg-slate-100">
+                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                )}
+                {!isEnrolled && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                    Enroll <ChevronRight size={12} />
+                  </span>
+                )}
+              </button>
             );
           })}
         </div>
@@ -153,7 +147,7 @@ function CourseCatalog({ onOpen }: { onOpen: (id: number) => void }) {
   );
 }
 
-// ─── Course Player ────────────────────────────────────────────────────────────
+// ─── Player ───────────────────────────────────────────────────────────────────
 
 function CoursePlayer({ course, activeLessonId, onSelectLesson, onBack }: {
   course: Course;
@@ -169,6 +163,16 @@ function CoursePlayer({ course, activeLessonId, onSelectLesson, onBack }: {
   const nextLesson = allLessons[currentIndex + 1] ?? null;
   const embedUrl = lesson ? getVideoEmbed(lesson.videoUrl) : null;
   const isComplete = lesson ? store.isLessonComplete(course.id, lesson.id) : false;
+  const isUnlocked = lesson ? store.isLessonUnlocked(course.id, lesson.id) : true;
+
+  /** Days remaining until the lesson unlocks (0 if already unlocked) */
+  function daysLeft(lessonOrId: Lesson): number {
+    if (lessonOrId.dripDays === 0) return 0;
+    const enrollment = store.enrollments.find(e => e.courseId === course.id && e.userEmail === store.session?.email);
+    if (!enrollment) return lessonOrId.dripDays;
+    const daysSince = (Date.now() - enrollment.enrolledAt) / (1000 * 60 * 60 * 24);
+    return Math.max(0, Math.ceil(lessonOrId.dripDays - daysSince));
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-56px)]">
@@ -199,18 +203,40 @@ function CoursePlayer({ course, activeLessonId, onSelectLesson, onBack }: {
                 {mod.lessons.map((l, li) => {
                   const done = store.isLessonComplete(course.id, l.id);
                   const active = l.id === activeLessonId;
+                  const unlocked = store.isLessonUnlocked(course.id, l.id);
+                  const remaining = !unlocked ? daysLeft(l) : 0;
                   return (
                     <li key={l.id}>
                       <button
-                        onClick={() => onSelectLesson(l.id)}
-                        className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs ${active ? "bg-sky-50 font-semibold text-primary" : "text-muted-foreground hover:bg-accent"}`}
+                        onClick={() => unlocked && onSelectLesson(l.id)}
+                        disabled={!unlocked}
+                        title={!unlocked ? `Unlocks in ${remaining} day${remaining !== 1 ? "s" : ""}` : undefined}
+                        className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs transition-colors ${
+                          active ? "bg-sky-50 font-semibold text-primary"
+                          : !unlocked ? "cursor-not-allowed opacity-50"
+                          : "text-muted-foreground hover:bg-accent"
+                        }`}
                       >
-                        <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[10px] font-bold ${done ? "border-emerald-400 bg-emerald-400 text-white" : active ? "border-primary text-primary" : "border-slate-300 text-slate-400"}`}>
-                          {done ? <Check size={9} /> : li + 1}
-                        </span>
-                        <span className="flex-1 leading-tight">{l.title}</span>
-                        {l.videoUrl && <PlayCircle size={11} className="shrink-0 opacity-50" />}
-                        {l.resources.length > 0 && <Link2 size={10} className="shrink-0 opacity-50" />}
+                        {unlocked ? (
+                          <>
+                            <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[10px] font-bold ${done ? "border-emerald-400 bg-emerald-400 text-white" : active ? "border-primary text-primary" : "border-slate-300 text-slate-400"}`}>
+                              {done ? <Check size={9} /> : li + 1}
+                            </span>
+                            <span className="flex-1 leading-tight">{l.title}</span>
+                            {l.videoUrl && <PlayCircle size={11} className="shrink-0 opacity-50" />}
+                            {l.resources.length > 0 && <Link2 size={10} className="shrink-0 opacity-50" />}
+                          </>
+                        ) : (
+                          <>
+                            <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-slate-200 bg-slate-50">
+                              <Lock size={9} className="text-slate-400" />
+                            </span>
+                            <span className="flex-1 leading-tight text-slate-400">{l.title}</span>
+                            <span className="shrink-0 text-[10px] text-slate-400 flex items-center gap-0.5">
+                              <Clock size={9} />{remaining}d
+                            </span>
+                          </>
+                        )}
                       </button>
                     </li>
                   );
@@ -231,7 +257,32 @@ function CoursePlayer({ course, activeLessonId, onSelectLesson, onBack }: {
               <button onClick={onBack} className="mt-3 text-sm font-semibold text-primary hover:underline">Back to courses</button>
             </div>
           </div>
+        ) : !isUnlocked ? (
+          /* ── Locked state ── */
+          <div className="mx-auto max-w-3xl px-4 py-8">
+            <div className="mb-1 text-xs text-muted-foreground">{course.title}</div>
+            <h1 className="text-2xl font-bold text-foreground">{lesson.title}</h1>
+            <div className="mt-10 flex flex-col items-center rounded-2xl border border-border bg-card p-10 text-center">
+              <div className="mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-slate-100">
+                <Lock size={28} className="text-slate-400" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">Content locked</h2>
+              <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+                This lesson unlocks in{" "}
+                <strong className="text-foreground">{daysLeft(lesson)} day{daysLeft(lesson) !== 1 ? "s" : ""}</strong>{" "}
+                after enrollment.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Drip scheduling keeps content fresh and prevents overwhelm.
+              </p>
+              <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock size={14} className="text-primary" />
+                <span>Available in <strong className="text-foreground">{daysLeft(lesson)}</strong> days</span>
+              </div>
+            </div>
+          </div>
         ) : (
+          /* ── Normal lesson content ── */
           <div className="mx-auto max-w-3xl px-4 py-8">
             {/* Lesson header */}
             <div className="mb-1 text-xs text-muted-foreground">{course.title}</div>
@@ -295,8 +346,8 @@ function CoursePlayer({ course, activeLessonId, onSelectLesson, onBack }: {
             {/* Complete + nav */}
             <div className="mt-8 flex items-center justify-between gap-3 border-t border-border pt-6">
               <button
-                onClick={() => prevLesson && onSelectLesson(prevLesson.id)}
-                disabled={!prevLesson}
+                onClick={() => prevLesson && store.isLessonUnlocked(course.id, prevLesson.id) && onSelectLesson(prevLesson.id)}
+                disabled={!prevLesson || !store.isLessonUnlocked(course.id, prevLesson?.id ?? 0)}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground disabled:opacity-40 hover:enabled:bg-accent"
               >
                 ← Previous
@@ -305,7 +356,8 @@ function CoursePlayer({ course, activeLessonId, onSelectLesson, onBack }: {
               <button
                 onClick={() => {
                   if (!isComplete) store.completeLesson(course.id, lesson.id);
-                  if (nextLesson) onSelectLesson(nextLesson.id);
+                  if (nextLesson && store.isLessonUnlocked(course.id, nextLesson.id)) onSelectLesson(nextLesson.id);
+                  else if (nextLesson && !store.isLessonUnlocked(course.id, nextLesson.id)) onSelectLesson(nextLesson.id);
                 }}
                 className={`inline-flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold ${isComplete ? "border border-border text-muted-foreground" : "bg-primary text-white hover:bg-primary/90"}`}
               >
@@ -321,11 +373,23 @@ function CoursePlayer({ course, activeLessonId, onSelectLesson, onBack }: {
                   <div className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">{mi + 1}. {mod.title}</div>
                   {mod.lessons.map((l, li) => {
                     const done = store.isLessonComplete(course.id, l.id);
+                    const unlocked = store.isLessonUnlocked(course.id, l.id);
+                    const remaining = !unlocked ? daysLeft(l) : 0;
                     return (
-                      <button key={l.id} onClick={() => onSelectLesson(l.id)} className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs mb-0.5 ${l.id === activeLessonId ? "bg-sky-50 text-primary font-semibold" : "text-muted-foreground hover:bg-accent"}`}>
-                        <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border text-[9px] ${done ? "border-emerald-400 bg-emerald-400 text-white" : "border-slate-300"}`}>{done ? <Check size={8} /> : li + 1}</span>
-                        {l.title}
-                        <ChevronRight size={11} className="ml-auto shrink-0 opacity-50" />
+                      <button
+                        key={l.id}
+                        onClick={() => unlocked && onSelectLesson(l.id)}
+                        disabled={!unlocked}
+                        className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs mb-0.5 ${l.id === activeLessonId ? "bg-sky-50 text-primary font-semibold" : !unlocked ? "cursor-not-allowed opacity-50" : "text-muted-foreground hover:bg-accent"}`}
+                      >
+                        <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border text-[9px] ${done ? "border-emerald-400 bg-emerald-400 text-white" : "border-slate-300"}`}>
+                          {!unlocked ? <Lock size={7} className="text-slate-400" /> : done ? <Check size={8} /> : li + 1}
+                        </span>
+                        <span className="flex-1">{l.title}</span>
+                        {!unlocked
+                          ? <span className="text-[10px] text-slate-400 flex items-center gap-0.5"><Clock size={9} />{remaining}d</span>
+                          : <ChevronRight size={11} className="ml-auto shrink-0 opacity-50" />
+                        }
                       </button>
                     );
                   })}

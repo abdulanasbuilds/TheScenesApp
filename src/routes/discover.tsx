@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
-import { Search, Users, X, CheckCircle2, Rocket, ArrowRight } from "lucide-react";
+import { Search, Users, X, CheckCircle2, Rocket, ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { PublicHeader } from "@/components/PublicHeader";
 import { Avatar } from "@/components/BrowserFrame";
 import { MOCK_CATEGORIES } from "@/lib/mock-data";
@@ -24,6 +25,7 @@ function Discovery() {
   const [cat, setCat] = useState("All");
   const [modal, setModal] = useState(false);
   const [joinTarget, setJoinTarget] = useState<Community | null>(null);
+  const [joiningId, setJoiningId] = useState<number | null>(null);
   const nav = useNavigate();
   const store = useAppStore();
 
@@ -40,10 +42,16 @@ function Discovery() {
   const hasCommunities = store.communities.length > 0;
   const resetFilters = () => { setQuery(""); setCat("All"); };
 
-  const handleJoin = (community: Community) => {
+  const handleJoin = async (community: Community) => {
     if (!store.session) { setJoinTarget(community); setModal(true); return; }
-    store.joinCommunity(community.id);
-    nav({ to: "/app/feed" });
+    if (joiningId === community.id) return; // prevent double-click
+    setJoiningId(community.id);
+    try {
+      await store.joinPaidCommunity(community.id, (msg) => toast.error(msg));
+      nav({ to: "/app/feed" });
+    } finally {
+      setJoiningId(null);
+    }
   };
 
   return (

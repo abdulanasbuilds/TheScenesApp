@@ -5,7 +5,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import {
   Plus, ChevronRight, Edit2, Trash2, Eye, EyeOff, Check,
   BookOpen, Video, Link2, X, GripVertical, ExternalLink, PlayCircle,
-  MonitorPlay, Rocket, Users, FileText,
+  MonitorPlay, Rocket, Users, FileText, Clock,
 } from "lucide-react";
 import { useAppStore, type Course, type CourseModule, type Lesson, getVideoEmbed, detectResourceSource } from "@/lib/app-store";
 
@@ -724,6 +724,7 @@ function LessonEditor({ courseId, moduleId, lesson }: { courseId: number; module
   const [title, setTitle] = useState(lesson.title);
   const [desc, setDesc] = useState(lesson.description);
   const [videoUrl, setVideoUrl] = useState(lesson.videoUrl);
+  const [dripDays, setDripDays] = useState(lesson.dripDays);
   const [resourceUrl, setResourceUrl] = useState("");
   const [resourceTitle, setResourceTitle] = useState("");
   const [saved, setSaved] = useState(false);
@@ -731,7 +732,7 @@ function LessonEditor({ courseId, moduleId, lesson }: { courseId: number; module
   const embedUrl = getVideoEmbed(videoUrl);
 
   const save = () => {
-    store.updateLesson(courseId, moduleId, lesson.id, { title, description: desc, videoUrl });
+    store.updateLesson(courseId, moduleId, lesson.id, { title, description: desc, videoUrl, dripDays });
     setSaved(true);
     setTimeout(() => setSaved(false), 1800);
   };
@@ -801,6 +802,27 @@ function LessonEditor({ courseId, moduleId, lesson }: { courseId: number; module
             Video will embed once a valid URL is saved.
           </div>
         )}
+      </div>
+
+      {/* Drip schedule */}
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5"><Clock size={12} />Drip schedule</label>
+        <div className="mt-1 flex items-center gap-3">
+          <input
+            type="number"
+            min={0}
+            max={365}
+            value={dripDays}
+            onChange={e => setDripDays(Math.max(0, Math.min(365, parseInt(e.target.value) || 0)))}
+            className="w-24 rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none focus:border-primary"
+          />
+          <span className="text-sm text-muted-foreground">days after enrollment</span>
+        </div>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          {dripDays === 0
+            ? "Available immediately when a learner enrolls."
+            : `This lesson unlocks ${dripDays} day${dripDays !== 1 ? "s" : ""} after a learner enrolls. Set to 0 for instant access.`}
+        </p>
       </div>
 
       {/* Resources */}
