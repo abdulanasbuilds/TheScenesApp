@@ -4,8 +4,10 @@ import { useState, useMemo } from "react";
 import {
   Hash, Heart, MessageSquare, Share2, Send, X, Plus, Trash2, Link2,
   Users, BookOpen, Calendar, Info, LayoutGrid, ExternalLink, ChevronDown, ChevronLeft, ChevronRight,
+  ImageIcon, Smile,
 } from "lucide-react";
 import { Avatar } from "@/components/BrowserFrame";
+import { RichTextEditor, stripHtml } from "@/components/RichTextEditor";
 import { useAppStore, type FeedPost, type Community, type CommunityEvent, detectResourceSource } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/feed")({
@@ -184,27 +186,104 @@ function FeedTab({ community }: { community: Community }) {
   );
 }
 
+type PostType = "post" | "question" | "announcement";
+const POST_TYPE_LABELS: Record<PostType, string> = { post: "Post", question: "Question", announcement: "Announcement" };
+
 function PostComposer({ communityId, channel }: { communityId: number; channel: string }) {
   const store = useAppStore();
-  const [text, setText] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const [html, setHtml] = useState("");
+  const [postType, setPostType] = useState<PostType>("post");
+
   const submit = () => {
-    if (!text.trim()) return;
-    store.addPost({ communityId, channel, title: text.trim().slice(0, 60), body: text.trim(), category: "General" });
-    setText("");
+    const plain = stripHtml(html);
+    if (!plain) return;
+    store.addPost({
+      communityId, channel,
+      title: plain.slice(0, 80),
+      body: html,
+      category: postType === "question" ? "Question" : postType === "announcement" ? "Announcement" : "General",
+    });
+    setHtml("");
+    setExpanded(false);
+    setPostType("post");
   };
-  return (
-    <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
-      <div className="flex items-center gap-2">
+
+  if (!expanded) {
+    return (
+      <button
+        onClick={() => setExpanded(true)}
+        className="flex w-full items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-3 text-left shadow-sm transition-colors hover:border-primary/30 hover:bg-accent/30"
+      >
         <Avatar initials={store.session?.avatar || "YU"} tone="sky" size={28} />
-        <input
-          value={text} onChange={e => setText(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) submit(); }}
-          placeholder="Share something with the community…"
-          className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
-        />
-        <button onClick={submit} disabled={!text.trim()} className="rounded-lg bg-foreground px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Post</button>
+        <span className="text-sm text-muted-foreground">Share something with #{channel}…</span>
+        <div className="ml-auto flex items-center gap-1.5">
+          <ImageIcon size={14} className="text-muted-foreground/60" />
+          <Smile size={14} className="text-muted-foreground/60" />
+        </div>
+      </button>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl border border-primary/30 bg-card p-4 shadow-sm"
+    >
+      <div className="mb-3 flex items-center gap-2.5">
+        <Avatar initials={store.session?.avatar || "YU"} tone="sky" size={30} />
+        <div>
+          <div className="text-sm font-semibold text-foreground">{store.session?.name}</div>
+          <div className="mt-0.5 flex items-center gap-1">
+            {(["post", "question", "announcement"] as PostType[]).map(t => (
+              <button
+                key={t}
+                onClick={() => setPostType(t)}
+                className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition-all ${postType === t ? "bg-primary text-white" : "bg-accent text-muted-foreground hover:text-foreground"}`}
+              >
+                {POST_TYPE_LABELS[t]}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+
+      <RichTextEditor
+        value={html}
+        onChange={setHtml}
+        placeholder={
+          postType === "question" ? `Ask a question in #${channel}…` :
+          postType === "announcement" ? `Make an announcement to #${channel}…` :
+          `Share something with #${channel}…`
+        }
+        minHeight="96px"
+        autoFocus
+      />
+
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button type="button" className="rounded-lg border border-border p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="Add image (coming soon)">
+            <ImageIcon size={14} />
+          </button>
+          <button type="button" className="rounded-lg border border-border p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="Add emoji">
+            <Smile size={14} />
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => { setExpanded(false); setHtml(""); }} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-accent">
+            Cancel
+          </button>
+          <button
+            onClick={submit}
+            disabled={!stripHtml(html)}
+            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-40 hover:bg-primary/90"
+          >
+            {postType === "question" ? "Ask question" : postType === "announcement" ? "Post announcement" : "Post"}
+          </button>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -229,7 +308,20 @@ function FeedPostCard({ post, onOpenThread }: { post: FeedPost; onOpenThread: ()
       </div>
       <div className="mt-3 cursor-pointer" onClick={onOpenThread}>
         <h3 className="text-base font-semibold">{post.title}</h3>
-        <p className="mt-1 text-sm text-foreground">{post.body}</p>
+        <div
+          className="mt-1 text-sm text-foreground
+            [&_h2]:mt-1 [&_h2]:text-base [&_h2]:font-bold
+            [&_h3]:text-sm [&_h3]:font-semibold
+            [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4
+            [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-4
+            [&_li]:my-0.5
+            [&_blockquote]:border-l-2 [&_blockquote]:border-primary/30 [&_blockquote]:pl-2.5 [&_blockquote]:italic [&_blockquote]:text-muted-foreground
+            [&_pre]:my-1 [&_pre]:rounded [&_pre]:bg-accent [&_pre]:p-2 [&_pre]:text-xs [&_pre]:font-mono
+            [&_code]:rounded [&_code]:bg-accent [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-xs [&_code]:font-mono
+            [&_a]:text-primary [&_a]:underline
+            [&_strong]:font-semibold [&_em]:italic"
+          dangerouslySetInnerHTML={{ __html: post.body }}
+        />
       </div>
 
       {/* Reactions display */}
@@ -297,7 +389,15 @@ function ThreadDrawer({ post, onClose }: { post: FeedPost; onClose: () => void }
               <div><div className="text-sm font-semibold">{post.author}</div><div className="text-xs text-muted-foreground">Just now</div></div>
             </div>
             <h3 className="mt-3 text-base font-semibold">{post.title}</h3>
-            <p className="mt-1 text-sm">{post.body}</p>
+            <div
+              className="mt-1 text-sm text-foreground
+                [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-sm [&_h3]:font-semibold
+                [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5
+                [&_blockquote]:border-l-2 [&_blockquote]:border-primary/30 [&_blockquote]:pl-2.5 [&_blockquote]:italic [&_blockquote]:text-muted-foreground
+                [&_pre]:rounded [&_pre]:bg-accent [&_pre]:p-2 [&_pre]:text-xs [&_pre]:font-mono
+                [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold"
+              dangerouslySetInnerHTML={{ __html: post.body }}
+            />
           </div>
           <div className="border-t border-slate-100 pt-4">
             <div className="text-xs font-semibold text-muted-foreground">{comments.length} {comments.length === 1 ? "reply" : "replies"}</div>
@@ -314,9 +414,20 @@ function ThreadDrawer({ post, onClose }: { post: FeedPost; onClose: () => void }
           </div>
         </div>
         <div className="border-t border-border p-3">
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-2">
-            <input value={reply} onChange={e => setReply(e.target.value)} onKeyDown={e => { if (e.key === "Enter") sendReply(); }} placeholder="Reply…" className="flex-1 bg-transparent px-2 text-sm outline-none" />
-            <button onClick={sendReply} disabled={!reply.trim()} className="rounded-md bg-primary p-2 text-white disabled:opacity-40"><Send size={14} /></button>
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20">
+            <textarea
+              value={reply}
+              onChange={e => setReply(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) sendReply(); }}
+              placeholder="Write a reply… (Ctrl+Enter to send)"
+              rows={2}
+              className="w-full resize-none bg-transparent px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            />
+            <div className="flex items-center justify-end border-t border-border bg-accent/30 px-3 py-1.5">
+              <button onClick={sendReply} disabled={!reply.trim()} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40 hover:bg-primary/90">
+                <Send size={12} /> Reply
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>

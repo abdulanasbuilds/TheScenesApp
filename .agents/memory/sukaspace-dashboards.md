@@ -1,56 +1,54 @@
 ---
-name: SukaSpace Dashboards & Auth
-description: Routing, auth guard, role-based navigation, Paystack integration, and Coming Soon routes.
+name: SukaSpace dashboards + auth + rich text
+description: Learner dashboard, Creator Hub tabs, auth guard, Paystack, rich text editor, affiliate system
 ---
 
-## Auth
-- Auth guard is in `AppShell.tsx` via `window.location.replace("/auth")` when `!store.session`.
-- Role-based redirect post-login: creator → `/app/creator`, learner → `/app/dashboard`.
-- `create-community` route has its own auth guard.
+## Routing
+- Learner dashboard: `/app/dashboard`
+- Creator Hub: `/app/creator` — 10 tabs: overview, communities, courses, members, payments, analytics, **affiliate**, **live** (Soon), **automations** (Soon), settings
+- Affiliate management: `/app/affiliate` — standalone functional page (creator-set commission)
+- Auth: `/auth`
+- 3 Coming Soon standalone routes still exist: `/app/live`, `/app/automations` (coming soon pages), `/app/affiliate` (now functional)
+- Role-based routing post-login based on `store.session.role` ("creator" → `/app/creator`, "learner" → `/app/dashboard`)
 
-## Navigation
-- `CREATOR_NAV` and `LEARNER_NAV` are typed `NavItem[]` arrays (not `as const`) with optional `comingSoon?: boolean`.
-- Nav items with `comingSoon: true` show an amber "Soon" badge in both desktop sidebar and mobile scrollable nav.
-- Mobile bottom nav shows only top 5 routes (no coming-soon items).
-- Mobile scrollable nav (horizontal scroll below top bar) shows ALL nav items including coming-soon.
-- XP tier badge shown in sidebar above profile card; uses `xpToTier(0)` placeholder — wire real XP when tracking is implemented.
+## Auth guard
+- `AppShell.tsx` uses `window.location.replace("/auth")` (not `useNavigate()`) for unauthenticated redirect
 
-## Key routes
-- `/app/dashboard` — Learner dashboard (5 tabs)
-- `/app/creator` — Creator Hub (7 tabs)
-- `/app/leaderboard` — Full leaderboard with podium, rankings table, achievements, tier progression
-- `/app/payouts` — Payouts with Paystack connection banner, earnings chart, withdrawal modal
-- `/app/live` — Coming Soon (Radio icon, rose gradient)
-- `/app/automations` — Coming Soon (Zap icon, amber gradient), creator-only nav
-- `/app/affiliate` — Coming Soon (Share2 icon, emerald gradient), creator-only nav
+## Public pages — DO NOT CHANGE without explicit request
+- `index.tsx`, `discover.tsx`, `creators.tsx`, `learners.tsx`, `pricing.tsx`, `auth.tsx` — all match the reference design at https://sukaspace.abdulanas.workers.dev/
+- `index.tsx` and `discover.tsx` were previously redesigned without user request and then restored via `git checkout 89ad359`
 
-## Paystack Integration
-- `src/lib/paystack.ts` — client-side SDK loader, `initiatePaystackPayment()`, `isPaystackConfigured()`, `priceStringToAmount()`
-- `src/lib/paystack.functions.ts` — server-side `verifyPaystackPayment` createServerFn; calls `https://api.paystack.co/transaction/verify/{ref}`
-- Public key: `VITE_PAYSTACK_PUBLIC_KEY` (client-safe); Secret key: `PAYSTACK_SECRET_KEY` (server only).
-- When Paystack is NOT configured, discover page shows "Demo Mode" — joins community without real payment (graceful fallback).
-- Verify flow: popup callback → call `verifyPaystackPayment` server fn → on success call `store.joinCommunity(id)`.
-- **Why:** Paystack chosen over Flutterwave (simpler popup API); Stripe = "Coming Soon" note in UI.
+## Rich Text Editor
+- `src/components/RichTextEditor.tsx` — custom contentEditable + execCommand, no external deps
+- Props: `value`, `onChange`, `placeholder`, `minHeight`, `className`, `autoFocus`
+- `stripHtml(html)` utility exported for plain-text length checks
+- Used in: `app.feed.tsx` (PostComposer), `app.courses.tsx` (lesson description), `app.classroom.tsx` (renders HTML via dangerouslySetInnerHTML)
+- HTML rendering classes pattern: `[&_h2]:font-bold [&_ul]:list-disc [&_ul]:pl-4 [&_blockquote]:border-l-2 [&_pre]:bg-accent ...` (Tailwind v4 arbitrary variants, no @tailwindcss/typography needed)
 
-## Replit PostgreSQL schema
-- 7 tables created from `MIGRATION_SQL` in `src/lib/db.ts`.
-- App functions fully in localStorage-only mode (Supabase keys absent — intentional).
+## Affiliate system
+- Creator-managed: creator sets commission rate (5–50%), type (recurring | one-time), cookie days (30/60/90)
+- Settings stored in localStorage key: `sukaspace_aff_${communityId}` (JSON)
+- Referral link format: `${window.location.origin}/ref/${referralCode}`
+- Referral code generated via: slug + random alphanumeric (makeCode function)
+- Mock affiliates table shown when enabled (MOCK_AFFILIATES in both creator.tsx and affiliate.tsx)
+- Full management page at `/app/affiliate`; also accessible as "Affiliate" tab in Creator Hub
 
-## Coming Soon component
-- `src/components/ComingSoon.tsx` — accepts `icon`, `title`, `subtitle`, `description`, `features[]`, `badge`, `backTo`, `backLabel`, `gradientClass`.
-- "Notify me" button calls `store.pushNotification()` + toast (no email).
+## Creator Hub (app.creator.tsx)
+- OverviewTab: uses MOCK_GROWTH_SERIES (from mock-data.ts) for real AreaChart, no Math.random()
+- Quick action "Affiliate program" → navigates to `/app/affiliate` (not setTab)
+- PaymentsTab: links to `/app/payouts` for full payout dashboard
+- LiveTab / AutomationsTab: coming-soon sections with feature previews + notify-me buttons
 
-## xpToTier function
-- Updated to return `{ name, color, emoji, nextAt: number | null }`.
-- Tiers: Bronze (0) → Silver (500) → Gold I (900) → Gold II (1400) → Platinum (2000) → Diamond I (2800) → Diamond Elite (4000).
-- **Why:** Added `nextAt` for progress bar rendering in leaderboard and sidebar.
+## Paystack
+- `isPaystackConfigured()` from `@/lib/paystack` — checks env var
+- `initiatePaystackPayment()` — popup API
+- Server fn: `verifyPaystackPayment` in `paystack.functions.ts`
 
-## Mock data additions
-- `MOCK_LEADERBOARD_MEMBERS` — 10 members with `xp`, `weekXp`, `monthXp`, `streak`, `postsCount`, `coursesCompleted`.
-- `MOCK_TESTIMONIALS` — 3 testimonials used on landing page.
-- `XP_EVENTS` — XP rewards table for different actions.
+## Gamification
+- `xpToTier(xp)` returns `{ name, color, emoji, nextAt: number | null }` — tiers Bronze → Silver → Gold I → Gold II → Platinum → Diamond I → Diamond Elite
+- Avatar tone valid values: `"slate" | "primary" | "sky"` only
 
-## Landing page (index.tsx)
-- Sections: Hero → Stats bar → Core features (8) → How it works (3 steps) → Comparison table vs Skool/Circle → Coming Soon strip → Testimonials → Pricing teaser → Final CTA → Footer.
-- `CellVal = boolean | "soon"` type used for comparison table cells.
-- Avatar `tone` valid values: `"slate" | "primary" | "sky"` (NOT "default").
+## App store
+- localStorage key: `sukaspace_app_state_v3`
+- Key methods: `store.pushNotification()`, `store.isJoined(id)`, `store.markAllNotificationsRead()`, `store.unreadCount`, `store.joinCommunity(id)`, `store.addPost()`
+- Community type fields: `id`, `title`, `category`, `members`, `creator`, `creatorEmail`, `avatar`, `banner`, `tag`, `price?`, `summary`, `createdAt`

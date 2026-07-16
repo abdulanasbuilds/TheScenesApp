@@ -255,8 +255,21 @@ function CoursePlayer({ course, activeLessonId, onSelectLesson, onBack }: {
             {/* Description */}
             {lesson.description && (
               <div className="mt-5">
-                <h2 className="text-sm font-semibold text-foreground mb-1">About this lesson</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">{lesson.description}</p>
+                <h2 className="text-sm font-semibold text-foreground mb-3">About this lesson</h2>
+                <div
+                  className="text-sm text-muted-foreground leading-relaxed
+                    [&_h2]:mt-3 [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-foreground
+                    [&_h3]:mt-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-foreground
+                    [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5
+                    [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5
+                    [&_li]:my-1
+                    [&_blockquote]:my-3 [&_blockquote]:border-l-2 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground
+                    [&_pre]:my-3 [&_pre]:rounded-xl [&_pre]:bg-accent [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-xs
+                    [&_code]:rounded [&_code]:bg-accent [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-xs
+                    [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 [&_a]:hover:opacity-80
+                    [&_strong]:font-semibold [&_strong]:text-foreground [&_em]:italic"
+                  dangerouslySetInnerHTML={{ __html: lesson.description }}
+                />
               </div>
             )}
 

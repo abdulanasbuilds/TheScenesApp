@@ -1,2 +1,2 @@
 - [SukaSpace client-only data layer](sukaspace-mock-backend.md) — no real backend; localStorage store (key: sukaspace_app_state_v3). AppShell auth guard uses window.location.replace("/auth") not nav().
-- [SukaSpace dashboards + auth](sukaspace-dashboards.md) — Learner dashboard at /app/dashboard, Creator dashboard at /app/creator (7 tabs). Role-based routing post-login. Paystack integrated (client + server fn). 3 Coming Soon routes. xpToTier returns nextAt. Avatar tone valid values: slate/primary/sky only.
+- [SukaSpace dashboards + auth + rich text](sukaspace-dashboards.md) — Creator Hub (10 tabs inc. Affiliate/Live/Automations), RichTextEditor component, creator-managed affiliate system, public pages must not be changed without explicit request.

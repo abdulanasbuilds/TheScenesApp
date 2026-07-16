@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import {
   Plus, ChevronRight, Edit2, Trash2, Eye, EyeOff, Check,
   BookOpen, Video, Link2, X, GripVertical, ExternalLink, PlayCircle,
@@ -766,8 +767,16 @@ function LessonEditor({ courseId, moduleId, lesson }: { courseId: number; module
 
       {/* Description */}
       <div>
-        <label className="text-xs font-semibold text-muted-foreground">Description</label>
-        <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={4} placeholder="What will learners learn in this lesson?" className="mt-1 w-full resize-none rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none focus:border-primary" />
+        <label className="text-xs font-semibold text-muted-foreground">Lesson content</label>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">Describe what learners will learn. Use formatting to make it scannable.</p>
+        <div className="mt-2">
+          <RichTextEditor
+            value={desc}
+            onChange={setDesc}
+            placeholder="What will learners learn in this lesson? Add context, key takeaways, and supporting text…"
+            minHeight="120px"
+          />
+        </div>
       </div>
 
       {/* Video URL */}
