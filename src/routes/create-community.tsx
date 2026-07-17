@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Rocket } from "lucide-react";
-import { PublicHeader } from "@/components/PublicHeader";
+import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Rocket, LayoutDashboard } from "lucide-react";
 import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 import { useAppStore } from "@/lib/app-store";
 import { MOCK_CATEGORIES } from "@/lib/mock-data";
@@ -64,9 +63,33 @@ function CreateCommunityPage() {
     { title: "Invite members", img: UPLOADED_MOCKUPS.inviteMembers },
   ] as const;
 
+  const inAppHeader = (
+    <header className="sticky top-0 z-40 border-b border-neutral-100 bg-card/90 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <button
+          onClick={() => nav({ to: "/app/feed" })}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+        >
+          <ArrowLeft size={13} /> Back to App
+        </button>
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:block text-xs text-muted-foreground">
+            Signed in as <span className="font-semibold text-foreground">{store.session.name}</span>
+          </span>
+          <button
+            onClick={() => nav({ to: "/app/creator" })}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          >
+            <LayoutDashboard size={13} /> Creator Hub
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      <PublicHeader />
+      {inAppHeader}
 
       {launched ? (
         <LaunchSuccess title={launched.title} onGoToHub={() => nav({ to: "/app/creator" })} />

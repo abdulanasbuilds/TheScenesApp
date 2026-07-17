@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Send, MessagesSquare, Plus, X, ArrowLeft, Database } from "lucide-react";
+import { Send, MessagesSquare, Plus, X, ArrowLeft } from "lucide-react";
 import { Avatar } from "@/components/BrowserFrame";
 import { useAppStore, type Conversation, type DirectMessage } from "@/lib/app-store";
-import { isSupabaseConfigured } from "@/lib/supabase";
 
 export const Route = createFileRoute("/app/messages")({
   head: () => ({ meta: [{ title: "Messages · SukaSpace" }] }),
@@ -48,23 +47,6 @@ function Messages() {
     setSelectedPeer(null);
     setMobileView("list");
   };
-
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="flex min-h-[calc(100vh-56px)] items-center justify-center p-8">
-        <div className="max-w-sm text-center">
-          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-slate-100">
-            <Database size={24} className="text-slate-400" />
-          </div>
-          <h2 className="text-lg font-bold text-foreground">Supabase required</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Direct messages need a live database. Add <code className="rounded bg-accent px-1 font-mono text-xs">VITE_SUPABASE_URL</code> and{" "}
-            <code className="rounded bg-accent px-1 font-mono text-xs">VITE_SUPABASE_ANON_KEY</code> to your environment to enable messaging.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-[calc(100vh-56px)] overflow-hidden">
