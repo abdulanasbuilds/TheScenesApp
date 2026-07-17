@@ -55,6 +55,40 @@ export function hapticError() {
   }
 }
 
+// ─── PWA Install Prompt ───────────────────────────────────────────────────────
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
+
+let _deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
+
+/** Call once on app startup to capture the browser install prompt. */
+export function captureInstallPrompt() {
+  if (typeof window === "undefined") return;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    _deferredInstallPrompt = e as BeforeInstallPromptEvent;
+    // Notify any listeners
+    window.dispatchEvent(new CustomEvent("pwa-install-available"));
+  });
+}
+
+/** Returns true if an install prompt is available (not yet dismissed or installed). */
+export function hasInstallPrompt(): boolean {
+  return !!_deferredInstallPrompt;
+}
+
+/** Shows the browser's native install prompt. Returns true if accepted. */
+export async function triggerInstallPrompt(): Promise<boolean> {
+  if (!_deferredInstallPrompt) return false;
+  await _deferredInstallPrompt.prompt();
+  const { outcome } = await _deferredInstallPrompt.userChoice;
+  _deferredInstallPrompt = null;
+  return outcome === "accepted";
+}
+
 // ─── Spring presets ──────────────────────────────────────────────────────────
 // Framer Motion spring configs for consistent physics across the UI.
 

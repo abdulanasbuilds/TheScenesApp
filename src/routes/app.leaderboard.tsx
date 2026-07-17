@@ -6,8 +6,22 @@ import {
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar } from "@/components/BrowserFrame";
-import { MOCK_LEADERBOARD_MEMBERS, MOCK_BADGES, MOCK_COMMUNITY_RANKS, xpToTier } from "@/lib/mock-data";
+import { MOCK_BADGES, xpToTier } from "@/lib/mock-data";
 import { useAppStore } from "@/lib/app-store";
+
+// Real leaderboard member shape
+interface LeaderMember {
+  id: number;
+  name: string;
+  avatar: string;
+  xp: number;
+  streak: number;
+  postsCount: number;
+  coursesCompleted: number;
+  joinDate: string;
+  weekXp: number;
+  monthXp: number;
+}
 
 export const Route = createFileRoute("/app/leaderboard")({
   head: () => ({
@@ -37,7 +51,7 @@ const BADGE_COLORS: Record<string, string> = {
 function PodiumCard({
   member, rank, delay,
 }: {
-  member: (typeof MOCK_LEADERBOARD_MEMBERS)[number];
+  member: LeaderMember;
   rank: 1 | 2 | 3;
   delay: number;
 }) {
@@ -79,13 +93,13 @@ function LeaderboardPage() {
   const [periodMenu, setPeriodMenu] = useState(false);
 
   const userXp = 0;
-  const you = {
+  const you: LeaderMember = {
     id: 0,
     name: store.session?.name || "You",
     avatar: store.session?.avatar || "YU",
     xp: userXp,
     streak: 0,
-    postsCount: 0,
+    postsCount: store.posts.filter(p => p.author === store.session?.name).length,
     coursesCompleted: 0,
     joinDate: "Today",
     weekXp: 0,
@@ -93,14 +107,18 @@ function LeaderboardPage() {
   };
   const youTier = xpToTier(userXp);
 
+  // Real members list — only the current user until the Supabase profiles table is populated.
+  // As more users sign up and earn XP, they appear here via real data.
+  const members: LeaderMember[] = [you];
+
   const ranked = useMemo(() => {
-    const key: Record<Period, keyof typeof MOCK_LEADERBOARD_MEMBERS[0]> = {
+    const key: Record<Period, keyof LeaderMember> = {
       week: "weekXp", month: "monthXp", all: "xp",
     };
-    return [...MOCK_LEADERBOARD_MEMBERS].sort((a, b) => (b[key[period]] as number) - (a[key[period]] as number));
-  }, [period]);
+    return [...members].sort((a, b) => (b[key[period]] as number) - (a[key[period]] as number));
+  }, [members, period]);
 
-  const podium = ranked.slice(0, 3) as [(typeof ranked)[0], (typeof ranked)[0], (typeof ranked)[0]];
+  const podium = ranked.slice(0, 3) as [LeaderMember, LeaderMember, LeaderMember];
   const rest = ranked.slice(3);
 
   const xpKey = period === "week" ? "weekXp" : period === "month" ? "monthXp" : "xp";
@@ -236,6 +254,13 @@ function LeaderboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
+                {rest.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
+                      No other members yet. Start posting and completing lessons to earn XP and climb the ranks!
+                    </td>
+                  </tr>
+                )}
                 {rest.map((m, i) => {
                   const rank = i + 4;
                   const tier = xpToTier(m.xp);
@@ -325,28 +350,42 @@ function LeaderboardPage() {
             </div>
           </div>
 
-          {/* Community ranks */}
+          {/* Top Communities — real data from store */}
           <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
               <Users2 size={14} className="text-primary" /> Top Communities
             </h2>
-            <div className="mt-3 space-y-2">
-              {MOCK_COMMUNITY_RANKS.map((c, i) => (
-                <div key={c.id} className="flex items-center gap-2.5 rounded-lg border border-border bg-background p-2.5">
-                  <span className="w-5 text-xs font-bold text-muted-foreground">#{i + 1}</span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-xs font-semibold text-foreground">{c.name}</div>
-                    <div className="text-[10px] text-muted-foreground">{c.members.toLocaleString()} members</div>
-                  </div>
-                  <div className="w-16 shrink-0">
-                    <div className="mb-0.5 text-right text-[10px] text-muted-foreground">{c.progressToTop10}%</div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                      <div className={`h-full rounded-full ${c.tone === "emerald" ? "bg-emerald-500" : "bg-amber-500"}`} style={{ width: `${c.progressToTop10}%` }} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {store.communities.length === 0 ? (
+              <div className="mt-3 py-4 text-center text-xs text-muted-foreground">
+                No communities yet. <br />
+                <a href="/create-community" className="text-primary hover:underline font-semibold">Create the first one →</a>
+              </div>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {[...store.communities]
+                  .sort((a, b) => b.members - a.members)
+                  .slice(0, 5)
+                  .map((c, i) => {
+                    const maxMembers = store.communities[0]?.members || 1;
+                    const pct = Math.round((c.members / maxMembers) * 100);
+                    return (
+                      <div key={c.id} className="flex items-center gap-2.5 rounded-lg border border-border bg-background p-2.5">
+                        <span className="w-5 text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs font-semibold text-foreground">{c.title}</div>
+                          <div className="text-[10px] text-muted-foreground">{c.members.toLocaleString()} members</div>
+                        </div>
+                        <div className="w-16 shrink-0">
+                          <div className="mb-0.5 text-right text-[10px] text-muted-foreground">{pct}%</div>
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         </div>
       </div>

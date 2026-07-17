@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -29,10 +29,35 @@ const SOURCE_META: Record<string, { label: string; color: string }> = {
 
 function CoursesPage() {
   const store = useAppStore();
+  const nav = useNavigate();
   const [view, setView] = useState<View>("list");
   const [activeCourseId, setActiveCourseId] = useState<number | null>(null);
 
   const myCourses = store.courses.filter(c => c.creatorEmail === store.session?.email);
+  const myCommunities = store.communities.filter(c => c.creatorEmail === store.session?.email);
+
+  // Creators must have a community before building courses
+  if (store.session?.role === "creator" && myCommunities.length === 0) {
+    return (
+      <div className="flex min-h-[calc(100vh-56px)] items-center justify-center bg-background p-8">
+        <div className="max-w-sm text-center">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-accent">
+            <BookOpen size={24} className="text-muted-foreground" />
+          </div>
+          <h2 className="mt-4 text-lg font-semibold text-foreground">Create a community first</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            You need at least one community before you can build and publish courses. Courses live inside communities — learners enroll through your community page.
+          </p>
+          <button
+            onClick={() => nav({ to: "/create-community" })}
+            className="mt-5 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90"
+          >
+            Create your first community →
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const openCourse = (id: number) => {
     setActiveCourseId(id);

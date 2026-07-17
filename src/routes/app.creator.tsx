@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { useAppStore, type Community, type Course } from "@/lib/app-store";
 import { Avatar } from "@/components/BrowserFrame";
-import { MOCK_GROWTH_SERIES } from "@/lib/mock-data";
+// No mock data — real member growth will appear as community grows
 import { toast } from "sonner";
 import { isPaystackConfigured } from "@/lib/paystack";
 
@@ -53,13 +53,7 @@ function makeCode(title: string) {
   return `${slug}${Math.random().toString(36).slice(2, 6)}`;
 }
 
-const MOCK_AFFILIATES = [
-  { id: 1, name: "Kwame Asante",  avatar: "KA", referrals: 8,  conversions: 5, pendingUsd: 180, status: "active"  },
-  { id: 2, name: "Amara Osei",    avatar: "AO", referrals: 12, conversions: 9, pendingUsd: 324, status: "active"  },
-  { id: 3, name: "Jonas Weiss",   avatar: "JW", referrals: 3,  conversions: 2, pendingUsd: 72,  status: "pending" },
-  { id: 4, name: "Priya Nair",    avatar: "PN", referrals: 6,  conversions: 4, pendingUsd: 144, status: "active"  },
-  { id: 5, name: "Marcus Bell",   avatar: "MB", referrals: 1,  conversions: 0, pendingUsd: 0,   status: "pending" },
-];
+// Affiliates are loaded from real data when the affiliate system is backed by Supabase
 
 // ─── Tab types ────────────────────────────────────────────────────────────────
 
@@ -192,9 +186,10 @@ function OverviewTab({ community, myCourses, publishedCourses, totalEnrollments,
     { icon: GraduationCap, label: "Enrollments",    value: totalEnrollments.toString(),                   sub: "Across all courses",                                                color: "text-violet-600 bg-violet-50"   },
   ];
 
-  const growthData = MOCK_GROWTH_SERIES.map((v, i) => ({
+  // Real growth data — flat until community grows (no fake numbers)
+  const growthData = Array.from({ length: 12 }, (_, i) => ({
     month: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][i],
-    members: v,
+    members: i === 11 ? totalMembers : 0,
   }));
 
   const recentPosts = store.posts.slice(0, 4);
@@ -662,9 +657,10 @@ function AffiliateTab({ community }: { community: Community }) {
     toast.success("Referral link copied!");
   };
 
-  const totalAff     = MOCK_AFFILIATES.length;
-  const totalConv    = MOCK_AFFILIATES.reduce((s, a) => s + a.conversions, 0);
-  const totalPending = MOCK_AFFILIATES.reduce((s, a) => s + a.pendingUsd, 0);
+  // Real affiliate data — starts at 0 until real affiliates sign up
+  const totalAff     = 0;
+  const totalConv    = 0;
+  const totalPending = 0;
 
   return (
     <div className="space-y-5">
@@ -798,10 +794,10 @@ function AffiliateTab({ community }: { community: Community }) {
       {aff.enabled && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Affiliates",       value: totalAff.toString(),      icon: Users },
-            { label: "Total referrals",  value: MOCK_AFFILIATES.reduce((s,a)=>s+a.referrals,0).toString(), icon: Share2 },
-            { label: "Conversions",      value: totalConv.toString(),     icon: CheckCircle2 },
-            { label: "Pending payout",   value: `$${totalPending}`,       icon: Wallet },
+            { label: "Affiliates",       value: totalAff.toString(),  icon: Users },
+            { label: "Total referrals",  value: "0",                  icon: Share2 },
+            { label: "Conversions",      value: totalConv.toString(), icon: CheckCircle2 },
+            { label: "Pending payout",   value: `${totalPending}`,   icon: Wallet },
           ].map(s => (
             <div key={s.label} className="rounded-xl border border-border bg-card p-3 shadow-sm">
               <s.icon size={14} className="text-primary" />
@@ -819,32 +815,11 @@ function AffiliateTab({ community }: { community: Community }) {
             <h3 className="text-sm font-semibold text-foreground">Active affiliates</h3>
             <p className="text-xs text-muted-foreground">People promoting your community and their performance.</p>
           </div>
-          <table className="w-full text-sm">
-            <thead><tr className="bg-accent/50 text-[10px] font-semibold uppercase text-muted-foreground">
-              <th className="py-2.5 px-4 text-left">Affiliate</th>
-              <th className="py-2.5 px-3 text-left hidden sm:table-cell">Referrals</th>
-              <th className="py-2.5 px-3 text-left hidden sm:table-cell">Conversions</th>
-              <th className="py-2.5 px-3 text-left hidden sm:table-cell">Status</th>
-              <th className="py-2.5 px-4 text-right">Pending ($)</th>
-            </tr></thead>
-            <tbody className="divide-y divide-slate-100">
-              {MOCK_AFFILIATES.map(a => (
-                <tr key={a.id} className="hover:bg-accent/20 transition-colors">
-                  <td className="py-2.5 px-4">
-                    <div className="flex items-center gap-2.5"><Avatar initials={a.avatar} size={26} />
-                      <span className="text-sm font-medium text-foreground">{a.name}</span>
-                    </div>
-                  </td>
-                  <td className="py-2.5 px-3 hidden sm:table-cell text-muted-foreground">{a.referrals}</td>
-                  <td className="py-2.5 px-3 hidden sm:table-cell font-semibold text-foreground">{a.conversions}</td>
-                  <td className="py-2.5 px-3 hidden sm:table-cell">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${a.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{a.status}</span>
-                  </td>
-                  <td className="py-2.5 px-4 text-right font-bold text-foreground">${a.pendingUsd}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="py-10 text-center">
+            <Share2 size={20} className="mx-auto text-muted-foreground/30" />
+            <p className="mt-2 text-sm font-medium text-muted-foreground">No affiliates yet</p>
+            <p className="mt-1 text-xs text-muted-foreground max-w-xs mx-auto">Share your referral link to attract your first affiliate. They'll appear here once they sign up.</p>
+          </div>
         </div>
       )}
 

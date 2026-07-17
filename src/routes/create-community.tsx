@@ -6,6 +6,7 @@ import { PublicHeader } from "@/components/PublicHeader";
 import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 import { useAppStore } from "@/lib/app-store";
 import { MOCK_CATEGORIES } from "@/lib/mock-data";
+import { AppLoadingSkeleton } from "@/components/PageSkeleton";
 
 export const Route = createFileRoute("/create-community")({
   head: () => ({

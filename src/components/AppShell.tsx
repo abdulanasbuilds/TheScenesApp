@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   Home, GraduationCap, MessagesSquare, BarChart3, Settings,
   Bell, Search, BookOpen, Calendar, Users, Wallet, LayoutDashboard,
-  Radio, Zap, Share2, MessageCircle, type LucideIcon,
+  Radio, Zap, Share2, MessageCircle, Compass, Download, X as XIcon, type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,7 +12,7 @@ import { useAppStore } from "@/lib/app-store";
 import { Logo } from "@/components/Logo";
 import { GlobalFeedbackDrawer, openFeedbackDrawer } from "@/components/GlobalFeedbackDrawer";
 import { xpToTier } from "@/lib/mock-data";
-import { hapticTap, SPRING_FAST, SPRING_STRUCTURAL } from "@/lib/pwa";
+import { hapticTap, SPRING_FAST, SPRING_STRUCTURAL, captureInstallPrompt, hasInstallPrompt, triggerInstallPrompt } from "@/lib/pwa";
 import { AppLoadingSkeleton } from "@/components/PageSkeleton";
 
 // ─── Nav item type ─────────────────────────────────────────────────────────────
@@ -35,6 +35,7 @@ const CREATOR_NAV: NavItem[] = [
   { to: "/app/calendar",     label: "Calendar",     icon: Calendar },
   { to: "/app/messages",     label: "Messages",     icon: MessagesSquare },
   { to: "/app/payouts",      label: "Payouts",      icon: Wallet },
+  { to: "/discover",         label: "Discover",     icon: Compass },
   { to: "/app/live",         label: "Live",         icon: Radio,    comingSoon: true },
   { to: "/app/automations",  label: "Automations",  icon: Zap,      comingSoon: true },
   { to: "/app/affiliate",    label: "Affiliate",    icon: Share2,   comingSoon: true },
@@ -44,16 +45,17 @@ const CREATOR_NAV: NavItem[] = [
 ];
 
 const LEARNER_NAV: NavItem[] = [
-  { to: "/app/dashboard",   label: "Dashboard",  icon: LayoutDashboard },
-  { to: "/app/feed",        label: "Community",  icon: Home },
-  { to: "/app/classroom",   label: "Classroom",  icon: GraduationCap },
-  { to: "/app/courses",     label: "Courses",    icon: BookOpen },
+  { to: "/app/dashboard",   label: "Dashboard",   icon: LayoutDashboard },
+  { to: "/app/feed",        label: "Community",   icon: Home },
+  { to: "/app/classroom",   label: "Classroom",   icon: GraduationCap },
+  { to: "/app/courses",     label: "Courses",     icon: BookOpen },
+  { to: "/discover",        label: "Discover",    icon: Compass },
   { to: "/app/leaderboard", label: "Leaderboard", icon: BarChart3 },
-  { to: "/app/calendar",    label: "Calendar",   icon: Calendar },
-  { to: "/app/messages",    label: "Messages",   icon: MessagesSquare },
-  { to: "/app/live",        label: "Live",       icon: Radio,   comingSoon: true },
-  { to: "/app/search",      label: "Search",     icon: Search },
-  { to: "/app/settings",    label: "Settings",   icon: Settings },
+  { to: "/app/calendar",    label: "Calendar",    icon: Calendar },
+  { to: "/app/messages",    label: "Messages",    icon: MessagesSquare },
+  { to: "/app/live",        label: "Live",        icon: Radio,   comingSoon: true },
+  { to: "/app/search",      label: "Search",      icon: Search },
+  { to: "/app/settings",    label: "Settings",    icon: Settings },
 ];
 
 const CREATOR_MOBILE = ["/app/creator", "/app/feed", "/app/courses", "/app/classroom", "/app/members"];
@@ -160,12 +162,22 @@ export function AppShell() {
   const store = useAppStore();
   const [showNotifs, setShowNotifs] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Capture PWA install prompt and show banner when available
+  useEffect(() => {
+    captureInstallPrompt();
+    if (hasInstallPrompt()) setShowInstallBanner(true);
+    const onAvailable = () => setShowInstallBanner(true);
+    window.addEventListener("pwa-install-available", onAvailable);
+    return () => window.removeEventListener("pwa-install-available", onAvailable);
   }, []);
 
   useEffect(() => {
@@ -360,9 +372,37 @@ export function AppShell() {
           })}
         </div>
 
-        {/* Mobile scrollable nav */}
+        {/* PWA install banner — only shows when browser offers a home screen install */}
+        {showInstallBanner && (
+          <div className="flex items-center justify-between gap-3 border-b border-primary/20 bg-primary/5 px-4 py-2">
+            <div className="flex items-center gap-2 text-xs text-foreground">
+              <Download size={13} className="shrink-0 text-primary" />
+              <span className="font-medium">Add SukaSpace to your home screen for the fastest experience</span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={async () => {
+                  hapticTap();
+                  await triggerInstallPrompt();
+                  setShowInstallBanner(false);
+                }}
+                className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-primary/90"
+              >
+                Install
+              </button>
+              <button
+                onClick={() => { setShowInstallBanner(false); hapticTap(); }}
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent"
+              >
+                <XIcon size={13} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile scrollable nav — secondary items only (primary items are in the bottom tab bar) */}
         <nav className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto border-b border-neutral-100 bg-card px-3 py-2 scrollbar-hide snap-x snap-mandatory md:hidden">
-          {NAV.map((n) => {
+          {NAV.filter(n => !MOBILE_TOPS.includes(n.to)).map((n) => {
             const active = loc.pathname.startsWith(n.to);
             const Icon = n.icon;
             const label = n.label === "Creator Hub" ? "Creator" : n.label;

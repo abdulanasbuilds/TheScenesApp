@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
-import { Search, Users, X, CheckCircle2, Rocket, ArrowRight, Loader2 } from "lucide-react";
+import { Search, Users, X, CheckCircle2, Rocket, ArrowRight, Loader2, ArrowLeft, Compass } from "lucide-react";
 import { toast } from "sonner";
 import { PublicHeader } from "@/components/PublicHeader";
 import { Avatar } from "@/components/BrowserFrame";
+import { Logo } from "@/components/Logo";
 import { MOCK_CATEGORIES } from "@/lib/mock-data";
 import { useAppStore, type Community } from "@/lib/app-store";
 
@@ -54,9 +55,37 @@ function Discovery() {
     }
   };
 
+  // When logged in, show an in-app header so users stay inside the app context
+  const header = (store.isHydrated && store.session) ? (
+    <header className="sticky top-0 z-40 border-b border-neutral-100 bg-card/90 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => nav({ to: "/app/feed" })}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          >
+            <ArrowLeft size={13} /> Back to App
+          </button>
+          <div className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            <Compass size={15} className="text-primary" /> Discover Communities
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:block text-xs text-muted-foreground">Signed in as <span className="font-semibold text-foreground">{store.session.name}</span></span>
+          <button
+            onClick={() => nav({ to: "/create-community" })}
+            className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+          >
+            + Create community
+          </button>
+        </div>
+      </div>
+    </header>
+  ) : <PublicHeader />;
+
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <PublicHeader />
+      {header}
 
       {/* Hero search section */}
       <section className="mx-auto max-w-3xl px-4 pt-14 pb-8 text-center sm:px-6">

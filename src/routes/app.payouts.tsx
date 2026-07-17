@@ -7,7 +7,17 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/lib/app-store";
 import { isPaystackConfigured } from "@/lib/paystack";
-import { MOCK_TRANSACTIONS, MOCK_MONTHLY_EARNINGS } from "@/lib/mock-data";
+// No mock data — transactions come from real Paystack payments
+const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function getLastSixMonths() {
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - (5 - i));
+    return { month: MONTHS_SHORT[d.getMonth()], amount: 0 };
+  });
+}
 
 export const Route = createFileRoute("/app/payouts")({
   head: () => ({
@@ -35,7 +45,7 @@ function getNextMonthFirst() {
 function PayoutsPage() {
   const store = useAppStore();
   const [exported, setExported] = useState(false);
-  const [txns] = useState<Txn[]>(MOCK_TRANSACTIONS as Txn[]);
+  const [txns] = useState<Txn[]>([]);
   const [txnQuery, setTxnQuery] = useState("");
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -58,7 +68,8 @@ function PayoutsPage() {
     return txns.filter((t) => !q || t.desc.toLowerCase().includes(q));
   }, [txns, txnQuery]);
 
-  const maxEarning = Math.max(...MOCK_MONTHLY_EARNINGS.map((m) => m.amount), 1);
+  const monthlyEarnings = getLastSixMonths();
+  const maxEarning = Math.max(...monthlyEarnings.map((m) => m.amount), 1);
 
   const handleExport = () => {
     const rows = ["date,description,type,amount", ...txns.map((t) => `${t.date},"${t.desc}",${t.type},${t.amount}`)];
@@ -178,36 +189,32 @@ function PayoutsPage() {
             <h2 className="text-sm font-semibold text-foreground">Monthly Revenue</h2>
             <span className="rounded-full border border-border px-2.5 py-1 text-xs font-semibold text-muted-foreground">Last 6 Months</span>
           </div>
-          <div className="mt-5 flex h-44 items-end gap-2">
-            {MOCK_MONTHLY_EARNINGS.map((m, i) => {
-              const h = Math.max(8, Math.round((m.amount / maxEarning) * 160));
-              return (
-                <div key={i} className="group flex flex-1 flex-col items-center gap-1.5 cursor-default">
-                  <div
-                    className="text-[10px] font-semibold text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    ${(m.amount / 1000).toFixed(1)}k
+          {txns.filter(t => t.type === "sale").length === 0 ? (
+            <div className="flex h-44 flex-col items-center justify-center gap-2 text-center">
+              <TrendingUp size={24} className="text-muted-foreground/30" />
+              <p className="text-sm font-medium text-muted-foreground">No revenue yet</p>
+              <p className="text-xs text-muted-foreground">Your monthly earnings will appear here once members start paying.</p>
+            </div>
+          ) : (
+            <div className="mt-5 flex h-44 items-end gap-2">
+              {monthlyEarnings.map((m, i) => {
+                const h = Math.max(8, Math.round((m.amount / maxEarning) * 160));
+                return (
+                  <div key={i} className="group flex flex-1 flex-col items-center gap-1.5 cursor-default">
+                    <div className="text-[10px] font-semibold text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      ${(m.amount / 1000).toFixed(1)}k
+                    </div>
+                    <div
+                      className="w-full rounded-t-md bg-primary/20 group-hover:bg-primary transition-colors"
+                      style={{ height: `${h}px` }}
+                      title={`${m.month}: ${m.amount.toLocaleString()}`}
+                    />
+                    <span className="text-[10px] text-muted-foreground">{m.month}</span>
                   </div>
-                  <div
-                    className="w-full rounded-t-md bg-primary/20 group-hover:bg-primary transition-colors"
-                    style={{ height: `${h}px` }}
-                    title={`${m.month}: $${m.amount.toLocaleString()}`}
-                  />
-                  <span className="text-[10px] text-muted-foreground">{m.month}</span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-3 flex items-center gap-4 border-t border-border pt-3">
-            <div>
-              <div className="text-[10px] text-muted-foreground">Peak month</div>
-              <div className="text-sm font-bold text-foreground">Jul — $7,550</div>
+                );
+              })}
             </div>
-            <div className="ml-auto text-right">
-              <div className="text-[10px] text-muted-foreground">MoM Growth</div>
-              <div className="text-sm font-bold text-emerald-600">+27.9%</div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Payment methods */}
