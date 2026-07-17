@@ -21,6 +21,10 @@ export type Community = {
   price?: string;
   summary: string;
   createdAt: number;
+  // branding & access (Skool/Circle parity)
+  color?: string;          // hex brand color, e.g. "#3B82F6"
+  coverImageUrl?: string;  // cover photo URL (1084×576 recommended)
+  isPrivate?: boolean;     // true = hidden from Discover search
 };
 
 export type SessionUser = {
@@ -132,6 +136,8 @@ export type Course = {
   published: boolean;
   enrollmentCount: number;
   createdAt: number;
+  coverImageUrl?: string;  // custom thumbnail URL
+  thumbnail?: string;      // gradient-class fallback (e.g. "from-blue-500 to-violet-600")
 };
 
 export type CommunityResource = {
@@ -285,6 +291,9 @@ function communityToRow(c: Community) {
     creator: c.creator, creator_email: c.creatorEmail, avatar: c.avatar,
     banner: c.banner, tag: c.tag, price: c.price ?? null, summary: c.summary,
     created_at: c.createdAt,
+    color: c.color ?? null,
+    cover_image_url: c.coverImageUrl ?? null,
+    is_private: c.isPrivate ?? false,
   };
 }
 function communityFromRow(r: any): Community {
@@ -293,6 +302,9 @@ function communityFromRow(r: any): Community {
     creator: r.creator, creatorEmail: r.creator_email, avatar: r.avatar,
     banner: r.banner, tag: r.tag, price: r.price ?? undefined, summary: r.summary,
     createdAt: r.created_at,
+    color: r.color ?? undefined,
+    coverImageUrl: r.cover_image_url ?? undefined,
+    isPrivate: r.is_private ?? false,
   };
 }
 function postToRow(p: FeedPost) {
@@ -344,6 +356,8 @@ function courseToRow(c: Course) {
     id: c.id, community_id: c.communityId, title: c.title, description: c.description,
     creator_email: c.creatorEmail, published: c.published, enrollment_count: c.enrollmentCount,
     created_at: c.createdAt,
+    cover_image_url: c.coverImageUrl ?? null,
+    thumbnail: c.thumbnail ?? null,
   };
 }
 function courseFromRow(r: any): Course {
@@ -367,6 +381,8 @@ function courseFromRow(r: any): Course {
     id: r.id, communityId: r.community_id, title: r.title, description: r.description || "",
     creatorEmail: r.creator_email || "", published: r.published, enrollmentCount: r.enrollment_count,
     createdAt: r.created_at, modules,
+    coverImageUrl: r.cover_image_url ?? undefined,
+    thumbnail: r.thumbnail ?? undefined,
   };
 }
 
@@ -394,6 +410,9 @@ type CreateCommunityInput = {
   summary: string;
   tag: "FREE" | "PAID";
   price?: string;
+  color?: string;
+  coverImageUrl?: string;
+  isPrivate?: boolean;
 };
 
 type AppStoreValue = {
@@ -435,8 +454,8 @@ type AppStoreValue = {
   toggleReaction: (postId: number, emoji: string) => void;
   getReactions: (postId: number) => { emoji: string; count: number; reacted: boolean }[];
   // courses
-  createCourse: (input: { communityId: number | null; title: string; description: string }) => Course;
-  updateCourse: (id: number, patch: Partial<Pick<Course, "title" | "description" | "communityId">>) => void;
+  createCourse: (input: { communityId: number | null; title: string; description: string; coverImageUrl?: string; thumbnail?: string }) => Course;
+  updateCourse: (id: number, patch: Partial<Pick<Course, "title" | "description" | "communityId" | "coverImageUrl" | "thumbnail">>) => void;
   publishCourse: (id: number) => void;
   unpublishCourse: (id: number) => void;
   deleteCourse: (id: number) => void;
@@ -782,6 +801,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         creatorEmail: state.session?.email || "",
         avatar: state.session?.avatar || "YU", banner: randomBanner(),
         tag: input.tag, price: input.price, summary: input.summary, createdAt: Date.now(),
+        color: input.color,
+        coverImageUrl: input.coverImageUrl,
+        isPrivate: input.isPrivate ?? false,
       };
       setState(s => ({
         ...s,
@@ -919,6 +941,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         title: input.title, description: input.description,
         creatorEmail: state.session?.email || "",
         modules: [], published: false, enrollmentCount: 0, createdAt: Date.now(),
+        coverImageUrl: input.coverImageUrl,
+        thumbnail: input.thumbnail,
       };
       setState(s => ({ ...s, courses: [course, ...s.courses] }));
       if (supabase) sync(supabase.from("courses").insert(courseToRow(course)), "course create");
@@ -931,6 +955,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         if (patch.title !== undefined) row.title = patch.title;
         if (patch.description !== undefined) row.description = patch.description;
         if (patch.communityId !== undefined) row.community_id = patch.communityId;
+        if (patch.coverImageUrl !== undefined) row.cover_image_url = patch.coverImageUrl;
+        if (patch.thumbnail !== undefined) row.thumbnail = patch.thumbnail;
         sync(supabase.from("courses").update(row).eq("id", id), "course update");
       }
     },

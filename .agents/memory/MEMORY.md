@@ -1,4 +1,4 @@
-- [SukaSpace client-only data layer](sukaspace-mock-backend.md) — no real backend; localStorage store (key: sukaspace_app_state_v3). AppShell auth guard uses window.location.replace("/auth") not nav().
+- [SukaSpace client-only data layer](sukaspace-mock-backend.md) — localStorage store (key: sukaspace_app_state_v3); Community now has color/coverImageUrl/isPrivate; Course has coverImageUrl/thumbnail; schema in supabase/schema.sql.
 - [Realtime, DMs, Drip, Payments, Email](sukaspace-realtime-dms-drip.md) — joinPaidCommunity, Supabase Realtime subscriptions, Resend email server fns, DM inbox, drip lock UI.
 - [SukaSpace dashboards + auth + rich text](sukaspace-dashboards.md) — Creator Hub (10 tabs inc. Affiliate/Live/Automations), RichTextEditor component, creator-managed affiliate system, public pages must not be changed without explicit request.
 - [SukaSpace PWA + motion](sukaspace-pwa-motion.md) — manifest+SW in public/; spring presets + haptics in src/lib/pwa.ts; AppShell uses vaul Drawer for mobile notifs; skeleton in src/components/PageSkeleton.tsx.
