@@ -103,6 +103,7 @@ function Discovery() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for communities, skills, or experts..."
             className="flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+            suppressHydrationWarning
           />
           {query && (
             <button onClick={() => setQuery("")} className="shrink-0 text-slate-400 hover:text-slate-600"><X size={15} /></button>

@@ -339,6 +339,11 @@ CREATE POLICY IF NOT EXISTS "notifications_own" ON notifications FOR ALL USING (
 CREATE POLICY IF NOT EXISTS "payments_participant" ON payments FOR SELECT USING (from_email = auth.email() OR to_email = auth.email());
 CREATE POLICY IF NOT EXISTS "payments_insert"      ON payments FOR INSERT WITH CHECK (true);  -- server-side insert via service key
 
+-- feedback: anyone can insert (anonymous OK); only service-role can read
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "feedback_insert" ON feedback FOR INSERT WITH CHECK (true);
+-- No SELECT policy → only service-role / admin can read feedback rows
+
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- REALTIME  (enable for live DMs, feed updates, notifications)

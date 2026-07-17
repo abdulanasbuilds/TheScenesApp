@@ -547,14 +547,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
       const channel = supabase
         .channel("sukaspace-live")
+
+        // ── INSERT events ─────────────────────────────────────────────────────
         // New posts — update the feed in real time
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, (payload) => {
           if (cancelled) return;
           const post = postFromRow(payload.new);
           setState((s) => {
-            // Dedupe: don't add if we already have it (we may have inserted it ourselves)
             if (s.extraPosts.some((p) => p.id === post.id)) return s;
             return { ...s, extraPosts: [post, ...s.extraPosts] };
+          });
+        })
+        // New communities (another creator just launched one)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "communities" }, (payload) => {
+          if (cancelled) return;
+          const c = communityFromRow(payload.new);
+          setState((s) => {
+            if (s.userCommunities.some((x) => x.id === c.id)) return s;
+            return { ...s, userCommunities: [c, ...s.userCommunities] };
           });
         })
         // New notifications for this user
@@ -583,6 +593,89 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
             });
           },
         )
+
+        // ── DELETE events — admin removal syncs instantly to all clients ──────
+        // Community deleted from Supabase → remove everywhere in the app
+        .on("postgres_changes", { event: "DELETE", schema: "public", table: "communities" }, (payload) => {
+          if (cancelled) return;
+          const deletedId = payload.old?.id as number | undefined;
+          if (!deletedId) return;
+          setState((s) => ({
+            ...s,
+            userCommunities: s.userCommunities.filter((c) => c.id !== deletedId),
+            joinedCommunityIds: s.joinedCommunityIds.filter((id) => id !== deletedId),
+            courses: s.courses.filter((c) => c.communityId !== deletedId),
+            extraPosts: s.extraPosts.filter((p) => p.communityId !== deletedId),
+            communityResources: s.communityResources.filter((r) => r.communityId !== deletedId),
+            communityEvents: s.communityEvents.filter((e) => e.communityId !== deletedId),
+          }));
+        })
+        // Post deleted
+        .on("postgres_changes", { event: "DELETE", schema: "public", table: "posts" }, (payload) => {
+          if (cancelled) return;
+          const deletedId = payload.old?.id as number | undefined;
+          if (!deletedId) return;
+          setState((s) => ({
+            ...s,
+            extraPosts: s.extraPosts.filter((p) => p.id !== deletedId),
+            comments: s.comments.filter((c) => c.postId !== deletedId),
+            likedPostIds: s.likedPostIds.filter((id) => id !== deletedId),
+          }));
+        })
+        // Course deleted
+        .on("postgres_changes", { event: "DELETE", schema: "public", table: "courses" }, (payload) => {
+          if (cancelled) return;
+          const deletedId = payload.old?.id as number | undefined;
+          if (!deletedId) return;
+          setState((s) => ({
+            ...s,
+            courses: s.courses.filter((c) => c.id !== deletedId),
+            enrollments: s.enrollments.filter((e) => e.courseId !== deletedId),
+          }));
+        })
+        // Notification deleted (e.g. admin clears a notification)
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "notifications", filter: email ? `user_email=eq.${email}` : undefined },
+          (payload) => {
+            if (cancelled) return;
+            const deletedId = payload.old?.id as number | undefined;
+            if (!deletedId) return;
+            setState((s) => ({ ...s, notifications: s.notifications.filter((n) => n.id !== deletedId) }));
+          },
+        )
+        // DM deleted
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "direct_messages", filter: email ? `to_email=eq.${email}` : undefined },
+          (payload) => {
+            if (cancelled) return;
+            const deletedId = payload.old?.id as number | undefined;
+            if (!deletedId) return;
+            setState((s) => ({ ...s, directMessages: s.directMessages.filter((m) => m.id !== deletedId) }));
+          },
+        )
+        // Profile updated (e.g. admin changes a user's role or name)
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "profiles", filter: email ? `email=eq.${email}` : undefined },
+          (payload) => {
+            if (cancelled || !payload.new) return;
+            const r = payload.new;
+            setState((s) => ({
+              ...s,
+              session: s.session ? {
+                ...s.session,
+                name: r.name ?? s.session.name,
+                role: r.role ?? s.session.role,
+                avatar: r.avatar ?? s.session.avatar,
+                photoUrl: r.photo_url ?? s.session.photoUrl,
+                bio: r.bio ?? s.session.bio,
+              } : s.session,
+            }));
+          },
+        )
+
         .subscribe((status) => {
           if (status === "SUBSCRIBED") console.info("[SukaSpace] Realtime subscribed");
           if (status === "CHANNEL_ERROR") console.warn("[SukaSpace] Realtime channel error — live updates paused");

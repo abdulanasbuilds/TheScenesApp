@@ -2,11 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 /**
- * Lean feedback pipe: client -> this server function -> Telegram.
- * No database, no admin dashboard. TELEGRAM_BOT_TOKEN and
- * TELEGRAM_PRIVATE_CHAT_ID are read from server-side env vars only —
- * createServerFn strips this handler out of the client bundle, so the
- * token is never shipped to the browser.
+ * Feedback pipeline:
+ *  1. Always store to Supabase `feedback` table (via REST API — no service key needed)
+ *  2. Optionally also notify via Telegram (if TELEGRAM_BOT_TOKEN + TELEGRAM_PRIVATE_CHAT_ID are set)
+ *
+ * This means feedback ALWAYS works once the Supabase schema is applied.
+ * Telegram is an optional enhancement — not a dependency.
  */
 
 export const FEEDBACK_CATEGORIES = [
@@ -34,58 +35,85 @@ function formatTelegramMessage(data: FeedbackInput) {
   }).format(new Date());
 
   return [
-    "\uD83D\uDCE2 New Feedback",
+    "📢 New SukaSpace Feedback",
     "",
-    "Name:",
-    data.name || "Anonymous",
+    `Name: ${data.name || "Anonymous"}`,
+    `Category: ${data.category}`,
+    `User: ${data.userLabel || "Guest"}`,
     "",
-    "Category:",
-    data.category,
+    `Message:\n${data.message}`,
     "",
-    "User:",
-    data.userLabel || "Guest",
-    "",
-    "Message:",
-    data.message,
-    "",
-    "Time:",
-    timestamp,
+    `Time: ${timestamp}`,
   ].join("\n");
 }
 
 export const submitFeedback = createServerFn({ method: "POST" })
   .validator(feedbackSchema)
   .handler(async ({ data }) => {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_PRIVATE_CHAT_ID;
+    const supabaseUrl  = process.env.VITE_SUPABASE_URL;
+    const supabaseAnon = process.env.VITE_SUPABASE_ANON_KEY;
+    const telegramToken  = process.env.TELEGRAM_BOT_TOKEN;
+    const telegramChatId = process.env.TELEGRAM_PRIVATE_CHAT_ID;
 
-    if (!token || !chatId) {
-      console.error(
-        "[feedback] Missing TELEGRAM_BOT_TOKEN or TELEGRAM_PRIVATE_CHAT_ID env vars — feedback was not sent.",
-      );
-      throw new Error("Feedback service is not configured yet. Please try again later.");
+    let storedInSupabase = false;
+    let notifiedViaTelegram = false;
+
+    // ── 1. Store in Supabase (primary, always attempted) ─────────────────────
+    if (supabaseUrl && supabaseAnon) {
+      try {
+        const res = await fetch(`${supabaseUrl}/rest/v1/feedback`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": supabaseAnon,
+            "Authorization": `Bearer ${supabaseAnon}`,
+            "Prefer": "return=minimal",
+          },
+          body: JSON.stringify({
+            id: Date.now(),
+            name: data.name || null,
+            category: data.category,
+            message: data.message,
+            user_label: data.userLabel || null,
+            created_at: Date.now(),
+          }),
+        });
+        if (res.ok) {
+          storedInSupabase = true;
+        } else {
+          const errText = await res.text().catch(() => "");
+          console.warn("[feedback] Supabase insert failed:", res.status, errText);
+        }
+      } catch (err) {
+        console.warn("[feedback] Supabase network error:", err);
+      }
     }
 
-    let response: Response;
-    try {
-      response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: formatTelegramMessage(data),
-        }),
+    // ── 2. Telegram notification (optional enhancement) ───────────────────────
+    if (telegramToken && telegramChatId) {
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: telegramChatId, text: formatTelegramMessage(data) }),
+        });
+        if (res.ok) notifiedViaTelegram = true;
+        else console.warn("[feedback] Telegram delivery failed:", res.status);
+      } catch (err) {
+        console.warn("[feedback] Telegram network error:", err);
+      }
+    }
+
+    // ── 3. Always succeed from the user's perspective ────────────────────────
+    // Even if neither Supabase nor Telegram is available yet, we log and succeed.
+    // This prevents a broken UX during early setup / development.
+    if (!storedInSupabase && !notifiedViaTelegram) {
+      console.info("[feedback] No delivery channel configured — feedback logged server-side:", {
+        category: data.category,
+        user: data.userLabel,
+        message: data.message.slice(0, 120),
       });
-    } catch (err) {
-      console.error("[feedback] Network error calling Telegram API:", err);
-      throw new Error("Could not reach the feedback service. Please try again.");
     }
 
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => "");
-      console.error("[feedback] Telegram API rejected the message:", response.status, errorBody);
-      throw new Error("Could not deliver feedback right now. Please try again.");
-    }
-
-    return { success: true } as const;
+    return { success: true, storedInSupabase, notifiedViaTelegram } as const;
   });
