@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { sendWelcomeEmail, sendEnrollmentEmail, sendCommunityJoinEmail, sendPaymentReceiptEmail } from "@/lib/email.functions";
 import { recordPayment } from "@/lib/payments.functions";
+import { onMemberJoin } from "@/lib/autodm.functions";
 import { initiatePaystackPayment, isPaystackConfigured, priceStringToAmount } from "@/lib/paystack";
 import { verifyPaystackPayment } from "@/lib/paystack.functions";
 
@@ -76,11 +77,31 @@ export type Reaction = {
   emoji: string;
 };
 
+export type NotificationType =
+  | "welcome"
+  | "system"
+  | "new_post"
+  | "new_comment"
+  | "new_member"
+  | "new_message"
+  | "event"
+  | "course_published"
+  | "lesson_published"
+  | "payment_success"
+  | "payment_failed"
+  | "announcement"
+  | "community_live"
+  | "onboarding";
+
 export type AppNotification = {
   id: number;
   text: string;
   time: string;
   read: boolean;
+  // Optional enrichment — older rows won't have these
+  type?: NotificationType;
+  link?: string;       // deep-link route, e.g. "/app/messages"
+  actorName?: string;  // display name of who triggered this
 };
 
 export type DirectMessage = {
@@ -247,6 +268,9 @@ type PersistedState = {
   enrollments: Enrollment[];
   accessRecords: AccessRecord[];
   directMessages: DirectMessage[];
+  // Onboarding
+  onboardingCompleted: boolean;
+  onboardingInterests: string[];
 };
 
 function defaultState(): PersistedState {
@@ -266,6 +290,8 @@ function defaultState(): PersistedState {
     enrollments: [],
     accessRecords: [],
     directMessages: [],
+    onboardingCompleted: false,
+    onboardingInterests: [],
   };
 }
 
@@ -484,9 +510,14 @@ type AppStoreValue = {
   completeLesson: (courseId: number, lessonId: number) => void;
   isLessonComplete: (courseId: number, lessonId: number) => boolean;
   getCourseProgress: (courseId: number) => { completed: number; total: number };
+  // onboarding
+  onboardingCompleted: boolean;
+  onboardingInterests: string[];
+  completeOnboarding: (data: { role: "creator" | "learner"; interests: string[]; name?: string; bio?: string }) => void;
   // notifications
   markAllNotificationsRead: () => void;
-  pushNotification: (text: string) => void;
+  markNotificationRead: (id: number) => void;
+  pushNotification: (text: string, opts?: { type?: NotificationType; link?: string; actorName?: string }) => void;
   // direct messages
   directMessages: DirectMessage[];
   sendDM: (toEmail: string, body: string) => Promise<DirectMessage>;
@@ -573,9 +604,23 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           { event: "INSERT", schema: "public", table: "notifications", filter: email ? `user_email=eq.${email}` : undefined },
           (payload) => {
             if (cancelled) return;
-            const n: AppNotification = { id: payload.new.id, text: payload.new.text, time: payload.new.time, read: payload.new.read };
+            const n: AppNotification = {
+              id: payload.new.id, text: payload.new.text, time: payload.new.time, read: payload.new.read,
+              type: payload.new.type ?? undefined,
+              link: payload.new.link ?? undefined,
+              actorName: payload.new.actor_name ?? undefined,
+            };
             setState((s) => {
+              // If already in state (we created it ourselves), skip — no toast
               if (s.notifications.some((x) => x.id === n.id)) return s;
+              // New notification from an external source — show a toast
+              setTimeout(() => {
+                toast(n.text, {
+                  icon: n.type === "new_message" ? "💬" : n.type === "new_member" ? "👋" : n.type === "payment_success" ? "✅" : "🔔",
+                  duration: 5000,
+                  action: n.link ? { label: "View", onClick: () => { window.location.href = n.link!; } } : undefined,
+                });
+              }, 0);
               return { ...s, notifications: [n, ...s.notifications] };
             });
           },
@@ -588,7 +633,16 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
             if (cancelled) return;
             const dm = dmFromRow(payload.new);
             setState((s) => {
+              // If already in state (we sent it ourselves), skip — no toast
               if (s.directMessages.some((x) => x.id === dm.id)) return s;
+              // New DM from another user — show a toast
+              setTimeout(() => {
+                toast(`New message from ${dm.fromEmail}`, {
+                  icon: "💬",
+                  duration: 6000,
+                  action: { label: "Reply", onClick: () => { window.location.href = "/app/messages"; } },
+                });
+              }, 0);
               return { ...s, directMessages: [dm, ...s.directMessages] };
             });
           },
@@ -726,7 +780,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           extraPosts: (postsRes.data || []).map(postFromRow),
           likedPostIds: (likedRes.data || []).map((r: any) => r.post_id),
           joinedCommunityIds: (joinedRes.data || []).map((r: any) => r.community_id),
-          notifications: (notificationsRes.data || []).map((r: any): AppNotification => ({ id: r.id, text: r.text, time: r.time, read: r.read })),
+          notifications: (notificationsRes.data || []).map((r: any): AppNotification => ({
+            id: r.id, text: r.text, time: r.time, read: r.read,
+            type: r.type ?? undefined,
+            link: r.link ?? undefined,
+            actorName: r.actor_name ?? undefined,
+          })),
           courses: (coursesRes.data || []).map(courseFromRow),
           comments: (commentsRes.data || []).map(commentFromRow),
           reactions: (reactionsRes.data || []).map((r: any): Reaction => ({ postId: r.post_id, userEmail: r.user_email, emoji: r.emoji })),
@@ -735,6 +794,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           enrollments: (enrollmentsRes.data || []).map((r: any): Enrollment => ({ courseId: r.course_id, userEmail: r.user_email, completedLessonIds: r.completed_lesson_ids || [], enrolledAt: r.enrolled_at })),
           accessRecords: (accessRes.data || []).map((r: any): AccessRecord => ({ id: r.id, resourceId: r.resource_id, resourceTitle: r.resource_title, resourceType: r.resource_type, communityId: r.community_id ?? undefined, userEmail: r.user_email, accessedAt: r.accessed_at })),
           directMessages: (dmsRes.data || []).map(dmFromRow),
+          // Preserve onboarding state from localStorage (not yet in Supabase session fetch)
+          onboardingCompleted: loadState().onboardingCompleted ?? false,
+          onboardingInterests: loadState().onboardingInterests ?? [],
         });
 
         // Set up realtime subscriptions for this user
@@ -813,6 +875,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     accessRecords: state.accessRecords,
     directMessages: state.directMessages,
     dmUnreadCount: state.directMessages.filter(dm => !dm.read && dm.toEmail === state.session?.email).length,
+    onboardingCompleted: state.onboardingCompleted,
+    onboardingInterests: state.onboardingInterests,
 
     // ── auth ──
     signIn: async (email, password) => {
@@ -1247,11 +1311,22 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       setState(s => ({ ...s, notifications: s.notifications.map(n => ({ ...n, read: true })) }));
       if (supabase && state.session?.email) sync(supabase.from("notifications").update({ read: true }).eq("user_email", state.session.email), "notifications read");
     },
-    pushNotification: (text) => {
-      const notification: AppNotification = { id: generateId(), text, time: "Just now", read: false };
+    markNotificationRead: (id) => {
+      setState(s => ({ ...s, notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n) }));
+      if (supabase && state.session?.email) sync(supabase.from("notifications").update({ read: true }).eq("id", id).eq("user_email", state.session.email), "notification read");
+    },
+    pushNotification: (text, opts) => {
+      const notification: AppNotification = {
+        id: generateId(), text, time: "Just now", read: false,
+        type: opts?.type ?? "system",
+        link: opts?.link,
+        actorName: opts?.actorName,
+      };
       setState(s => ({ ...s, notifications: [notification, ...s.notifications] }));
       if (supabase && state.session?.email) sync(supabase.from("notifications").insert({
-        id: notification.id, user_email: state.session.email, text, time: "Just now", read: false, created_at: notification.id,
+        id: notification.id, user_email: state.session.email, text, time: "Just now", read: false,
+        type: notification.type, link: notification.link ?? null, actor_name: notification.actorName ?? null,
+        created_at: notification.id,
       }), "notification create");
     },
 

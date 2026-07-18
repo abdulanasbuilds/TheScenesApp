@@ -351,6 +351,30 @@ CREATE POLICY IF NOT EXISTS "feedback_insert" ON feedback FOR INSERT WITH CHECK 
 -- Run in Supabase Dashboard → Database → Replication → enable these tables:
 --   direct_messages · posts · notifications
 -- Or run:
+-- ══════════════════════════════════════════════════════════════════════════════
+-- SCHEMA ADDITIONS — safe to run on an existing database
+-- ══════════════════════════════════════════════════════════════════════════════
+
+-- Expand notifications: typed notifications with deep-link support
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type       TEXT    NOT NULL DEFAULT 'system';
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS link       TEXT;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS actor_name TEXT;
+
+-- Communities: creator-configurable welcome message for auto-DMs
+ALTER TABLE communities ADD COLUMN IF NOT EXISTS welcome_message TEXT;
+
+-- Profiles: interests for personalisation + onboarding completion flag
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS interests            TEXT[]  NOT NULL DEFAULT '{}';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN NOT NULL DEFAULT false;
+
+-- Additional indexes for new columns
+CREATE INDEX IF NOT EXISTS idx_notifications_type     ON notifications(type, user_email);
+CREATE INDEX IF NOT EXISTS idx_notifications_unread   ON notifications(user_email, read) WHERE read = false;
+
+-- ══════════════════════════════════════════════════════════════════════════════
+-- REALTIME  (all tables that need live-push)
+-- ══════════════════════════════════════════════════════════════════════════════
 ALTER PUBLICATION supabase_realtime ADD TABLE direct_messages;
 ALTER PUBLICATION supabase_realtime ADD TABLE posts;
 ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+ALTER PUBLICATION supabase_realtime ADD TABLE communities;
