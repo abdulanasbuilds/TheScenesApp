@@ -84,33 +84,50 @@ function UploadedMockupGallery() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-border">
-      <div className="mx-auto max-w-7xl px-4 pt-16 pb-14 sm:px-6 sm:pt-24 sm:pb-20">
+    <section className="relative overflow-hidden bg-white">
+      <div className="mx-auto max-w-7xl px-4 pt-20 pb-16 sm:px-6 sm:pt-32 sm:pb-24">
         <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 120, damping: 20 }} className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-extrabold tracking-tighter text-[#151515] sm:text-6xl">
-            Community <span className="text-primary">and</span> courses,<br className="hidden sm:block" /> engineered for the AI era.
+          <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
+            The All-in-one Community Platform for Creators.
           </h1>
-          <p className="mt-3 text-base font-medium text-muted-foreground">
-            SukaSpace fuses linear course tracking with rich multi-channel spaces so experts can teach, monetize, and build a real community — without the tech friction.
+          <p className="mt-6 text-lg text-muted-foreground">
+            SukaSpace brings everything creators need to build, monetize, and grow their communities in one powerful platform.
           </p>
-          <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="w-full sm:w-auto">
-              <Link to="/discover" className="flex items-center justify-center gap-2 rounded-3xl bg-primary px-6 py-2.5 text-base font-extrabold text-white border border-transparent hover:bg-primary/85 w-full h-12">
-                Explore Communities <ArrowRight size={18} />
+          <div className="mt-10 flex w-full flex-col items-center justify-center gap-3 sm:flex-row sm:justify-center">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}>
+              <Link to="/discover" className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 text-base font-bold text-white hover:bg-blue-600">
+                Get Started <ArrowRight size={18} />
               </Link>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="w-full sm:w-auto">
-          <Link to="/create-community" className="flex items-center justify-center gap-2 rounded-3xl border border-gray-300 bg-card px-6 py-2.5 text-base font-extrabold text-foreground hover:bg-gray-50 w-full h-12">
-                Create a Community
-              </Link>
-            </motion.div>
-          </div>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={12} className="text-primary" /> No card required</span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={12} className="text-primary" /> Launch in minutes</span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={12} className="text-primary" /> Own your audience</span>
           </div>
         </motion.div>
+        
+        <div className="mt-16 grid gap-8 md:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <img src="/mockup-desktop.png" alt="Desktop mockup" className="w-full rounded-lg" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          </div>
+          <div className="rounded-xl border border-border bg-primary p-8 text-white">
+            <h3 className="text-2xl font-bold mb-4">SukaSpace Features</h3>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-3">
+                <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+                <span>Multi-channel community spaces for meaningful discussions</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+                <span>Linear course tracking with XP and achievement systems</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+                <span>Live events and community gatherings</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+                <span>Creator analytics and monetization tools</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
   );

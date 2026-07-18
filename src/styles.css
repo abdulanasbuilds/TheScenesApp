@@ -36,28 +36,28 @@
 
 :root {
   --radius: 0.75rem;
-  /* Professional Workspace Design System */
-  --background: oklch(0.972 0.008 254.604);   /* #F8FAFC / slate-50 - Subtle cool off-white */
-  --foreground: oklch(0.11 0.022 264.361);    /* #0F172A / slate-900 - Dark neutral gray for headings */
-  --card: oklch(1 0 0);                       /* #FFFFFF - Pure white for cards/content */
-  --card-foreground: oklch(0.11 0.022 264.361);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.11 0.022 264.361);
-  --primary: oklch(0.357 0.238 263.051);      /* #1D4ED8 / blue-700 - Deep navy/ocean blue */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(1 0 0);                  /* #FFFFFF - Secondary is white */
-  --secondary-foreground: oklch(0.11 0.022 264.361);
-  --muted: oklch(0.927 0.016 255.228);        /* #E2E8F0 / slate-200 - Muted gray for borders */
-  --muted-foreground: oklch(0.554 0.046 257.417); /* #64748B / slate-500 - Medium-dark gray text */
-  --accent: oklch(1 0 0);                     /* #FFFFFF - Accent is white */
-  --accent-foreground: oklch(0.11 0.022 264.361);
-  --destructive: oklch(0.357 0.238 263.051);  /* #1D4ED8 / blue-700 - Use primary blue */
-  --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.357 0.238 263.051);      /* #1D4ED8 / blue-700 - Use primary blue */
-  --success-foreground: oklch(1 0 0);
-  --border: oklch(0.927 0.016 255.228);       /* #E2E8F0 / slate-200 - Muted gray borders */
-  --input: oklch(0.927 0.016 255.228);
-  --ring: oklch(0.357 0.238 263.051);
+  /* Creator Connect Design System */
+  --background: #F5F5F5;                      /* Light Gray */
+  --foreground: #101010;                      /* Black */
+  --card: #FFFFFF;                            /* White */
+  --card-foreground: #101010;                 /* Black */
+  --popover: #FFFFFF;                         /* White */
+  --popover-foreground: #101010;              /* Black */
+  --primary: #0365FA;                         /* Blue */
+  --primary-foreground: #FFFFFF;              /* White */
+  --secondary: #FFFFFF;                       /* White */
+  --secondary-foreground: #101010;            /* Black */
+  --muted: #F5F5F5;                           /* Light Gray */
+  --muted-foreground: #666666;                /* Medium Gray */
+  --accent: #FFFFFF;                          /* White */
+  --accent-foreground: #101010;               /* Black */
+  --destructive: #0365FA;                     /* Blue */
+  --destructive-foreground: #FFFFFF;          /* White */
+  --success: #0365FA;                         /* Blue */
+  --success-foreground: #FFFFFF;              /* White */
+  --border: #E5E5E5;                          /* Light border */
+  --input: #F5F5F5;                           /* Light Gray */
+  --ring: #0365FA;                            /* Blue */
 }
 
 @layer base {
