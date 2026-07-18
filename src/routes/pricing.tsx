@@ -22,22 +22,22 @@ const PLANS = [
 
 function PricingPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <PublicHeader />
-      <main className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
+      <main className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-24">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-extrabold tracking-tighter text-[#151515] sm:text-5xl">Simple pricing for the launch era.</h1>
-          <p className="mt-2.5 text-base font-medium text-muted-foreground">Start free, validate your niche, then upgrade when your community needs more control.</p>
+          <h1 className="text-4xl font-bold text-foreground sm:text-5xl">Simple pricing for the launch era.</h1>
+          <p className="mt-4 text-lg text-muted-foreground">Start free, validate your niche, then upgrade when your community needs more control.</p>
         </div>
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
           {PLANS.map((plan) => (
-            <div key={plan.name} className="rounded-xl border border-neutral-100 bg-card p-6">
-              <h2 className="text-xl font-extrabold tracking-tighter text-[#151515]">{plan.name}</h2>
-              <div className="mt-2.5 text-3xl font-extrabold text-foreground">{plan.price}</div>
-              <ul className="mt-5 space-y-3 text-sm text-foreground">
-                {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" />{feature}</li>)}
+            <div key={plan.name} className="rounded-lg border border-border bg-white p-8">
+              <h2 className="text-2xl font-bold text-foreground">{plan.name}</h2>
+              <div className="mt-4 text-4xl font-bold text-foreground">{plan.price}</div>
+              <ul className="mt-6 space-y-3 text-sm text-foreground">
+                {plan.features.map((feature) => <li key={feature} className="flex items-start gap-3"><CheckCircle2 size={18} className="mt-0.5 shrink-0 text-primary" /><span>{feature}</span></li>)}
               </ul>
-              <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-6 block rounded-3xl bg-primary px-6 py-2.5 text-center text-base font-extrabold text-white border border-transparent hover:bg-primary/85 h-12 flex items-center justify-center">{plan.cta}</Link>
+              <Link to={plan.to} search={plan.to === "/auth" ? { mode: "signup" } : undefined} className="mt-8 block rounded-lg bg-primary px-6 py-3 text-center text-base font-bold text-white border border-transparent hover:bg-blue-600 transition-colors">{plan.cta}</Link>
             </div>
           ))}
         </div>
