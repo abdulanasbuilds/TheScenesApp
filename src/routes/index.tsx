@@ -142,20 +142,20 @@ const FEATURES = [
 
 function FeatureMatrix() {
   return (
-    <section id="features" className="border-b border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-extrabold tracking-tighter text-foreground sm:text-4xl">One platform. Community + courses.</h2>
-          <p className="mt-1.5 text-base font-medium text-muted-foreground">The rigor of Skool. The channel depth of Circle. The polish of a Linear-grade utility.</p>
+    <section id="features" className="border-b border-border bg-white">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Empowers you to build meaningful relationships</h2>
+          <p className="mt-4 text-lg text-muted-foreground">with like-minded individuals. Share experiences, offer advice, and find your community.</p>
         </div>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f) => (
-            <div key={f.title} className="rounded-xl border border-neutral-100 bg-card p-5">
-              <div className="grid h-9 w-9 place-items-center rounded-lg bg-foreground text-primary-foreground">
-                <f.icon size={16} />
+            <div key={f.title} className="rounded-lg border border-border bg-white p-6">
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-white">
+                <f.icon size={18} />
               </div>
-              <div className="mt-3 text-base font-extrabold tracking-tighter text-foreground">{f.title}</div>
-              <div className="mt-1 text-sm text-muted-foreground">{f.body}</div>
+              <h3 className="mt-4 text-lg font-bold text-foreground">{f.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
             </div>
           ))}
         </div>
@@ -167,13 +167,12 @@ function FeatureMatrix() {
 
 function CTA() {
   return (
-    <section className="bg-slate-900">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 text-center">
-        <h2 className="text-3xl font-extrabold tracking-tighter text-white sm:text-4xl">Claim your niche before someone else does.</h2>
-        <p className="mt-2.5 text-base text-neutral-300">Launch your community + course in a single afternoon. Free while we're in early access.</p>
-        <div className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
-          <Link to="/discover" className="rounded-3xl border border-white/30 bg-white px-6 py-2.5 text-base font-extrabold text-slate-900 hover:bg-white/85 w-full sm:w-auto h-12 flex items-center justify-center">Explore Communities</Link>
-          <Link to="/create-community" className="rounded-3xl bg-primary px-6 py-2.5 text-base font-extrabold text-white hover:bg-primary/85 border border-transparent w-full sm:w-auto h-12 flex items-center justify-center gap-2">Create a Community <ChevronRight size={16} /></Link>
+    <section className="bg-primary">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 text-center">
+        <h2 className="text-4xl font-bold text-white sm:text-5xl">Join Thousands of Successful Communities</h2>
+        <p className="mt-4 text-lg text-blue-100">Start building your community today and connect with your audience.</p>
+        <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link to="/auth" className="rounded-lg border border-white/20 bg-white px-8 py-3 text-base font-bold text-primary hover:bg-blue-50 flex items-center justify-center">Sign Up</Link>
         </div>
       </div>
     </section>
@@ -182,16 +181,42 @@ function CTA() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2.5 px-4 py-6 sm:flex-row sm:px-6">
-        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          <span className="grid h-6 w-6 place-items-center rounded-md bg-slate-900 text-[10px] font-bold text-white">S</span>
-          <span>© 2026 SukaSpace — Community + Courses for the AI era.</span>
+    <footer className="border-t border-border bg-foreground text-white">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        <div className="grid gap-8 md:grid-cols-4">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-sm font-bold text-white">S</span>
+              <span className="font-bold">SukaSpace</span>
+            </div>
+            <p className="text-sm text-blue-100">Building communities for creators and their audiences.</p>
+          </div>
+          <div>
+            <h4 className="font-bold mb-3">Product</h4>
+            <ul className="space-y-2 text-sm text-blue-100">
+              <li><Link to="/discover" className="hover:text-white">Discover</Link></li>
+              <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
+              <li><a href="#" className="hover:text-white">Features</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-bold mb-3">Company</h4>
+            <ul className="space-y-2 text-sm text-blue-100">
+              <li><Link to="/about" className="hover:text-white">About</Link></li>
+              <li><a href="#" className="hover:text-white">Blog</a></li>
+              <li><a href="#" className="hover:text-white">Contact</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-bold mb-3">Legal</h4>
+            <ul className="space-y-2 text-sm text-blue-100">
+              <li><a href="#" className="hover:text-white">Privacy</a></li>
+              <li><a href="#" className="hover:text-white">Terms</a></li>
+            </ul>
+          </div>
         </div>
-        <div className="flex gap-5 text-xs font-medium text-muted-foreground">
-          <Link to="/about" className="hover:text-foreground">About</Link>
-          <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
-          <Link to="/discover" className="hover:text-foreground">Discover</Link>
+        <div className="border-t border-blue-900 mt-8 pt-8 text-center text-sm text-blue-200">
+          <p>© 2026 SukaSpace. All rights reserved.</p>
         </div>
       </div>
     </footer>
