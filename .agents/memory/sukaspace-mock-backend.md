@@ -43,3 +43,13 @@ UPDATE: profiles (filtered to current user)
 ## Feedback form
 `src/lib/feedback.functions.ts` — server fn writes to Supabase `feedback` table via REST API first, then optionally notifies via Telegram. Never throws — always returns success.
 Keys needed: `TELEGRAM_BOT_TOKEN` + `TELEGRAM_PRIVATE_CHAT_ID` (optional, for Telegram notifications).
+
+## Cloudflare env var architecture (CRITICAL)
+Two distinct classes — never mix them:
+- **Build-time (VITE_ prefix)**: baked into client JS bundle by Vite. `import.meta.env.VITE_*`. Set in Cloudflare as build Environment Variables.
+  → `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_PAYSTACK_PUBLIC_KEY`, `VITE_APP_URL`
+- **Runtime (no prefix)**: Cloudflare Worker bindings, available as `process.env.*` in server functions via Nitro polyfill. Set in Cloudflare as Secrets.
+  → `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, `PAYSTACK_SECRET_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_PRIVATE_CHAT_ID`
+
+**Why**: `process.env.VITE_*` does NOT work at runtime on Cloudflare Workers — Vite replaces `import.meta.env.VITE_*` at build time but does NOT expose them as Worker runtime bindings. Server functions must use non-VITE names.
+**How to apply**: Every new server function (`createServerFn`) must ONLY use non-VITE `process.env.*`. Client code uses `import.meta.env.VITE_*`. See `.env.example` and `CLOUDFLARE_SETUP.md`.

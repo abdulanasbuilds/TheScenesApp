@@ -50,8 +50,10 @@ function formatTelegramMessage(data: FeedbackInput) {
 export const submitFeedback = createServerFn({ method: "POST" })
   .validator(feedbackSchema)
   .handler(async ({ data }) => {
-    const supabaseUrl  = process.env.VITE_SUPABASE_URL;
-    const supabaseAnon = process.env.VITE_SUPABASE_ANON_KEY;
+    // Use non-VITE server-side names — VITE_* are build-time client vars only.
+    // Set SUPABASE_URL and SUPABASE_ANON_KEY as runtime bindings in Cloudflare dashboard.
+    const supabaseUrl  = process.env.SUPABASE_URL;
+    const supabaseAnon = process.env.SUPABASE_ANON_KEY;
     const telegramToken  = process.env.TELEGRAM_BOT_TOKEN;
     const telegramChatId = process.env.TELEGRAM_PRIVATE_CHAT_ID;
 
