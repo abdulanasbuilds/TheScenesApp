@@ -34,8 +34,10 @@ import { Route as AppCreatorRouteImport } from './routes/app.creator'
 import { Route as AppCoursesRouteImport } from './routes/app.courses'
 import { Route as AppClassroomRouteImport } from './routes/app.classroom'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAutomationsRouteImport } from './routes/app.automations'
 import { Route as AppAffiliateRouteImport } from './routes/app.affiliate'
+import { Route as ApiWebhookRouteImport } from './routes/api/webhook'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -162,6 +164,11 @@ const AppCalendarRoute = AppCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAutomationsRoute = AppAutomationsRouteImport.update({
   id: '/automations',
   path: '/automations',
@@ -171,6 +178,11 @@ const AppAffiliateRoute = AppAffiliateRouteImport.update({
   id: '/affiliate',
   path: '/affiliate',
   getParentRoute: () => AppRoute,
+} as any)
+const ApiWebhookRoute = ApiWebhookRouteImport.update({
+  id: '/api/webhook',
+  path: '/api/webhook',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -185,8 +197,10 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/automations': typeof AppAutomationsRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/courses': typeof AppCoursesRoute
@@ -213,8 +227,10 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/automations': typeof AppAutomationsRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/courses': typeof AppCoursesRoute
@@ -243,8 +259,10 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/automations': typeof AppAutomationsRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/classroom': typeof AppClassroomRoute
   '/app/courses': typeof AppCoursesRoute
@@ -274,8 +292,10 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/api/webhook'
     | '/app/affiliate'
     | '/app/automations'
+    | '/app/billing'
     | '/app/calendar'
     | '/app/classroom'
     | '/app/courses'
@@ -302,8 +322,10 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/api/webhook'
     | '/app/affiliate'
     | '/app/automations'
+    | '/app/billing'
     | '/app/calendar'
     | '/app/classroom'
     | '/app/courses'
@@ -331,8 +353,10 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/api/webhook'
     | '/app/affiliate'
     | '/app/automations'
+    | '/app/billing'
     | '/app/calendar'
     | '/app/classroom'
     | '/app/courses'
@@ -361,6 +385,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiWebhookRoute: typeof ApiWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -540,6 +565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCalendarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/automations': {
       id: '/app/automations'
       path: '/automations'
@@ -554,12 +586,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAffiliateRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/webhook': {
+      id: '/api/webhook'
+      path: '/api/webhook'
+      fullPath: '/api/webhook'
+      preLoaderRoute: typeof ApiWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AppRouteChildren {
   AppAffiliateRoute: typeof AppAffiliateRoute
   AppAutomationsRoute: typeof AppAutomationsRoute
+  AppBillingRoute: typeof AppBillingRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppClassroomRoute: typeof AppClassroomRoute
   AppCoursesRoute: typeof AppCoursesRoute
@@ -579,6 +619,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAffiliateRoute: AppAffiliateRoute,
   AppAutomationsRoute: AppAutomationsRoute,
+  AppBillingRoute: AppBillingRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppClassroomRoute: AppClassroomRoute,
   AppCoursesRoute: AppCoursesRoute,
@@ -609,6 +650,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiWebhookRoute: ApiWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

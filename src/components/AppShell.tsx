@@ -34,6 +34,7 @@ const CREATOR_NAV: NavItem[] = [
   { to: "/app/members",      label: "Members",      icon: Users },
   { to: "/app/calendar",     label: "Calendar",     icon: Calendar },
   { to: "/app/messages",     label: "Messages",     icon: MessagesSquare },
+  { to: "/app/billing",      label: "Billing",      icon: Wallet },
   { to: "/app/payouts",      label: "Payouts",      icon: Wallet },
   { to: "/discover",         label: "Discover",     icon: Compass },
   { to: "/app/live",         label: "Live",         icon: Radio,    comingSoon: true },

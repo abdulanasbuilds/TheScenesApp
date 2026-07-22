@@ -1,3 +1,4 @@
+- [SukaSpace monetization engine](sukaspace-monetization.md) — payment adapter, earnings ledger, withdrawal state machine, R2 storage, access control, idempotent webhook. Run supabase/monetization.sql to activate.
 - [SukaSpace client-only data layer](sukaspace-mock-backend.md) — no real backend; localStorage store (key: sukaspace_app_state_v3). AppShell auth guard uses window.location.replace("/auth") not nav().
 - [Realtime, DMs, Drip, Payments, Email](sukaspace-realtime-dms-drip.md) — joinPaidCommunity, Supabase Realtime subscriptions, Resend email server fns, DM inbox, drip lock UI.
 - [SukaSpace dashboards + auth + rich text](sukaspace-dashboards.md) — Creator Hub (10 tabs inc. Affiliate/Live/Automations), RichTextEditor component, creator-managed affiliate system, public pages must not be changed without explicit request.
