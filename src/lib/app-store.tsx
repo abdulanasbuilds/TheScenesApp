@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { sendWelcomeEmail, sendEnrollmentEmail, sendCommunityJoinEmail, sendPaymentReceiptEmail } from "@/lib/email.functions";
 import { recordPayment } from "@/lib/payments.functions";
+import { onMemberJoin } from "@/lib/autodm.functions";
 import { initiatePaystackPayment, isPaystackConfigured, priceStringToAmount } from "@/lib/paystack";
 import { verifyPaystackPayment } from "@/lib/paystack.functions";
 
@@ -21,6 +22,10 @@ export type Community = {
   price?: string;
   summary: string;
   createdAt: number;
+  // branding & access (Skool/Circle parity)
+  color?: string;          // hex brand color, e.g. "#3B82F6"
+  coverImageUrl?: string;  // cover photo URL (1084×576 recommended)
+  isPrivate?: boolean;     // true = hidden from Discover search
 };
 
 export type SessionUser = {
@@ -72,11 +77,31 @@ export type Reaction = {
   emoji: string;
 };
 
+export type NotificationType =
+  | "welcome"
+  | "system"
+  | "new_post"
+  | "new_comment"
+  | "new_member"
+  | "new_message"
+  | "event"
+  | "course_published"
+  | "lesson_published"
+  | "payment_success"
+  | "payment_failed"
+  | "announcement"
+  | "community_live"
+  | "onboarding";
+
 export type AppNotification = {
   id: number;
   text: string;
   time: string;
   read: boolean;
+  // Optional enrichment — older rows won't have these
+  type?: NotificationType;
+  link?: string;       // deep-link route, e.g. "/app/messages"
+  actorName?: string;  // display name of who triggered this
 };
 
 export type DirectMessage = {
@@ -132,6 +157,8 @@ export type Course = {
   published: boolean;
   enrollmentCount: number;
   createdAt: number;
+  coverImageUrl?: string;  // custom thumbnail URL
+  thumbnail?: string;      // gradient-class fallback (e.g. "from-blue-500 to-violet-600")
 };
 
 export type CommunityResource = {
@@ -241,6 +268,9 @@ type PersistedState = {
   enrollments: Enrollment[];
   accessRecords: AccessRecord[];
   directMessages: DirectMessage[];
+  // Onboarding
+  onboardingCompleted: boolean;
+  onboardingInterests: string[];
 };
 
 function defaultState(): PersistedState {
@@ -260,6 +290,8 @@ function defaultState(): PersistedState {
     enrollments: [],
     accessRecords: [],
     directMessages: [],
+    onboardingCompleted: false,
+    onboardingInterests: [],
   };
 }
 
@@ -285,6 +317,9 @@ function communityToRow(c: Community) {
     creator: c.creator, creator_email: c.creatorEmail, avatar: c.avatar,
     banner: c.banner, tag: c.tag, price: c.price ?? null, summary: c.summary,
     created_at: c.createdAt,
+    color: c.color ?? null,
+    cover_image_url: c.coverImageUrl ?? null,
+    is_private: c.isPrivate ?? false,
   };
 }
 function communityFromRow(r: any): Community {
@@ -293,6 +328,9 @@ function communityFromRow(r: any): Community {
     creator: r.creator, creatorEmail: r.creator_email, avatar: r.avatar,
     banner: r.banner, tag: r.tag, price: r.price ?? undefined, summary: r.summary,
     createdAt: r.created_at,
+    color: r.color ?? undefined,
+    coverImageUrl: r.cover_image_url ?? undefined,
+    isPrivate: r.is_private ?? false,
   };
 }
 function postToRow(p: FeedPost) {
@@ -344,6 +382,8 @@ function courseToRow(c: Course) {
     id: c.id, community_id: c.communityId, title: c.title, description: c.description,
     creator_email: c.creatorEmail, published: c.published, enrollment_count: c.enrollmentCount,
     created_at: c.createdAt,
+    cover_image_url: c.coverImageUrl ?? null,
+    thumbnail: c.thumbnail ?? null,
   };
 }
 function courseFromRow(r: any): Course {
@@ -367,6 +407,8 @@ function courseFromRow(r: any): Course {
     id: r.id, communityId: r.community_id, title: r.title, description: r.description || "",
     creatorEmail: r.creator_email || "", published: r.published, enrollmentCount: r.enrollment_count,
     createdAt: r.created_at, modules,
+    coverImageUrl: r.cover_image_url ?? undefined,
+    thumbnail: r.thumbnail ?? undefined,
   };
 }
 
@@ -394,6 +436,9 @@ type CreateCommunityInput = {
   summary: string;
   tag: "FREE" | "PAID";
   price?: string;
+  color?: string;
+  coverImageUrl?: string;
+  isPrivate?: boolean;
 };
 
 type AppStoreValue = {
@@ -435,8 +480,8 @@ type AppStoreValue = {
   toggleReaction: (postId: number, emoji: string) => void;
   getReactions: (postId: number) => { emoji: string; count: number; reacted: boolean }[];
   // courses
-  createCourse: (input: { communityId: number | null; title: string; description: string }) => Course;
-  updateCourse: (id: number, patch: Partial<Pick<Course, "title" | "description" | "communityId">>) => void;
+  createCourse: (input: { communityId: number | null; title: string; description: string; coverImageUrl?: string; thumbnail?: string }) => Course;
+  updateCourse: (id: number, patch: Partial<Pick<Course, "title" | "description" | "communityId" | "coverImageUrl" | "thumbnail">>) => void;
   publishCourse: (id: number) => void;
   unpublishCourse: (id: number) => void;
   deleteCourse: (id: number) => void;
@@ -465,9 +510,14 @@ type AppStoreValue = {
   completeLesson: (courseId: number, lessonId: number) => void;
   isLessonComplete: (courseId: number, lessonId: number) => boolean;
   getCourseProgress: (courseId: number) => { completed: number; total: number };
+  // onboarding
+  onboardingCompleted: boolean;
+  onboardingInterests: string[];
+  completeOnboarding: (data: { role: "creator" | "learner"; interests: string[]; name?: string; bio?: string }) => void;
   // notifications
   markAllNotificationsRead: () => void;
-  pushNotification: (text: string) => void;
+  markNotificationRead: (id: number) => void;
+  pushNotification: (text: string, opts?: { type?: NotificationType; link?: string; actorName?: string }) => void;
   // direct messages
   directMessages: DirectMessage[];
   sendDM: (toEmail: string, body: string) => Promise<DirectMessage>;
@@ -528,14 +578,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
       const channel = supabase
         .channel("sukaspace-live")
+
+        // ── INSERT events ─────────────────────────────────────────────────────
         // New posts — update the feed in real time
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, (payload) => {
           if (cancelled) return;
           const post = postFromRow(payload.new);
           setState((s) => {
-            // Dedupe: don't add if we already have it (we may have inserted it ourselves)
             if (s.extraPosts.some((p) => p.id === post.id)) return s;
             return { ...s, extraPosts: [post, ...s.extraPosts] };
+          });
+        })
+        // New communities (another creator just launched one)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "communities" }, (payload) => {
+          if (cancelled) return;
+          const c = communityFromRow(payload.new);
+          setState((s) => {
+            if (s.userCommunities.some((x) => x.id === c.id)) return s;
+            return { ...s, userCommunities: [c, ...s.userCommunities] };
           });
         })
         // New notifications for this user
@@ -544,9 +604,23 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           { event: "INSERT", schema: "public", table: "notifications", filter: email ? `user_email=eq.${email}` : undefined },
           (payload) => {
             if (cancelled) return;
-            const n: AppNotification = { id: payload.new.id, text: payload.new.text, time: payload.new.time, read: payload.new.read };
+            const n: AppNotification = {
+              id: payload.new.id, text: payload.new.text, time: payload.new.time, read: payload.new.read,
+              type: payload.new.type ?? undefined,
+              link: payload.new.link ?? undefined,
+              actorName: payload.new.actor_name ?? undefined,
+            };
             setState((s) => {
+              // If already in state (we created it ourselves), skip — no toast
               if (s.notifications.some((x) => x.id === n.id)) return s;
+              // New notification from an external source — show a toast
+              setTimeout(() => {
+                toast(n.text, {
+                  icon: n.type === "new_message" ? "💬" : n.type === "new_member" ? "👋" : n.type === "payment_success" ? "✅" : "🔔",
+                  duration: 5000,
+                  action: n.link ? { label: "View", onClick: () => { window.location.href = n.link!; } } : undefined,
+                });
+              }, 0);
               return { ...s, notifications: [n, ...s.notifications] };
             });
           },
@@ -559,11 +633,103 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
             if (cancelled) return;
             const dm = dmFromRow(payload.new);
             setState((s) => {
+              // If already in state (we sent it ourselves), skip — no toast
               if (s.directMessages.some((x) => x.id === dm.id)) return s;
+              // New DM from another user — show a toast
+              setTimeout(() => {
+                toast(`New message from ${dm.fromEmail}`, {
+                  icon: "💬",
+                  duration: 6000,
+                  action: { label: "Reply", onClick: () => { window.location.href = "/app/messages"; } },
+                });
+              }, 0);
               return { ...s, directMessages: [dm, ...s.directMessages] };
             });
           },
         )
+
+        // ── DELETE events — admin removal syncs instantly to all clients ──────
+        // Community deleted from Supabase → remove everywhere in the app
+        .on("postgres_changes", { event: "DELETE", schema: "public", table: "communities" }, (payload) => {
+          if (cancelled) return;
+          const deletedId = payload.old?.id as number | undefined;
+          if (!deletedId) return;
+          setState((s) => ({
+            ...s,
+            userCommunities: s.userCommunities.filter((c) => c.id !== deletedId),
+            joinedCommunityIds: s.joinedCommunityIds.filter((id) => id !== deletedId),
+            courses: s.courses.filter((c) => c.communityId !== deletedId),
+            extraPosts: s.extraPosts.filter((p) => p.communityId !== deletedId),
+            communityResources: s.communityResources.filter((r) => r.communityId !== deletedId),
+            communityEvents: s.communityEvents.filter((e) => e.communityId !== deletedId),
+          }));
+        })
+        // Post deleted
+        .on("postgres_changes", { event: "DELETE", schema: "public", table: "posts" }, (payload) => {
+          if (cancelled) return;
+          const deletedId = payload.old?.id as number | undefined;
+          if (!deletedId) return;
+          setState((s) => ({
+            ...s,
+            extraPosts: s.extraPosts.filter((p) => p.id !== deletedId),
+            comments: s.comments.filter((c) => c.postId !== deletedId),
+            likedPostIds: s.likedPostIds.filter((id) => id !== deletedId),
+          }));
+        })
+        // Course deleted
+        .on("postgres_changes", { event: "DELETE", schema: "public", table: "courses" }, (payload) => {
+          if (cancelled) return;
+          const deletedId = payload.old?.id as number | undefined;
+          if (!deletedId) return;
+          setState((s) => ({
+            ...s,
+            courses: s.courses.filter((c) => c.id !== deletedId),
+            enrollments: s.enrollments.filter((e) => e.courseId !== deletedId),
+          }));
+        })
+        // Notification deleted (e.g. admin clears a notification)
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "notifications", filter: email ? `user_email=eq.${email}` : undefined },
+          (payload) => {
+            if (cancelled) return;
+            const deletedId = payload.old?.id as number | undefined;
+            if (!deletedId) return;
+            setState((s) => ({ ...s, notifications: s.notifications.filter((n) => n.id !== deletedId) }));
+          },
+        )
+        // DM deleted
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "direct_messages", filter: email ? `to_email=eq.${email}` : undefined },
+          (payload) => {
+            if (cancelled) return;
+            const deletedId = payload.old?.id as number | undefined;
+            if (!deletedId) return;
+            setState((s) => ({ ...s, directMessages: s.directMessages.filter((m) => m.id !== deletedId) }));
+          },
+        )
+        // Profile updated (e.g. admin changes a user's role or name)
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "profiles", filter: email ? `email=eq.${email}` : undefined },
+          (payload) => {
+            if (cancelled || !payload.new) return;
+            const r = payload.new;
+            setState((s) => ({
+              ...s,
+              session: s.session ? {
+                ...s.session,
+                name: r.name ?? s.session.name,
+                role: r.role ?? s.session.role,
+                avatar: r.avatar ?? s.session.avatar,
+                photoUrl: r.photo_url ?? s.session.photoUrl,
+                bio: r.bio ?? s.session.bio,
+              } : s.session,
+            }));
+          },
+        )
+
         .subscribe((status) => {
           if (status === "SUBSCRIBED") console.info("[SukaSpace] Realtime subscribed");
           if (status === "CHANNEL_ERROR") console.warn("[SukaSpace] Realtime channel error — live updates paused");
@@ -614,7 +780,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           extraPosts: (postsRes.data || []).map(postFromRow),
           likedPostIds: (likedRes.data || []).map((r: any) => r.post_id),
           joinedCommunityIds: (joinedRes.data || []).map((r: any) => r.community_id),
-          notifications: (notificationsRes.data || []).map((r: any): AppNotification => ({ id: r.id, text: r.text, time: r.time, read: r.read })),
+          notifications: (notificationsRes.data || []).map((r: any): AppNotification => ({
+            id: r.id, text: r.text, time: r.time, read: r.read,
+            type: r.type ?? undefined,
+            link: r.link ?? undefined,
+            actorName: r.actor_name ?? undefined,
+          })),
           courses: (coursesRes.data || []).map(courseFromRow),
           comments: (commentsRes.data || []).map(commentFromRow),
           reactions: (reactionsRes.data || []).map((r: any): Reaction => ({ postId: r.post_id, userEmail: r.user_email, emoji: r.emoji })),
@@ -623,6 +794,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           enrollments: (enrollmentsRes.data || []).map((r: any): Enrollment => ({ courseId: r.course_id, userEmail: r.user_email, completedLessonIds: r.completed_lesson_ids || [], enrolledAt: r.enrolled_at })),
           accessRecords: (accessRes.data || []).map((r: any): AccessRecord => ({ id: r.id, resourceId: r.resource_id, resourceTitle: r.resource_title, resourceType: r.resource_type, communityId: r.community_id ?? undefined, userEmail: r.user_email, accessedAt: r.accessed_at })),
           directMessages: (dmsRes.data || []).map(dmFromRow),
+          // Preserve onboarding state from localStorage (not yet in Supabase session fetch)
+          onboardingCompleted: loadState().onboardingCompleted ?? false,
+          onboardingInterests: loadState().onboardingInterests ?? [],
         });
 
         // Set up realtime subscriptions for this user
@@ -701,6 +875,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     accessRecords: state.accessRecords,
     directMessages: state.directMessages,
     dmUnreadCount: state.directMessages.filter(dm => !dm.read && dm.toEmail === state.session?.email).length,
+    onboardingCompleted: state.onboardingCompleted,
+    onboardingInterests: state.onboardingInterests,
 
     // ── auth ──
     signIn: async (email, password) => {
@@ -782,6 +958,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         creatorEmail: state.session?.email || "",
         avatar: state.session?.avatar || "YU", banner: randomBanner(),
         tag: input.tag, price: input.price, summary: input.summary, createdAt: Date.now(),
+        color: input.color,
+        coverImageUrl: input.coverImageUrl,
+        isPrivate: input.isPrivate ?? false,
       };
       setState(s => ({
         ...s,
@@ -919,6 +1098,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         title: input.title, description: input.description,
         creatorEmail: state.session?.email || "",
         modules: [], published: false, enrollmentCount: 0, createdAt: Date.now(),
+        coverImageUrl: input.coverImageUrl,
+        thumbnail: input.thumbnail,
       };
       setState(s => ({ ...s, courses: [course, ...s.courses] }));
       if (supabase) sync(supabase.from("courses").insert(courseToRow(course)), "course create");
@@ -931,6 +1112,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         if (patch.title !== undefined) row.title = patch.title;
         if (patch.description !== undefined) row.description = patch.description;
         if (patch.communityId !== undefined) row.community_id = patch.communityId;
+        if (patch.coverImageUrl !== undefined) row.cover_image_url = patch.coverImageUrl;
+        if (patch.thumbnail !== undefined) row.thumbnail = patch.thumbnail;
         sync(supabase.from("courses").update(row).eq("id", id), "course update");
       }
     },
@@ -1128,11 +1311,22 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       setState(s => ({ ...s, notifications: s.notifications.map(n => ({ ...n, read: true })) }));
       if (supabase && state.session?.email) sync(supabase.from("notifications").update({ read: true }).eq("user_email", state.session.email), "notifications read");
     },
-    pushNotification: (text) => {
-      const notification: AppNotification = { id: generateId(), text, time: "Just now", read: false };
+    markNotificationRead: (id) => {
+      setState(s => ({ ...s, notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n) }));
+      if (supabase && state.session?.email) sync(supabase.from("notifications").update({ read: true }).eq("id", id).eq("user_email", state.session.email), "notification read");
+    },
+    pushNotification: (text, opts) => {
+      const notification: AppNotification = {
+        id: generateId(), text, time: "Just now", read: false,
+        type: opts?.type ?? "system",
+        link: opts?.link,
+        actorName: opts?.actorName,
+      };
       setState(s => ({ ...s, notifications: [notification, ...s.notifications] }));
       if (supabase && state.session?.email) sync(supabase.from("notifications").insert({
-        id: notification.id, user_email: state.session.email, text, time: "Just now", read: false, created_at: notification.id,
+        id: notification.id, user_email: state.session.email, text, time: "Just now", read: false,
+        type: notification.type, link: notification.link ?? null, actor_name: notification.actorName ?? null,
+        created_at: notification.id,
       }), "notification create");
     },
 

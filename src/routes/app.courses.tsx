@@ -85,6 +85,22 @@ function CoursesPage() {
   return <CourseList courses={myCourses} onOpen={openCourse} onCreate={(id) => openCourse(id)} />;
 }
 
+// Gradient thumbnails used as cover-image fallbacks when no URL is provided
+const COURSE_GRADIENTS = [
+  "from-blue-500 to-violet-600",
+  "from-emerald-500 to-teal-600",
+  "from-orange-400 to-rose-500",
+  "from-sky-400 to-blue-600",
+  "from-violet-500 to-purple-700",
+  "from-amber-400 to-orange-500",
+  "from-pink-400 to-rose-600",
+  "from-teal-500 to-emerald-600",
+];
+
+function gradientForCourse(id: number) {
+  return COURSE_GRADIENTS[id % COURSE_GRADIENTS.length];
+}
+
 // ─── Course List ──────────────────────────────────────────────────────────────
 
 function CourseList({ courses, onOpen, onCreate }: { courses: Course[]; onOpen: (id: number) => void; onCreate: (id: number) => void }) {
@@ -93,12 +109,22 @@ function CourseList({ courses, onOpen, onCreate }: { courses: Course[]; onOpen: 
   const [publishedCourse, setPublishedCourse] = useState<Course | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [communityId, setCommunityId] = useState<number | null>(store.communities[0]?.id ?? null);
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [communityId, setCommunityId] = useState<number | null>(
+    store.communities.filter(c => c.creatorEmail === store.session?.email)[0]?.id ?? null
+  );
 
   const create = () => {
     if (!title.trim()) return;
-    const course = store.createCourse({ title: title.trim(), description: description.trim(), communityId });
-    setTitle(""); setDescription(""); setShowCreate(false);
+    const gradient = gradientForCourse(Date.now());
+    const course = store.createCourse({
+      title: title.trim(),
+      description: description.trim(),
+      communityId,
+      coverImageUrl: coverImageUrl.trim() || undefined,
+      thumbnail: gradient,
+    });
+    setTitle(""); setDescription(""); setCoverImageUrl(""); setShowCreate(false);
     onCreate(course.id);
   };
 
@@ -107,91 +133,227 @@ function CourseList({ courses, onOpen, onCreate }: { courses: Course[]; onOpen: 
     setPublishedCourse(c);
   };
 
+  const totalPublished  = courses.filter(c => c.published).length;
+  const totalEnrollments = courses.reduce((s, c) => s + c.enrollmentCount, 0);
+  const totalLessonsAll  = courses.reduce((s, c) => s + c.modules.flatMap(m => m.lessons).length, 0);
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-5xl px-4 py-8 pb-24 sm:pb-8">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Course Builder</h1>
           <p className="mt-1 text-sm text-muted-foreground">Build and publish courses for your community.</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">
+        <button
+          onClick={() => setShowCreate(true)}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90"
+        >
           <Plus size={15} /> New course
         </button>
       </div>
+
+      {/* Summary bar */}
+      {courses.length > 0 && (
+        <div className="mt-5 grid grid-cols-3 gap-3">
+          {[
+            { label: "Total courses",   value: courses.length },
+            { label: "Published",       value: totalPublished },
+            { label: "Learners enrolled", value: totalEnrollments },
+          ].map(s => (
+            <div key={s.label} className="rounded-xl border border-border bg-card px-4 py-3 text-center">
+              <div className="text-xl font-bold text-foreground">{s.value}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {courses.length === 0 ? (
         <div className="mt-8 rounded-xl border border-dashed border-border bg-card p-12 text-center">
           <BookOpen size={32} className="mx-auto text-muted-foreground/40" />
           <h2 className="mt-3 text-base font-semibold text-foreground">No courses yet</h2>
           <p className="mt-1 text-sm text-muted-foreground">Create your first course to start building a curriculum.</p>
-          <button onClick={() => setShowCreate(true)} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Create first course</button>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
+          >
+            Create first course
+          </button>
         </div>
       ) : (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map(c => {
             const totalLessons = c.modules.flatMap(m => m.lessons).length;
+            const gradient     = c.thumbnail || gradientForCourse(c.id);
+            const draftCount   = c.modules.flatMap(m => m.lessons).filter(l => !l.published).length;
             return (
-              <div key={c.id} className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-                <div className="h-20 bg-gradient-to-br from-sky-100 to-blue-50 flex items-center justify-center">
-                  <BookOpen size={24} className="text-sky-400" />
-                </div>
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-sm font-semibold text-foreground">{c.title}</h3>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${c.published ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+              <motion.div
+                key={c.id}
+                whileHover={{ y: -2 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="group overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+              >
+                {/* Thumbnail */}
+                {c.coverImageUrl ? (
+                  <img
+                    src={c.coverImageUrl}
+                    alt={c.title}
+                    className="h-36 w-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                ) : (
+                  <div className={`relative h-36 bg-gradient-to-br ${gradient} flex items-end p-4`}>
+                    <BookOpen size={28} className="absolute right-4 top-4 text-white/30" />
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                        c.published ? "bg-emerald-500/90 text-white" : "bg-white/20 text-white"
+                      }`}
+                    >
                       {c.published ? "Published" : "Draft"}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{c.description || "No description."}</p>
-                  <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>{c.modules.length} modules</span>
-                    <span>{totalLessons} lessons</span>
-                    <span>{c.enrollmentCount} enrolled</span>
+                )}
+
+                <div className="p-4">
+                  {c.coverImageUrl && (
+                    <span
+                      className={`mb-2 inline-block shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                        c.published ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      {c.published ? "Published" : "Draft"}
+                    </span>
+                  )}
+                  <h3 className="text-sm font-semibold leading-snug text-foreground">{c.title}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{c.description || "No description yet."}</p>
+
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    {[
+                      { label: "Modules", value: c.modules.length },
+                      { label: "Lessons", value: totalLessons    },
+                      { label: "Enrolled", value: c.enrollmentCount },
+                    ].map(s => (
+                      <div key={s.label} className="rounded-lg bg-accent/50 py-1.5">
+                        <div className="text-sm font-bold text-foreground">{s.value}</div>
+                        <div className="text-[10px] text-muted-foreground">{s.label}</div>
+                      </div>
+                    ))}
                   </div>
+
+                  {draftCount > 0 && (
+                    <div className="mt-2 rounded-lg bg-amber-50 px-3 py-1.5 text-xs text-amber-700">
+                      {draftCount} unpublished {draftCount === 1 ? "lesson" : "lessons"}
+                    </div>
+                  )}
+
                   <div className="mt-3 flex gap-2">
-                    <button onClick={() => onOpen(c.id)} className="flex-1 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white text-center">
+                    <button
+                      onClick={() => onOpen(c.id)}
+                      className="flex-1 rounded-lg bg-primary px-3 py-2 text-center text-xs font-semibold text-white hover:bg-primary/90"
+                    >
                       Edit course
                     </button>
-                    <button onClick={() => c.published ? store.unpublishCourse(c.id) : handlePublish(c)} className={`rounded-lg border px-3 py-2 text-xs font-semibold ${c.published ? "border-border text-muted-foreground" : "border-primary text-primary"}`}>
+                    <button
+                      onClick={() => c.published ? store.unpublishCourse(c.id) : handlePublish(c)}
+                      className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
+                        c.published
+                          ? "border-border text-muted-foreground hover:bg-accent"
+                          : "border-primary text-primary hover:bg-primary/5"
+                      }`}
+                    >
                       {c.published ? "Unpublish" : "Publish"}
                     </button>
-                    <button onClick={() => { if (confirm("Delete this course?")) store.deleteCourse(c.id); }} className="rounded-lg border border-border p-2 text-muted-foreground hover:bg-rose-50 hover:text-rose-600">
+                    <button
+                      onClick={() => { if (confirm("Delete this course and all its content?")) store.deleteCourse(c.id); }}
+                      className="rounded-lg border border-border p-2 text-muted-foreground hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                    >
                       <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
       )}
 
+      {/* Create modal */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={() => setShowCreate(false)}>
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4 backdrop-blur-sm"
+          onClick={() => setShowCreate(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl"
+          >
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base font-semibold">New course</h2>
-              <button onClick={() => setShowCreate(false)} className="text-muted-foreground hover:text-foreground"><X size={16} /></button>
+              <button onClick={() => setShowCreate(false)} className="text-muted-foreground hover:text-foreground">
+                <X size={16} />
+              </button>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">Course title *</label>
-                <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Build with AI APIs" className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
+                <label className="text-xs font-semibold text-muted-foreground">Course title <span className="text-rose-500">*</span></label>
+                <input
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder="e.g. Build with AI APIs"
+                  className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground">Description</label>
-                <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="What will learners achieve?" className="mt-1 w-full resize-none rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  rows={2}
+                  placeholder="What will learners achieve?"
+                  className="mt-1 w-full resize-none rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
               </div>
-              {store.communities.length > 0 && (
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Cover image <span className="font-normal text-muted-foreground">(optional URL)</span>
+                </label>
+                <input
+                  value={coverImageUrl}
+                  onChange={e => setCoverImageUrl(e.target.value)}
+                  placeholder="https://... (a gradient is used if blank)"
+                  className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                {coverImageUrl && (
+                  <img
+                    src={coverImageUrl}
+                    alt="Cover preview"
+                    className="mt-2 h-16 w-full rounded-lg border border-border object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                )}
+              </div>
+              {store.communities.filter(c => c.creatorEmail === store.session?.email).length > 0 && (
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground">Attach to community (optional)</label>
-                  <select value={communityId ?? ""} onChange={e => setCommunityId(e.target.value ? Number(e.target.value) : null)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary">
+                  <select
+                    value={communityId ?? ""}
+                    onChange={e => setCommunityId(e.target.value ? Number(e.target.value) : null)}
+                    className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
+                  >
                     <option value="">Standalone course</option>
-                    {store.communities.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                    {store.communities
+                      .filter(c => c.creatorEmail === store.session?.email)
+                      .map(c => <option key={c.id} value={c.id}>{c.title}</option>)
+                    }
                   </select>
                 </div>
               )}
-              <button onClick={create} disabled={!title.trim()} className="w-full rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-40">
+              <button
+                onClick={create}
+                disabled={!title.trim()}
+                className="w-full rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-40 hover:bg-primary/90"
+              >
                 Create &amp; start building →
               </button>
             </div>

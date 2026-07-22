@@ -24,6 +24,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSearchRouteImport } from './routes/app.search'
 import { Route as AppPayoutsRouteImport } from './routes/app.payouts'
+import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
 import { Route as AppMessagesRouteImport } from './routes/app.messages'
 import { Route as AppMembersRouteImport } from './routes/app.members'
 import { Route as AppLiveRouteImport } from './routes/app.live'
@@ -112,6 +113,11 @@ const AppSearchRoute = AppSearchRouteImport.update({
 const AppPayoutsRoute = AppPayoutsRouteImport.update({
   id: '/payouts',
   path: '/payouts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMessagesRoute = AppMessagesRouteImport.update({
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/app/live': typeof AppLiveRoute
   '/app/members': typeof AppMembersRoute
   '/app/messages': typeof AppMessagesRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/payouts': typeof AppPayoutsRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/app/live': typeof AppLiveRoute
   '/app/members': typeof AppMembersRoute
   '/app/messages': typeof AppMessagesRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/payouts': typeof AppPayoutsRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/app/live': typeof AppLiveRoute
   '/app/members': typeof AppMembersRoute
   '/app/messages': typeof AppMessagesRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/payouts': typeof AppPayoutsRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
@@ -306,6 +315,7 @@ export interface FileRouteTypes {
     | '/app/live'
     | '/app/members'
     | '/app/messages'
+    | '/app/notifications'
     | '/app/payouts'
     | '/app/search'
     | '/app/settings'
@@ -336,6 +346,7 @@ export interface FileRouteTypes {
     | '/app/live'
     | '/app/members'
     | '/app/messages'
+    | '/app/notifications'
     | '/app/payouts'
     | '/app/search'
     | '/app/settings'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/app/live'
     | '/app/members'
     | '/app/messages'
+    | '/app/notifications'
     | '/app/payouts'
     | '/app/search'
     | '/app/settings'
@@ -495,6 +507,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPayoutsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/notifications': {
+      id: '/app/notifications'
+      path: '/notifications'
+      fullPath: '/app/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/messages': {
       id: '/app/messages'
       path: '/messages'
@@ -610,6 +629,7 @@ interface AppRouteChildren {
   AppLiveRoute: typeof AppLiveRoute
   AppMembersRoute: typeof AppMembersRoute
   AppMessagesRoute: typeof AppMessagesRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
   AppPayoutsRoute: typeof AppPayoutsRoute
   AppSearchRoute: typeof AppSearchRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -630,6 +650,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLiveRoute: AppLiveRoute,
   AppMembersRoute: AppMembersRoute,
   AppMessagesRoute: AppMessagesRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
   AppPayoutsRoute: AppPayoutsRoute,
   AppSearchRoute: AppSearchRoute,
   AppSettingsRoute: AppSettingsRoute,

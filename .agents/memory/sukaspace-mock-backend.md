@@ -1,22 +1,55 @@
 ---
-name: SukaSpace data layer
-description: How SukaSpace persists data — Supabase-backed with a localStorage fallback — and the auth-guard quirk in AppShell.
+name: SukaSpace client data layer
+description: How state, types, and Supabase sync are wired in app-store.tsx; key type additions over time.
 ---
 
-## Persistence model
-`src/lib/app-store.tsx` is a React context (`AppStoreProvider`/`useAppStore`) that is the single source of truth for all app data (communities, courses/modules/lessons, feed posts/comments/reactions, enrollments, notifications, etc.).
+# SukaSpace data layer
 
-- If `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set, it hydrates from and persists to the user's own Supabase project (schema in `supabase/schema.sql`, run manually in their Supabase SQL editor — this is the user's own external tool, not a Replit-managed connector).
-- If those env vars are absent, it silently falls back to the original localStorage-only store (key: `sukaspace_app_state_v3`) so the app never breaks — just doesn't persist across browsers/devices.
-- Mutations are optimistic: local React state updates immediately, then a matching Supabase write fires in the background (`sync()` helper) and toasts on failure without rolling back the UI.
-- Auth switched from a plaintext-password local `accounts` array to real `supabase.auth` (email/password) plus a `profiles` table, only when Supabase is configured. `signIn`/`signUp` are now `async` — call sites must `await` them (see `src/routes/auth.tsx`).
+## Core pattern
+- `app-store.tsx` is the single source of truth; state starts in `localStorage` (key `sukaspace_app_state_v3`) and is synced to Supabase optimistically in the background via `sync()`.
+- Row IDs are client-generated `Date.now()` numbers — **BIGINT** in Supabase (not SERIAL), so they always match.
+- `communityToRow` / `communityFromRow` / `courseToRow` / `courseFromRow` are the mapping functions.
 
-**Why:** user explicitly wants to use their own Supabase project (not Replit-managed Postgres) as the real backend, but declined to hand over credentials during this session, so the code needed to work correctly in both states without crashing.
+## Auth — REAL Supabase Auth (not custom)
+- `supabase.auth.signInWithPassword`, `supabase.auth.signUp`, `supabase.auth.getSession` — real JWT-based auth.
+- Falls back to localStorage accounts when Supabase is not configured.
+- `fetchProfile(userId, email, meta)` reads/upserts `profiles` table on first sign-in.
+- RLS policies use `auth.email()` and `auth.uid()` — work correctly once schema is applied.
 
-**How to apply:** when adding new persisted entities, add a table to `supabase/schema.sql`, a row-mapper pair in `app-store.tsx`, and wire the same optimistic-update-then-`sync()` pattern. Don't assume Supabase is configured — always guard with `if (supabase) sync(...)`.
+## Community type (as of 2026-07-17)
+Fields: `id, title, category, members, creator, creatorEmail, avatar, banner, tag, price, summary, createdAt`
++ **new**: `color?: string` (hex brand color), `coverImageUrl?: string`, `isPrivate?: boolean`
+Mapped to: `color`, `cover_image_url`, `is_private` columns.
 
-## Auth guard quirk
-`AppShell.tsx`'s auth guard uses `window.location.replace("/auth")`, not the router's `navigate()` — keep that if touching auth redirects.
+## Course type (as of 2026-07-17)
+Fields: `id, communityId, title, description, creatorEmail, modules, published, enrollmentCount, createdAt`
++ **new**: `coverImageUrl?: string`, `thumbnail?: string` (gradient-class fallback)
 
-## Rebrand / de-Lovabling (completed)
-Cloudflare is the user's deploy target — `vite.config.ts`'s nitro preset must stay `cloudflare-module`. All `@lovable.dev/*` packages and branding were removed; the app is now genuinely a Vite app with no Lovable dependency.
+## Supabase schema
+The canonical schema is in `src/supabase/schema.sql` — idempotent, run in Supabase SQL Editor.
+Includes: `feedback` table (anon INSERT allowed), all 18 app tables with RLS + 20+ indexes.
+
+## Table names (must match app-store queries)
+`communities`, `joined_communities`, `posts`, `liked_posts`, `comments`, `reactions`,
+`direct_messages`, `courses`, `modules` (NOT course_modules), `lessons`, `lesson_resources`,
+`enrollments` (with `completed_lesson_ids` BIGINT[] column),
+`community_resources`, `community_events`, `access_records`, `notifications`, `payments`, `profiles`, `feedback`
+
+## Realtime subscriptions (setupRealtime)
+INSERT: posts, communities, notifications (filtered), direct_messages (filtered)
+DELETE: communities, posts, courses, notifications, direct_messages
+UPDATE: profiles (filtered to current user)
+
+## Feedback form
+`src/lib/feedback.functions.ts` — server fn writes to Supabase `feedback` table via REST API first, then optionally notifies via Telegram. Never throws — always returns success.
+Keys needed: `TELEGRAM_BOT_TOKEN` + `TELEGRAM_PRIVATE_CHAT_ID` (optional, for Telegram notifications).
+
+## Cloudflare env var architecture (CRITICAL)
+Two distinct classes — never mix them:
+- **Build-time (VITE_ prefix)**: baked into client JS bundle by Vite. `import.meta.env.VITE_*`. Set in Cloudflare as build Environment Variables.
+  → `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_PAYSTACK_PUBLIC_KEY`, `VITE_APP_URL`
+- **Runtime (no prefix)**: Cloudflare Worker bindings, available as `process.env.*` in server functions via Nitro polyfill. Set in Cloudflare as Secrets.
+  → `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, `PAYSTACK_SECRET_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_PRIVATE_CHAT_ID`
+
+**Why**: `process.env.VITE_*` does NOT work at runtime on Cloudflare Workers — Vite replaces `import.meta.env.VITE_*` at build time but does NOT expose them as Worker runtime bindings. Server functions must use non-VITE names.
+**How to apply**: Every new server function (`createServerFn`) must ONLY use non-VITE `process.env.*`. Client code uses `import.meta.env.VITE_*`. See `.env.example` and `CLOUDFLARE_SETUP.md`.

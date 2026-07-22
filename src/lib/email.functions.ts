@@ -77,7 +77,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
           <li>Enroll in courses from expert creators</li>
           <li>Launch your own community and start earning</li>
         </ul>
-        <a href="${process.env.VITE_APP_URL || "https://sukaspace.com"}/discover" class="btn">Explore communities →</a>
+        <a href="${process.env.APP_URL || "https://sukaspace.com"}/discover" class="btn">Explore communities →</a>
         <p style="font-size:13px;color:#94a3b8">Questions? Reply to this email — we're always around.</p>
       `),
     );
@@ -95,7 +95,7 @@ export const sendEnrollmentEmail = createServerFn({ method: "POST" })
         <p>Hey ${data.name}, you're now enrolled in:</p>
         <p><span class="badge">${data.courseTitle}</span></p>
         <p>Head to your Classroom to start learning at your own pace. Your progress is saved automatically.</p>
-        <a href="${process.env.VITE_APP_URL || "https://sukaspace.com"}/app/classroom" class="btn">Open Classroom →</a>
+        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/classroom" class="btn">Open Classroom →</a>
         <p style="font-size:13px;color:#94a3b8">You'll receive a summary when you complete the course.</p>
       `),
     );
@@ -121,7 +121,7 @@ export const sendCommunityJoinEmail = createServerFn({ method: "POST" })
         <p>Hey ${data.name}, you've just joined <strong>${data.communityTitle}</strong>.</p>
         <p>${tagLine}</p>
         <p>Check out the community feed, introduce yourself, and connect with other members.</p>
-        <a href="${process.env.VITE_APP_URL || "https://sukaspace.com"}/app/feed" class="btn">Go to community →</a>
+        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/feed" class="btn">Go to community →</a>
       `),
     );
     return { sent: true } as const;
@@ -147,7 +147,7 @@ export const sendPaymentReceiptEmail = createServerFn({ method: "POST" })
           <tr><td style="padding:8px 0;color:#64748b">Amount</td><td style="padding:8px 0;text-align:right;font-weight:600">${data.amountDisplay}</td></tr>
           <tr><td style="padding:8px 0;color:#64748b">Reference</td><td style="padding:8px 0;text-align:right;font-family:monospace;font-size:12px">${data.reference}</td></tr>
         </table>
-        <a href="${process.env.VITE_APP_URL || "https://sukaspace.com"}/app/feed" class="btn">Go to community →</a>
+        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/feed" class="btn">Go to community →</a>
       `),
     );
     return { sent: true } as const;

@@ -1,0 +1,41 @@
+# SukaSpace — Cloudflare Workers deployment config
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# BUILD FIRST:
+#   bun run build
+#
+# DEPLOY:
+#   bunx wrangler deploy
+#
+# For environment variable setup, see .env.example and CLOUDFLARE_SETUP.md
+# ══════════════════════════════════════════════════════════════════════════════
+
+name = "sukaspace"
+main = ".output/server/index.mjs"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Assets (client JS/CSS/fonts built by Vite → in .output/public)
+[assets]
+directory = ".output/public"
+binding = "ASSETS"
+
+# ── Plain (non-secret) runtime variables ──────────────────────────────────────
+# These are visible in the dashboard. Do NOT put secrets here.
+# Secrets (SUPABASE_SERVICE_KEY, PAYSTACK_SECRET_KEY, etc.) must be set via:
+#   bunx wrangler secret put SECRET_NAME
+# or through the Cloudflare dashboard → Workers & Pages → Your Worker → Settings → Variables
+
+[vars]
+# Nothing secret goes here — all secrets are set via `wrangler secret put`
+
+# ── Notes on required secrets (set with `wrangler secret put <KEY>`) ──────────
+# SUPABASE_URL               = same as VITE_SUPABASE_URL (for server functions)
+# SUPABASE_ANON_KEY          = same as VITE_SUPABASE_ANON_KEY (for server functions)
+# SUPABASE_SERVICE_KEY       = service_role key from Supabase dashboard
+# PAYSTACK_SECRET_KEY        = sk_live_... from Paystack dashboard
+# RESEND_API_KEY             = re_... from Resend dashboard
+# RESEND_FROM_EMAIL          = verified sender address
+# APP_URL                    = same as VITE_APP_URL (for email links in server functions)
+# TELEGRAM_BOT_TOKEN         = optional — feedback Telegram notifications
+# TELEGRAM_PRIVATE_CHAT_ID   = optional — feedback Telegram notifications

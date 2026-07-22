@@ -14,6 +14,7 @@ import { reportError } from "../lib/error-reporting";
 import { AppStoreProvider } from "../lib/app-store";
 import { Toaster } from "../components/ui/sonner";
 import { registerServiceWorker } from "../lib/pwa";
+import { PWAInstallPrompt } from "../components/PWAInstallPrompt";
 
 function NotFoundComponent() {
   return (
@@ -139,6 +140,8 @@ function RootComponent() {
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <Toaster position="top-right" richColors />
+        {/* Global PWA install prompt — shown to first-time visitors on any page */}
+        <PWAInstallPrompt />
       </AppStoreProvider>
     </QueryClientProvider>
   );

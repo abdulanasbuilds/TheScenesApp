@@ -10,7 +10,7 @@ import { z } from "zod";
  * Required env vars (server-only):
  *   PAYSTACK_SECRET_KEY   — for verification
  *   SUPABASE_SERVICE_KEY  — for the service-role Supabase insert
- *   VITE_SUPABASE_URL     — already used by the client; safe to read server-side too
+ *   SUPABASE_URL          — runtime binding in Cloudflare (same value as VITE_SUPABASE_URL)
  */
 
 const recordSchema = z.object({
@@ -30,7 +30,9 @@ export type RecordPaymentResult =
 export const recordPayment = createServerFn({ method: "POST" })
   .validator(recordSchema)
   .handler(async ({ data }): Promise<RecordPaymentResult> => {
-    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    // Use non-VITE server-side name — VITE_* are build-time client vars only.
+    // Set SUPABASE_URL as a runtime binding in Cloudflare dashboard.
+    const supabaseUrl = process.env.SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_KEY;
 
     if (!supabaseUrl || !serviceKey) {
