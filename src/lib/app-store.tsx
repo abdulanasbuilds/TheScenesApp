@@ -493,7 +493,10 @@ type AppStoreValue = {
   getReactions: (postId: number) => { emoji: string; count: number; reacted: boolean }[];
   // courses
   createCourse: (input: { communityId: number | null; title: string; description: string; coverImageUrl?: string; thumbnail?: string }) => Course;
-  updateCourse: (id: number, patch: Partial<Pick<Course, "title" | "description" | "communityId" | "coverImageUrl" | "thumbnail">>) => void;
+  updateCourse: (idOrCourse: number | Course, patch?: Partial<Pick<Course, "title" | "description" | "communityId" | "coverImageUrl" | "thumbnail" | "published">>) => void;
+  addCourse: (course: Course) => void;
+  userCommunities: Community[];
+  getJoinedEmails: (communityId: number) => string[];
   publishCourse: (id: number) => void;
   unpublishCourse: (id: number) => void;
   deleteCourse: (id: number) => void;
