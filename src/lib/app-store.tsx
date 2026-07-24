@@ -127,6 +127,8 @@ export type LessonResource = {
   url: string;
   source: ResourceSource;
   addedAt: number;
+  /** legacy alias for title, kept for editor compat */
+  label?: string;
 };
 
 export type Lesson = {
@@ -138,6 +140,12 @@ export type Lesson = {
   published: boolean;
   order: number;
   dripDays: number; // 0 = available immediately; N = unlocks N days after enrollment
+  /** legacy alias for description (rich text body), kept for editor compat */
+  body?: string;
+  /** legacy: true when the lesson is gated/unpublished, kept for editor compat */
+  locked?: boolean;
+  /** legacy: id of the containing module, kept for editor compat */
+  moduleId?: number;
 };
 
 export type CourseModule = {
@@ -146,6 +154,8 @@ export type CourseModule = {
   lessons: Lesson[];
   order: number;
 };
+/** Legacy alias — some editor code imports `Module`. */
+export type Module = CourseModule;
 
 export type Course = {
   id: number;
@@ -159,6 +169,8 @@ export type Course = {
   createdAt: number;
   coverImageUrl?: string;  // custom thumbnail URL
   thumbnail?: string;      // gradient-class fallback (e.g. "from-blue-500 to-violet-600")
+  /** legacy alias for coverImageUrl, kept for editor compat */
+  cover?: string;
 };
 
 export type CommunityResource = {
