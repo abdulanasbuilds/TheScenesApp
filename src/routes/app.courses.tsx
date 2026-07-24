@@ -675,11 +675,13 @@ function CoursesPage() {
       const memberEmails = store.getJoinedEmails?.(course.communityId ?? 0) ?? [];
       if (memberEmails.length > 0 && community) {
         await notifyCoursePublished({
-          memberEmails,
-          courseTitle:  course.title,
-          courseId:     course.id,
-          communityId:  course.communityId ?? 0,
-          creatorName:  session?.name ?? "Creator",
+          data: {
+            memberEmails,
+            courseTitle:  course.title,
+            courseId:     course.id,
+            communityId:  course.communityId ?? 0,
+            creatorName:  session?.name ?? "Creator",
+          },
         }).catch(() => null);
       }
       store.pushNotification(`✅ "${course.title}" is now published and visible to learners.`, "course_published", "/app/courses");
