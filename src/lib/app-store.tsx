@@ -1122,17 +1122,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       if (supabase) sync(supabase.from("courses").insert(courseToRow(course)), "course create");
       return course;
     },
-    updateCourse: (id, patch) => {
-      mutateCourse(id, c => ({ ...c, ...patch }));
+    updateCourse: (idOrCourse, patch) => {
+      const id = typeof idOrCourse === "number" ? idOrCourse : idOrCourse.id;
+      const p = (typeof idOrCourse === "number" ? patch : idOrCourse) ?? {};
+      mutateCourse(id, c => ({ ...c, ...p }));
       if (supabase) {
         const row: Record<string, unknown> = {};
-        if (patch.title !== undefined) row.title = patch.title;
-        if (patch.description !== undefined) row.description = patch.description;
-        if (patch.communityId !== undefined) row.community_id = patch.communityId;
-        if (patch.coverImageUrl !== undefined) row.cover_image_url = patch.coverImageUrl;
-        if (patch.thumbnail !== undefined) row.thumbnail = patch.thumbnail;
+        if (p.title !== undefined) row.title = p.title;
+        if (p.description !== undefined) row.description = p.description;
+        if (p.communityId !== undefined) row.community_id = p.communityId;
+        if (p.coverImageUrl !== undefined) row.cover_image_url = p.coverImageUrl;
+        if (p.thumbnail !== undefined) row.thumbnail = p.thumbnail;
+        if ((p as Partial<Course>).published !== undefined) row.published = (p as Partial<Course>).published;
         sync(supabase.from("courses").update(row).eq("id", id), "course update");
       }
+    },
+    addCourse: (course) => {
+      setState(s => ({ ...s, courses: [course, ...s.courses] }));
+      if (supabase) sync(supabase.from("courses").insert(courseToRow(course)), "course create");
     },
     publishCourse: (id) => {
       const course = state.courses.find(c => c.id === id);
