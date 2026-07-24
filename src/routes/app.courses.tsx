@@ -652,6 +652,7 @@ function CoursesPage() {
       modules:       [],
       createdAt:     Date.now(),
       published:     false,
+      enrollmentCount: 0,
     };
     store.addCourse?.(course);
     setShowCreate(false);
