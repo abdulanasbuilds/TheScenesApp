@@ -1332,12 +1332,23 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       setState(s => ({ ...s, notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n) }));
       if (supabase && state.session?.email) sync(supabase.from("notifications").update({ read: true }).eq("id", id).eq("user_email", state.session.email), "notification read");
     },
-    pushNotification: (text, opts) => {
+    clearNotification: (id) => {
+      setState(s => ({ ...s, notifications: s.notifications.filter(n => n.id !== id) }));
+      if (supabase && state.session?.email) sync(supabase.from("notifications").delete().eq("id", id).eq("user_email", state.session.email), "notification delete");
+    },
+    clearAllNotifications: () => {
+      setState(s => ({ ...s, notifications: [] }));
+      if (supabase && state.session?.email) sync(supabase.from("notifications").delete().eq("user_email", state.session.email), "notifications clear");
+    },
+    pushNotification: (text, typeOrOpts, link, actorName) => {
+      const opts = typeof typeOrOpts === "string"
+        ? { type: typeOrOpts as NotificationType, link, actorName }
+        : (typeOrOpts ?? {});
       const notification: AppNotification = {
         id: generateId(), text, time: "Just now", read: false,
-        type: opts?.type ?? "system",
-        link: opts?.link,
-        actorName: opts?.actorName,
+        type: opts.type ?? "system",
+        link: opts.link,
+        actorName: opts.actorName,
       };
       setState(s => ({ ...s, notifications: [notification, ...s.notifications] }));
       if (supabase && state.session?.email) sync(supabase.from("notifications").insert({
