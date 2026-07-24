@@ -127,7 +127,7 @@ function CreateCommunity() {
     name.trim().length >= 3 && category.length > 0,                // 0: name + category
     summary.trim().length >= 20,                                    // 1: description
     true,                                                           // 2: branding (always ok)
-    pricingModel === "free" || (pricingModel !== "free" && price.length > 0), // 3
+    price.length > 0,                                               // 3: pricing
     true,                                                           // 4: welcome optional
     true,                                                           // 5: review
   ];

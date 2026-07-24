@@ -127,6 +127,8 @@ export type LessonResource = {
   url: string;
   source: ResourceSource;
   addedAt: number;
+  /** legacy alias for title, kept for editor compat */
+  label?: string;
 };
 
 export type Lesson = {
@@ -138,6 +140,12 @@ export type Lesson = {
   published: boolean;
   order: number;
   dripDays: number; // 0 = available immediately; N = unlocks N days after enrollment
+  /** legacy alias for description (rich text body), kept for editor compat */
+  body?: string;
+  /** legacy: true when the lesson is gated/unpublished, kept for editor compat */
+  locked?: boolean;
+  /** legacy: id of the containing module, kept for editor compat */
+  moduleId?: number;
 };
 
 export type CourseModule = {
@@ -146,6 +154,8 @@ export type CourseModule = {
   lessons: Lesson[];
   order: number;
 };
+/** Legacy alias — some editor code imports `Module`. */
+export type Module = CourseModule;
 
 export type Course = {
   id: number;
@@ -159,6 +169,8 @@ export type Course = {
   createdAt: number;
   coverImageUrl?: string;  // custom thumbnail URL
   thumbnail?: string;      // gradient-class fallback (e.g. "from-blue-500 to-violet-600")
+  /** legacy alias for coverImageUrl, kept for editor compat */
+  cover?: string;
 };
 
 export type CommunityResource = {
@@ -458,7 +470,7 @@ type AppStoreValue = {
   signIn: (email: string, password: string) => Promise<SignInResult>;
   signUp: (name: string, email: string, password: string, role: "creator" | "learner") => Promise<SignUpResult>;
   signOut: () => void;
-  updateProfile: (patch: { name?: string; bio?: string; photoUrl?: string }) => void;
+  updateProfile: (patch: { name?: string; bio?: string; photoUrl?: string; role?: "creator" | "learner" }) => void;
   getAccountRole: (email: string) => "creator" | "learner" | undefined;
   // access records
   accessRecords: AccessRecord[];
@@ -481,7 +493,10 @@ type AppStoreValue = {
   getReactions: (postId: number) => { emoji: string; count: number; reacted: boolean }[];
   // courses
   createCourse: (input: { communityId: number | null; title: string; description: string; coverImageUrl?: string; thumbnail?: string }) => Course;
-  updateCourse: (id: number, patch: Partial<Pick<Course, "title" | "description" | "communityId" | "coverImageUrl" | "thumbnail">>) => void;
+  updateCourse: (idOrCourse: number | Course, patch?: Partial<Pick<Course, "title" | "description" | "communityId" | "coverImageUrl" | "thumbnail" | "published">>) => void;
+  addCourse: (course: Course) => void;
+  userCommunities: Community[];
+  getJoinedEmails: (communityId: number) => string[];
   publishCourse: (id: number) => void;
   unpublishCourse: (id: number) => void;
   deleteCourse: (id: number) => void;
@@ -513,11 +528,13 @@ type AppStoreValue = {
   // onboarding
   onboardingCompleted: boolean;
   onboardingInterests: string[];
-  completeOnboarding: (data: { role: "creator" | "learner"; interests: string[]; name?: string; bio?: string }) => void;
+  completeOnboarding: (data: { role: "creator" | "learner"; interests: string[]; goals?: string[]; skillLevel?: string; name?: string; bio?: string }) => void;
   // notifications
   markAllNotificationsRead: () => void;
   markNotificationRead: (id: number) => void;
-  pushNotification: (text: string, opts?: { type?: NotificationType; link?: string; actorName?: string }) => void;
+  clearNotification: (id: number) => void;
+  clearAllNotifications: () => void;
+  pushNotification: (text: string, typeOrOpts?: NotificationType | { type?: NotificationType; link?: string; actorName?: string }, link?: string, actorName?: string) => void;
   // direct messages
   directMessages: DirectMessage[];
   sendDM: (toEmail: string, body: string) => Promise<DirectMessage>;
@@ -877,6 +894,18 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     dmUnreadCount: state.directMessages.filter(dm => !dm.read && dm.toEmail === state.session?.email).length,
     onboardingCompleted: state.onboardingCompleted,
     onboardingInterests: state.onboardingInterests,
+    userCommunities: communities.filter(c => c.creatorEmail === state.session?.email),
+    getJoinedEmails: (_communityId: number) => (state.session?.email ? [state.session.email] : []),
+    completeOnboarding: (data) => {
+      setState(s => ({
+        ...s,
+        onboardingCompleted: true,
+        onboardingInterests: data.interests,
+        session: s.session
+          ? { ...s.session, role: data.role ?? s.session.role, name: data.name ?? s.session.name, bio: data.bio ?? s.session.bio }
+          : s.session,
+      }));
+    },
 
     // ── auth ──
     signIn: async (email, password) => {
@@ -1105,17 +1134,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       if (supabase) sync(supabase.from("courses").insert(courseToRow(course)), "course create");
       return course;
     },
-    updateCourse: (id, patch) => {
-      mutateCourse(id, c => ({ ...c, ...patch }));
+    updateCourse: (idOrCourse, patch) => {
+      const id = typeof idOrCourse === "number" ? idOrCourse : idOrCourse.id;
+      const p = (typeof idOrCourse === "number" ? patch : idOrCourse) ?? {};
+      mutateCourse(id, c => ({ ...c, ...p }));
       if (supabase) {
         const row: Record<string, unknown> = {};
-        if (patch.title !== undefined) row.title = patch.title;
-        if (patch.description !== undefined) row.description = patch.description;
-        if (patch.communityId !== undefined) row.community_id = patch.communityId;
-        if (patch.coverImageUrl !== undefined) row.cover_image_url = patch.coverImageUrl;
-        if (patch.thumbnail !== undefined) row.thumbnail = patch.thumbnail;
+        if (p.title !== undefined) row.title = p.title;
+        if (p.description !== undefined) row.description = p.description;
+        if (p.communityId !== undefined) row.community_id = p.communityId;
+        if (p.coverImageUrl !== undefined) row.cover_image_url = p.coverImageUrl;
+        if (p.thumbnail !== undefined) row.thumbnail = p.thumbnail;
+        if ((p as Partial<Course>).published !== undefined) row.published = (p as Partial<Course>).published;
         sync(supabase.from("courses").update(row).eq("id", id), "course update");
       }
+    },
+    addCourse: (course) => {
+      setState(s => ({ ...s, courses: [course, ...s.courses] }));
+      if (supabase) sync(supabase.from("courses").insert(courseToRow(course)), "course create");
     },
     publishCourse: (id) => {
       const course = state.courses.find(c => c.id === id);
@@ -1315,12 +1351,23 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       setState(s => ({ ...s, notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n) }));
       if (supabase && state.session?.email) sync(supabase.from("notifications").update({ read: true }).eq("id", id).eq("user_email", state.session.email), "notification read");
     },
-    pushNotification: (text, opts) => {
+    clearNotification: (id) => {
+      setState(s => ({ ...s, notifications: s.notifications.filter(n => n.id !== id) }));
+      if (supabase && state.session?.email) sync(supabase.from("notifications").delete().eq("id", id).eq("user_email", state.session.email), "notification delete");
+    },
+    clearAllNotifications: () => {
+      setState(s => ({ ...s, notifications: [] }));
+      if (supabase && state.session?.email) sync(supabase.from("notifications").delete().eq("user_email", state.session.email), "notifications clear");
+    },
+    pushNotification: (text, typeOrOpts, link, actorName) => {
+      const opts = typeof typeOrOpts === "string"
+        ? { type: typeOrOpts as NotificationType, link, actorName }
+        : (typeOrOpts ?? {});
       const notification: AppNotification = {
         id: generateId(), text, time: "Just now", read: false,
-        type: opts?.type ?? "system",
-        link: opts?.link,
-        actorName: opts?.actorName,
+        type: opts.type ?? "system",
+        link: opts.link,
+        actorName: opts.actorName,
       };
       setState(s => ({ ...s, notifications: [notification, ...s.notifications] }));
       if (supabase && state.session?.email) sync(supabase.from("notifications").insert({
