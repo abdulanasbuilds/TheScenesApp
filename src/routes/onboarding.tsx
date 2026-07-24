@@ -133,6 +133,7 @@ function Onboarding() {
 
       // Persist onboarding state in store
       store.completeOnboarding?.({
+        role: role ?? store.session.role,
         interests,
         goals,
         skillLevel: skill ?? undefined,
@@ -140,9 +141,11 @@ function Onboarding() {
 
       // Push welcome notification (server fn — degrades if Supabase not configured)
       await onOnboardingComplete({
-        userEmail: store.session.email,
-        userName:  name.trim() || store.session.name,
-        role:      role ?? store.session.role,
+        data: {
+          userEmail: store.session.email,
+          userName:  name.trim() || store.session.name,
+          role:      role ?? store.session.role,
+        },
       }).catch(() => null);
 
       // In-app welcome notification via store
