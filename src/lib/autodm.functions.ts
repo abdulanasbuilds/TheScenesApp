@@ -1,228 +1,290 @@
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 
-/**
- * Auto-DM + Notification engine — server-side, uses SUPABASE_SERVICE_KEY
- * to bypass RLS and write on behalf of any user (creator→member).
- *
- * If SUPABASE_SERVICE_KEY is not set, returns { success: false }.
- * All client-side optimistic state is already applied before this runs.
- */
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-// ─── Default welcome message template ─────────────────────────────────────────
+type NotifType =
+  | "welcome" | "system" | "new_post" | "new_comment" | "new_member"
+  | "new_message" | "event" | "course_published" | "lesson_published"
+  | "payment_success" | "payment_failed" | "announcement" | "community_live"
+  | "onboarding";
 
-function buildWelcomeBody(memberName: string, communityTitle: string, customMessage?: string | null): string {
-  if (customMessage?.trim()) return customMessage.trim();
-  return (
-    `👋 Hey ${memberName}! Welcome to **${communityTitle}**!\n\n` +
-    `So glad you're here. Introduce yourself in the community and let us know what you're working on.\n\n` +
-    `Here's how to get the most out of this community:\n` +
-    `• Say hello in #general\n` +
-    `• Check out the latest posts and resources\n` +
-    `• Join us for the next live session\n\n` +
-    `Feel free to message me directly with any questions! 🚀`
-  );
+interface PushNotifInput {
+  userEmail:  string;
+  text:       string;
+  type?:      NotifType;
+  link?:      string;
+  actorName?: string;
+  dedupKey?:  string;        // prevents duplicate spam
 }
 
-// ─── onMemberJoin ─────────────────────────────────────────────────────────────
-// Called right after a learner joins a community.
-// Does three things atomically:
-//   1. Inserts a welcome DM from creator → new member
-//   2. Inserts a notification for the new member ("You have a welcome message")
-//   3. Inserts a notification for the creator ("Someone joined your community")
+interface AutoDMInput {
+  fromEmail:  string;        // sender (creator or "system")
+  toEmail:    string;
+  body:       string;
+}
+
+interface MemberJoinInput {
+  userEmail:        string;
+  userName:         string;
+  communityId:      number;
+  communityTitle:   string;
+  creatorEmail:     string;
+  creatorName:      string;
+  welcomeMessage?:  string;
+}
+
+interface OnboardingCompleteInput {
+  userEmail:  string;
+  userName:   string;
+  role:       "creator" | "learner";
+}
+
+interface AnnouncementInput {
+  memberEmails:     string[];
+  communityTitle:   string;
+  communityId:      number;
+  creatorEmail:     string;
+  creatorName:      string;
+  title:            string;
+  body:             string;
+}
+
+interface CoursePublishedInput {
+  memberEmails:  string[];
+  courseTitle:   string;
+  courseId:      number;
+  communityId:   number;
+  creatorName:   string;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function supabaseUrl(): string {
+  return (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "").replace(/\/$/, "");
+}
+
+function serviceKey(): string {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY ?? "";
+}
+
+function adminHeaders() {
+  return {
+    "Content-Type":  "application/json",
+    "apikey":        serviceKey(),
+    "Authorization": `Bearer ${serviceKey()}`,
+    "Prefer":        "return=minimal",
+  };
+}
+
+async function dbInsert(table: string, row: Record<string, unknown>): Promise<boolean> {
+  const url = supabaseUrl();
+  const key = serviceKey();
+  if (!url || !key) return false; // graceful degradation — localStorage takes over client-side
+
+  const res = await fetch(`${url}/rest/v1/${table}`, {
+    method:  "POST",
+    headers: adminHeaders(),
+    body:    JSON.stringify(row),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    // Treat unique-violation (dedup_key) as success — already delivered
+    if (res.status === 409) return true;
+    console.error(`[autodm] insert ${table} failed:`, err);
+    return false;
+  }
+  return true;
+}
+
+function nowId(): number {
+  return Date.now() + Math.floor(Math.random() * 999);
+}
+
+// ─── Core: push one notification ─────────────────────────────────────────────
+
+export const pushNotificationForUser = createServerFn({ method: "POST" })
+  .validator((d: PushNotifInput) => d)
+  .handler(async ({ data }) => {
+    const ok = await dbInsert("notifications", {
+      id:           nowId(),
+      user_email:   data.userEmail,
+      text:         data.text,
+      notif_type:   data.type ?? "system",
+      link:         data.link ?? null,
+      actor_name:   data.actorName ?? null,
+      read:         false,
+      created_at:   new Date().toISOString(),
+      dedup_key:    data.dedupKey ?? null,
+    });
+    return { ok };
+  });
+
+// ─── Core: send one DM ───────────────────────────────────────────────────────
+
+export const sendAutoDM = createServerFn({ method: "POST" })
+  .validator((d: AutoDMInput) => d)
+  .handler(async ({ data }) => {
+    const ok = await dbInsert("direct_messages", {
+      id:         nowId(),
+      from_email: data.fromEmail,
+      to_email:   data.toEmail,
+      body:       data.body,
+      read:       false,
+      created_at: new Date().toISOString(),
+    });
+    // Push a "new_message" notification to the recipient
+    if (ok) {
+      await dbInsert("notifications", {
+        id:         nowId() + 1,
+        user_email: data.toEmail,
+        text:       `You have a new message`,
+        notif_type: "new_message",
+        link:       "/app/messages",
+        read:       false,
+        created_at: new Date().toISOString(),
+      });
+    }
+    return { ok };
+  });
+
+// ─── Triggered: member joins a community ─────────────────────────────────────
 
 export const onMemberJoin = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      communityId:           z.number().int(),
-      communityTitle:        z.string(),
-      communityCreatorEmail: z.string().email(),
-      welcomeMessage:        z.string().nullable().optional(),
-      memberEmail:           z.string().email(),
-      memberName:            z.string(),
-      dmId:                  z.number().int(),   // client-generated ID
-      memberNotifId:         z.number().int(),
-      creatorNotifId:        z.number().int(),
-    }),
-  )
-  .handler(async ({ data }): Promise<{ success: boolean; reason?: string }> => {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const serviceKey  = process.env.SUPABASE_SERVICE_KEY;
+  .validator((d: MemberJoinInput) => d)
+  .handler(async ({ data }) => {
+    const now = new Date().toISOString();
+    const welcome = data.welcomeMessage
+      ?? `Hey ${data.userName}! 👋 Welcome to **${data.communityTitle}**. Explore the community, introduce yourself in the feed, and check out our courses. We're glad you're here!`;
 
-    if (!supabaseUrl || !serviceKey) {
-      console.warn("[auto-dm] SUPABASE_URL / SUPABASE_SERVICE_KEY not set — skipping server-side auto-DM");
-      return { success: false, reason: "not_configured" };
-    }
-
-    const headers = {
-      "Content-Type":  "application/json",
-      apikey:          serviceKey,
-      Authorization:   `Bearer ${serviceKey}`,
-      Prefer:          "return=minimal",
-    };
-
-    const welcomeBody = buildWelcomeBody(data.memberName, data.communityTitle, data.welcomeMessage);
-    const now = Date.now();
-
-    // Run all three inserts in parallel
-    const [dmRes, memberNotifRes, creatorNotifRes] = await Promise.all([
-      // 1. Welcome DM: creator → member
-      fetch(`${supabaseUrl}/rest/v1/direct_messages`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          id:         data.dmId,
-          from_email: data.communityCreatorEmail,
-          to_email:   data.memberEmail,
-          body:       welcomeBody,
-          read:       false,
-          created_at: now,
-        }),
+    const results = await Promise.allSettled([
+      // 1. Welcome DM from creator to new member
+      dbInsert("direct_messages", {
+        id:         nowId(),
+        from_email: data.creatorEmail,
+        to_email:   data.userEmail,
+        body:       welcome,
+        read:       false,
+        created_at: now,
       }),
-      // 2. Notification for the member
-      fetch(`${supabaseUrl}/rest/v1/notifications`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          id:         data.memberNotifId,
-          user_email: data.memberEmail,
-          text:       `Welcome to ${data.communityTitle}! You have a message from the creator.`,
-          time:       "Just now",
-          read:       false,
-          type:       "new_message",
-          link:       "/app/messages",
-          actor_name: data.communityCreatorEmail,
-          created_at: now,
-        }),
+      // 2. "new_message" notification so the member sees it
+      dbInsert("notifications", {
+        id:         nowId() + 1,
+        user_email: data.userEmail,
+        text:       `${data.creatorName} sent you a welcome message`,
+        notif_type: "new_message",
+        link:       "/app/messages",
+        actor_name: data.creatorName,
+        read:       false,
+        created_at: now,
+        dedup_key:  `join-${data.communityId}-${data.userEmail}`,
       }),
-      // 3. Notification for the creator (new member joined)
-      fetch(`${supabaseUrl}/rest/v1/notifications`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          id:         data.creatorNotifId,
-          user_email: data.communityCreatorEmail,
-          text:       `${data.memberName} just joined ${data.communityTitle}!`,
-          time:       "Just now",
-          read:       false,
-          type:       "new_member",
-          link:       "/app/members",
-          actor_name: data.memberName,
-          created_at: now,
-        }),
+      // 3. "new_member" notification for the creator
+      dbInsert("notifications", {
+        id:         nowId() + 2,
+        user_email: data.creatorEmail,
+        text:       `${data.userName} joined ${data.communityTitle}`,
+        notif_type: "new_member",
+        link:       "/app/members",
+        actor_name: data.userName,
+        read:       false,
+        created_at: now,
+        dedup_key:  `join-creator-${data.communityId}-${data.userEmail}`,
       }),
     ]);
 
-    const allOk = dmRes.ok && memberNotifRes.ok && creatorNotifRes.ok;
-    if (!allOk) {
-      const dmErr    = dmRes.ok    ? "" : await dmRes.text().catch(() => "");
-      const mErr     = memberNotifRes.ok  ? "" : await memberNotifRes.text().catch(() => "");
-      const cErr     = creatorNotifRes.ok ? "" : await creatorNotifRes.text().catch(() => "");
-      console.error("[auto-dm] partial failure — dm:", dmRes.status, dmErr, "| memberNotif:", memberNotifRes.status, mErr, "| creatorNotif:", creatorNotifRes.status, cErr);
-    }
-
-    return { success: allOk };
+    const ok = results.every(r => r.status === "fulfilled" && r.value === true);
+    return { ok };
   });
 
-// ─── sendSystemDM ──────────────────────────────────────────────────────────────
-// Generic server-side DM — used for onboarding welcome or announcements.
-// from_email must exist in profiles (use a verified creator / system account).
+// ─── Triggered: onboarding completed ─────────────────────────────────────────
 
-export const sendSystemDM = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      fromEmail: z.string().email(),
-      toEmail:   z.string().email(),
-      body:      z.string().min(1),
-      dmId:      z.number().int(),
-    }),
-  )
-  .handler(async ({ data }): Promise<{ success: boolean; reason?: string }> => {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const serviceKey  = process.env.SUPABASE_SERVICE_KEY;
+export const onOnboardingComplete = createServerFn({ method: "POST" })
+  .validator((d: OnboardingCompleteInput) => d)
+  .handler(async ({ data }) => {
+    const label = data.role === "creator" ? "creator" : "learner";
+    const tips  = data.role === "creator"
+      ? "Start by creating your first community and adding courses."
+      : "Browse communities and join one that matches your interests.";
 
-    if (!supabaseUrl || !serviceKey) {
-      return { success: false, reason: "not_configured" };
-    }
-
-    try {
-      const res = await fetch(`${supabaseUrl}/rest/v1/direct_messages`, {
-        method: "POST",
-        headers: {
-          "Content-Type":  "application/json",
-          apikey:          serviceKey,
-          Authorization:   `Bearer ${serviceKey}`,
-          Prefer:          "return=minimal",
-        },
-        body: JSON.stringify({
-          id:         data.dmId,
-          from_email: data.fromEmail,
-          to_email:   data.toEmail,
-          body:       data.body,
-          read:       false,
-          created_at: Date.now(),
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.text().catch(() => "");
-        console.error("[system-dm] Insert failed:", res.status, err);
-        return { success: false, reason: "db_error" };
-      }
-      return { success: true };
-    } catch (err) {
-      console.error("[system-dm] Network error:", err);
-      return { success: false, reason: "network_error" };
-    }
+    const ok = await dbInsert("notifications", {
+      id:         nowId(),
+      user_email: data.userEmail,
+      text:       `Welcome, ${data.userName}! Your ${label} account is ready. ${tips}`,
+      notif_type: "onboarding",
+      link:       data.role === "creator" ? "/app/creator" : "/discover",
+      read:       false,
+      created_at: new Date().toISOString(),
+      dedup_key:  `onboarding-complete-${data.userEmail}`,
+    });
+    return { ok };
   });
 
-// ─── pushNotificationForUser ──────────────────────────────────────────────────
-// Insert a notification for ANY user (bypasses RLS via service key).
-// Use for cross-user notifications (e.g., comment on your post).
+// ─── Triggered: creator sends announcement to all community members ───────────
 
-export const pushNotificationForUser = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      id:         z.number().int(),
-      userEmail:  z.string().email(),
-      text:       z.string().min(1),
-      type:       z.string().default("system"),
-      link:       z.string().optional(),
-      actorName:  z.string().optional(),
-    }),
-  )
-  .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const serviceKey  = process.env.SUPABASE_SERVICE_KEY;
+export const sendCommunityAnnouncement = createServerFn({ method: "POST" })
+  .validator((d: AnnouncementInput) => d)
+  .handler(async ({ data }) => {
+    const now = new Date().toISOString();
+    const batchSize = 50; // Supabase REST allows bulk insert
 
-    if (!supabaseUrl || !serviceKey) {
-      return { success: false };
+    // Chunk into batches to avoid request size limits
+    const chunks: string[][] = [];
+    for (let i = 0; i < data.memberEmails.length; i += batchSize) {
+      chunks.push(data.memberEmails.slice(i, i + batchSize));
     }
 
-    try {
-      const res = await fetch(`${supabaseUrl}/rest/v1/notifications`, {
-        method: "POST",
-        headers: {
-          "Content-Type":  "application/json",
-          apikey:          serviceKey,
-          Authorization:   `Bearer ${serviceKey}`,
-          Prefer:          "return=minimal",
-        },
-        body: JSON.stringify({
-          id:         data.id,
-          user_email: data.userEmail,
-          text:       data.text,
-          time:       "Just now",
-          read:       false,
-          type:       data.type,
-          link:       data.link ?? null,
-          actor_name: data.actorName ?? null,
-          created_at: Date.now(),
-        }),
-      });
+    const rows = data.memberEmails.map((email, i) => ({
+      id:         nowId() + i,
+      user_email: email,
+      text:       `📢 ${data.creatorName} in ${data.communityTitle}: ${data.title}`,
+      notif_type: "announcement",
+      link:       `/app/feed`,
+      actor_name: data.creatorName,
+      read:       false,
+      created_at: now,
+      dedup_key:  `announcement-${data.communityId}-${Date.now()}-${email}`,
+    }));
 
-      return { success: res.ok };
-    } catch {
-      return { success: false };
-    }
+    const url = supabaseUrl();
+    const key  = serviceKey();
+    if (!url || !key) return { ok: false };
+
+    const res = await fetch(`${url}/rest/v1/notifications`, {
+      method:  "POST",
+      headers: adminHeaders(),
+      body:    JSON.stringify(rows),
+    });
+
+    return { ok: res.ok };
+  });
+
+// ─── Triggered: creator publishes a new course / lesson ─────────────────────
+
+export const notifyCoursePublished = createServerFn({ method: "POST" })
+  .validator((d: CoursePublishedInput) => d)
+  .handler(async ({ data }) => {
+    const now = new Date().toISOString();
+    const rows = data.memberEmails.map((email, i) => ({
+      id:         nowId() + i,
+      user_email: email,
+      text:       `🎓 New course: "${data.courseTitle}" by ${data.creatorName} is now available`,
+      notif_type: "course_published",
+      link:       `/app/classroom`,
+      actor_name: data.creatorName,
+      read:       false,
+      created_at: now,
+      dedup_key:  `course-pub-${data.courseId}-${email}`,
+    }));
+
+    const url = supabaseUrl();
+    const key  = serviceKey();
+    if (!url || !key) return { ok: false };
+
+    const res = await fetch(`${url}/rest/v1/notifications`, {
+      method:  "POST",
+      headers: adminHeaders(),
+      body:    JSON.stringify(rows),
+    });
+
+    return { ok: res.ok };
   });
