@@ -407,14 +407,14 @@ function CourseEditor({
 
   const addModule = () => {
     if (!newModTitle.trim()) return;
-    update(c => ({ ...c, modules: [...c.modules, { id: randomId(), title: newModTitle.trim(), lessons: [] }] }));
+    update(c => ({ ...c, modules: [...c.modules, { id: randomId(), title: newModTitle.trim(), lessons: [], order: c.modules.length + 1 }] }));
     setNewModTitle(""); setAddingMod(false);
   };
 
   const deleteModule = (mid: number) => update(c => ({ ...c, modules: c.modules.filter(m => m.id !== mid) }));
 
   const addLesson = (mid: number) => {
-    const lesson: Lesson = { id: randomId(), moduleId: mid, title: "New Lesson", body: "", videoUrl: "", resources: [], locked: false };
+    const lesson: Lesson = { id: randomId(), moduleId: mid, title: "New Lesson", description: "", body: "", videoUrl: "", resources: [], locked: false, published: false, order: 1, dripDays: 0 };
     update(c => ({ ...c, modules: c.modules.map(m => m.id === mid ? { ...m, lessons: [...(m.lessons ?? []), lesson] } : m) }));
     setEditing({ moduleId: mid, lesson });
   };
