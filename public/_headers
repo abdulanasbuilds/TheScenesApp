@@ -1,0 +1,40 @@
+# Cloudflare / static-host cache headers for SukaSpace
+# Applied by Wrangler [assets] and compatible with Netlify/Cloudflare Pages.
+
+# Hashed build assets — immutable, cache aggressively
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts — long cache
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images in /public — long cache with revalidation
+/*.png
+  Cache-Control: public, max-age=2592000, must-revalidate
+/*.jpg
+  Cache-Control: public, max-age=2592000, must-revalidate
+/*.svg
+  Cache-Control: public, max-age=2592000, must-revalidate
+/*.webp
+  Cache-Control: public, max-age=2592000, must-revalidate
+
+# Service worker + manifest — always revalidate so updates land fast
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+  Service-Worker-Allowed: /
+/manifest.json
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# HTML shell — always revalidate
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Security headers (all routes)
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
