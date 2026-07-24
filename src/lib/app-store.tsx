@@ -528,11 +528,13 @@ type AppStoreValue = {
   // onboarding
   onboardingCompleted: boolean;
   onboardingInterests: string[];
-  completeOnboarding: (data: { role: "creator" | "learner"; interests: string[]; name?: string; bio?: string }) => void;
+  completeOnboarding: (data: { role: "creator" | "learner"; interests: string[]; goals?: string[]; skillLevel?: string; name?: string; bio?: string }) => void;
   // notifications
   markAllNotificationsRead: () => void;
   markNotificationRead: (id: number) => void;
-  pushNotification: (text: string, opts?: { type?: NotificationType; link?: string; actorName?: string }) => void;
+  clearNotification: (id: number) => void;
+  clearAllNotifications: () => void;
+  pushNotification: (text: string, typeOrOpts?: NotificationType | { type?: NotificationType; link?: string; actorName?: string }, link?: string, actorName?: string) => void;
   // direct messages
   directMessages: DirectMessage[];
   sendDM: (toEmail: string, body: string) => Promise<DirectMessage>;
