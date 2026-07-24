@@ -470,7 +470,7 @@ type AppStoreValue = {
   signIn: (email: string, password: string) => Promise<SignInResult>;
   signUp: (name: string, email: string, password: string, role: "creator" | "learner") => Promise<SignUpResult>;
   signOut: () => void;
-  updateProfile: (patch: { name?: string; bio?: string; photoUrl?: string }) => void;
+  updateProfile: (patch: { name?: string; bio?: string; photoUrl?: string; role?: "creator" | "learner" }) => void;
   getAccountRole: (email: string) => "creator" | "learner" | undefined;
   // access records
   accessRecords: AccessRecord[];
