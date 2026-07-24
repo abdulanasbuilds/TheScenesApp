@@ -243,9 +243,11 @@ function LessonEditor({
     if (!resUrl.trim()) return;
     const newRes: LessonResource = {
       id:     randomId(),
+      title:  resLabel.trim() || resUrl,
       label:  resLabel.trim() || resUrl,
       url:    resUrl.trim(),
       source: detectSource(resUrl.trim()),
+      addedAt: Date.now(),
     };
     setResources(r => [...r, newRes]);
     setResUrl(""); setResLabel("");
