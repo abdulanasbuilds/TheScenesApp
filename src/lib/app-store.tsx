@@ -894,6 +894,18 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     dmUnreadCount: state.directMessages.filter(dm => !dm.read && dm.toEmail === state.session?.email).length,
     onboardingCompleted: state.onboardingCompleted,
     onboardingInterests: state.onboardingInterests,
+    userCommunities: communities.filter(c => c.creatorEmail === state.session?.email),
+    getJoinedEmails: (_communityId: number) => (state.session?.email ? [state.session.email] : []),
+    completeOnboarding: (data) => {
+      setState(s => ({
+        ...s,
+        onboardingCompleted: true,
+        onboardingInterests: data.interests,
+        session: s.session
+          ? { ...s.session, role: data.role ?? s.session.role, name: data.name ?? s.session.name, bio: data.bio ?? s.session.bio }
+          : s.session,
+      }));
+    },
 
     // ── auth ──
     signIn: async (email, password) => {
