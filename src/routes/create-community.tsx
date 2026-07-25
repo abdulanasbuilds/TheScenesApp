@@ -369,8 +369,30 @@ function CreateCommunity() {
           />
         </div>
       </div>
+
+      {/* Community icon (Skool parity — 128×128) */}
+      <div>
+        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+          Community icon URL <span className="font-normal text-slate-400 normal-case">(optional · 128×128)</span>
+        </label>
+        <div className="flex gap-3 items-center">
+          <div className="w-12 h-12 rounded-2xl border border-slate-200 flex-shrink-0 overflow-hidden flex items-center justify-center text-white font-bold"
+            style={{ backgroundColor: activeColor }}>
+            {iconUrl
+              ? <img src={iconUrl} alt="icon" className="w-full h-full object-cover" onError={e => ((e.target as HTMLImageElement).style.display = "none")} />
+              : (name.charAt(0).toUpperCase() || "C")}
+          </div>
+          <input
+            value={iconUrl}
+            onChange={e => setIconUrl(e.target.value)}
+            placeholder="https://example.com/icon.png"
+            className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+        </div>
+      </div>
     </div>
   );
+
 
   // ── Step 3: Pricing ───────────────────────────────────────────────────────────
   const Step3 = (
