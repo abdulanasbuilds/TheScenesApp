@@ -104,6 +104,7 @@ function CreateCommunity() {
   // Step 2: Branding
   const [color,       setColor]       = useState("#3B82F6");
   const [customColor, setCustomColor] = useState("");
+  const [iconUrl,     setIconUrl]     = useState("");
 
   // Step 3: Pricing
   const [pricingModel, setPricingModel] = useState<"free" | "paid" | "freemium">("free");
@@ -114,6 +115,8 @@ function CreateCommunity() {
   const [welcomeMsg,   setWelcomeMsg]   = useState("");
   const [screenQ1,     setScreenQ1]     = useState("");
   const [screenQ2,     setScreenQ2]     = useState("");
+  const [screenQ3,     setScreenQ3]     = useState("");
+  const [keywordsRaw,  setKeywordsRaw]  = useState("");
 
   const TOTAL_STEPS = 6;
   const activeColor = customColor || color;
