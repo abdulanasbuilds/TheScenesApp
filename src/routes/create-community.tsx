@@ -514,7 +514,7 @@ function CreateCommunity() {
       {/* Screening questions */}
       <div>
         <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
-          Screening questions <span className="font-normal text-slate-400 normal-case">(optional)</span>
+          Screening questions <span className="font-normal text-slate-400 normal-case">(optional · up to 3)</span>
         </label>
         <input
           value={screenQ1}
@@ -526,11 +526,34 @@ function CreateCommunity() {
           value={screenQ2}
           onChange={e => setScreenQ2(e.target.value)}
           placeholder="Question 2 — e.g. What's your biggest goal?"
+          className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        />
+        <input
+          value={screenQ3}
+          onChange={e => setScreenQ3(e.target.value)}
+          placeholder="Question 3 — e.g. How did you hear about us?"
           className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
         />
       </div>
+
+      {/* Discovery keywords (Skool parity — up to 11) */}
+      <div>
+        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+          Discovery keywords <span className="font-normal text-slate-400 normal-case">(optional · up to 11, comma-separated)</span>
+        </label>
+        <input
+          value={keywordsRaw}
+          onChange={e => setKeywordsRaw(e.target.value)}
+          placeholder="ai, startup, no-code, marketing, growth"
+          className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+        />
+        <p className="text-xs text-slate-400 mt-1">
+          Helps people find your community in Discover and search engines.
+        </p>
+      </div>
     </div>
   );
+
 
   // ── Step 5: Review ────────────────────────────────────────────────────────────
   const Step5 = (
