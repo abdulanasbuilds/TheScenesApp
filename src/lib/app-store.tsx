@@ -23,10 +23,15 @@ export type Community = {
   summary: string;
   createdAt: number;
   // branding & access (Skool/Circle parity)
-  color?: string;          // hex brand color, e.g. "#3B82F6"
-  coverImageUrl?: string;  // cover photo URL (1084×576 recommended)
-  isPrivate?: boolean;     // true = hidden from Discover search
+  color?: string;               // hex brand color, e.g. "#3B82F6"
+  coverImageUrl?: string;       // cover photo URL (1084×576 recommended)
+  iconUrl?: string;             // square community icon (128×128 recommended)
+  isPrivate?: boolean;          // true = hidden from Discover search
+  discoveryKeywords?: string[]; // up to 11 keywords for search / SEO (Skool parity)
+  screeningQuestions?: string[];// up to 3 join-request questions
+  welcomeMessage?: string;      // auto-DM sent when a member joins
 };
+
 
 export type SessionUser = {
   name: string;
@@ -331,7 +336,11 @@ function communityToRow(c: Community) {
     created_at: c.createdAt,
     color: c.color ?? null,
     cover_image_url: c.coverImageUrl ?? null,
+    icon_url: c.iconUrl ?? null,
     is_private: c.isPrivate ?? false,
+    discovery_keywords: c.discoveryKeywords ?? [],
+    screening_questions: c.screeningQuestions ?? [],
+    welcome_message: c.welcomeMessage ?? null,
   };
 }
 function communityFromRow(r: any): Community {
@@ -342,7 +351,11 @@ function communityFromRow(r: any): Community {
     createdAt: r.created_at,
     color: r.color ?? undefined,
     coverImageUrl: r.cover_image_url ?? undefined,
+    iconUrl: r.icon_url ?? undefined,
     isPrivate: r.is_private ?? false,
+    discoveryKeywords: r.discovery_keywords ?? [],
+    screeningQuestions: r.screening_questions ?? [],
+    welcomeMessage: r.welcome_message ?? undefined,
   };
 }
 function postToRow(p: FeedPost) {
@@ -450,7 +463,11 @@ type CreateCommunityInput = {
   price?: string;
   color?: string;
   coverImageUrl?: string;
+  iconUrl?: string;
   isPrivate?: boolean;
+  discoveryKeywords?: string[];
+  screeningQuestions?: string[];
+  welcomeMessage?: string;
 };
 
 type AppStoreValue = {
@@ -989,7 +1006,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         tag: input.tag, price: input.price, summary: input.summary, createdAt: Date.now(),
         color: input.color,
         coverImageUrl: input.coverImageUrl,
+        iconUrl: input.iconUrl,
         isPrivate: input.isPrivate ?? false,
+        discoveryKeywords: (input.discoveryKeywords ?? []).slice(0, 11),
+        screeningQuestions: (input.screeningQuestions ?? []).slice(0, 3),
+        welcomeMessage: input.welcomeMessage,
       };
       setState(s => ({
         ...s,

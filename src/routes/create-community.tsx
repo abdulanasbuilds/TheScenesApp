@@ -104,6 +104,7 @@ function CreateCommunity() {
   // Step 2: Branding
   const [color,       setColor]       = useState("#3B82F6");
   const [customColor, setCustomColor] = useState("");
+  const [iconUrl,     setIconUrl]     = useState("");
 
   // Step 3: Pricing
   const [pricingModel, setPricingModel] = useState<"free" | "paid" | "freemium">("free");
@@ -114,6 +115,8 @@ function CreateCommunity() {
   const [welcomeMsg,   setWelcomeMsg]   = useState("");
   const [screenQ1,     setScreenQ1]     = useState("");
   const [screenQ2,     setScreenQ2]     = useState("");
+  const [screenQ3,     setScreenQ3]     = useState("");
+  const [keywordsRaw,  setKeywordsRaw]  = useState("");
 
   const TOTAL_STEPS = 6;
   const activeColor = customColor || color;
@@ -137,26 +140,29 @@ function CreateCommunity() {
     setSaving(true);
     try {
       const tag: "FREE" | "PAID" = pricingModel === "free" ? "FREE" : "PAID";
-      const newCommunity = {
-        id:            Date.now(),
-        title:         name.trim(),
+      const keywords = keywordsRaw
+        .split(",")
+        .map(k => k.trim().toLowerCase())
+        .filter(Boolean)
+        .slice(0, 11);
+      const screeningQuestions = [screenQ1, screenQ2, screenQ3]
+        .map(q => q.trim())
+        .filter(Boolean)
+        .slice(0, 3);
+      store.createCommunity({
+        title:              name.trim(),
         category,
-        members:       1,
-        creator:       store.session.name,
-        creatorEmail:  store.session.email,
-        avatar:        store.session.avatar ?? "",
-        banner:        coverUrl || "",
+        summary:            summary.trim(),
         tag,
-        price:         pricingModel !== "free" ? price : undefined,
-        summary:       summary.trim(),
-        createdAt:     Date.now(),
-        color:         activeColor,
-        coverImageUrl: coverUrl || undefined,
+        price:              pricingModel !== "free" ? price : undefined,
+        color:              activeColor,
+        coverImageUrl:      coverUrl || undefined,
+        iconUrl:            iconUrl || undefined,
         isPrivate,
-        welcomeMessage: welcomeMsg.trim() || undefined,
-      };
-
-      store.createCommunity(newCommunity);
+        discoveryKeywords:  keywords,
+        screeningQuestions,
+        welcomeMessage:     welcomeMsg.trim() || undefined,
+      });
 
       // Welcome notification
       store.pushNotification(
@@ -363,8 +369,30 @@ function CreateCommunity() {
           />
         </div>
       </div>
+
+      {/* Community icon (Skool parity — 128×128) */}
+      <div>
+        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+          Community icon URL <span className="font-normal text-slate-400 normal-case">(optional · 128×128)</span>
+        </label>
+        <div className="flex gap-3 items-center">
+          <div className="w-12 h-12 rounded-2xl border border-slate-200 flex-shrink-0 overflow-hidden flex items-center justify-center text-white font-bold"
+            style={{ backgroundColor: activeColor }}>
+            {iconUrl
+              ? <img src={iconUrl} alt="icon" className="w-full h-full object-cover" onError={e => ((e.target as HTMLImageElement).style.display = "none")} />
+              : (name.charAt(0).toUpperCase() || "C")}
+          </div>
+          <input
+            value={iconUrl}
+            onChange={e => setIconUrl(e.target.value)}
+            placeholder="https://example.com/icon.png"
+            className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+        </div>
+      </div>
     </div>
   );
+
 
   // ── Step 3: Pricing ───────────────────────────────────────────────────────────
   const Step3 = (
@@ -486,7 +514,7 @@ function CreateCommunity() {
       {/* Screening questions */}
       <div>
         <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
-          Screening questions <span className="font-normal text-slate-400 normal-case">(optional)</span>
+          Screening questions <span className="font-normal text-slate-400 normal-case">(optional · up to 3)</span>
         </label>
         <input
           value={screenQ1}
@@ -498,11 +526,34 @@ function CreateCommunity() {
           value={screenQ2}
           onChange={e => setScreenQ2(e.target.value)}
           placeholder="Question 2 — e.g. What's your biggest goal?"
+          className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        />
+        <input
+          value={screenQ3}
+          onChange={e => setScreenQ3(e.target.value)}
+          placeholder="Question 3 — e.g. How did you hear about us?"
           className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
         />
       </div>
+
+      {/* Discovery keywords (Skool parity — up to 11) */}
+      <div>
+        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+          Discovery keywords <span className="font-normal text-slate-400 normal-case">(optional · up to 11, comma-separated)</span>
+        </label>
+        <input
+          value={keywordsRaw}
+          onChange={e => setKeywordsRaw(e.target.value)}
+          placeholder="ai, startup, no-code, marketing, growth"
+          className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+        />
+        <p className="text-xs text-slate-400 mt-1">
+          Helps people find your community in Discover and search engines.
+        </p>
+      </div>
     </div>
   );
+
 
   // ── Step 5: Review ────────────────────────────────────────────────────────────
   const Step5 = (
