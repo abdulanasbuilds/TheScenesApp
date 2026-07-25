@@ -140,26 +140,29 @@ function CreateCommunity() {
     setSaving(true);
     try {
       const tag: "FREE" | "PAID" = pricingModel === "free" ? "FREE" : "PAID";
-      const newCommunity = {
-        id:            Date.now(),
-        title:         name.trim(),
+      const keywords = keywordsRaw
+        .split(",")
+        .map(k => k.trim().toLowerCase())
+        .filter(Boolean)
+        .slice(0, 11);
+      const screeningQuestions = [screenQ1, screenQ2, screenQ3]
+        .map(q => q.trim())
+        .filter(Boolean)
+        .slice(0, 3);
+      store.createCommunity({
+        title:              name.trim(),
         category,
-        members:       1,
-        creator:       store.session.name,
-        creatorEmail:  store.session.email,
-        avatar:        store.session.avatar ?? "",
-        banner:        coverUrl || "",
+        summary:            summary.trim(),
         tag,
-        price:         pricingModel !== "free" ? price : undefined,
-        summary:       summary.trim(),
-        createdAt:     Date.now(),
-        color:         activeColor,
-        coverImageUrl: coverUrl || undefined,
+        price:              pricingModel !== "free" ? price : undefined,
+        color:              activeColor,
+        coverImageUrl:      coverUrl || undefined,
+        iconUrl:            iconUrl || undefined,
         isPrivate,
-        welcomeMessage: welcomeMsg.trim() || undefined,
-      };
-
-      store.createCommunity(newCommunity);
+        discoveryKeywords:  keywords,
+        screeningQuestions,
+        welcomeMessage:     welcomeMsg.trim() || undefined,
+      });
 
       // Welcome notification
       store.pushNotification(
