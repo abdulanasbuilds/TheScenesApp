@@ -23,10 +23,15 @@ export type Community = {
   summary: string;
   createdAt: number;
   // branding & access (Skool/Circle parity)
-  color?: string;          // hex brand color, e.g. "#3B82F6"
-  coverImageUrl?: string;  // cover photo URL (1084×576 recommended)
-  isPrivate?: boolean;     // true = hidden from Discover search
+  color?: string;               // hex brand color, e.g. "#3B82F6"
+  coverImageUrl?: string;       // cover photo URL (1084×576 recommended)
+  iconUrl?: string;             // square community icon (128×128 recommended)
+  isPrivate?: boolean;          // true = hidden from Discover search
+  discoveryKeywords?: string[]; // up to 11 keywords for search / SEO (Skool parity)
+  screeningQuestions?: string[];// up to 3 join-request questions
+  welcomeMessage?: string;      // auto-DM sent when a member joins
 };
+
 
 export type SessionUser = {
   name: string;
