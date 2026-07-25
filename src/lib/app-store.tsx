@@ -336,7 +336,11 @@ function communityToRow(c: Community) {
     created_at: c.createdAt,
     color: c.color ?? null,
     cover_image_url: c.coverImageUrl ?? null,
+    icon_url: c.iconUrl ?? null,
     is_private: c.isPrivate ?? false,
+    discovery_keywords: c.discoveryKeywords ?? [],
+    screening_questions: c.screeningQuestions ?? [],
+    welcome_message: c.welcomeMessage ?? null,
   };
 }
 function communityFromRow(r: any): Community {
@@ -347,7 +351,11 @@ function communityFromRow(r: any): Community {
     createdAt: r.created_at,
     color: r.color ?? undefined,
     coverImageUrl: r.cover_image_url ?? undefined,
+    iconUrl: r.icon_url ?? undefined,
     isPrivate: r.is_private ?? false,
+    discoveryKeywords: r.discovery_keywords ?? [],
+    screeningQuestions: r.screening_questions ?? [],
+    welcomeMessage: r.welcome_message ?? undefined,
   };
 }
 function postToRow(p: FeedPost) {
