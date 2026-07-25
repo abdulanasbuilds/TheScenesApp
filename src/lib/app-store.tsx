@@ -463,7 +463,11 @@ type CreateCommunityInput = {
   price?: string;
   color?: string;
   coverImageUrl?: string;
+  iconUrl?: string;
   isPrivate?: boolean;
+  discoveryKeywords?: string[];
+  screeningQuestions?: string[];
+  welcomeMessage?: string;
 };
 
 type AppStoreValue = {
