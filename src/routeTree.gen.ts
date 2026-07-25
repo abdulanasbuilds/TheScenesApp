@@ -39,6 +39,7 @@ import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAutomationsRouteImport } from './routes/app.automations'
 import { Route as AppAffiliateRouteImport } from './routes/app.affiliate'
 import { Route as ApiWebhookRouteImport } from './routes/api/webhook'
+import { Route as CSlugAboutRouteImport } from './routes/c.$slug.about'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -190,6 +191,11 @@ const ApiWebhookRoute = ApiWebhookRouteImport.update({
   path: '/api/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CSlugAboutRoute = CSlugAboutRouteImport.update({
+  id: '/c/$slug/about',
+  path: '/c/$slug/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
+  '/c/$slug/about': typeof CSlugAboutRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
+  '/c/$slug/about': typeof CSlugAboutRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
+  '/c/$slug/about': typeof CSlugAboutRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -320,6 +329,7 @@ export interface FileRouteTypes {
     | '/app/search'
     | '/app/settings'
     | '/app/'
+    | '/c/$slug/about'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -351,6 +361,7 @@ export interface FileRouteTypes {
     | '/app/search'
     | '/app/settings'
     | '/app'
+    | '/c/$slug/about'
   id:
     | '__root__'
     | '/'
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/app/search'
     | '/app/settings'
     | '/app/'
+    | '/c/$slug/about'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -398,6 +410,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiWebhookRoute: typeof ApiWebhookRoute
+  CSlugAboutRoute: typeof CSlugAboutRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -612,6 +625,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/c/$slug/about': {
+      id: '/c/$slug/about'
+      path: '/c/$slug/about'
+      fullPath: '/c/$slug/about'
+      preLoaderRoute: typeof CSlugAboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -672,6 +692,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiWebhookRoute: ApiWebhookRoute,
+  CSlugAboutRoute: CSlugAboutRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
