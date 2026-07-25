@@ -1006,7 +1006,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         tag: input.tag, price: input.price, summary: input.summary, createdAt: Date.now(),
         color: input.color,
         coverImageUrl: input.coverImageUrl,
+        iconUrl: input.iconUrl,
         isPrivate: input.isPrivate ?? false,
+        discoveryKeywords: (input.discoveryKeywords ?? []).slice(0, 11),
+        screeningQuestions: (input.screeningQuestions ?? []).slice(0, 3),
+        welcomeMessage: input.welcomeMessage,
       };
       setState(s => ({
         ...s,
