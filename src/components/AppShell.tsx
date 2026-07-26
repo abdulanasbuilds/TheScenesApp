@@ -362,7 +362,7 @@ export function AppShell() {
                 }`}
               >
                 <motion.div
-                  animate={active ? { scale: [1, 1.2, 1] } : { scale: 1 }}
+                  animate={{ scale: active ? 1.15 : 1 }}
                   transition={SPRING_FAST}
                 >
                   <Icon size={18} className="shrink-0" />
