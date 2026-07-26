@@ -36,9 +36,12 @@ async function adminFetch<T = SupabaseRow[]>(
   options: RequestInit = {}
 ): Promise<SupabaseResponse<T>> {
   const { url, key } = getConfig();
+  // New-format Supabase keys (sb_secret_…) are opaque strings, not JWTs —
+  // sending them as a bearer token makes PostgREST reject the request.
+  const isOpaqueKey = key.startsWith("sb_secret_") || key.startsWith("sb_publishable_");
   const headers: HeadersInit = {
     apikey: key,
-    Authorization: `Bearer ${key}`,
+    ...(isOpaqueKey ? {} : { Authorization: `Bearer ${key}` }),
     "Content-Type": "application/json",
     Prefer: "return=representation",
     ...options.headers,
