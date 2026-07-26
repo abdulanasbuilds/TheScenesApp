@@ -1,8 +1,37 @@
-import { copyFile, cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const outputPublic = ".output/public";
 const dist = "dist";
+const staticRoutes = [
+  ["/", "/"],
+  ["/discover", "/discover"],
+  ["/learners", "/learners"],
+  ["/creators", "/creators"],
+  ["/pricing", "/pricing"],
+  ["/about", "/about"],
+  ["/auth", "/auth?mode=signup"],
+  ["/onboarding", "/onboarding"],
+  ["/create-community", "/create-community"],
+  ["/app", "/app/dashboard"],
+  ["/app/dashboard", "/app/dashboard"],
+  ["/app/feed", "/app/feed"],
+  ["/app/classroom", "/app/classroom"],
+  ["/app/courses", "/app/courses"],
+  ["/app/messages", "/app/messages"],
+  ["/app/notifications", "/app/notifications"],
+  ["/app/calendar", "/app/calendar"],
+  ["/app/members", "/app/members"],
+  ["/app/leaderboard", "/app/leaderboard"],
+  ["/app/search", "/app/search"],
+  ["/app/creator", "/app/creator"],
+  ["/app/payouts", "/app/payouts"],
+  ["/app/billing", "/app/billing"],
+  ["/app/automations", "/app/automations"],
+  ["/app/affiliate", "/app/affiliate"],
+  ["/app/live", "/app/live"],
+  ["/app/settings", "/app/settings"],
+];
 
 async function exists(path) {
   try {
@@ -67,24 +96,47 @@ ${stylesheetTag}  </head>
   );
 }
 
-async function renderIndexFromServer() {
-  const serverModule = await import("../.output/server/index.mjs");
-  const server = serverModule.default ?? serverModule;
+function distIndexPath(routePath) {
+  if (routePath === "/") return join(dist, "index.html");
+  return join(dist, ...routePath.split("/").filter(Boolean), "index.html");
+}
+
+async function renderRouteFromServer(server, routePath, requestPath) {
   const context = {
     waitUntil() {},
     passThroughOnException() {},
   };
-  const response = await server.fetch(new Request("https://sukaspace.local/"), {}, context);
+  let response = await server.fetch(new Request(`https://sukaspace.local${requestPath}`), {}, context);
+
+  if (response.status >= 300 && response.status < 400) {
+    const location = response.headers.get("location");
+    if (location) {
+      const redirectUrl = new URL(location, "https://sukaspace.local");
+      response = await server.fetch(new Request(redirectUrl), {}, context);
+    }
+  }
+
   if (!response.ok) {
-    throw new Error(`Server render for / failed with status ${response.status}.`);
+    throw new Error(`Server render for ${requestPath} failed with status ${response.status}.`);
   }
 
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("text/html")) {
-    throw new Error(`Server render for / returned ${contentType || "an unknown content type"}.`);
+    throw new Error(`Server render for ${requestPath} returned ${contentType || "an unknown content type"}.`);
   }
 
-  await writeFile(join(dist, "index.html"), await response.text());
+  const indexPath = distIndexPath(routePath);
+  await mkdir(join(indexPath, ".."), { recursive: true });
+  await writeFile(indexPath, await response.text());
+}
+
+async function renderRoutesFromServer() {
+  const serverModule = await import("../.output/server/index.mjs");
+  const server = serverModule.default ?? serverModule;
+
+  for (const [routePath, requestPath] of staticRoutes) {
+    await renderRouteFromServer(server, routePath, requestPath);
+  }
 }
 
 if (!(await exists(outputPublic))) {
@@ -95,14 +147,13 @@ await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await cp(outputPublic, dist, { recursive: true });
 try {
-  await renderIndexFromServer();
+  await renderRoutesFromServer();
 } catch (error) {
   console.warn(error);
   await writeStaticFallback();
 }
 
-if (await exists("wrangler.toml")) {
-  await copyFile("wrangler.toml", join(dist, "wrangler.toml"));
-}
+await writeFile(join(dist, "404.html"), await readFile(join(dist, "index.html"), "utf8"));
+await writeFile(join(dist, "_redirects"), "/* /index.html 200\n");
 
-console.log("Synced Nitro public assets to dist/ for static artifact checks.");
+console.log("Synced Nitro public assets and prerendered route HTML to dist/ for static artifact checks.");
