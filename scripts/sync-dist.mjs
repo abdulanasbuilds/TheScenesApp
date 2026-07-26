@@ -1,4 +1,4 @@
-import { copyFile, cp, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { copyFile, cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const outputPublic = ".output/public";
@@ -19,9 +19,7 @@ async function findClientEntry() {
 
   for (const file of files) {
     if (!file.endsWith(".js")) continue;
-    const source = await import("node:fs/promises").then(({ readFile }) =>
-      readFile(join(assetsDir, file), "utf8"),
-    );
+    const source = await readFile(join(assetsDir, file), "utf8");
     if (source.includes("hydrateRoot")) return `/assets/${file}`;
   }
 
@@ -69,6 +67,26 @@ ${stylesheetTag}  </head>
   );
 }
 
+async function renderIndexFromServer() {
+  const serverModule = await import("../.output/server/index.mjs");
+  const server = serverModule.default ?? serverModule;
+  const context = {
+    waitUntil() {},
+    passThroughOnException() {},
+  };
+  const response = await server.fetch(new Request("https://sukaspace.local/"), {}, context);
+  if (!response.ok) {
+    throw new Error(`Server render for / failed with status ${response.status}.`);
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("text/html")) {
+    throw new Error(`Server render for / returned ${contentType || "an unknown content type"}.`);
+  }
+
+  await writeFile(join(dist, "index.html"), await response.text());
+}
+
 if (!(await exists(outputPublic))) {
   throw new Error("Missing .output/public. Run vite build before syncing dist.");
 }
@@ -76,7 +94,12 @@ if (!(await exists(outputPublic))) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await cp(outputPublic, dist, { recursive: true });
-await writeStaticFallback();
+try {
+  await renderIndexFromServer();
+} catch (error) {
+  console.warn(error);
+  await writeStaticFallback();
+}
 
 if (await exists("wrangler.toml")) {
   await copyFile("wrangler.toml", join(dist, "wrangler.toml"));
