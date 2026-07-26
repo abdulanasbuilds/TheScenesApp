@@ -1,5 +1,5 @@
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 
 const outputPublic = ".output/public";
 const dist = "dist";
@@ -42,28 +42,51 @@ async function exists(path) {
   }
 }
 
+async function listFiles(root) {
+  if (!(await exists(root))) return [];
+  const entries = await readdir(root, { withFileTypes: true });
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const path = join(root, entry.name);
+      if (entry.isDirectory()) return listFiles(path);
+      return [path];
+    }),
+  );
+  return files.flat();
+}
+
+function publicPath(filePath) {
+  return `/${relative(dist, filePath).split(sep).join("/")}`;
+}
+
 async function findClientEntry() {
-  const assetsDir = join(dist, "assets");
-  const files = await readdir(assetsDir);
+  const files = await listFiles(dist);
+  const candidates = [];
 
   for (const file of files) {
-    if (!file.endsWith(".js")) continue;
-    const source = await readFile(join(assetsDir, file), "utf8");
-    if (source.includes("hydrateRoot")) return `/assets/${file}`;
+    if (!file.endsWith(".js") || file.endsWith(".map")) continue;
+    const source = await readFile(file, "utf8");
+    let score = 0;
+    if (source.includes("hydrateRoot")) score += 100;
+    if (source.includes("StartClient")) score += 50;
+    if (source.includes("createRouter")) score += 25;
+    if (source.includes("@tanstack/react-router") || source.includes("routeTree")) score += 10;
+    if (score > 0) candidates.push({ file, score, size: source.length });
   }
 
-  return undefined;
+  candidates.sort((a, b) => b.score - a.score || b.size - a.size);
+  return candidates[0] ? publicPath(candidates[0].file) : undefined;
 }
 
 async function findStylesheet() {
-  const assetsDir = join(dist, "assets");
-  const files = await readdir(assetsDir);
-  const stylesheet = files.find((file) => file.startsWith("styles-") && file.endsWith(".css"));
-  return stylesheet ? `/assets/${stylesheet}` : undefined;
+  const stylesheets = (await listFiles(dist)).filter((file) => file.endsWith(".css"));
+  const preferred = stylesheets.find((file) => /(^|\/)styles-[^/]+\.css$/.test(publicPath(file)));
+  const stylesheet = preferred ?? stylesheets[0];
+  return stylesheet ? publicPath(stylesheet) : undefined;
 }
 
-async function writeStaticFallback() {
-  const indexPath = join(dist, "index.html");
+async function writeStaticFallback(routePath = "/") {
+  const indexPath = distIndexPath(routePath);
   if (await exists(indexPath)) return;
 
   const clientEntry = await findClientEntry();
@@ -73,6 +96,7 @@ async function writeStaticFallback() {
 
   const stylesheet = await findStylesheet();
   const stylesheetTag = stylesheet ? `    <link rel="stylesheet" href="${stylesheet}" />\n` : "";
+  await mkdir(dirname(indexPath), { recursive: true });
 
   await writeFile(
     indexPath,
@@ -88,7 +112,14 @@ async function writeStaticFallback() {
     <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 ${stylesheetTag}  </head>
-  <body>
+  <body data-static-route="${routePath}">
+    <main style="min-height:100vh;display:grid;place-items:center;padding:24px;font-family:Inter,system-ui,sans-serif;color:#0f172a;background:#f8fafc">
+      <div style="max-width:520px;text-align:center">
+        <p style="margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1d4ed8">SukaSpace</p>
+        <h1 style="margin:0;font-size:28px;line-height:1.15">Community + courses for the AI era</h1>
+        <p style="margin:12px 0 0;color:#475569">Loading your workspace…</p>
+      </div>
+    </main>
     <script type="module" src="${clientEntry}"></script>
   </body>
 </html>
@@ -108,12 +139,11 @@ async function renderRouteFromServer(server, routePath, requestPath) {
   };
   let response = await server.fetch(new Request(`https://sukaspace.local${requestPath}`), {}, context);
 
-  if (response.status >= 300 && response.status < 400) {
+  for (let redirectCount = 0; response.status >= 300 && response.status < 400 && redirectCount < 5; redirectCount += 1) {
     const location = response.headers.get("location");
-    if (location) {
-      const redirectUrl = new URL(location, "https://sukaspace.local");
-      response = await server.fetch(new Request(redirectUrl), {}, context);
-    }
+    if (!location) break;
+    const redirectUrl = new URL(location, "https://sukaspace.local");
+    response = await server.fetch(new Request(String(redirectUrl)), {}, context);
   }
 
   if (!response.ok) {
@@ -126,7 +156,7 @@ async function renderRouteFromServer(server, routePath, requestPath) {
   }
 
   const indexPath = distIndexPath(routePath);
-  await mkdir(join(indexPath, ".."), { recursive: true });
+  await mkdir(dirname(indexPath), { recursive: true });
   await writeFile(indexPath, await response.text());
 }
 
@@ -135,7 +165,12 @@ async function renderRoutesFromServer() {
   const server = serverModule.default ?? serverModule;
 
   for (const [routePath, requestPath] of staticRoutes) {
-    await renderRouteFromServer(server, routePath, requestPath);
+    try {
+      await renderRouteFromServer(server, routePath, requestPath);
+    } catch (error) {
+      console.warn(error);
+      await writeStaticFallback(routePath);
+    }
   }
 }
 
@@ -146,12 +181,22 @@ if (!(await exists(outputPublic))) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await cp(outputPublic, dist, { recursive: true });
+
+// Keep dist/ a pure static artifact for checkers and static hosts. Worker-only
+// deployment files remain in .output/, which wrangler.toml deploys directly.
+await Promise.all([
+  rm(join(dist, "wrangler.toml"), { force: true }),
+  rm(join(dist, "_worker.js"), { force: true }),
+]);
+
 try {
   await renderRoutesFromServer();
 } catch (error) {
   console.warn(error);
-  await writeStaticFallback();
+  await Promise.all(staticRoutes.map(([routePath]) => writeStaticFallback(routePath)));
 }
+
+await Promise.all(staticRoutes.map(([routePath]) => writeStaticFallback(routePath)));
 
 await writeFile(join(dist, "404.html"), await readFile(join(dist, "index.html"), "utf8"));
 await writeFile(join(dist, "_redirects"), "/* /index.html 200\n");
