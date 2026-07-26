@@ -40,9 +40,12 @@ function getEnvInt(key: string, fallback?: number): number {
 // ─── Supabase ─────────────────────────────────────────────────────────────────
 
 export const env = {
-  // ── Supabase (public URL is safe to read on the server too)
-  get SUPABASE_URL()          { return getEnv("VITE_SUPABASE_URL"); },
-  get SUPABASE_ANON_KEY()     { return getEnv("VITE_SUPABASE_ANON_KEY"); },
+  // ── Supabase (server-side names first, VITE_ fallbacks for local dev)
+  get SUPABASE_URL()          { return getEnv("SUPABASE_URL", process.env["VITE_SUPABASE_URL"]); },
+  get SUPABASE_ANON_KEY()     {
+    return getEnv("SUPABASE_PUBLISHABLE_KEY",
+      process.env["SUPABASE_ANON_KEY"] ?? process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? process.env["VITE_SUPABASE_ANON_KEY"]);
+  },
   /** Service-role key — bypasses RLS. NEVER send to browser. */
   get SUPABASE_SERVICE_KEY()  {
     // Support both naming conventions during transition

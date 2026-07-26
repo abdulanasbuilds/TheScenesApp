@@ -14,12 +14,12 @@
 // This also makes it easy to audit — every call is a plain HTTP request.
 
 function getConfig() {
-  const url = process.env.VITE_SUPABASE_URL;
+  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
   // Accept both key names (transition period)
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY;
   if (!url || !key) {
     throw new Error(
-      "[supabase-admin] VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set. " +
+      "[supabase-admin] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set. " +
       "These are server-only variables — never expose in the browser."
     );
   }
@@ -36,9 +36,12 @@ async function adminFetch<T = SupabaseRow[]>(
   options: RequestInit = {}
 ): Promise<SupabaseResponse<T>> {
   const { url, key } = getConfig();
+  // New-format Supabase keys (sb_secret_…) are opaque strings, not JWTs —
+  // sending them as a bearer token makes PostgREST reject the request.
+  const isOpaqueKey = key.startsWith("sb_secret_") || key.startsWith("sb_publishable_");
   const headers: HeadersInit = {
     apikey: key,
-    Authorization: `Bearer ${key}`,
+    ...(isOpaqueKey ? {} : { Authorization: `Bearer ${key}` }),
     "Content-Type": "application/json",
     Prefer: "return=representation",
     ...options.headers,
