@@ -20,21 +20,6 @@ export const Route = createFileRoute("/app/billing")({
   component: BillingPage,
 });
 
-// ─── Nigerian bank list ───────────────────────────────────────────────────────
-
-const NG_BANKS = [
-  { code: "044", name: "Access Bank" }, { code: "023", name: "Citibank Nigeria" },
-  { code: "050", name: "EcoBank Nigeria" }, { code: "070", name: "Fidelity Bank" },
-  { code: "011", name: "First Bank of Nigeria" }, { code: "214", name: "First City Monument Bank (FCMB)" },
-  { code: "058", name: "Guaranty Trust Bank (GTB)" }, { code: "030", name: "Heritage Bank" },
-  { code: "301", name: "Jaiz Bank" }, { code: "082", name: "Keystone Bank" },
-  { code: "526", name: "Moniepoint MFB" }, { code: "627", name: "Kuda MFB" },
-  { code: "090", name: "Opay" }, { code: "305", name: "PalmPay" },
-  { code: "076", name: "Polaris Bank" }, { code: "039", name: "Stanbic IBTC" },
-  { code: "232", name: "Sterling Bank" }, { code: "032", name: "Union Bank" },
-  { code: "033", name: "United Bank for Africa (UBA)" }, { code: "215", name: "Unity Bank" },
-  { code: "035", name: "Wema Bank" }, { code: "057", name: "Zenith Bank" },
-];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,9 +76,6 @@ function BillingPage() {
   // Withdrawal form state
   const [wdAmount,    setWdAmount]    = useState("");
   const [wdType,      setWdType]      = useState<"standard" | "instant">("standard");
-  const [wdBankCode,  setWdBankCode]  = useState(NG_BANKS[0].code);
-  const [wdAccNumber, setWdAccNumber] = useState("");
-  const [wdAccName,   setWdAccName]   = useState("");
   const [wdSubmitting, setWdSubmitting] = useState(false);
   const [payoutAccount, setPayoutAccount] = useState<PayoutAccountView>(null);
 
