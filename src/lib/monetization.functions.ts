@@ -24,6 +24,8 @@ import { calcPlatformFee, calcNetAmount } from "@/lib/plans";
 import { recordPaymentEarnings, getEarningsSummary, getEarningsHistory } from "@/lib/monetization/earnings";
 import { createWithdrawalRequest, getWithdrawalHistory }                 from "@/lib/monetization/withdrawals";
 import { checkCommunityAccess, checkCourseAccess, grantCommunityAccess, grantCourseAccess } from "@/lib/monetization/access";
+import { getPayoutAccount } from "@/lib/monetization/payout-accounts";
+
 import { getStorageUsage, checkUploadAllowed, generatePresignedUrl, buildFileKey, isValidFileKey, setStorageQuota } from "@/lib/monetization/storage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
