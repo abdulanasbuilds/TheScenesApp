@@ -572,7 +572,7 @@ function SecurityTab() {
         <li className="flex items-center justify-between gap-3 py-3">
           <div><div className="font-medium text-foreground">Password</div>
             <div className="text-xs text-muted-foreground">Reset from the sign-in screen.</div></div>
-          <Link to="/auth" className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-accent">Reset</Link>
+          <Link to="/auth" search={{ mode: "signin" }} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-accent">Reset</Link>
         </li>
         <li className="flex items-center justify-between gap-3 py-3">
           <div><div className="font-medium text-foreground">Withdrawal protection</div>
