@@ -411,47 +411,41 @@ function BillingPage() {
                   </div>
                 </div>
 
-                {/* Bank */}
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Bank</label>
-                  <select
-                    value={wdBankCode}
-                    onChange={e => setWdBankCode(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none focus:border-primary"
-                  >
-                    {NG_BANKS.map(b => <option key={b.code} value={b.code}>{b.name}</option>)}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Account number</label>
-                    <input
-                      value={wdAccNumber}
-                      onChange={e => setWdAccNumber(e.target.value.replace(/\D/g, ""))}
-                      maxLength={10}
-                      placeholder="0123456789"
-                      className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Account name</label>
-                    <input
-                      value={wdAccName}
-                      onChange={e => setWdAccName(e.target.value)}
-                      placeholder="As on bank record"
-                      className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none focus:border-primary"
-                    />
+                {/* Payout destination (managed in Settings → Payouts) */}
+                <div className="rounded-lg border border-border bg-accent/30 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-foreground">Payout destination</div>
+                      {payoutAccount?.isPayoutReady ? (
+                        <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {payoutAccount.method === "bank"
+                            ? payoutAccount.bankName ?? "Bank account"
+                            : payoutAccount.mobileMoneyNetwork}
+                          {" · "}
+                          {payoutAccount.accountNumberMasked ?? payoutAccount.mobileMoneyNumberMasked}
+                          {" · "}{payoutAccount.accountName}
+                        </div>
+                      ) : (
+                        <div className="mt-0.5 text-xs text-amber-700">No payout account saved yet.</div>
+                      )}
+                    </div>
+                    <Link
+                      to="/app/settings"
+                      className="shrink-0 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-accent"
+                    >
+                      {payoutAccount?.isPayoutReady ? "Change" : "Add account"}
+                    </Link>
                   </div>
                 </div>
 
                 <button
                   onClick={handleWithdraw}
-                  disabled={wdSubmitting || !wdAmount || !wdAccNumber || !wdAccName}
+                  disabled={wdSubmitting || !wdAmount || !payoutAccount?.isPayoutReady}
                   className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-40"
                 >
                   {wdSubmitting ? "Submitting…" : "Request withdrawal →"}
                 </button>
+
               </div>
 
               {/* Withdrawal history */}
