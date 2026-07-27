@@ -4,3 +4,4 @@
 - [SukaSpace dashboards + auth + rich text](sukaspace-dashboards.md) — Creator Hub (10 tabs inc. Affiliate/Live/Automations), RichTextEditor component, creator-managed affiliate system, public pages must not be changed without explicit request.
 - [SukaSpace PWA + motion](sukaspace-pwa-motion.md) — manifest+SW in public/; spring presets + haptics in src/lib/pwa.ts; AppShell uses vaul Drawer for mobile notifs; skeleton in src/components/PageSkeleton.tsx.
 - [SukaSpace auth instant provisioning](sukaspace-auth-onboarding.md) — signup routes directly to feed (skips /onboarding); background prefetch on valid email; hapticTap/hapticError on all form events.
+- [SukaSpace payout accounts & settings](sukaspace-payouts-settings.md) — payout_accounts table, payouts.functions.ts, 7-tab settings UI, withdrawals resolve destination server-side.

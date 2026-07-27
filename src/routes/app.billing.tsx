@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
@@ -13,33 +13,21 @@ import {
   getCreatorDashboard, requestWithdrawal, initializePayment, verifyAndRecordPayment,
 } from "@/lib/monetization.functions";
 import { initiatePaystackPayment, generateReference } from "@/lib/paystack";
+import { getPayoutSetup } from "@/lib/payouts.functions";
 
 export const Route = createFileRoute("/app/billing")({
   head: () => ({ meta: [{ title: "Billing & Payouts · SukaSpace" }] }),
   component: BillingPage,
 });
 
-// ─── Nigerian bank list ───────────────────────────────────────────────────────
-
-const NG_BANKS = [
-  { code: "044", name: "Access Bank" }, { code: "023", name: "Citibank Nigeria" },
-  { code: "050", name: "EcoBank Nigeria" }, { code: "070", name: "Fidelity Bank" },
-  { code: "011", name: "First Bank of Nigeria" }, { code: "214", name: "First City Monument Bank (FCMB)" },
-  { code: "058", name: "Guaranty Trust Bank (GTB)" }, { code: "030", name: "Heritage Bank" },
-  { code: "301", name: "Jaiz Bank" }, { code: "082", name: "Keystone Bank" },
-  { code: "526", name: "Moniepoint MFB" }, { code: "627", name: "Kuda MFB" },
-  { code: "090", name: "Opay" }, { code: "305", name: "PalmPay" },
-  { code: "076", name: "Polaris Bank" }, { code: "039", name: "Stanbic IBTC" },
-  { code: "232", name: "Sterling Bank" }, { code: "032", name: "Union Bank" },
-  { code: "033", name: "United Bank for Africa (UBA)" }, { code: "215", name: "Unity Bank" },
-  { code: "035", name: "Wema Bank" }, { code: "057", name: "Zenith Bank" },
-];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Tab = "overview" | "withdraw" | "storage" | "history";
 
 type DashboardData = Awaited<ReturnType<typeof getCreatorDashboard>> | null;
+
+type PayoutAccountView = Awaited<ReturnType<typeof getPayoutSetup>>["account"];
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
@@ -88,10 +76,8 @@ function BillingPage() {
   // Withdrawal form state
   const [wdAmount,    setWdAmount]    = useState("");
   const [wdType,      setWdType]      = useState<"standard" | "instant">("standard");
-  const [wdBankCode,  setWdBankCode]  = useState(NG_BANKS[0].code);
-  const [wdAccNumber, setWdAccNumber] = useState("");
-  const [wdAccName,   setWdAccName]   = useState("");
   const [wdSubmitting, setWdSubmitting] = useState(false);
+  const [payoutAccount, setPayoutAccount] = useState<PayoutAccountView>(null);
 
   const isCreator = role === "creator";
   const plan      = (data?.plan ?? "free") as "free" | "pro";
@@ -101,8 +87,13 @@ function BillingPage() {
     if (!email) return;
     setLoading(true);
     try {
-      const result = await getCreatorDashboard({ data: { creatorEmail: email } });
+      const [result, payout] = await Promise.all([
+        getCreatorDashboard({ data: { creatorEmail: email } }),
+        getPayoutSetup({ data: { creatorEmail: email } }).catch(() => ({ account: null })),
+      ]);
       setData(result);
+      setPayoutAccount(payout.account);
+      if (payout.account?.defaultWithdrawalType) setWdType(payout.account.defaultWithdrawalType);
     } catch {
       toast.error("Failed to load billing data.");
     } finally {
@@ -151,7 +142,7 @@ function BillingPage() {
     if (!email) return;
     const amountCents = Math.round(parseFloat(wdAmount.replace(/,/g, "")) * 100);
     if (!amountCents || amountCents <= 0) { toast.error("Enter a valid amount."); return; }
-    if (!wdAccNumber.trim() || !wdAccName.trim()) { toast.error("Complete your bank details."); return; }
+    if (!payoutAccount?.isPayoutReady) { toast.error("Add a payout account in Settings → Payouts first."); return; }
 
     setWdSubmitting(true);
     try {
@@ -161,15 +152,12 @@ function BillingPage() {
           amountCents,
           currency:          "NGN",
           withdrawalType:    wdType,
-          bankCode:          wdBankCode,
-          bankAccountNumber: wdAccNumber.trim(),
-          bankAccountName:   wdAccName.trim(),
         }
       });
 
       if (result.ok) {
         toast.success("Withdrawal request submitted! Processing within 24–48 hours.");
-        setWdAmount(""); setWdAccNumber(""); setWdAccName("");
+        setWdAmount("");
         fetchDashboard();
       } else {
         toast.error((result as { ok: false; error: string }).error);
@@ -411,47 +399,41 @@ function BillingPage() {
                   </div>
                 </div>
 
-                {/* Bank */}
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Bank</label>
-                  <select
-                    value={wdBankCode}
-                    onChange={e => setWdBankCode(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none focus:border-primary"
-                  >
-                    {NG_BANKS.map(b => <option key={b.code} value={b.code}>{b.name}</option>)}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Account number</label>
-                    <input
-                      value={wdAccNumber}
-                      onChange={e => setWdAccNumber(e.target.value.replace(/\D/g, ""))}
-                      maxLength={10}
-                      placeholder="0123456789"
-                      className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Account name</label>
-                    <input
-                      value={wdAccName}
-                      onChange={e => setWdAccName(e.target.value)}
-                      placeholder="As on bank record"
-                      className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none focus:border-primary"
-                    />
+                {/* Payout destination (managed in Settings → Payouts) */}
+                <div className="rounded-lg border border-border bg-accent/30 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-foreground">Payout destination</div>
+                      {payoutAccount?.isPayoutReady ? (
+                        <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {payoutAccount.method === "bank"
+                            ? payoutAccount.bankName ?? "Bank account"
+                            : payoutAccount.mobileMoneyNetwork}
+                          {" · "}
+                          {payoutAccount.accountNumberMasked ?? payoutAccount.mobileMoneyNumberMasked}
+                          {" · "}{payoutAccount.accountName}
+                        </div>
+                      ) : (
+                        <div className="mt-0.5 text-xs text-amber-700">No payout account saved yet.</div>
+                      )}
+                    </div>
+                    <Link
+                      to="/app/settings"
+                      className="shrink-0 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-accent"
+                    >
+                      {payoutAccount?.isPayoutReady ? "Change" : "Add account"}
+                    </Link>
                   </div>
                 </div>
 
                 <button
                   onClick={handleWithdraw}
-                  disabled={wdSubmitting || !wdAmount || !wdAccNumber || !wdAccName}
+                  disabled={wdSubmitting || !wdAmount || !payoutAccount?.isPayoutReady}
                   className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-40"
                 >
                   {wdSubmitting ? "Submitting…" : "Request withdrawal →"}
                 </button>
+
               </div>
 
               {/* Withdrawal history */}

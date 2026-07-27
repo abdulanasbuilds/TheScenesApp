@@ -24,6 +24,8 @@ import { calcPlatformFee, calcNetAmount } from "@/lib/plans";
 import { recordPaymentEarnings, getEarningsSummary, getEarningsHistory } from "@/lib/monetization/earnings";
 import { createWithdrawalRequest, getWithdrawalHistory }                 from "@/lib/monetization/withdrawals";
 import { checkCommunityAccess, checkCourseAccess, grantCommunityAccess, grantCourseAccess } from "@/lib/monetization/access";
+import { getPayoutAccount } from "@/lib/monetization/payout-accounts";
+
 import { getStorageUsage, checkUploadAllowed, generatePresignedUrl, buildFileKey, isValidFileKey, setStorageQuota } from "@/lib/monetization/storage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -274,9 +276,11 @@ const withdrawalSchema = z.object({
   amountCents:        z.number().int().positive(),
   currency:           z.string().default("NGN"),
   withdrawalType:     z.enum(["standard", "instant"]).default("standard"),
-  bankCode:           z.string().min(1),
-  bankAccountNumber:  z.string().min(1),
-  bankAccountName:    z.string().min(1),
+  // Bank details are optional — when omitted, the creator's saved payout
+  // account is used. The client never needs to hold account details.
+  bankCode:           z.string().min(1).optional(),
+  bankAccountNumber:  z.string().min(1).optional(),
+  bankAccountName:    z.string().min(1).optional(),
 });
 
 export const requestWithdrawal = createServerFn({ method: "POST" })
@@ -301,16 +305,27 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
       }
     }
 
+    // Resolve destination from the saved payout account (server-authoritative).
+    const account = await getPayoutAccount(data.creatorEmail);
+    const bankCode    = data.bankCode          ?? account?.bankCode          ?? account?.mobileMoneyNetwork;
+    const accNumber   = data.bankAccountNumber ?? account?.accountNumber     ?? account?.mobileMoneyNumber;
+    const accName     = data.bankAccountName   ?? account?.accountName;
+
+    if (!bankCode || !accNumber || !accName) {
+      return { ok: false, error: "Add a payout account before requesting a withdrawal." };
+    }
+
     return createWithdrawalRequest({
       creatorEmail:       data.creatorEmail,
       amountCents:        data.amountCents,
       currency:           data.currency,
       withdrawalType:     data.withdrawalType,
-      bankCode:           data.bankCode,
-      bankAccountNumber:  data.bankAccountNumber,
-      bankAccountName:    data.bankAccountName,
+      bankCode,
+      bankAccountNumber:  accNumber,
+      bankAccountName:    accName,
     });
   });
+
 
 // ─── 4. Creator dashboard data ────────────────────────────────────────────────
 

@@ -951,6 +951,69 @@ export type Database = {
         }
         Relationships: []
       }
+      payout_accounts: {
+        Row: {
+          account_name: string | null
+          account_number: string | null
+          bank_code: string | null
+          bank_name: string | null
+          country: string
+          created_at: string
+          creator_email: string
+          currency: string
+          default_withdrawal_type: string
+          is_payout_ready: boolean
+          method: string
+          mobile_money_network: string | null
+          mobile_money_number: string | null
+          payout_notifications: boolean
+          provider: string
+          recipient_code: string | null
+          updated_at: string
+          verification_status: string
+        }
+        Insert: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
+          country?: string
+          created_at?: string
+          creator_email: string
+          currency?: string
+          default_withdrawal_type?: string
+          is_payout_ready?: boolean
+          method?: string
+          mobile_money_network?: string | null
+          mobile_money_number?: string | null
+          payout_notifications?: boolean
+          provider?: string
+          recipient_code?: string | null
+          updated_at?: string
+          verification_status?: string
+        }
+        Update: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
+          country?: string
+          created_at?: string
+          creator_email?: string
+          currency?: string
+          default_withdrawal_type?: string
+          is_payout_ready?: boolean
+          method?: string
+          mobile_money_network?: string | null
+          mobile_money_number?: string | null
+          payout_notifications?: boolean
+          provider?: string
+          recipient_code?: string | null
+          updated_at?: string
+          verification_status?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author: string | null
