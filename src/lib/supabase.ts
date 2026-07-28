@@ -9,6 +9,16 @@
 import { supabase as generatedClient } from "@/integrations/supabase/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export const isSupabaseConfigured = true;
+// Safe dynamic checks for environment variables to avoid Proxy access crash
+const hasUrl =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
+  (typeof process !== "undefined" && process.env?.SUPABASE_URL);
+const hasKey =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY) ||
+  (typeof process !== "undefined" && process.env?.SUPABASE_PUBLISHABLE_KEY);
 
-export const supabase: SupabaseClient | null = generatedClient as unknown as SupabaseClient;
+export const isSupabaseConfigured = !!(hasUrl && hasKey);
+
+export const supabase: SupabaseClient | null = isSupabaseConfigured
+  ? (generatedClient as unknown as SupabaseClient)
+  : null;
