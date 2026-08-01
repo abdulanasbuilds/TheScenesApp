@@ -99,12 +99,25 @@ function CalendarPage() {
 
   const submit = () => {
     if (!title.trim() || !date) return;
-    const created: CalEvent = { id: Date.now(), title: title.trim(), date, time: time.trim() || undefined, type };
+    const created: CalEvent = {
+      id: Date.now(),
+      title: title.trim(),
+      description: description.trim() || undefined,
+      date,
+      time: time.trim() || undefined,
+      type,
+      hostPlatform,
+      meetingUrl: hostPlatform === "native" ? undefined : meetingUrl.trim() || undefined,
+      visibility,
+    };
     setEvents((e) => [...e, created]);
     store.pushNotification(`Event "${created.title}" added to calendar on ${created.date}.`);
-    setTitle(""); setDate(""); setTime(""); setType("session"); setOpen(false);
+    setTitle(""); setDescription(""); setDate(""); setTime(""); setType("session");
+    setHostPlatform("native"); setMeetingUrl(""); setVisibility("all");
+    setOpen(false);
     setSelected(created.date);
   };
+
 
   const removeEvent = (id: number) => setEvents((e) => e.filter((ev) => ev.id !== id));
 
