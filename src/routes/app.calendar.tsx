@@ -277,26 +277,28 @@ function CalendarPage() {
               {selectedEvents.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">No events scheduled for this day.</p>
               ) : (
-                <ul className="space-y-2">
-                  {selectedEvents.map((e) => {
-                    const Icon = TYPE_STYLES[e.type].icon;
-                    return (
-                      <li key={e.id} className="flex items-start gap-3 rounded-lg border border-border p-3">
-                        <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md ${TYPE_STYLES[e.type].chip}`}><Icon size={14} /></span>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold text-foreground">{e.title}</div>
-                          <div className="text-xs text-muted-foreground">{e.time ? `${e.time} · ` : ""}{TYPE_STYLES[e.type].label}</div>
-                        </div>
-                        <button onClick={() => removeEvent(e.id)} aria-label="Remove event" className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-rose-600"><Trash2 size={14} /></button>
-                      </li>
-                    );
-                  })}
+                <ul className="space-y-3">
+                  {selectedEvents.map((e) => <EventCard key={e.id} event={e} onRemove={removeEvent} />)}
                 </ul>
               )}
             </div>
           )}
         </div>
       </div>
+
+      <section className="mt-6">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Upcoming events</h2>
+        {upcoming.length === 0 ? (
+          <p className="mt-3 rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
+            No upcoming events yet. Use “Add Event” to schedule your first Sukaspace session.
+          </p>
+        ) : (
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+            {upcoming.map((e) => <EventCard key={e.id} event={e} onRemove={removeEvent} showDate />)}
+          </ul>
+        )}
+      </section>
+
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
