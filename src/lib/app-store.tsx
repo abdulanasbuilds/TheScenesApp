@@ -548,7 +548,7 @@ type AppStoreValue = {
   removeCommunityResource: (id: number) => void;
   getCommunityResources: (communityId: number) => CommunityResource[];
   // community events
-  addCommunityEvent: (communityId: number, input: { title: string; date: string; time?: string; type: CommunityEvent["type"] }) => CommunityEvent;
+  addCommunityEvent: (communityId: number, input: { title: string; description?: string; date: string; time?: string; type: CommunityEvent["type"]; hostPlatform?: EventHostPlatform; meetingUrl?: string; visibility?: EventVisibility }) => CommunityEvent;
   removeCommunityEvent: (id: number) => void;
   getCommunityEvents: (communityId: number) => CommunityEvent[];
   // enrollments
