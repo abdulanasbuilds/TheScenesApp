@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, X, ChevronLeft, ChevronRight, Trash2, Radio, Clock3, Users2, StickyNote } from "lucide-react";
+import { Plus, X, ChevronLeft, ChevronRight, Trash2, Radio, Clock3, Users2, StickyNote, ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAppStore } from "@/lib/app-store";
 
@@ -11,9 +11,30 @@ export const Route = createFileRoute("/app/calendar")({
   component: CalendarPage,
 });
 
-type CalEvent = { id: number; title: string; date: string; time?: string; type: "session" | "deadline" | "meetup" | "personal" };
+type HostPlatform = "native" | "zoom" | "meet" | "youtube" | "custom";
+type Visibility = "all" | "premium";
+type CalEvent = {
+  id: number;
+  title: string;
+  description?: string;
+  date: string;
+  time?: string;
+  type: "session" | "deadline" | "meetup" | "personal";
+  hostPlatform: HostPlatform;
+  meetingUrl?: string;
+  visibility: Visibility;
+};
 type ViewMode = "month" | "week" | "day";
 type CalKey = "session" | "deadline" | "meetup" | "personal";
+
+const HOST_OPTIONS: { key: HostPlatform; label: string; placeholder?: string; cta: string }[] = [
+  { key: "native", label: "Sukaspace Call (Native)", cta: "Join Sukaspace Call" },
+  { key: "zoom", label: "Zoom", placeholder: "Paste your Zoom Meeting Link (e.g., https://zoom.us...)", cta: "Join Zoom Meeting" },
+  { key: "meet", label: "Google Meet", placeholder: "Paste your Google Meet Link (e.g., https://google.com...)", cta: "Join Google Meet" },
+  { key: "youtube", label: "YouTube Live", placeholder: "Paste your YouTube Live/Unlisted video URL", cta: "Watch on YouTube" },
+  { key: "custom", label: "Custom Link", placeholder: "https://your-event-link.com", cta: "Open Event Link" },
+];
+const hostMeta = (k: HostPlatform) => HOST_OPTIONS.find((h) => h.key === k)!;
 
 const TYPE_STYLES: Record<CalKey, { dot: string; chip: string; label: string; listLabel: string; icon: typeof Radio }> = {
   session: { dot: "bg-sky-500", chip: "bg-sky-100 text-sky-700", label: "Live session", listLabel: "Live Sessions", icon: Radio },
@@ -21,6 +42,7 @@ const TYPE_STYLES: Record<CalKey, { dot: string; chip: string; label: string; li
   meetup: { dot: "bg-amber-500", chip: "bg-amber-100 text-amber-700", label: "Meetup", listLabel: "Community Meetups", icon: Users2 },
   personal: { dot: "bg-violet-500", chip: "bg-violet-100 text-violet-700", label: "Personal note", listLabel: "Personal Notes", icon: StickyNote },
 };
+
 
 function pad(n: number) { return n.toString().padStart(2, "0"); }
 function toKey(y: number, m: number, d: number) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
@@ -31,13 +53,67 @@ function getTodayKey() {
   return toKey(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
+function EventCard({ event, onRemove, showDate }: { event: CalEvent; onRemove: (id: number) => void; showDate?: boolean }) {
+  const Icon = TYPE_STYLES[event.type].icon;
+  const host = hostMeta(event.hostPlatform);
+  const isNative = event.hostPlatform === "native";
+  return (
+    <li className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <span className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg ${TYPE_STYLES[event.type].chip}`}><Icon size={16} /></span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-foreground">{event.title}</h3>
+            {event.visibility === "premium" && (
+              <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Premium Tier</span>
+            )}
+          </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {showDate ? new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : TYPE_STYLES[event.type].label}
+            {event.time ? ` · ${event.time}` : ""} · {host.label}
+          </p>
+          {event.description && <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-muted-foreground">{event.description}</p>}
+        </div>
+        <button onClick={() => onRemove(event.id)} aria-label="Remove event" className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-rose-600"><Trash2 size={14} /></button>
+      </div>
+      <div className="mt-3">
+        {isNative ? (
+          <div className="flex items-center gap-2">
+            <button disabled className="cursor-not-allowed rounded-lg bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground opacity-60">{host.cta}</button>
+            <span className="rounded-full bg-accent px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Coming Soon</span>
+          </div>
+        ) : event.meetingUrl ? (
+          <a
+            href={event.meetingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-primary/90"
+          >
+            {host.cta}
+            <ExternalLink size={12} />
+          </a>
+        ) : (
+          <span className="text-xs text-muted-foreground">No link added for this event yet.</span>
+        )}
+      </div>
+    </li>
+  );
+}
+
+
+
 function CalendarPage() {
   const store = useAppStore();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [type, setType] = useState<CalKey>("session");
+  const [hostPlatform, setHostPlatform] = useState<HostPlatform>("native");
+  const [meetingUrl, setMeetingUrl] = useState("");
+  const [visibility, setVisibility] = useState<Visibility>("all");
+
   const [events, setEvents] = useState<CalEvent[]>([]);
   const [view, setView] = useState<ViewMode>("month");
   const [cursor, setCursor] = useState(() => {
@@ -72,12 +148,25 @@ function CalendarPage() {
 
   const submit = () => {
     if (!title.trim() || !date) return;
-    const created: CalEvent = { id: Date.now(), title: title.trim(), date, time: time.trim() || undefined, type };
+    const created: CalEvent = {
+      id: Date.now(),
+      title: title.trim(),
+      description: description.trim() || undefined,
+      date,
+      time: time.trim() || undefined,
+      type,
+      hostPlatform,
+      meetingUrl: hostPlatform === "native" ? undefined : meetingUrl.trim() || undefined,
+      visibility,
+    };
     setEvents((e) => [...e, created]);
     store.pushNotification(`Event "${created.title}" added to calendar on ${created.date}.`);
-    setTitle(""); setDate(""); setTime(""); setType("session"); setOpen(false);
+    setTitle(""); setDescription(""); setDate(""); setTime(""); setType("session");
+    setHostPlatform("native"); setMeetingUrl(""); setVisibility("all");
+    setOpen(false);
     setSelected(created.date);
   };
+
 
   const removeEvent = (id: number) => setEvents((e) => e.filter((ev) => ev.id !== id));
 
@@ -118,6 +207,14 @@ function CalendarPage() {
   }, [selected]);
 
   const selectedEvents = eventsByDate.get(selected) || [];
+  const upcoming = useMemo(
+    () => events
+      .filter((e) => visible[e.type] && e.date >= todayKey)
+      .sort((a, b) => (a.date === b.date ? (a.time || "").localeCompare(b.time || "") : a.date.localeCompare(b.date)))
+      .slice(0, 6),
+    [events, visible, todayKey],
+  );
+
   const toggleVisible = (k: CalKey) => setVisible((v) => ({ ...v, [k]: !v[k] }));
 
   return (
@@ -237,20 +334,8 @@ function CalendarPage() {
               {selectedEvents.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">No events scheduled for this day.</p>
               ) : (
-                <ul className="space-y-2">
-                  {selectedEvents.map((e) => {
-                    const Icon = TYPE_STYLES[e.type].icon;
-                    return (
-                      <li key={e.id} className="flex items-start gap-3 rounded-lg border border-border p-3">
-                        <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md ${TYPE_STYLES[e.type].chip}`}><Icon size={14} /></span>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold text-foreground">{e.title}</div>
-                          <div className="text-xs text-muted-foreground">{e.time ? `${e.time} · ` : ""}{TYPE_STYLES[e.type].label}</div>
-                        </div>
-                        <button onClick={() => removeEvent(e.id)} aria-label="Remove event" className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-rose-600"><Trash2 size={14} /></button>
-                      </li>
-                    );
-                  })}
+                <ul className="space-y-3">
+                  {selectedEvents.map((e) => <EventCard key={e.id} event={e} onRemove={removeEvent} />)}
                 </ul>
               )}
             </div>
@@ -258,27 +343,74 @@ function CalendarPage() {
         </div>
       </div>
 
+      <section className="mt-6">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Upcoming events</h2>
+        {upcoming.length === 0 ? (
+          <p className="mt-3 rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
+            No upcoming events yet. Use “Add Event” to schedule your first Sukaspace session.
+          </p>
+        ) : (
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+            {upcoming.map((e) => <EventCard key={e.id} event={e} onRemove={removeEvent} showDate />)}
+          </ul>
+        )}
+      </section>
+
+
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-sm rounded-xl border border-border bg-card p-5 shadow-lg">
+          <div onClick={(e) => e.stopPropagation()} className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-xl border border-border bg-card p-5 shadow-lg">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-foreground">Add event</h2>
+              <div>
+                <h2 className="text-base font-semibold text-foreground">Add event</h2>
+                <p className="text-xs text-muted-foreground">Sukaspace · times are stored in UTC</p>
+              </div>
               <button onClick={() => setOpen(false)} className="rounded-md p-1 text-muted-foreground hover:bg-accent"><X size={16} /></button>
             </div>
             <div className="mt-4 space-y-3">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">Title</label>
+                <label className="text-xs font-semibold text-muted-foreground">Event title</label>
                 <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Weekly AMA" className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground">Description</label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="What will you cover in this session?" className="mt-1 w-full resize-none rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                  <label className="text-xs font-semibold text-muted-foreground">Date (UTC)</label>
                   <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Time (optional)</label>
+                  <label className="text-xs font-semibold text-muted-foreground">Time (UTC)</label>
                   <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
                 </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground">Visibility</label>
+                <select value={visibility} onChange={(e) => setVisibility(e.target.value as Visibility)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary">
+                  <option value="all">All Members</option>
+                  <option value="premium">Premium Tier</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground">Where do you want to host it?</label>
+                <select value={hostPlatform} onChange={(e) => { setHostPlatform(e.target.value as HostPlatform); setMeetingUrl(""); }} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary">
+                  {HOST_OPTIONS.map((h) => <option key={h.key} value={h.key}>{h.label}</option>)}
+                </select>
+                {hostPlatform === "native" ? (
+                  <div className="mt-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700">
+                    Sukaspace Call feature is coming soon! 🚀
+                  </div>
+                ) : (
+                  <input
+                    type="url"
+                    value={meetingUrl}
+                    onChange={(e) => setMeetingUrl(e.target.value)}
+                    placeholder={hostMeta(hostPlatform).placeholder}
+                    className="mt-2 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                )}
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground">Type</label>
@@ -290,6 +422,7 @@ function CalendarPage() {
               </div>
               <button onClick={submit} disabled={!title.trim() || !date} className="w-full rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-40">Add event</button>
             </div>
+
           </div>
         </div>
       )}
