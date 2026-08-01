@@ -11,9 +11,30 @@ export const Route = createFileRoute("/app/calendar")({
   component: CalendarPage,
 });
 
-type CalEvent = { id: number; title: string; date: string; time?: string; type: "session" | "deadline" | "meetup" | "personal" };
+type HostPlatform = "native" | "zoom" | "meet" | "youtube" | "custom";
+type Visibility = "all" | "premium";
+type CalEvent = {
+  id: number;
+  title: string;
+  description?: string;
+  date: string;
+  time?: string;
+  type: "session" | "deadline" | "meetup" | "personal";
+  hostPlatform: HostPlatform;
+  meetingUrl?: string;
+  visibility: Visibility;
+};
 type ViewMode = "month" | "week" | "day";
 type CalKey = "session" | "deadline" | "meetup" | "personal";
+
+const HOST_OPTIONS: { key: HostPlatform; label: string; placeholder?: string; cta: string }[] = [
+  { key: "native", label: "Sukaspace Call (Native)", cta: "Join Sukaspace Call" },
+  { key: "zoom", label: "Zoom", placeholder: "Paste your Zoom Meeting Link (e.g., https://zoom.us...)", cta: "Join Zoom Meeting" },
+  { key: "meet", label: "Google Meet", placeholder: "Paste your Google Meet Link (e.g., https://google.com...)", cta: "Join Google Meet" },
+  { key: "youtube", label: "YouTube Live", placeholder: "Paste your YouTube Live/Unlisted video URL", cta: "Watch on YouTube" },
+  { key: "custom", label: "Custom Link", placeholder: "https://your-event-link.com", cta: "Open Event Link" },
+];
+const hostMeta = (k: HostPlatform) => HOST_OPTIONS.find((h) => h.key === k)!;
 
 const TYPE_STYLES: Record<CalKey, { dot: string; chip: string; label: string; listLabel: string; icon: typeof Radio }> = {
   session: { dot: "bg-sky-500", chip: "bg-sky-100 text-sky-700", label: "Live session", listLabel: "Live Sessions", icon: Radio },
@@ -21,6 +42,7 @@ const TYPE_STYLES: Record<CalKey, { dot: string; chip: string; label: string; li
   meetup: { dot: "bg-amber-500", chip: "bg-amber-100 text-amber-700", label: "Meetup", listLabel: "Community Meetups", icon: Users2 },
   personal: { dot: "bg-violet-500", chip: "bg-violet-100 text-violet-700", label: "Personal note", listLabel: "Personal Notes", icon: StickyNote },
 };
+
 
 function pad(n: number) { return n.toString().padStart(2, "0"); }
 function toKey(y: number, m: number, d: number) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
