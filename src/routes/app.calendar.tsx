@@ -359,25 +359,58 @@ function CalendarPage() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-sm rounded-xl border border-border bg-card p-5 shadow-lg">
+          <div onClick={(e) => e.stopPropagation()} className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-xl border border-border bg-card p-5 shadow-lg">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-foreground">Add event</h2>
+              <div>
+                <h2 className="text-base font-semibold text-foreground">Add event</h2>
+                <p className="text-xs text-muted-foreground">Sukaspace · times are stored in UTC</p>
+              </div>
               <button onClick={() => setOpen(false)} className="rounded-md p-1 text-muted-foreground hover:bg-accent"><X size={16} /></button>
             </div>
             <div className="mt-4 space-y-3">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">Title</label>
+                <label className="text-xs font-semibold text-muted-foreground">Event title</label>
                 <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Weekly AMA" className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground">Description</label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="What will you cover in this session?" className="mt-1 w-full resize-none rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                  <label className="text-xs font-semibold text-muted-foreground">Date (UTC)</label>
                   <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Time (optional)</label>
+                  <label className="text-xs font-semibold text-muted-foreground">Time (UTC)</label>
                   <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary" />
                 </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground">Visibility</label>
+                <select value={visibility} onChange={(e) => setVisibility(e.target.value as Visibility)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary">
+                  <option value="all">All Members</option>
+                  <option value="premium">Premium Tier</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground">Where do you want to host it?</label>
+                <select value={hostPlatform} onChange={(e) => { setHostPlatform(e.target.value as HostPlatform); setMeetingUrl(""); }} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary">
+                  {HOST_OPTIONS.map((h) => <option key={h.key} value={h.key}>{h.label}</option>)}
+                </select>
+                {hostPlatform === "native" ? (
+                  <div className="mt-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700">
+                    Sukaspace Call feature is coming soon! 🚀
+                  </div>
+                ) : (
+                  <input
+                    type="url"
+                    value={meetingUrl}
+                    onChange={(e) => setMeetingUrl(e.target.value)}
+                    placeholder={hostMeta(hostPlatform).placeholder}
+                    className="mt-2 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                )}
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground">Type</label>
@@ -389,6 +422,7 @@ function CalendarPage() {
               </div>
               <button onClick={submit} disabled={!title.trim() || !date} className="w-full rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-40">Add event</button>
             </div>
+
           </div>
         </div>
       )}
