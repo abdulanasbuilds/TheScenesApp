@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, X, ChevronLeft, ChevronRight, Trash2, Radio, Clock3, Users2, StickyNote } from "lucide-react";
+import { Plus, X, ChevronLeft, ChevronRight, Trash2, Radio, Clock3, Users2, StickyNote, ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAppStore } from "@/lib/app-store";
 
