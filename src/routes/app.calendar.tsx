@@ -57,9 +57,14 @@ function CalendarPage() {
   const store = useAppStore();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [type, setType] = useState<CalKey>("session");
+  const [hostPlatform, setHostPlatform] = useState<HostPlatform>("native");
+  const [meetingUrl, setMeetingUrl] = useState("");
+  const [visibility, setVisibility] = useState<Visibility>("all");
+
   const [events, setEvents] = useState<CalEvent[]>([]);
   const [view, setView] = useState<ViewMode>("month");
   const [cursor, setCursor] = useState(() => {
