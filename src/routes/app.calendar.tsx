@@ -53,6 +53,55 @@ function getTodayKey() {
   return toKey(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
+function EventCard({ event, onRemove, showDate }: { event: CalEvent; onRemove: (id: number) => void; showDate?: boolean }) {
+  const Icon = TYPE_STYLES[event.type].icon;
+  const host = hostMeta(event.hostPlatform);
+  const isNative = event.hostPlatform === "native";
+  return (
+    <li className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <span className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg ${TYPE_STYLES[event.type].chip}`}><Icon size={16} /></span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-foreground">{event.title}</h3>
+            {event.visibility === "premium" && (
+              <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Premium Tier</span>
+            )}
+          </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {showDate ? new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : TYPE_STYLES[event.type].label}
+            {event.time ? ` · ${event.time}` : ""} · {host.label}
+          </p>
+          {event.description && <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-muted-foreground">{event.description}</p>}
+        </div>
+        <button onClick={() => onRemove(event.id)} aria-label="Remove event" className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-rose-600"><Trash2 size={14} /></button>
+      </div>
+      <div className="mt-3">
+        {isNative ? (
+          <div className="flex items-center gap-2">
+            <button disabled className="cursor-not-allowed rounded-lg bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground opacity-60">{host.cta}</button>
+            <span className="rounded-full bg-accent px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Coming Soon</span>
+          </div>
+        ) : event.meetingUrl ? (
+          <a
+            href={event.meetingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-primary/90"
+          >
+            {host.cta}
+            <ExternalLink size={12} />
+          </a>
+        ) : (
+          <span className="text-xs text-muted-foreground">No link added for this event yet.</span>
+        )}
+      </div>
+    </li>
+  );
+}
+
+
+
 function CalendarPage() {
   const store = useAppStore();
   const [open, setOpen] = useState(false);
