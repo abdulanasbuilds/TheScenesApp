@@ -245,6 +245,7 @@ export type Database = {
           description: string | null
           event_date: string
           event_time: string | null
+          host_platform: string
           id: number
           location: string | null
           meeting_url: string | null
@@ -252,6 +253,7 @@ export type Database = {
           remind_1d: boolean
           title: string
           type: string
+          visibility: string
         }
         Insert: {
           community_id?: number | null
@@ -260,6 +262,7 @@ export type Database = {
           description?: string | null
           event_date: string
           event_time?: string | null
+          host_platform?: string
           id: number
           location?: string | null
           meeting_url?: string | null
@@ -267,6 +270,7 @@ export type Database = {
           remind_1d?: boolean
           title: string
           type?: string
+          visibility?: string
         }
         Update: {
           community_id?: number | null
@@ -275,6 +279,7 @@ export type Database = {
           description?: string | null
           event_date?: string
           event_time?: string | null
+          host_platform?: string
           id?: number
           location?: string | null
           meeting_url?: string | null
@@ -282,6 +287,7 @@ export type Database = {
           remind_1d?: boolean
           title?: string
           type?: string
+          visibility?: string
         }
         Relationships: [
           {
