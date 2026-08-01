@@ -1297,7 +1297,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
     // ── community events ──
     addCommunityEvent: (communityId, input) => {
-      const event: CommunityEvent = { id: generateId(), communityId, ...input, createdAt: Date.now() };
+      const event: CommunityEvent = {
+        id: generateId(), communityId, createdAt: Date.now(),
+        hostPlatform: "native", visibility: "all",
+        ...input,
+      };
+
       setState(s => ({ ...s, communityEvents: [event, ...s.communityEvents] }));
       if (supabase) sync(supabase.from("community_events").insert(eventToRow(event)), "community event create");
       return event;
