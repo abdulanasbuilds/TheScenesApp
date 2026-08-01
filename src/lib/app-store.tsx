@@ -187,15 +187,23 @@ export type CommunityResource = {
   addedAt: number;
 };
 
+export type EventHostPlatform = "native" | "zoom" | "meet" | "youtube" | "custom";
+export type EventVisibility = "all" | "premium";
+
 export type CommunityEvent = {
   id: number;
   communityId: number;
   title: string;
+  description?: string;
   date: string;
   time?: string;
   type: "session" | "deadline" | "meetup" | "personal";
+  hostPlatform: EventHostPlatform;
+  meetingUrl?: string;
+  visibility: EventVisibility;
   createdAt: number;
 };
+
 
 export type Enrollment = {
   courseId: number;
