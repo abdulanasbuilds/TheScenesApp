@@ -207,6 +207,14 @@ function CalendarPage() {
   }, [selected]);
 
   const selectedEvents = eventsByDate.get(selected) || [];
+  const upcoming = useMemo(
+    () => events
+      .filter((e) => visible[e.type] && e.date >= todayKey)
+      .sort((a, b) => (a.date === b.date ? (a.time || "").localeCompare(b.time || "") : a.date.localeCompare(b.date)))
+      .slice(0, 6),
+    [events, visible, todayKey],
+  );
+
   const toggleVisible = (k: CalKey) => setVisible((v) => ({ ...v, [k]: !v[k] }));
 
   return (
