@@ -388,16 +388,23 @@ function commentFromRow(r: any): Comment {
 }
 function eventToRow(e: CommunityEvent) {
   return {
-    id: e.id, community_id: e.communityId, title: e.title, event_date: e.date,
-    event_time: e.time ?? null, type: e.type, created_at: e.createdAt,
+    id: e.id, community_id: e.communityId, title: e.title, description: e.description ?? null,
+    event_date: e.date, event_time: e.time ?? null, type: e.type,
+    host_platform: e.hostPlatform, meeting_url: e.meetingUrl ?? null, visibility: e.visibility,
+    created_at: e.createdAt,
   };
 }
 function eventFromRow(r: any): CommunityEvent {
   return {
-    id: r.id, communityId: r.community_id, title: r.title, date: r.event_date,
-    time: r.event_time ?? undefined, type: r.type, createdAt: r.created_at,
+    id: r.id, communityId: r.community_id, title: r.title, description: r.description ?? undefined,
+    date: r.event_date, time: r.event_time ?? undefined, type: r.type,
+    hostPlatform: (r.host_platform ?? "native") as EventHostPlatform,
+    meetingUrl: r.meeting_url ?? undefined,
+    visibility: (r.visibility ?? "all") as EventVisibility,
+    createdAt: r.created_at,
   };
 }
+
 function communityResourceToRow(res: CommunityResource) {
   return { id: res.id, community_id: res.communityId, title: res.title, url: res.url, source: res.source, added_at: res.addedAt };
 }
