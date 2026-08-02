@@ -28,6 +28,8 @@ interface NavItem {
 
 const CREATOR_NAV: NavItem[] = [
   { to: "/app/creator",      label: "Creator Hub",  icon: BarChart3 },
+  { to: "/app/analytics",    label: "Analytics",    icon: BarChart3 },
+
   { to: "/app/feed",         label: "Community",    icon: Home },
   { to: "/app/courses",      label: "Courses",      icon: BookOpen },
   { to: "/app/classroom",    label: "Classroom",    icon: GraduationCap },
