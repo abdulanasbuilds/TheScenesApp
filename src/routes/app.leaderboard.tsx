@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Avatar } from "@/components/BrowserFrame";
 import { MOCK_BADGES, xpToTier } from "@/lib/mock-data";
 import { useAppStore } from "@/lib/app-store";
+import { LevelsPanel } from "@/components/LevelsPanel";
 
 // Real leaderboard member shape
 interface LeaderMember {
@@ -456,6 +457,12 @@ function LeaderboardPage() {
           })}
         </div>
       </div>
+
+      {/* Levels & rewards (gamification ladder) */}
+      <LevelsPanel
+        viewerPoints={userXp}
+        members={members.map((m) => ({ name: m.name, avatar: m.avatar, points: m.xp }))}
+      />
     </div>
   );
 }
