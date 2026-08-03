@@ -55,7 +55,7 @@ export const submitFeedback = createServerFn({ method: "POST" })
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseAnon = process.env.SUPABASE_ANON_KEY;
     const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
-    const telegramChatId = process.env.TELEGRAM_PRIVATE_CHAT_ID;
+    const telegramChatId = process.env.TELEGRAM_PRIVATE_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
 
     let storedInSupabase = false;
     let notifiedViaTelegram = false;
