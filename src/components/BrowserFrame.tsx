@@ -1,8 +1,18 @@
 import type { ReactNode } from "react";
 
-export function BrowserFrame({ url, children, className = "" }: { url: string; children: ReactNode; className?: string }) {
+export function BrowserFrame({
+  url,
+  children,
+  className = "",
+}: {
+  url: string;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`overflow-hidden rounded-xl border border-border bg-card shadow-sm ${className}`}>
+    <div
+      className={`overflow-hidden rounded-xl border border-border bg-card shadow-sm ${className}`}
+    >
       <div className="flex items-center gap-2 border-b border-border bg-accent px-3 py-2">
         <div className="flex gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
@@ -19,7 +29,15 @@ export function BrowserFrame({ url, children, className = "" }: { url: string; c
   );
 }
 
-export function Avatar({ initials, size = 32, tone = "slate" }: { initials: string; size?: number; tone?: "slate" | "primary" | "sky" }) {
+export function Avatar({
+  initials,
+  size = 32,
+  tone = "slate",
+}: {
+  initials: string;
+  size?: number;
+  tone?: "slate" | "primary" | "sky";
+}) {
   const tones: Record<string, string> = {
     slate: "bg-foreground text-white",
     primary: "bg-primary text-primary-foreground",

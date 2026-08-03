@@ -2,7 +2,16 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
-  AlertTriangle, CheckCircle2, Inbox, Loader2, Lock, SearchX, WifiOff, Wrench, ArrowRight, Check,
+  AlertTriangle,
+  CheckCircle2,
+  Inbox,
+  Loader2,
+  Lock,
+  SearchX,
+  WifiOff,
+  Wrench,
+  ArrowRight,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +31,7 @@ import { cn } from "@/lib/utils";
  *  success    – goal completed, emptiness is a reward
  */
 export type EmptyStateVariant =
-  | "empty" | "no-results" | "setup" | "locked" | "loading" | "error" | "offline" | "success";
+  "empty" | "no-results" | "setup" | "locked" | "loading" | "error" | "offline" | "success";
 
 type Action = {
   label: string;
@@ -91,7 +100,12 @@ function ActionButton({ action, kind }: { action: Action; kind: "primary" | "sec
   if (action.to && !action.disabled) {
     return (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      <Link to={action.to as any} search={action.search as any} className={cls} onClick={action.onClick}>
+      <Link
+        to={action.to as any}
+        search={action.search as any}
+        className={cls}
+        onClick={action.onClick}
+      >
         {content}
       </Link>
     );
@@ -129,19 +143,29 @@ export function EmptyState({
         className,
       )}
     >
-      <span className={cn("grid h-12 w-12 place-items-center rounded-full border", VARIANT_TONE[variant])}>
+      <span
+        className={cn(
+          "grid h-12 w-12 place-items-center rounded-full border",
+          VARIANT_TONE[variant],
+        )}
+      >
         {icon ?? VARIANT_ICON[variant]}
       </span>
 
       <h3 className="mt-3.5 text-base font-semibold text-foreground">{title}</h3>
       {description && (
-        <p className="mx-auto mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">{description}</p>
+        <p className="mx-auto mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">
+          {description}
+        </p>
       )}
 
       {checklist && checklist.length > 0 && (
         <ol className="mx-auto mt-4 w-full max-w-sm space-y-2 text-left">
           {checklist.map((step, i) => (
-            <li key={step.label} className="flex items-center gap-2.5 rounded-lg border border-border bg-background px-3 py-2">
+            <li
+              key={step.label}
+              className="flex items-center gap-2.5 rounded-lg border border-border bg-background px-3 py-2"
+            >
               <span
                 className={cn(
                   "grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-bold",
@@ -150,7 +174,12 @@ export function EmptyState({
               >
                 {step.done ? <Check size={12} /> : i + 1}
               </span>
-              <span className={cn("text-xs font-medium", step.done ? "text-muted-foreground line-through" : "text-foreground")}>
+              <span
+                className={cn(
+                  "text-xs font-medium",
+                  step.done ? "text-muted-foreground line-through" : "text-foreground",
+                )}
+              >
                 {step.label}
               </span>
             </li>

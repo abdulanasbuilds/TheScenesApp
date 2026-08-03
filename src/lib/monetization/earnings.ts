@@ -33,11 +33,11 @@ export type EarningsEntry = {
 export type EarningsSummary = {
   creatorEmail: string;
   currency: string;
-  grossEarnedCents: number;     // total revenue credits
-  totalFeesCents: number;       // total platform fees charged (absolute value)
-  totalWithdrawnCents: number;  // total withdrawn (absolute value)
+  grossEarnedCents: number; // total revenue credits
+  totalFeesCents: number; // total platform fees charged (absolute value)
+  totalWithdrawnCents: number; // total withdrawn (absolute value)
   availableBalanceCents: number; // current net withdrawable balance
-  pendingCents: number;          // in pending withdrawal requests
+  pendingCents: number; // in pending withdrawal requests
   lastTransactionAt: string | null;
 };
 
@@ -52,10 +52,10 @@ function generateId(): string {
 /** Get the creator's current available balance (sum of all ledger entries). */
 export async function getCreatorBalance(creatorEmail: string, currency = "NGN"): Promise<number> {
   // Use the creator_wallet view we created in the SQL schema
-  const { data, error } = await adminDb.selectOne<{ balance_cents: number }>(
-    "creator_wallet",
-    { "creator_email": `eq.${creatorEmail}`, "currency": `eq.${currency}` }
-  );
+  const { data, error } = await adminDb.selectOne<{ balance_cents: number }>("creator_wallet", {
+    creator_email: `eq.${creatorEmail}`,
+    currency: `eq.${currency}`,
+  });
   if (error || !data) return 0;
   return data.balance_cents ?? 0;
 }
@@ -63,7 +63,7 @@ export async function getCreatorBalance(creatorEmail: string, currency = "NGN"):
 /** Get full earnings summary for a creator. */
 export async function getEarningsSummary(
   creatorEmail: string,
-  currency = "NGN"
+  currency = "NGN",
 ): Promise<EarningsSummary> {
   const { data, error } = await adminDb.selectOne<{
     gross_earned_cents: number;
@@ -71,25 +71,31 @@ export async function getEarningsSummary(
     total_withdrawn_cents: number;
     balance_cents: number;
     last_transaction_at: string | null;
-  }>("creator_wallet", { "creator_email": `eq.${creatorEmail}`, "currency": `eq.${currency}` });
+  }>("creator_wallet", { creator_email: `eq.${creatorEmail}`, currency: `eq.${currency}` });
 
   if (error || !data) {
     return {
-      creatorEmail, currency,
-      grossEarnedCents: 0, totalFeesCents: 0, totalWithdrawnCents: 0,
-      availableBalanceCents: 0, pendingCents: 0, lastTransactionAt: null,
+      creatorEmail,
+      currency,
+      grossEarnedCents: 0,
+      totalFeesCents: 0,
+      totalWithdrawnCents: 0,
+      availableBalanceCents: 0,
+      pendingCents: 0,
+      lastTransactionAt: null,
     };
   }
 
   // Get pending withdrawal total
   const { data: pending } = await adminDb.select<{ net_amount_cents: number }>(
     "withdrawal_requests",
-    { "creator_email": `eq.${creatorEmail}`, "status": `eq.pending`, "currency": `eq.${currency}` }
+    { creator_email: `eq.${creatorEmail}`, status: `eq.pending`, currency: `eq.${currency}` },
   );
   const pendingCents = (pending ?? []).reduce((sum, w) => sum + w.net_amount_cents, 0);
 
   return {
-    creatorEmail, currency,
+    creatorEmail,
+    currency,
     grossEarnedCents: data.gross_earned_cents ?? 0,
     totalFeesCents: Math.abs(data.total_fees_cents ?? 0),
     totalWithdrawnCents: Math.abs(data.total_withdrawn_cents ?? 0),
@@ -102,16 +108,22 @@ export async function getEarningsSummary(
 /** Recent ledger entries for a creator. */
 export async function getEarningsHistory(
   creatorEmail: string,
-  limit = 50
+  limit = 50,
 ): Promise<EarningsEntry[]> {
   const { data, error } = await adminDb.select<{
-    id: string; creator_email: string; transaction_id: string | null;
-    entry_type: string; amount_cents: number; currency: string;
-    balance_after_cents: number; description: string | null; created_at: string;
+    id: string;
+    creator_email: string;
+    transaction_id: string | null;
+    entry_type: string;
+    amount_cents: number;
+    currency: string;
+    balance_after_cents: number;
+    description: string | null;
+    created_at: string;
   }>("earnings_ledger", {
-    "creator_email": `eq.${creatorEmail}`,
-    "order": "created_at.desc",
-    "limit": String(limit),
+    creator_email: `eq.${creatorEmail}`,
+    order: "created_at.desc",
+    limit: String(limit),
   });
 
   if (error || !data) return [];

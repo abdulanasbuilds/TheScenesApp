@@ -9,7 +9,10 @@ export const Route = createFileRoute("/c/$slug/about")({
   head: ({ params }) => ({
     meta: [
       { title: `${decodeURIComponent(params.slug)} · SukaSpace` },
-      { name: "description", content: `Preview and join the ${decodeURIComponent(params.slug)} community on SukaSpace.` },
+      {
+        name: "description",
+        content: `Preview and join the ${decodeURIComponent(params.slug)} community on SukaSpace.`,
+      },
       { property: "og:title", content: `${decodeURIComponent(params.slug)} · SukaSpace` },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -19,7 +22,10 @@ export const Route = createFileRoute("/c/$slug/about")({
 });
 
 function slugify(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 function CommunityAbout() {
@@ -28,7 +34,7 @@ function CommunityAbout() {
   const nav = useNavigate();
 
   const community: Community | undefined = useMemo(
-    () => store.communities.find(c => slugify(c.title) === slug),
+    () => store.communities.find((c) => slugify(c.title) === slug),
     [store.communities, slug],
   );
 
@@ -42,8 +48,13 @@ function CommunityAbout() {
               <Sparkles className="w-6 h-6 text-slate-300" />
             </div>
             <h1 className="text-xl font-bold text-slate-900">Community not found</h1>
-            <p className="text-sm text-slate-500 mt-1">This community may be private or has been removed.</p>
-            <Link to="/discover" className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700">
+            <p className="text-sm text-slate-500 mt-1">
+              This community may be private or has been removed.
+            </p>
+            <Link
+              to="/discover"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700"
+            >
               Browse Discover <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -69,9 +80,16 @@ function CommunityAbout() {
       <PublicHeader />
 
       {/* Cover */}
-      <div className="relative w-full aspect-[1084/380] max-h-[380px] overflow-hidden" style={{ backgroundColor: brand }}>
+      <div
+        className="relative w-full aspect-[1084/380] max-h-[380px] overflow-hidden"
+        style={{ backgroundColor: brand }}
+      >
         {community.coverImageUrl && (
-          <img src={community.coverImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <img
+            src={community.coverImageUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
       </div>
@@ -79,21 +97,40 @@ function CommunityAbout() {
       <div className="max-w-3xl w-full mx-auto -mt-14 px-4 sm:px-6 pb-16 relative z-10">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-8">
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-md flex-shrink-0 overflow-hidden flex items-center justify-center text-white text-2xl font-bold"
-              style={{ backgroundColor: brand }}>
-              {community.iconUrl
-                ? <img src={community.iconUrl} alt={community.title} className="w-full h-full object-cover" />
-                : community.title.charAt(0).toUpperCase()}
+            <div
+              className="w-20 h-20 rounded-2xl border-4 border-white shadow-md flex-shrink-0 overflow-hidden flex items-center justify-center text-white text-2xl font-bold"
+              style={{ backgroundColor: brand }}
+            >
+              {community.iconUrl ? (
+                <img
+                  src={community.iconUrl}
+                  alt={community.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                community.title.charAt(0).toUpperCase()
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 truncate">{community.title}</h1>
-                {community.isPrivate
-                  ? <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full inline-flex items-center gap-1"><Lock className="w-3 h-3" />Private</span>
-                  : <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full inline-flex items-center gap-1"><Globe className="w-3 h-3" />Public</span>
-                }
+                <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 truncate">
+                  {community.title}
+                </h1>
+                {community.isPrivate ? (
+                  <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    Private
+                  </span>
+                ) : (
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <Globe className="w-3 h-3" />
+                    Public
+                  </span>
+                )}
               </div>
-              <p className="text-sm text-slate-500 mt-1">{community.category} · by {community.creator}</p>
+              <p className="text-sm text-slate-500 mt-1">
+                {community.category} · by {community.creator}
+              </p>
             </div>
           </div>
 
@@ -102,8 +139,10 @@ function CommunityAbout() {
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: `${brand}20`, color: brand }}>
+            <span
+              className="text-xs font-semibold px-2.5 py-1 rounded-full"
+              style={{ backgroundColor: `${brand}20`, color: brand }}
+            >
               {community.tag === "FREE" ? "Free" : community.price || "Paid"}
             </span>
             <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 inline-flex items-center gap-1">
@@ -113,10 +152,15 @@ function CommunityAbout() {
 
           {community.discoveryKeywords && community.discoveryKeywords.length > 0 && (
             <div className="mt-5 pt-5 border-t border-slate-100">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Topics</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                Topics
+              </p>
               <div className="flex flex-wrap gap-1.5">
-                {community.discoveryKeywords.map(k => (
-                  <span key={k} className="text-xs px-2 py-1 rounded-md bg-slate-100 text-slate-600">
+                {community.discoveryKeywords.map((k) => (
+                  <span
+                    key={k}
+                    className="text-xs px-2 py-1 rounded-md bg-slate-100 text-slate-600"
+                  >
                     #{k}
                   </span>
                 ))}
@@ -131,7 +175,11 @@ function CommunityAbout() {
               </p>
               <ul className="space-y-1.5">
                 {community.screeningQuestions.map((q, i) => (
-                  <li key={i} className="text-sm text-slate-700 pl-3 border-l-2" style={{ borderColor: brand }}>
+                  <li
+                    key={i}
+                    className="text-sm text-slate-700 pl-3 border-l-2"
+                    style={{ borderColor: brand }}
+                  >
                     {q}
                   </li>
                 ))}
@@ -144,12 +192,16 @@ function CommunityAbout() {
               onClick={handleJoin}
               className={cn(
                 "flex-1 flex items-center justify-center gap-2 font-semibold py-3 rounded-xl text-sm transition-colors shadow-sm text-white",
-                joined ? "bg-slate-400 cursor-default" : "hover:opacity-90"
+                joined ? "bg-slate-400 cursor-default" : "hover:opacity-90",
               )}
               style={!joined ? { backgroundColor: brand } : undefined}
               disabled={joined}
             >
-              {joined ? "You're a member" : community.tag === "PAID" ? `Join · ${community.price ?? ""}` : "Join community"}
+              {joined
+                ? "You're a member"
+                : community.tag === "PAID"
+                  ? `Join · ${community.price ?? ""}`
+                  : "Join community"}
               {!joined && <ArrowRight className="w-4 h-4" />}
             </button>
             <Link

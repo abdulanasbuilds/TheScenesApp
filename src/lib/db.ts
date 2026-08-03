@@ -12,18 +12,18 @@
 // ─── TypeScript types (mirrors supabase/schema.sql) ──────────────────────────
 
 export type DbProfile = {
-  id: string;                         // auth.users.id (UUID)
+  id: string; // auth.users.id (UUID)
   email: string;
   name: string;
   role: "creator" | "learner";
   avatar: string | null;
   bio: string | null;
   photo_url: string | null;
-  created_at: number;                 // epoch ms
+  created_at: number; // epoch ms
 };
 
 export type DbCommunity = {
-  id: number;                         // client-generated epoch ms
+  id: number; // client-generated epoch ms
   title: string;
   summary: string | null;
   category: string;
@@ -34,8 +34,8 @@ export type DbCommunity = {
   members: number;
   avatar: string | null;
   banner: string | null;
-  color: string | null;               // brand hex colour
-  cover_image_url: string | null;     // cover photo URL
+  color: string | null; // brand hex colour
+  cover_image_url: string | null; // cover photo URL
   is_private: boolean;
   created_at: number;
 };
@@ -47,7 +47,7 @@ export type DbCourse = {
   title: string;
   description: string | null;
   cover_image_url: string | null;
-  thumbnail: string | null;           // gradient-class fallback
+  thumbnail: string | null; // gradient-class fallback
   published: boolean;
   enrollment_count: number;
   created_at: number;

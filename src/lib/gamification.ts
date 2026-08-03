@@ -19,12 +19,54 @@ export type CommunityLevel = {
 };
 
 export const DEFAULT_LEVELS: CommunityLevel[] = [
-  { id: 1, name: "Starter",   threshold: 0,     color: "#94a3b8", rewards: [{ kind: "content", label: "Community feed access" }] },
-  { id: 2, name: "Explorer",  threshold: 250,   color: "#38bdf8", rewards: [{ kind: "course", label: "Unlocks: AI Foundations" }] },
-  { id: 3, name: "Builder",   threshold: 750,   color: "#0ea5e9", rewards: [{ kind: "content", label: "Weekly build teardown replays" }] },
-  { id: 4, name: "Operator",  threshold: 1800,  color: "#6366f1", rewards: [{ kind: "course", label: "Unlocks: Shipping with Agents" }, { kind: "badge", label: "Operator badge" }] },
-  { id: 5, name: "Guru",      threshold: 4000,  color: "#f59e0b", rewards: [{ kind: "perk", label: "Monthly group coaching call" }] },
-  { id: 6, name: "Elite",     threshold: 9000,  color: "#ef4444", rewards: [{ kind: "perk", label: "1:1 strategy session" }, { kind: "badge", label: "Elite badge" }] },
+  {
+    id: 1,
+    name: "Starter",
+    threshold: 0,
+    color: "#94a3b8",
+    rewards: [{ kind: "content", label: "Community feed access" }],
+  },
+  {
+    id: 2,
+    name: "Explorer",
+    threshold: 250,
+    color: "#38bdf8",
+    rewards: [{ kind: "course", label: "Unlocks: AI Foundations" }],
+  },
+  {
+    id: 3,
+    name: "Builder",
+    threshold: 750,
+    color: "#0ea5e9",
+    rewards: [{ kind: "content", label: "Weekly build teardown replays" }],
+  },
+  {
+    id: 4,
+    name: "Operator",
+    threshold: 1800,
+    color: "#6366f1",
+    rewards: [
+      { kind: "course", label: "Unlocks: Shipping with Agents" },
+      { kind: "badge", label: "Operator badge" },
+    ],
+  },
+  {
+    id: 5,
+    name: "Guru",
+    threshold: 4000,
+    color: "#f59e0b",
+    rewards: [{ kind: "perk", label: "Monthly group coaching call" }],
+  },
+  {
+    id: 6,
+    name: "Elite",
+    threshold: 9000,
+    color: "#ef4444",
+    rewards: [
+      { kind: "perk", label: "1:1 strategy session" },
+      { kind: "badge", label: "Elite badge" },
+    ],
+  },
 ];
 
 const STORAGE_KEY = "sukaspace_levels_v1";
@@ -69,7 +111,9 @@ export function levelForPoints(points: number, levels: CommunityLevel[]): LevelP
   for (const lvl of ordered) if (points >= lvl.threshold) current = lvl;
   const next = ordered.find((l) => l.threshold > current.threshold) ?? null;
   const span = next ? next.threshold - current.threshold : 1;
-  const progressPct = next ? Math.min(100, Math.max(0, ((points - current.threshold) / span) * 100)) : 100;
+  const progressPct = next
+    ? Math.min(100, Math.max(0, ((points - current.threshold) / span) * 100))
+    : 100;
   return {
     current,
     next,

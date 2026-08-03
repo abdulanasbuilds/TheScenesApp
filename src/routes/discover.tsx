@@ -1,7 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
-import { Search, Users, X, CheckCircle2, Rocket, ArrowRight, Loader2, ArrowLeft, Compass } from "lucide-react";
+import {
+  Search,
+  Users,
+  X,
+  CheckCircle2,
+  Rocket,
+  ArrowRight,
+  Loader2,
+  ArrowLeft,
+  Compass,
+} from "lucide-react";
 import { toast } from "sonner";
 import { PublicHeader } from "@/components/PublicHeader";
 import { Avatar } from "@/components/BrowserFrame";
@@ -13,7 +23,11 @@ export const Route = createFileRoute("/discover")({
   head: () => ({
     meta: [
       { title: "Discover tech & expert-led communities · SukaSpace" },
-      { name: "description", content: "Browse AI, engineering, no-code, and digital business communities. Or launch your own." },
+      {
+        name: "description",
+        content:
+          "Browse AI, engineering, no-code, and digital business communities. Or launch your own.",
+      },
       { property: "og:title", content: "Discover · SukaSpace" },
       { property: "og:description", content: "Find your niche or claim a new one on SukaSpace." },
     ],
@@ -34,17 +48,28 @@ function Discovery() {
     return store.communities.filter((c) => {
       const catOk = cat === "All" || c.category === cat;
       const q = query.trim().toLowerCase();
-      const qOk = !q || c.title.toLowerCase().includes(q) || c.summary.toLowerCase().includes(q) || c.category.toLowerCase().includes(q);
+      const qOk =
+        !q ||
+        c.title.toLowerCase().includes(q) ||
+        c.summary.toLowerCase().includes(q) ||
+        c.category.toLowerCase().includes(q);
       return catOk && qOk;
     });
   }, [store.communities, query, cat]);
 
   const hasFilters = query.trim() !== "" || cat !== "All";
   const hasCommunities = store.communities.length > 0;
-  const resetFilters = () => { setQuery(""); setCat("All"); };
+  const resetFilters = () => {
+    setQuery("");
+    setCat("All");
+  };
 
   const handleJoin = async (community: Community) => {
-    if (!store.session) { setJoinTarget(community); setModal(true); return; }
+    if (!store.session) {
+      setJoinTarget(community);
+      setModal(true);
+      return;
+    }
     if (joiningId === community.id) return; // prevent double-click
     setJoiningId(community.id);
     try {
@@ -56,32 +81,38 @@ function Discovery() {
   };
 
   // When logged in, show an in-app header so users stay inside the app context
-  const header = (store.isHydrated && store.session) ? (
-    <header className="sticky top-0 z-40 border-b border-neutral-100 bg-card/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => nav({ to: "/app/feed" })}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-          >
-            <ArrowLeft size={13} /> Back to App
-          </button>
-          <div className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-foreground">
-            <Compass size={15} className="text-primary" /> Discover Communities
+  const header =
+    store.isHydrated && store.session ? (
+      <header className="sticky top-0 z-40 border-b border-neutral-100 bg-card/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => nav({ to: "/app/feed" })}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            >
+              <ArrowLeft size={13} /> Back to App
+            </button>
+            <div className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-foreground">
+              <Compass size={15} className="text-primary" /> Discover Communities
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:block text-xs text-muted-foreground">
+              Signed in as{" "}
+              <span className="font-semibold text-foreground">{store.session.name}</span>
+            </span>
+            <button
+              onClick={() => nav({ to: "/create-community" })}
+              className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+            >
+              + Create community
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="hidden sm:block text-xs text-muted-foreground">Signed in as <span className="font-semibold text-foreground">{store.session.name}</span></span>
-          <button
-            onClick={() => nav({ to: "/create-community" })}
-            className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
-          >
-            + Create community
-          </button>
-        </div>
-      </div>
-    </header>
-  ) : <PublicHeader />;
+      </header>
+    ) : (
+      <PublicHeader />
+    );
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -93,7 +124,8 @@ function Discovery() {
           Discover tech &amp; expert-led communities
         </h1>
         <p className="mt-2.5 text-base text-slate-600">
-          Join focused spaces dedicated to advancing your skills in engineering, automation, and digital business.
+          Join focused spaces dedicated to advancing your skills in engineering, automation, and
+          digital business.
         </p>
 
         <div className="mt-8 flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
@@ -106,9 +138,16 @@ function Discovery() {
             suppressHydrationWarning
           />
           {query && (
-            <button onClick={() => setQuery("")} className="shrink-0 text-slate-400 hover:text-slate-600"><X size={15} /></button>
+            <button
+              onClick={() => setQuery("")}
+              className="shrink-0 text-slate-400 hover:text-slate-600"
+            >
+              <X size={15} />
+            </button>
           )}
-          <button className="shrink-0 rounded-full bg-primary px-4 py-1.5 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90">Find</button>
+          <button className="shrink-0 rounded-full bg-primary px-4 py-1.5 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90">
+            Find
+          </button>
         </div>
 
         {/* Category filters */}
@@ -141,9 +180,19 @@ function Discovery() {
           <>
             <div className="mb-5 flex items-center justify-between">
               <p className="text-sm font-medium text-slate-600">
-                <span className="font-semibold text-slate-900">{filtered.length}</span> {filtered.length === 1 ? "community" : "communities"}{hasFilters ? " found" : ""}
+                <span className="font-semibold text-slate-900">{filtered.length}</span>{" "}
+                {filtered.length === 1 ? "community" : "communities"}
+                {hasFilters ? " found" : ""}
               </p>
-              <button onClick={() => { if (store.isHydrated && store.session) nav({ to: "/create-community" }); else nav({ to: "/auth", search: { mode: "signup" } }); }} className="text-sm font-semibold text-primary hover:underline">+ Create yours</button>
+              <button
+                onClick={() => {
+                  if (store.isHydrated && store.session) nav({ to: "/create-community" });
+                  else nav({ to: "/auth", search: { mode: "signup" } });
+                }}
+                className="text-sm font-semibold text-primary hover:underline"
+              >
+                + Create yours
+              </button>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((c) => (
@@ -165,28 +214,48 @@ function Discovery() {
         {modal && (
           <motion.div
             className="fixed inset-0 z-50 grid place-items-end bg-slate-900/40 backdrop-blur-sm sm:place-items-center"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={() => setModal(false)}
           >
             <motion.div
-              initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 40, opacity: 0 }}
               transition={{ type: "spring", stiffness: 380, damping: 32 }}
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-md rounded-t-2xl border border-slate-200 bg-white p-6 shadow-lg sm:rounded-2xl"
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-slate-900">Join SukaSpace</span>
-                <button onClick={() => setModal(false)} className="rounded-md p-1 text-slate-400 hover:bg-slate-100"><X size={16} /></button>
+                <button
+                  onClick={() => setModal(false)}
+                  className="rounded-md p-1 text-slate-400 hover:bg-slate-100"
+                >
+                  <X size={16} />
+                </button>
               </div>
               <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
                 Create an account to continue
               </h3>
               <p className="mt-1 text-sm text-slate-600">
-                Sign up in seconds to join {joinTarget ? `"${joinTarget.title}"` : "this community"} or launch your own space.
+                Sign up in seconds to join {joinTarget ? `"${joinTarget.title}"` : "this community"}{" "}
+                or launch your own space.
               </p>
               <div className="mt-5 flex flex-col gap-2">
-                <button onClick={() => nav({ to: "/auth", search: { mode: "signup" } })} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Sign up free</button>
-                <button onClick={() => nav({ to: "/auth", search: { mode: "signin" } })} className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50">Log in</button>
+                <button
+                  onClick={() => nav({ to: "/auth", search: { mode: "signup" } })}
+                  className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90"
+                >
+                  Sign up free
+                </button>
+                <button
+                  onClick={() => nav({ to: "/auth", search: { mode: "signin" } })}
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50"
+                >
+                  Log in
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -223,7 +292,8 @@ function ZeroState() {
           Be the first to lead this niche
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-slate-600">
-          We couldn't find any communities here yet. This is your chance to claim this space, build your authority, and gather the first 1,000 members in your field.
+          We couldn't find any communities here yet. This is your chance to claim this space, build
+          your authority, and gather the first 1,000 members in your field.
         </p>
 
         {/* CTA */}
@@ -257,7 +327,12 @@ function ZeroState() {
 
 // ─── Community Card ───────────────────────────────────────────────────────────
 
-function CommunityCard({ community, isNew, joined, onJoin }: {
+function CommunityCard({
+  community,
+  isNew,
+  joined,
+  onJoin,
+}: {
   community: Community;
   isNew: boolean;
   joined: boolean;
@@ -272,7 +347,9 @@ function CommunityCard({ community, isNew, joined, onJoin }: {
     >
       <div className={`relative h-24 bg-gradient-to-br ${community.banner}`}>
         {isNew && (
-          <span className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">New</span>
+          <span className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+            New
+          </span>
         )}
         <div className="absolute -bottom-4 left-4">
           <div className="grid h-10 w-10 place-items-center rounded-xl border-2 border-white bg-slate-800 text-sm font-bold text-white shadow-sm">
@@ -283,12 +360,19 @@ function CommunityCard({ community, isNew, joined, onJoin }: {
       <div className="flex flex-1 flex-col p-4 pt-6">
         <div className="min-w-0">
           <div className="text-sm font-semibold text-slate-900 truncate">{community.title}</div>
-          <div className="text-xs text-slate-500">by {community.creator} · {community.category}</div>
+          <div className="text-xs text-slate-500">
+            by {community.creator} · {community.category}
+          </div>
         </div>
         <p className="mt-2 line-clamp-2 flex-1 text-sm text-slate-600">{community.summary}</p>
         <div className="mt-3 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1 text-xs text-slate-500"><Users size={12} />{community.members.toLocaleString()} members</span>
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${community.tag === "FREE" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+          <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+            <Users size={12} />
+            {community.members.toLocaleString()} members
+          </span>
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${community.tag === "FREE" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+          >
             {community.tag === "FREE" ? "FREE" : community.price || "PAID"}
           </span>
         </div>
@@ -300,9 +384,14 @@ function CommunityCard({ community, isNew, joined, onJoin }: {
               : "bg-primary text-white hover:bg-primary/90"
           }`}
         >
-          {joined
-            ? <span className="inline-flex items-center justify-center gap-1"><CheckCircle2 size={14} />Joined</span>
-            : "Join community"}
+          {joined ? (
+            <span className="inline-flex items-center justify-center gap-1">
+              <CheckCircle2 size={14} />
+              Joined
+            </span>
+          ) : (
+            "Join community"
+          )}
         </button>
       </div>
     </motion.div>
@@ -319,9 +408,13 @@ function EmptyFilter({ query, cat, onReset }: { query: string; cat: string; onRe
       </div>
       <h3 className="mt-3 text-base font-semibold text-slate-900">No communities match</h3>
       <p className="mt-1 text-sm text-slate-500">
-        {query ? `No results for "${query}"` : `No communities in "${cat}" yet`}. Try a different search or category.
+        {query ? `No results for "${query}"` : `No communities in "${cat}" yet`}. Try a different
+        search or category.
       </p>
-      <button onClick={onReset} className="mt-4 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50 transition">
+      <button
+        onClick={onReset}
+        className="mt-4 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50 transition"
+      >
         Clear filters
       </button>
     </div>

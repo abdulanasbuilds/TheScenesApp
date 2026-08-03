@@ -3,6 +3,7 @@
 You picked all four slices with "Additive + refactor." That's ~20 features touching the store, wizards, dashboards, and DB. To ship without breaking existing flows I'll execute in four sequenced phases, each self-contained and independently deployable. After each phase I'll run `bun run build` + a Playwright audit before moving on.
 
 ## Phase 1 — Community creation parity (create-community + about page)
+
 - Extend `Community` in `src/lib/app-store.tsx`:
   - `iconUrl` (128×128), `coverImageUrl` (1084×576), `brandColor` (hex), `isPrivate`, `discoveryKeywords: string[]` (max 11), `screeningQuestions: string[]` (max 3), `aboutMedia`, `aboutBody`.
 - Refactor `src/routes/create-community.tsx` into a 5-step Skool-style wizard: Basics → Branding (icon+cover+brand color) → Privacy & Discovery (keywords + private/public) → Screening (0–3 questions) → Pricing (see Phase 4).
@@ -11,6 +12,7 @@ You picked all four slices with "Additive + refactor." That's ~20 features touch
 - Migration `supabase/community-parity.sql`: new columns + GRANTs + RLS.
 
 ## Phase 2 — Course/classroom parity
+
 - Extend `Course`/`CourseModule` in store: `coverImageUrl` (1460×752), `folders: {id,title,lessonIds[]}[]`, `dripDaysFromJoin`, `requiredLevel` (level-gate), `courseKey` (uuid, for import), `videoUploadUrl` (native-hosted URL string field, no actual host).
 - Refactor `src/routes/app.courses.tsx` builder:
   - Cover image uploader with size hint.
@@ -22,6 +24,7 @@ You picked all four slices with "Additive + refactor." That's ~20 features touch
 - Migration extends `courses` and `course_modules`.
 
 ## Phase 3 — Engagement + anti-spam
+
 - Store additions: `pinnedPostId` per community, `requiredLevelToPost` per community, `lastBroadcastAt` per community, `emailReminderEnabled` per event.
 - `src/routes/app.feed.tsx`: pinned post rendered at top with "Start Here" badge + required-action checklist state per user.
 - Composer disabled with tooltip when `user.level < community.requiredLevelToPost`.
@@ -30,6 +33,7 @@ You picked all four slices with "Additive + refactor." That's ~20 features touch
 - Server fn `sendBroadcastEmail` in `src/lib/email.functions.ts` (Resend, throttled server-side too).
 
 ## Phase 4 — Monetization + analytics parity
+
 - Pricing model refactor in `src/lib/plans.ts` + create-community: `Free | Subscription | Freemium | Tiered | OneTime`. Tiered = array of `{name, price, interval}`.
 - Store: `community.pricingModel`, `community.tiers[]`, `community.oneTimePrice`.
 - Creator Hub Overview: add MRR, retention %, page-visitor count, conversion % tiles wired to real store aggregates (deterministic from members + payments, not `Math.random`).
@@ -37,6 +41,7 @@ You picked all four slices with "Additive + refactor." That's ~20 features touch
 - Payouts page already exists — add "Payout frequency" selector (Weekly/Monthly).
 
 ## Technical guardrails
+
 - No breaking rename of existing fields — all new fields optional with sensible defaults.
 - Every store method keeps its old signature; new params are optional/overloaded like existing `pushNotification`.
 - Every new DB column ships with `GRANT` + RLS in its migration.
@@ -45,6 +50,7 @@ You picked all four slices with "Additive + refactor." That's ~20 features touch
 - Public routes stay untouched (per memory rule): `index`, `discover`, `creators`, `learners`, `pricing`, `auth` — only additions are the new `c.$slug.about.tsx` and inline elements the user explicitly asked for.
 
 ## Deliverable order per turn
+
 Turn A (next): Phase 1 end-to-end (store + wizard + about page + migration + build/audit).
 Turn B: Phase 2.
 Turn C: Phase 3.

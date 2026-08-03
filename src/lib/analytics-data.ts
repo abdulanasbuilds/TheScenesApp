@@ -99,13 +99,19 @@ export function buildSummary(input: AnalyticsInput): MetricSummary[] {
       key: "members",
       label: "Total members",
       value: input.members.toLocaleString(),
-      hint: input.members === 0 ? "Share your community link to get the first join" : "Across all your communities",
+      hint:
+        input.members === 0
+          ? "Share your community link to get the first join"
+          : "Across all your communities",
     },
     {
       key: "mrr",
       label: "Recognised revenue",
       value: money(input.revenueUsd),
-      hint: input.revenueUsd === 0 ? "Appears after your first verified payment" : "Verified payments in this range",
+      hint:
+        input.revenueUsd === 0
+          ? "Appears after your first verified payment"
+          : "Verified payments in this range",
     },
     {
       key: "engagement",
@@ -117,13 +123,19 @@ export function buildSummary(input: AnalyticsInput): MetricSummary[] {
       key: "retention",
       label: "Active contributors",
       value: activeSignals.toLocaleString(),
-      hint: activeSignals === 0 ? "No member activity recorded yet" : "Posts + lesson completions in range",
+      hint:
+        activeSignals === 0
+          ? "No member activity recorded yet"
+          : "Posts + lesson completions in range",
     },
     {
       key: "visitors",
       label: "Published courses",
       value: input.publishedCourses.toLocaleString(),
-      hint: input.publishedCourses === 0 ? "Publish a course to give members a path" : "Live and visible to members",
+      hint:
+        input.publishedCourses === 0
+          ? "Publish a course to give members a path"
+          : "Live and visible to members",
     },
     {
       key: "conversion",

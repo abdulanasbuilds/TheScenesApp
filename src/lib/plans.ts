@@ -11,15 +11,15 @@
 export type PlanId = "free" | "pro";
 
 export type PlanFeatures = {
-  hostedVideo: boolean;         // Bunny.net streaming
-  hostedFiles: boolean;         // Cloudflare R2 uploads
-  externalEmbeds: boolean;      // YouTube, Vimeo, Loom, Drive, Notion…
+  hostedVideo: boolean; // Bunny.net streaming
+  hostedFiles: boolean; // Cloudflare R2 uploads
+  externalEmbeds: boolean; // YouTube, Vimeo, Loom, Drive, Notion…
   customDomain: boolean;
   analyticsLevel: "basic" | "advanced";
   affiliateProgram: boolean;
   instantWithdrawal: boolean;
-  maxCommunities: number;       // -1 = unlimited
-  maxCourses: number;           // -1 = unlimited
+  maxCommunities: number; // -1 = unlimited
+  maxCourses: number; // -1 = unlimited
 };
 
 export type Plan = {
@@ -43,7 +43,7 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "free",
     name: "Free",
     priceUsdCents: 0,
-    platformFeeBps: 700,   // 7% — overridden by env.FREE_PLAN_FEE_BPS server-side
+    platformFeeBps: 700, // 7% — overridden by env.FREE_PLAN_FEE_BPS server-side
     storageBytes: 0,
     features: {
       hostedVideo: false,
@@ -60,8 +60,8 @@ export const PLANS: Record<PlanId, Plan> = {
   pro: {
     id: "pro",
     name: "Pro",
-    priceUsdCents: 4900,   // $49 — overridden by env.PRO_PLAN_PRICE_CENTS server-side
-    platformFeeBps: 0,     // 0% — overridden by env.PRO_PLAN_FEE_BPS server-side
+    priceUsdCents: 4900, // $49 — overridden by env.PRO_PLAN_PRICE_CENTS server-side
+    platformFeeBps: 0, // 0% — overridden by env.PRO_PLAN_FEE_BPS server-side
     storageBytes: 107_374_182_400, // 100 GB — env.PRO_PLAN_STORAGE_BYTES server-side
     features: {
       hostedVideo: true,

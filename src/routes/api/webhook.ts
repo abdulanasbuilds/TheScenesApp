@@ -20,14 +20,14 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 
-import { getPaymentProvider }          from "@/lib/payment-adapter";
-import { adminDb }                     from "@/lib/supabase-admin";
-import { checkWebhookEventRate }       from "@/lib/rate-limit";
-import { recordPaymentEarnings }       from "@/lib/monetization/earnings";
+import { getPaymentProvider } from "@/lib/payment-adapter";
+import { adminDb } from "@/lib/supabase-admin";
+import { checkWebhookEventRate } from "@/lib/rate-limit";
+import { recordPaymentEarnings } from "@/lib/monetization/earnings";
 import { markWithdrawalPaid, markWithdrawalFailed } from "@/lib/monetization/withdrawals";
-import { grantCommunityAccess, grantCourseAccess }  from "@/lib/monetization/access";
-import { setStorageQuota }             from "@/lib/monetization/storage";
-import { env }                         from "@/lib/env";
+import { grantCommunityAccess, grantCourseAccess } from "@/lib/monetization/access";
+import { setStorageQuota } from "@/lib/monetization/storage";
+import { env } from "@/lib/env";
 
 // ─── Route definition ─────────────────────────────────────────────────────────
 
@@ -43,8 +43,8 @@ export const Route = createFileRoute("/api/webhook")({
 
         // ── 2. Validate signature
         const signature = request.headers.get("x-paystack-signature") ?? "";
-        const provider  = getPaymentProvider();
-        const valid     = await provider.verifyWebhookSignature(rawBody, signature);
+        const provider = getPaymentProvider();
+        const valid = await provider.verifyWebhookSignature(rawBody, signature);
         if (!valid) {
           console.warn("[webhook] Invalid signature — rejecting request.");
           return respond(401, "Invalid signature");
@@ -64,7 +64,7 @@ export const Route = createFileRoute("/api/webhook")({
         // ── 5. Idempotency check via webhook_events table
         const { data: existing } = await adminDb.selectOne<{ id: string; processed: boolean }>(
           "webhook_events",
-          { "id": `eq.${event.id}` }
+          { id: `eq.${event.id}` },
         );
 
         if (existing?.processed) {
@@ -72,14 +72,18 @@ export const Route = createFileRoute("/api/webhook")({
         }
 
         // ── 6. Insert/update webhook event row (mark as in-progress)
-        await adminDb.upsert("webhook_events", {
-          id:          event.id,
-          provider:    provider.name,
-          event_type:  event.type,
-          raw_payload: rawBody,
-          processed:   false,
-          created_at:  new Date().toISOString(),
-        }, "id");
+        await adminDb.upsert(
+          "webhook_events",
+          {
+            id: event.id,
+            provider: provider.name,
+            event_type: event.type,
+            raw_payload: rawBody,
+            processed: false,
+            created_at: new Date().toISOString(),
+          },
+          "id",
+        );
 
         // ── 7. Process event (best-effort — errors are logged and stored)
         let processError: string | null = null;
@@ -91,11 +95,15 @@ export const Route = createFileRoute("/api/webhook")({
         }
 
         // ── 8. Mark as processed (even if handler errored — prevents infinite retries)
-        await adminDb.update("webhook_events", { "id": `eq.${event.id}` }, {
-          processed:    !processError,
-          processed_at: new Date().toISOString(),
-          error:        processError,
-        });
+        await adminDb.update(
+          "webhook_events",
+          { id: `eq.${event.id}` },
+          {
+            processed: !processError,
+            processed_at: new Date().toISOString(),
+            error: processError,
+          },
+        );
 
         return respond(200, "OK");
       },
@@ -140,10 +148,15 @@ async function handlePaymentSuccess(event: WebhookEvent): Promise<void> {
 
   // Look up our transaction by reference
   const { data: txn } = await adminDb.selectOne<{
-    id: string; status: string; payment_type: string;
-    from_email: string; to_email: string | null;
-    resource_id: number | null; gross_amount_cents: number; currency: string;
-  }>("payment_transactions", { "paystack_reference": `eq.${reference}` });
+    id: string;
+    status: string;
+    payment_type: string;
+    from_email: string;
+    to_email: string | null;
+    resource_id: number | null;
+    gross_amount_cents: number;
+    currency: string;
+  }>("payment_transactions", { paystack_reference: `eq.${reference}` });
 
   if (!txn) {
     // Payment not in our system (e.g. test transaction from dashboard)
@@ -155,14 +168,17 @@ async function handlePaymentSuccess(event: WebhookEvent): Promise<void> {
 
   // Verify amount matches
   if (event.amountCents && Math.abs(event.amountCents - txn.gross_amount_cents) > 1) {
-    console.error(`[webhook] Amount mismatch for ${reference}: expected ${txn.gross_amount_cents}, got ${event.amountCents}`);
+    console.error(
+      `[webhook] Amount mismatch for ${reference}: expected ${txn.gross_amount_cents}, got ${event.amountCents}`,
+    );
     return;
   }
 
   // Mark transaction completed
-  await adminDb.update("payment_transactions",
-    { "id": `eq.${txn.id}` },
-    { status: "completed", updated_at: new Date().toISOString() }
+  await adminDb.update(
+    "payment_transactions",
+    { id: `eq.${txn.id}` },
+    { status: "completed", updated_at: new Date().toISOString() },
   );
 
   const customerEmail = event.customerEmail ?? txn.from_email;
@@ -170,41 +186,51 @@ async function handlePaymentSuccess(event: WebhookEvent): Promise<void> {
   // Record creator earnings
   if (txn.to_email && txn.payment_type !== "pro_subscription") {
     // Get creator's plan fee
-    const { data: sub } = await adminDb.selectOne<{ plan_id: string }>(
-      "creator_subscriptions", { "creator_email": `eq.${txn.to_email}` }
-    );
-    const planId  = sub?.plan_id ?? "free";
-    const feeBps  = planId === "pro" ? env.PRO_PLAN_FEE_BPS : env.FREE_PLAN_FEE_BPS;
+    const { data: sub } = await adminDb.selectOne<{ plan_id: string }>("creator_subscriptions", {
+      creator_email: `eq.${txn.to_email}`,
+    });
+    const planId = sub?.plan_id ?? "free";
+    const feeBps = planId === "pro" ? env.PRO_PLAN_FEE_BPS : env.FREE_PLAN_FEE_BPS;
 
     await recordPaymentEarnings({
-      creatorEmail:    txn.to_email,
-      transactionId:   txn.id,
+      creatorEmail: txn.to_email,
+      transactionId: txn.id,
       grossAmountCents: txn.gross_amount_cents,
-      platformFeeBps:  feeBps,
-      currency:        txn.currency,
-      description:     `Payment from ${customerEmail}`,
+      platformFeeBps: feeBps,
+      currency: txn.currency,
+      description: `Payment from ${customerEmail}`,
     });
   }
 
   // Grant access to paid content
   if (txn.payment_type === "community_access" && txn.resource_id) {
     await grantCommunityAccess({
-      userEmail: customerEmail, communityId: txn.resource_id,
-      transactionId: txn.id, accessType: "paid",
+      userEmail: customerEmail,
+      communityId: txn.resource_id,
+      transactionId: txn.id,
+      accessType: "paid",
     });
   } else if (txn.payment_type === "course_access" && txn.resource_id) {
     await grantCourseAccess({
-      userEmail: customerEmail, courseId: txn.resource_id,
-      transactionId: txn.id, accessType: "paid",
+      userEmail: customerEmail,
+      courseId: txn.resource_id,
+      transactionId: txn.id,
+      accessType: "paid",
     });
   } else if (txn.payment_type === "pro_subscription") {
     await Promise.all([
-      adminDb.upsert("creator_subscriptions", {
-        creator_email: customerEmail, plan_id: "pro", status: "active",
-        current_period_start: new Date().toISOString(),
-        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date().toISOString(),
-      }, "creator_email"),
+      adminDb.upsert(
+        "creator_subscriptions",
+        {
+          creator_email: customerEmail,
+          plan_id: "pro",
+          status: "active",
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        "creator_email",
+      ),
       setStorageQuota(customerEmail, env.PRO_PLAN_STORAGE_BYTES),
     ]);
   }
@@ -213,14 +239,14 @@ async function handlePaymentSuccess(event: WebhookEvent): Promise<void> {
 // ── transfer.success ──────────────────────────────────────────────────────────
 
 async function handleTransferSuccess(event: WebhookEvent): Promise<void> {
-  const raw  = event.raw.data as Record<string, unknown> | undefined;
+  const raw = event.raw.data as Record<string, unknown> | undefined;
   const code = (raw?.transfer_code ?? raw?.id) as string | undefined;
-  const ref  = event.reference;
+  const ref = event.reference;
 
   // Find withdrawal by Paystack transfer code or our reference
   let filter: Record<string, string> | null = null;
-  if (code) filter = { "paystack_transfer_code": `eq.${code}` };
-  else if (ref) filter = { "id": `eq.${ref}` };
+  if (code) filter = { paystack_transfer_code: `eq.${code}` };
+  else if (ref) filter = { id: `eq.${ref}` };
 
   if (!filter) return;
 
@@ -233,14 +259,14 @@ async function handleTransferSuccess(event: WebhookEvent): Promise<void> {
 // ── transfer.failed / transfer.reversed ───────────────────────────────────────
 
 async function handleTransferFailed(event: WebhookEvent): Promise<void> {
-  const raw    = event.raw.data as Record<string, unknown> | undefined;
-  const code   = (raw?.transfer_code ?? raw?.id) as string | undefined;
+  const raw = event.raw.data as Record<string, unknown> | undefined;
+  const code = (raw?.transfer_code ?? raw?.id) as string | undefined;
   const reason = (raw?.reason ?? "Transfer failed") as string;
 
   if (!code) return;
-  const { data: wd } = await adminDb.selectOne<{ id: string }>(
-    "withdrawal_requests", { "paystack_transfer_code": `eq.${code}` }
-  );
+  const { data: wd } = await adminDb.selectOne<{ id: string }>("withdrawal_requests", {
+    paystack_transfer_code: `eq.${code}`,
+  });
   if (!wd) return;
   await markWithdrawalFailed(wd.id, reason);
 }
@@ -252,12 +278,18 @@ async function handleSubscriptionCreated(event: WebhookEvent): Promise<void> {
   if (!email) return;
 
   await Promise.all([
-    adminDb.upsert("creator_subscriptions", {
-      creator_email: email, plan_id: "pro", status: "active",
-      current_period_start: new Date().toISOString(),
-      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString(),
-    }, "creator_email"),
+    adminDb.upsert(
+      "creator_subscriptions",
+      {
+        creator_email: email,
+        plan_id: "pro",
+        status: "active",
+        current_period_start: new Date().toISOString(),
+        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      "creator_email",
+    ),
     setStorageQuota(email, env.PRO_PLAN_STORAGE_BYTES),
   ]);
 }
@@ -268,9 +300,10 @@ async function handleSubscriptionCancelled(event: WebhookEvent): Promise<void> {
   const email = event.customerEmail;
   if (!email) return;
 
-  await adminDb.update("creator_subscriptions",
-    { "creator_email": `eq.${email}` },
-    { status: "cancelled", updated_at: new Date().toISOString() }
+  await adminDb.update(
+    "creator_subscriptions",
+    { creator_email: `eq.${email}` },
+    { status: "cancelled", updated_at: new Date().toISOString() },
   );
 }
 

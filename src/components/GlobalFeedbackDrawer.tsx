@@ -15,7 +15,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppStore } from "@/lib/app-store";
-import { FEEDBACK_CATEGORIES, submitFeedback, type FeedbackCategory } from "@/lib/feedback.functions";
+import {
+  FEEDBACK_CATEGORIES,
+  submitFeedback,
+  type FeedbackCategory,
+} from "@/lib/feedback.functions";
 
 /**
  * Global feedback entry point. Mount <GlobalFeedbackDrawer /> ONCE near the

@@ -35,7 +35,7 @@ export const verifyPaystackPayment = createServerFn({ method: "POST" })
             Authorization: `Bearer ${secretKey}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
     } catch (err) {
       console.error("[paystack] Network error contacting Paystack:", err);
@@ -61,7 +61,7 @@ export const verifyPaystackPayment = createServerFn({ method: "POST" })
 
     if (!result.status || result.data?.status !== "success") {
       throw new Error(
-        result.message ?? "Payment was not completed. Please try again or contact support."
+        result.message ?? "Payment was not completed. Please try again or contact support.",
       );
     }
 

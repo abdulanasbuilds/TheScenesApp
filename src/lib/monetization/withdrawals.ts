@@ -22,7 +22,7 @@ import { getCreatorBalance, recordWithdrawalDeduction } from "./earnings";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type WithdrawalStatus = "pending" | "processing" | "paid" | "failed" | "reversed";
-export type WithdrawalType   = "standard" | "instant";
+export type WithdrawalType = "standard" | "instant";
 
 export type WithdrawalRequest = {
   id: string;
@@ -53,8 +53,7 @@ export type CreateWithdrawalInput = {
 };
 
 type CreateWithdrawalResult =
-  | { ok: true; withdrawal: WithdrawalRequest }
-  | { ok: false; error: string };
+  { ok: true; withdrawal: WithdrawalRequest } | { ok: false; error: string };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -85,15 +84,15 @@ function dbRowToWithdrawal(r: Record<string, unknown>): WithdrawalRequest {
 // ─── Create withdrawal request ────────────────────────────────────────────────
 
 export async function createWithdrawalRequest(
-  input: CreateWithdrawalInput
+  input: CreateWithdrawalInput,
 ): Promise<CreateWithdrawalResult> {
   const currency = input.currency ?? "NGN";
   const withdrawalType = input.withdrawalType ?? "standard";
 
   // Read fee config from env
-  const fixedFeeCents   = parseInt(process.env.WITHDRAWAL_FIXED_FEE_CENTS  ?? "10000", 10);
-  const percentFeeBps   = parseInt(process.env.WITHDRAWAL_PERCENT_FEE_BPS   ?? "100",   10);
-  const minCents        = parseInt(process.env.MIN_WITHDRAWAL_AMOUNT_CENTS   ?? "500000", 10);
+  const fixedFeeCents = parseInt(process.env.WITHDRAWAL_FIXED_FEE_CENTS ?? "10000", 10);
+  const percentFeeBps = parseInt(process.env.WITHDRAWAL_PERCENT_FEE_BPS ?? "100", 10);
+  const minCents = parseInt(process.env.MIN_WITHDRAWAL_AMOUNT_CENTS ?? "500000", 10);
 
   // Validate minimum
   if (input.amountCents < minCents) {
@@ -125,26 +124,26 @@ export async function createWithdrawalRequest(
   }
 
   const withdrawal: Record<string, unknown> = {
-    id:                  generateId(),
-    creator_email:       input.creatorEmail,
-    amount_cents:        input.amountCents,
+    id: generateId(),
+    creator_email: input.creatorEmail,
+    amount_cents: input.amountCents,
     currency,
-    withdrawal_type:     withdrawalType,
-    fee_cents:           feeCents,
-    net_amount_cents:    netCents,
-    bank_code:           input.bankCode,
+    withdrawal_type: withdrawalType,
+    fee_cents: feeCents,
+    net_amount_cents: netCents,
+    bank_code: input.bankCode,
     bank_account_number: input.bankAccountNumber,
-    bank_account_name:   input.bankAccountName,
-    status:              "pending",
+    bank_account_name: input.bankAccountName,
+    status: "pending",
     paystack_transfer_code: null,
-    failure_reason:      null,
-    requested_at:        new Date().toISOString(),
-    updated_at:          new Date().toISOString(),
+    failure_reason: null,
+    requested_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
   const { data, error } = await adminDb.insert<Record<string, unknown>>(
     "withdrawal_requests",
-    withdrawal
+    withdrawal,
   );
 
   if (error || !data) {
@@ -158,14 +157,17 @@ export async function createWithdrawalRequest(
 // ─── State transitions ────────────────────────────────────────────────────────
 
 /** Transition a withdrawal to 'processing' and deduct from ledger. */
-export async function processWithdrawal(withdrawalId: string): Promise<{ ok: boolean; error?: string }> {
+export async function processWithdrawal(
+  withdrawalId: string,
+): Promise<{ ok: boolean; error?: string }> {
   // Fetch the request
   const { data: wd, error: fetchErr } = await adminDb.selectOne<Record<string, unknown>>(
     "withdrawal_requests",
-    { "id": `eq.${withdrawalId}` }
+    { id: `eq.${withdrawalId}` },
   );
   if (fetchErr || !wd) return { ok: false, error: "Withdrawal not found." };
-  if (wd.status !== "pending") return { ok: false, error: `Cannot process withdrawal in '${wd.status}' state.` };
+  if (wd.status !== "pending")
+    return { ok: false, error: `Cannot process withdrawal in '${wd.status}' state.` };
 
   // Deduct from earnings ledger
   const deducted = await recordWithdrawalDeduction({
@@ -179,8 +181,8 @@ export async function processWithdrawal(withdrawalId: string): Promise<{ ok: boo
   // Update status to processing
   const { error } = await adminDb.update(
     "withdrawal_requests",
-    { "id": `eq.${withdrawalId}` },
-    { status: "processing", updated_at: new Date().toISOString() }
+    { id: `eq.${withdrawalId}` },
+    { status: "processing", updated_at: new Date().toISOString() },
   );
 
   return { ok: !error, error: error?.message };
@@ -189,36 +191,34 @@ export async function processWithdrawal(withdrawalId: string): Promise<{ ok: boo
 /** Mark a withdrawal as paid (after Paystack transfer confirms). */
 export async function markWithdrawalPaid(
   withdrawalId: string,
-  paystackTransferCode?: string
+  paystackTransferCode?: string,
 ): Promise<void> {
   await adminDb.update(
     "withdrawal_requests",
-    { "id": `eq.${withdrawalId}` },
+    { id: `eq.${withdrawalId}` },
     {
       status: "paid",
       paystack_transfer_code: paystackTransferCode ?? null,
       processed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }
+    },
   );
 }
 
 /** Mark a withdrawal as failed (with optional reason). */
-export async function markWithdrawalFailed(
-  withdrawalId: string,
-  reason?: string
-): Promise<void> {
+export async function markWithdrawalFailed(withdrawalId: string, reason?: string): Promise<void> {
   // Reverse the ledger deduction if it was processing
-  const { data: wd } = await adminDb.selectOne<Record<string, unknown>>(
-    "withdrawal_requests",
-    { "id": `eq.${withdrawalId}` }
-  );
+  const { data: wd } = await adminDb.selectOne<Record<string, unknown>>("withdrawal_requests", {
+    id: `eq.${withdrawalId}`,
+  });
 
   if (wd && wd.status === "processing") {
     // Re-credit the amount back to the creator's balance
     const { getCreatorBalance: getBalance } = await import("./earnings");
     const balance = await getBalance(wd.creator_email as string, wd.currency as string);
-    await (await import("@/lib/supabase-admin")).adminDb.insert("earnings_ledger", {
+    await (
+      await import("@/lib/supabase-admin")
+    ).adminDb.insert("earnings_ledger", {
       id: `earn_rev_${Date.now()}`,
       creator_email: wd.creator_email,
       transaction_id: null,
@@ -233,12 +233,12 @@ export async function markWithdrawalFailed(
 
   await adminDb.update(
     "withdrawal_requests",
-    { "id": `eq.${withdrawalId}` },
+    { id: `eq.${withdrawalId}` },
     {
       status: "failed",
       failure_reason: reason ?? "Unknown error",
       updated_at: new Date().toISOString(),
-    }
+    },
   );
 }
 
@@ -246,16 +246,13 @@ export async function markWithdrawalFailed(
 
 export async function getWithdrawalHistory(
   creatorEmail: string,
-  limit = 20
+  limit = 20,
 ): Promise<WithdrawalRequest[]> {
-  const { data, error } = await adminDb.select<Record<string, unknown>>(
-    "withdrawal_requests",
-    {
-      "creator_email": `eq.${creatorEmail}`,
-      "order": "requested_at.desc",
-      "limit": String(limit),
-    }
-  );
+  const { data, error } = await adminDb.select<Record<string, unknown>>("withdrawal_requests", {
+    creator_email: `eq.${creatorEmail}`,
+    order: "requested_at.desc",
+    limit: String(limit),
+  });
   if (error || !data) return [];
   return data.map(dbRowToWithdrawal);
 }

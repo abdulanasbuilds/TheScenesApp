@@ -103,16 +103,19 @@ export const sendEnrollmentEmail = createServerFn({ method: "POST" })
   });
 
 export const sendCommunityJoinEmail = createServerFn({ method: "POST" })
-  .validator(z.object({
-    email: z.string().email(),
-    name: z.string(),
-    communityTitle: z.string(),
-    communityTag: z.enum(["FREE", "PAID"]),
-  }))
+  .validator(
+    z.object({
+      email: z.string().email(),
+      name: z.string(),
+      communityTitle: z.string(),
+      communityTag: z.enum(["FREE", "PAID"]),
+    }),
+  )
   .handler(async ({ data }) => {
-    const tagLine = data.communityTag === "PAID"
-      ? "Your payment was confirmed and your access is now active."
-      : "Access is free — you're all set.";
+    const tagLine =
+      data.communityTag === "PAID"
+        ? "Your payment was confirmed and your access is now active."
+        : "Access is free — you're all set.";
     await sendEmail(
       data.email,
       `You joined "${data.communityTitle}" on SukaSpace`,
@@ -128,13 +131,15 @@ export const sendCommunityJoinEmail = createServerFn({ method: "POST" })
   });
 
 export const sendPaymentReceiptEmail = createServerFn({ method: "POST" })
-  .validator(z.object({
-    email: z.string().email(),
-    name: z.string(),
-    communityTitle: z.string(),
-    amountDisplay: z.string(),
-    reference: z.string(),
-  }))
+  .validator(
+    z.object({
+      email: z.string().email(),
+      name: z.string(),
+      communityTitle: z.string(),
+      amountDisplay: z.string(),
+      reference: z.string(),
+    }),
+  )
   .handler(async ({ data }) => {
     await sendEmail(
       data.email,

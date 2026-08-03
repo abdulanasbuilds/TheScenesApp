@@ -26,16 +26,16 @@ export const getPayoutSetup = createServerFn({ method: "POST" })
   });
 
 const saveAccountSchema = z.object({
-  creatorEmail:       z.string().email(),
-  method:             z.enum(["bank", "mobile_money"]).default("bank"),
-  country:            z.string().min(2).max(2).default("NG"),
-  currency:           z.string().min(3).max(3).default("NGN"),
-  bankCode:           z.string().max(20).optional(),
-  bankName:           z.string().max(120).optional(),
-  accountNumber:      z.string().max(30).optional(),
-  accountName:        z.string().max(120).optional(),
+  creatorEmail: z.string().email(),
+  method: z.enum(["bank", "mobile_money"]).default("bank"),
+  country: z.string().min(2).max(2).default("NG"),
+  currency: z.string().min(3).max(3).default("NGN"),
+  bankCode: z.string().max(20).optional(),
+  bankName: z.string().max(120).optional(),
+  accountNumber: z.string().max(30).optional(),
+  accountName: z.string().max(120).optional(),
   mobileMoneyNetwork: z.string().max(60).optional(),
-  mobileMoneyNumber:  z.string().max(30).optional(),
+  mobileMoneyNumber: z.string().max(30).optional(),
 });
 
 export const savePayoutAccountFn = createServerFn({ method: "POST" })
@@ -43,9 +43,9 @@ export const savePayoutAccountFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => savePayoutAccount(data));
 
 const prefsSchema = z.object({
-  creatorEmail:          z.string().email(),
+  creatorEmail: z.string().email(),
   defaultWithdrawalType: z.enum(["standard", "instant"]).optional(),
-  payoutNotifications:   z.boolean().optional(),
+  payoutNotifications: z.boolean().optional(),
 });
 
 export const savePayoutPreferencesFn = createServerFn({ method: "POST" })

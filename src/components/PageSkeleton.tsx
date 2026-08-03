@@ -15,7 +15,7 @@ function Shimmer({ className }: { className?: string }) {
         "before:absolute before:inset-0 before:-translate-x-full",
         "before:animate-[shimmer_1.4s_ease-in-out_infinite]",
         "before:bg-gradient-to-r before:from-transparent before:via-white/70 before:to-transparent",
-        className
+        className,
       )}
     />
   );
@@ -123,7 +123,10 @@ export function MembersSkeleton() {
   return (
     <div className="p-4 space-y-2">
       {[...Array(8)].map((_, i) => (
-        <div key={i} className="flex items-center gap-3 rounded-lg border border-neutral-100 bg-card p-3">
+        <div
+          key={i}
+          className="flex items-center gap-3 rounded-lg border border-neutral-100 bg-card p-3"
+        >
           <Shimmer className="h-9 w-9 rounded-full shrink-0" />
           <div className="flex-1 space-y-1.5">
             <Shimmer className="h-3 w-28" />

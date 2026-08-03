@@ -46,7 +46,9 @@ function wasDismissed(): boolean {
 function markDismissed() {
   try {
     localStorage.setItem(DISMISSED_KEY, "1");
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 export function PWAInstallPrompt() {
@@ -75,7 +77,10 @@ export function PWAInstallPrompt() {
           const fallbackTimer = setTimeout(() => {
             if (hasInstallPrompt()) setVisible(true);
           }, 6000);
-          const onAvailable = () => { setVisible(true); clearTimeout(fallbackTimer); };
+          const onAvailable = () => {
+            setVisible(true);
+            clearTimeout(fallbackTimer);
+          };
           window.addEventListener("pwa-install-available", onAvailable, { once: true });
           return () => {
             clearTimeout(fallbackTimer);
@@ -94,7 +99,10 @@ export function PWAInstallPrompt() {
   };
 
   const install = async () => {
-    if (platform === "ios") { dismiss(); return; }
+    if (platform === "ios") {
+      dismiss();
+      return;
+    }
     setInstalling(true);
     const accepted = await triggerInstallPrompt();
     setInstalling(false);
@@ -167,9 +175,16 @@ export function PWAInstallPrompt() {
               <div className="mt-4 rounded-xl bg-blue-50 p-3 text-xs text-blue-800">
                 <p className="font-semibold">To install on iPhone / iPad:</p>
                 <ol className="mt-1.5 space-y-1 list-decimal list-inside">
-                  <li>Tap the <Share size={11} className="inline" /> <strong>Share</strong> button in Safari</li>
-                  <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-                  <li>Tap <strong>Add</strong> — done!</li>
+                  <li>
+                    Tap the <Share size={11} className="inline" /> <strong>Share</strong> button in
+                    Safari
+                  </li>
+                  <li>
+                    Scroll down and tap <strong>"Add to Home Screen"</strong>
+                  </li>
+                  <li>
+                    Tap <strong>Add</strong> — done!
+                  </li>
                 </ol>
               </div>
             )}

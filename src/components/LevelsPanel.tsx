@@ -2,8 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award, Plus, Trash2, Save, Lock, Unlock, Sparkles, Pencil, X } from "lucide-react";
 import {
-  loadLevels, saveLevels, sortLevels, levelForPoints, REWARD_LABEL,
-  type CommunityLevel, type RewardKind,
+  loadLevels,
+  saveLevels,
+  sortLevels,
+  levelForPoints,
+  REWARD_LABEL,
+  type CommunityLevel,
+  type RewardKind,
 } from "@/lib/gamification";
 import { SPRING_FAST, hapticTap, hapticMilestone } from "@/lib/pwa";
 import { cn } from "@/lib/utils";
@@ -12,12 +17,20 @@ type Member = { name: string; avatar: string; points: number };
 
 const REWARD_KINDS: RewardKind[] = ["course", "content", "badge", "perk"];
 
-export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; members: Member[] }) {
+export function LevelsPanel({
+  viewerPoints,
+  members,
+}: {
+  viewerPoints: number;
+  members: Member[];
+}) {
   const [levels, setLevels] = useState<CommunityLevel[]>(() => sortLevels(loadLevels()));
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => { setLevels(sortLevels(loadLevels())); }, []);
+  useEffect(() => {
+    setLevels(sortLevels(loadLevels()));
+  }, []);
 
   const viewer = useMemo(() => levelForPoints(viewerPoints, levels), [viewerPoints, levels]);
 
@@ -55,10 +68,16 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
 
   const addReward = (id: number) =>
     setLevels((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, rewards: [...l.rewards, { kind: "content", label: "" }] } : l)),
+      prev.map((l) =>
+        l.id === id ? { ...l, rewards: [...l.rewards, { kind: "content", label: "" }] } : l,
+      ),
     );
 
-  const patchReward = (id: number, index: number, next: Partial<{ kind: RewardKind; label: string }>) =>
+  const patchReward = (
+    id: number,
+    index: number,
+    next: Partial<{ kind: RewardKind; label: string }>,
+  ) =>
     setLevels((prev) =>
       prev.map((l) =>
         l.id === id
@@ -69,7 +88,9 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
 
   const removeReward = (id: number, index: number) =>
     setLevels((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, rewards: l.rewards.filter((_, i) => i !== index) } : l)),
+      prev.map((l) =>
+        l.id === id ? { ...l, rewards: l.rewards.filter((_, i) => i !== index) } : l,
+      ),
     );
 
   const commit = () => {
@@ -98,14 +119,18 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
           </span>
           <div>
             <h2 className="text-sm font-semibold text-foreground">Levels &amp; rewards</h2>
-            <p className="text-[11px] text-muted-foreground">Custom level names, point thresholds, and what each unlocks.</p>
+            <p className="text-[11px] text-muted-foreground">
+              Custom level names, point thresholds, and what each unlocks.
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <AnimatePresence>
             {saved && (
               <motion.span
-                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
                 className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700"
               >
                 Saved
@@ -115,7 +140,11 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
           {editing ? (
             <>
               <button
-                onClick={() => { hapticTap(); setLevels(sortLevels(loadLevels())); setEditing(false); }}
+                onClick={() => {
+                  hapticTap();
+                  setLevels(sortLevels(loadLevels()));
+                  setEditing(false);
+                }}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
               >
                 <X size={13} /> Cancel
@@ -129,7 +158,10 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
             </>
           ) : (
             <button
-              onClick={() => { hapticTap(); setEditing(true); }}
+              onClick={() => {
+                hapticTap();
+                setEditing(true);
+              }}
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted"
             >
               <Pencil size={13} /> Edit levels
@@ -150,7 +182,9 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
             </span>
             <div>
               <div className="text-sm font-bold text-foreground">{viewer.current.name}</div>
-              <div className="text-[11px] text-muted-foreground">{viewerPoints.toLocaleString()} points earned</div>
+              <div className="text-[11px] text-muted-foreground">
+                {viewerPoints.toLocaleString()} points earned
+              </div>
             </div>
           </div>
           <div className="text-right">
@@ -158,7 +192,9 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
               {viewer.next ? `Next: ${viewer.next.name}` : "Max level reached"}
             </div>
             {viewer.next && (
-              <div className="text-xs font-bold text-primary">{viewer.pointsToNext.toLocaleString()} pts to go</div>
+              <div className="text-xs font-bold text-primary">
+                {viewer.pointsToNext.toLocaleString()} pts to go
+              </div>
             )}
           </div>
         </div>
@@ -182,7 +218,9 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
               key={lvl.id}
               className={cn(
                 "rounded-xl border p-3.5 transition-colors",
-                unlocked ? "border-border bg-background" : "border-dashed border-border bg-muted/30",
+                unlocked
+                  ? "border-border bg-background"
+                  : "border-dashed border-border bg-muted/30",
               )}
             >
               <div className="flex flex-wrap items-center gap-3">
@@ -231,13 +269,16 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
                     <div>
                       <div className="text-sm font-semibold text-foreground">{lvl.name}</div>
                       <div className="text-[11px] text-muted-foreground">
-                        {lvl.threshold.toLocaleString()} points · {count} member{count === 1 ? "" : "s"}
+                        {lvl.threshold.toLocaleString()} points · {count} member
+                        {count === 1 ? "" : "s"}
                       </div>
                     </div>
                     <span
                       className={cn(
                         "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold",
-                        unlocked ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground",
+                        unlocked
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-muted text-muted-foreground",
                       )}
                     >
                       {unlocked ? <Unlock size={10} /> : <Lock size={10} />}
@@ -254,11 +295,15 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
                     <div key={i} className="flex items-center gap-2">
                       <select
                         value={r.kind}
-                        onChange={(e) => patchReward(lvl.id, i, { kind: e.target.value as RewardKind })}
+                        onChange={(e) =>
+                          patchReward(lvl.id, i, { kind: e.target.value as RewardKind })
+                        }
                         className="rounded-lg border border-border bg-card px-2 py-1.5 text-[11px] font-semibold text-foreground outline-none focus:border-primary"
                       >
                         {REWARD_KINDS.map((k) => (
-                          <option key={k} value={k}>{REWARD_LABEL[k]}</option>
+                          <option key={k} value={k}>
+                            {REWARD_LABEL[k]}
+                          </option>
                         ))}
                       </select>
                       <input
@@ -276,9 +321,14 @@ export function LevelsPanel({ viewerPoints, members }: { viewerPoints: number; m
                       </button>
                     </div>
                   ) : (
-                    <div key={i} className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 text-[11px] text-muted-foreground"
+                    >
                       <Sparkles size={11} className="shrink-0 text-primary" />
-                      <span className="rounded bg-muted px-1.5 py-0.5 font-semibold text-foreground">{REWARD_LABEL[r.kind]}</span>
+                      <span className="rounded bg-muted px-1.5 py-0.5 font-semibold text-foreground">
+                        {REWARD_LABEL[r.kind]}
+                      </span>
                       <span>{r.label}</span>
                     </div>
                   ),
