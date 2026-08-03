@@ -5,7 +5,7 @@ import {
   Users, DollarSign, Activity, HeartHandshake, Eye, Target, BarChart3,
 } from "lucide-react";
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import {
   buildDailySeries, buildSummary, sumSeries, type RangeKey,

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { PublicHeader } from "@/components/PublicHeader";
 import { Avatar } from "@/components/BrowserFrame";
 import { Logo } from "@/components/Logo";
-import { MOCK_CATEGORIES } from "@/lib/mock-data";
+import { COMMUNITY_CATEGORIES } from "@/lib/catalog";
 import { useAppStore, type Community } from "@/lib/app-store";
 
 export const Route = createFileRoute("/discover")({
@@ -113,7 +113,7 @@ function Discovery() {
 
         {/* Category filters */}
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          {MOCK_CATEGORIES.map((c) => (
+          {COMMUNITY_CATEGORIES.map((c) => (
             <motion.button
               key={c}
               onClick={() => setCat(c)}
