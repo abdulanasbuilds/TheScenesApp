@@ -39,6 +39,7 @@ import {
   isValidFileKey,
   setStorageQuota,
 } from "@/lib/monetization/storage";
+import { sendStorageQuotaWarningEmail } from "@/lib/email.functions";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -433,6 +434,35 @@ export const getFileUploadUrl = createServerFn({ method: "POST" })
     // Check quota
     const allowed = await checkUploadAllowed(data.creatorEmail, data.fileSizeBytes);
     if (!allowed.allowed) return { ok: false as const, error: allowed.reason! };
+
+    // Proactive quota warnings (triggered at 80% capacity)
+    const storageUsage = await getStorageUsage(data.creatorEmail);
+    const projectedUsed = storageUsage.usedBytes + data.fileSizeBytes;
+    const projectedPercent = storageUsage.quotaBytes > 0 ? Math.round((projectedUsed / storageUsage.quotaBytes) * 100) : 0;
+    if (projectedPercent >= 80) {
+      const id = Date.now() + Math.floor(Math.random() * 999);
+      // In-app warning
+      await adminDb.insert("notifications", {
+        id,
+        user_email: data.creatorEmail,
+        text: `⚠️ Storage Warning: Your creator media storage is currently at ${projectedPercent}% of quota.`,
+        type: "system",
+        link: "/app/settings",
+        read: false,
+        created_at: new Date().toISOString(),
+        dedup_key: `storage-quota-warning-80-${data.creatorEmail}`
+      });
+
+      // Email warning via Resend
+      await sendStorageQuotaWarningEmail({
+        data: {
+          email: data.creatorEmail,
+          usedPercent: projectedPercent,
+          usedDisplay: `${Math.round(projectedUsed / (1024 * 1024))} MB`,
+          quotaDisplay: `${Math.round(storageUsage.quotaBytes / (1024 * 1024))} MB`
+        }
+      }).catch(err => console.error("[monetization] Storage quota warning email failure:", err));
+    }
 
     const key = buildFileKey(data.creatorEmail, data.filename);
     const url = await generatePresignedUrl({

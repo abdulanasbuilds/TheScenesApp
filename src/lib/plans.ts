@@ -61,7 +61,7 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "pro",
     name: "Pro",
     priceUsdCents: 4900, // $49 — overridden by env.PRO_PLAN_PRICE_CENTS server-side
-    platformFeeBps: 0, // 0% — overridden by env.PRO_PLAN_FEE_BPS server-side
+    platformFeeBps: 300, // 3% — overridden by env.PRO_PLAN_FEE_BPS server-side
     storageBytes: 107_374_182_400, // 100 GB — env.PRO_PLAN_STORAGE_BYTES server-side
     features: {
       hostedVideo: true,

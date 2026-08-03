@@ -106,9 +106,9 @@ export const env = {
   get FREE_PLAN_FEE_BPS() {
     return getEnvInt("FREE_PLAN_PLATFORM_FEE_BPS", 700);
   },
-  /** Pro plan platform fee in basis points (0 = 0%) */
+  /** Pro plan platform fee in basis points (300 = 3%) */
   get PRO_PLAN_FEE_BPS() {
-    return getEnvInt("PRO_PLAN_PLATFORM_FEE_BPS", 0);
+    return getEnvInt("PRO_PLAN_PLATFORM_FEE_BPS", 300);
   },
   /** Pro plan monthly price in USD cents (4900 = $49) */
   get PRO_PLAN_PRICE_CENTS() {
