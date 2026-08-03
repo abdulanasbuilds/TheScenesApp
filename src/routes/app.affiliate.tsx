@@ -5,6 +5,7 @@ import { Share2, Copy, CheckCircle2, Globe, Users, Wallet, ArrowUpRight, Link2, 
 import { toast } from "sonner";
 import { Avatar } from "@/components/BrowserFrame";
 import { useAppStore } from "@/lib/app-store";
+import { EmptyState } from "@/components/EmptyState";
 
 export const Route = createFileRoute("/app/affiliate")({
   head: () => ({
@@ -47,14 +48,13 @@ function makeCode(title: string) {
   return `${slug}${Math.random().toString(36).slice(2, 6)}`;
 }
 
-const MOCK_AFFILIATES = [
-  { id: 1, name: "Kwame Asante",  avatar: "KA", link: "Shared via Twitter",    referrals: 8,  conversions: 5, pendingUsd: 180, status: "active"  },
-  { id: 2, name: "Amara Osei",    avatar: "AO", link: "Blog post",             referrals: 12, conversions: 9, pendingUsd: 324, status: "active"  },
-  { id: 3, name: "Jonas Weiss",   avatar: "JW", link: "LinkedIn post",         referrals: 3,  conversions: 2, pendingUsd: 72,  status: "pending" },
-  { id: 4, name: "Priya Nair",    avatar: "PN", link: "Email newsletter",      referrals: 6,  conversions: 4, pendingUsd: 144, status: "active"  },
-  { id: 5, name: "Marcus Bell",   avatar: "MB", link: "Discord share",         referrals: 1,  conversions: 0, pendingUsd: 0,   status: "pending" },
-  { id: 6, name: "Elena Rostova", avatar: "ER", link: "YouTube description",  referrals: 19, conversions: 14, pendingUsd: 504, status: "active"  },
-];
+type AffiliatePartner = {
+  id: number; name: string; avatar: string; link: string;
+  referrals: number; conversions: number; pendingUsd: number; status: "active" | "pending";
+};
+
+/** Real affiliate partners come from the referral ledger; none exist until someone joins. */
+const AFFILIATE_PARTNERS: AffiliatePartner[] = [];
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -76,10 +76,10 @@ function AffiliatePage() {
     : "";
 
   const stats = useMemo(() => ({
-    affiliates: MOCK_AFFILIATES.length,
-    referrals:  MOCK_AFFILIATES.reduce((s, a) => s + a.referrals, 0),
-    conversions: MOCK_AFFILIATES.reduce((s, a) => s + a.conversions, 0),
-    pending:    MOCK_AFFILIATES.reduce((s, a) => s + a.pendingUsd, 0),
+    affiliates: AFFILIATE_PARTNERS.length,
+    referrals:  AFFILIATE_PARTNERS.reduce((s, a) => s + a.referrals, 0),
+    conversions: AFFILIATE_PARTNERS.reduce((s, a) => s + a.conversions, 0),
+    pending:    AFFILIATE_PARTNERS.reduce((s, a) => s + a.pendingUsd, 0),
   }), []);
 
   const switchCommunity = (id: number) => {
@@ -336,6 +336,20 @@ function AffiliatePage() {
               <h2 className="text-sm font-semibold text-foreground">Active affiliates</h2>
               <p className="text-xs text-muted-foreground mt-0.5">People promoting your community and their performance metrics.</p>
             </div>
+            {AFFILIATE_PARTNERS.length === 0 ? (
+              <div className="p-4">
+                <EmptyState
+                  compact
+                  variant="empty"
+                  icon={<Share2 size={22} />}
+                  title="No affiliates yet"
+                  description="Your program is live, but nobody is promoting it yet. Share your referral link with your most active members \u2014 they convert best because they already trust the community."
+                  primary={{ label: "Copy referral link", onClick: copyLink, disabled: !referralLink }}
+                  secondary={{ label: "Invite members", to: "/app/members" }}
+                  helper="Referrals, conversions, and pending commissions appear here automatically."
+                />
+              </div>
+            ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="bg-accent/50 text-[10px] font-semibold uppercase text-muted-foreground">
@@ -347,7 +361,7 @@ function AffiliatePage() {
                   <th className="py-2.5 px-4 text-right">Pending ($)</th>
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
-                  {MOCK_AFFILIATES.map(a => (
+                  {AFFILIATE_PARTNERS.map(a => (
                     <tr key={a.id} className="hover:bg-accent/20 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2.5">
@@ -364,12 +378,14 @@ function AffiliatePage() {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right font-bold text-foreground">
-                        {a.pendingUsd > 0 ? `$${a.pendingUsd}` : "—"}
+                        {a.pendingUsd > 0 ? `$${a.pendingUsd}` : "\u2014"}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+            )}
             </div>
           </div>
         </>
