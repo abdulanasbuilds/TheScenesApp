@@ -387,7 +387,6 @@ function AffiliatePage() {
             </div>
             )}
             </div>
-          </div>
         </>
       )}
 
