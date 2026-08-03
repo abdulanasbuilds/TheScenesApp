@@ -193,13 +193,14 @@ function Thread({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 bg-slate-50/50">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center py-16">
-            <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center mb-3 shadow-sm">
-              <MessagesSquare className="w-5 h-5 text-slate-400" />
-            </div>
-            <p className="text-sm font-medium text-slate-600">Start the conversation</p>
-            <p className="text-xs text-slate-400 mt-1">Messages are private and end-to-end only visible to both of you</p>
-          </div>
+          <EmptyState
+            compact
+            variant="empty"
+            icon={<MessagesSquare className="w-5 h-5" />}
+            title="Start the conversation"
+            description="No messages here yet. Say hello, ask a question, or share what you are working on \u2014 the first message usually gets a reply within a day."
+            helper="This thread is private and only visible to the two of you."
+          />
         )}
         {messages.map(msg => (
           <Bubble
@@ -380,19 +381,19 @@ function Messages() {
           {/* List */}
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5">
             {convos.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-40 text-center px-4">
-                <MessagesSquare className="w-8 h-8 text-slate-300 mb-2" />
-                <p className="text-sm text-slate-500 font-medium">
-                  {search ? "No conversations match" : "No messages yet"}
-                </p>
-                {!search && (
-                  <button
-                    onClick={() => setShowNew(true)}
-                    className="mt-2 text-sm text-blue-600 hover:underline"
-                  >
-                    Start one
-                  </button>
-                )}
+              <div className="px-2 py-3">
+                <EmptyState
+                  compact
+                  variant={search ? "no-results" : "empty"}
+                  icon={<MessagesSquare className="w-5 h-5" />}
+                  title={search ? "No conversations match" : "No messages yet"}
+                  description={search
+                    ? "Nothing matches that name. Clear the search to see every conversation you are part of."
+                    : "Direct messages you send or receive show up here. Reach out to a member of your community to get started."}
+                  primary={search ? undefined : { label: "Start a conversation", onClick: () => setShowNew(true) }}
+                  helper="Only people in your communities can message you."
+                />
+
               </div>
             )}
             <AnimatePresence>
