@@ -25,7 +25,7 @@ insert into subscription_plans (id, name, price_usd_cents, platform_fee_bps, sto
 values
   ('free', 'Free', 0, 700, 0, false,
     '{"hosted_video": false, "hosted_files": false, "external_embeds": true, "custom_domain": false, "analytics": "basic", "affiliate": true}'::jsonb),
-  ('pro', 'Pro', 4900, 0, 107374182400, true,
+  ('pro', 'Pro', 4900, 300, 107374182400, true,
     '{"hosted_video": true, "hosted_files": true, "external_embeds": true, "custom_domain": true, "analytics": "advanced", "affiliate": true}'::jsonb)
 on conflict (id) do nothing;
 

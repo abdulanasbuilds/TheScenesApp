@@ -32,6 +32,7 @@ import {
   MessageCircle,
   SmartphoneNfc,
   AppWindow,
+  CheckCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -715,13 +716,20 @@ function MonetizationTab({ email }: { email: string }) {
   );
 }
 
-// ─── Payouts Tab ──────────────────────────────────────────────────────────────
+// ─── Payouts Tab with Onboarding Wizard ───────────────────────────────────────
 
 function PayoutsTab({ email }: { email: string }) {
+  const store = useAppStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [account, setAccount] = useState<PayoutAccountView>(null);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
 
+  // Wizard Flow state
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Input states
   const [countryCode, setCountryCode] = useState("NG");
   const [method, setMethod] = useState<"bank" | "mobile_money">("bank");
   const [bankCode, setBankCode] = useState("");
@@ -729,6 +737,9 @@ function PayoutsTab({ email }: { email: string }) {
   const [accountName, setAccountName] = useState("");
   const [network, setNetwork] = useState("");
   const [mmNumber, setMmNumber] = useState("");
+
+  const [selectedPlanId, setSelectedPlanId] = useState<"free" | "pro">("free");
+  const [businessName, setBusinessName] = useState(store.session?.name || "");
 
   const [speed, setSpeed] = useState<"standard" | "instant">("standard");
   const [notify, setNotify] = useState(true);
@@ -742,8 +753,15 @@ function PayoutsTab({ email }: { email: string }) {
     }
     setLoading(true);
     try {
-      const res = await getPayoutSetup({ data: { creatorEmail: email } });
+      const [res, dash] = await Promise.all([
+        getPayoutSetup({ data: { creatorEmail: email } }),
+        getCreatorDashboard({ data: { creatorEmail: email } }).catch(() => null),
+      ]);
       setAccount(res.account);
+      setDashboard(dash);
+      if (dash) {
+        setSelectedPlanId(dash.plan === "pro" ? "pro" : "free");
+      }
       if (res.account) {
         setCountryCode(res.account.country);
         setMethod(res.account.method);
@@ -753,8 +771,9 @@ function PayoutsTab({ email }: { email: string }) {
         setSpeed(res.account.defaultWithdrawalType);
         setNotify(res.account.payoutNotifications);
       } else {
-        setBankCode(country.banks[0]?.code || "");
-        setNetwork(country.mobileMoney[0] || "");
+        const c = getCountry("NG");
+        setBankCode(c.banks[0]?.code || "");
+        setNetwork(c.mobileMoney[0] || "");
       }
     } catch {
       toast.error("Could not load payout configuration.");
@@ -767,10 +786,16 @@ function PayoutsTab({ email }: { email: string }) {
     load();
   }, [email]);
 
-  const save = async () => {
+  const saveWizard = async () => {
     if (!email) return;
     setSaving(true);
     try {
+      // 1. Update Display Name if changed
+      if (businessName.trim() && businessName.trim() !== store.session?.name) {
+        await store.updateProfile({ name: businessName.trim() });
+      }
+
+      // 2. Save Payout details
       const res = await savePayoutAccountFn({
         data: {
           creatorEmail: email,
@@ -786,16 +811,60 @@ function PayoutsTab({ email }: { email: string }) {
           mobileMoneyNumber: method === "mobile_money" ? mmNumber : undefined,
         },
       });
+
       if (!res.ok) {
         toast.error(res.error);
+        setSaving(false);
         return;
       }
-      setAccount(res.account);
-      setAccountNumber("");
-      setMmNumber("");
-      toast.success("Payout account updated securely!");
+
+      // 3. Subscription redirection trigger if plan choice doesn't match current plan
+      const currentPlan = dashboard?.plan ?? "free";
+      if (selectedPlanId === "pro" && currentPlan === "free") {
+        toast.success("Payout saved! Redirecting to subscribe to Pro plan...");
+        const init = await initializePayment({
+          data: { payerEmail: email, paymentType: "pro_subscription", currency: "USD" },
+        });
+        if (!init.ok) {
+          toast.error(init.error);
+          setSaving(false);
+          return;
+        }
+
+        await initiatePaystackPayment({
+          email,
+          amount: init.amountCents,
+          currency: "USD",
+          reference: init.reference,
+          metadata: { transactionId: init.transactionId, type: "pro_subscription" },
+          onSuccess: async (ref) => {
+            const verify = await verifyAndRecordPayment({
+              data: { reference: ref, transactionId: init.transactionId, userEmail: email },
+            });
+            if (verify.ok) {
+              toast.success("🎉 Upgrade to Pro successful! Lower 3% platform fees active.");
+              await load();
+              setIsEditing(false);
+            } else {
+              toast.error(verify.error);
+            }
+          },
+          onClose: () => {
+            toast.info("Payment closed. Plan remains Free (7% fee) but payout details are saved.");
+            load();
+            setIsEditing(false);
+          },
+        });
+      } else {
+        toast.success("Payout setup complete and verified!");
+        setAccount(res.account);
+        setAccountNumber("");
+        setMmNumber("");
+        setIsEditing(false);
+        await load();
+      }
     } catch {
-      toast.error("Could not save payout account.");
+      toast.error("Could not complete the setup wizard.");
     } finally {
       setSaving(false);
     }
@@ -814,6 +883,7 @@ function PayoutsTab({ email }: { email: string }) {
     if (!email) return;
     await removePayoutAccountFn({ data: { creatorEmail: email } });
     setAccount(null);
+    setWizardStep(1);
     toast.success("Payout details removed.");
   };
 
@@ -827,220 +897,505 @@ function PayoutsTab({ email }: { email: string }) {
     );
   }
 
+  // Define steps check conditions
+  const isStep1Valid = !!countryCode;
+  const isStep2Valid =
+    method === "bank"
+      ? !!bankCode && !!accountNumber && accountNumber.replace(/\s+/g, "").length >= 6 && !!accountName
+      : !!network && !!mmNumber && mmNumber.replace(/\s+/g, "").length >= 7 && !!accountName;
+  const isStep3Valid = !!selectedPlanId;
+  const isStep4Valid = !!businessName.trim();
+
+  const showWizard = !account || isEditing;
+
   return (
     <>
-      <div
-        className={`flex items-start gap-3 rounded-xl border p-4 ${
-          account?.isPayoutReady
-            ? "border-emerald-200 bg-emerald-50"
-            : "border-amber-200 bg-amber-50"
-        }`}
-      >
-        {account?.isPayoutReady ? (
-          <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" />
-        ) : (
-          <AlertCircle size={18} className="mt-0.5 shrink-0 text-amber-600" />
-        )}
-        <div className="min-w-0">
-          <div
-            className={`text-sm font-semibold ${account?.isPayoutReady ? "text-emerald-800" : "text-amber-800"}`}
-          >
-            {account?.isPayoutReady
-              ? "Payout Destination Connected"
-              : "Add Bank Account / MoMo Payout Destination"}
-          </div>
-          <p
-            className={`text-xs ${account?.isPayoutReady ? "text-emerald-700" : "text-amber-700"} mt-0.5`}
-          >
-            {account?.isPayoutReady
-              ? `${account.method === "bank" ? (account.bankName ?? "Bank") : account.mobileMoneyNetwork} · ${account.accountNumberMasked ?? account.mobileMoneyNumberMasked} · ${account.accountName}`
-              : "Earnings are secure. Add your details below to withdraw them."}
-          </p>
-        </div>
-      </div>
-
-      <Panel
-        title={account ? "Update Payout Details" : "Payout Details"}
-        description="Connect details securely. Numbers are server-masked."
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Country">
-            <select
-              value={countryCode}
-              onChange={(e) => {
-                const c = getCountry(e.target.value);
-                setCountryCode(c.code);
-                setBankCode(c.banks[0]?.code || "");
-                setNetwork(c.mobileMoney[0] ?? "");
-                if (c.mobileMoney.length === 0) setMethod("bank");
+      {/* Connected Account Display Card */}
+      {!showWizard && account && (
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 rounded-xl border p-4 border-emerald-200 bg-emerald-50">
+            <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" />
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-emerald-800">
+                Payout Destination Active
+              </div>
+              <p className="text-xs text-emerald-700 mt-0.5">
+                {account.method === "bank"
+                  ? `${account.bankName ?? "Bank"} · ${account.accountNumberMasked} · ${account.accountName}`
+                  : `${account.mobileMoneyNetwork} · ${account.mobileMoneyNumberMasked} · ${account.accountName}`}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setBusinessName(store.session?.name || "");
+                setAccountName(account.accountName ?? "");
+                setAccountNumber("");
+                setMmNumber("");
+                setIsEditing(true);
+                setWizardStep(1);
               }}
-              className={inputCls}
+              className="text-xs font-semibold text-primary hover:underline bg-white px-2.5 py-1.5 rounded-lg border border-emerald-200 shadow-sm"
             >
-              {PAYOUT_COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.name} ({c.currency})
-                </option>
-              ))}
-            </select>
-          </Field>
+              Update Destination
+            </button>
+          </div>
 
-          <Field label="Payout method">
-            <div className="flex gap-2">
+          {/* Preferences and defaults */}
+          <Panel title="Withdrawal Speed Preference" description="Your default withdrawal speed and notification preferences.">
+            <Field label="Default Withdrawal Speed">
+              <div className="flex gap-2">
+                {(["standard", "instant"] as const).map((s) => {
+                  const allowed = s === "instant" ? dashboard?.plan === "pro" : true;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      disabled={!allowed}
+                      onClick={() => {
+                        setSpeed(s);
+                        savePrefs({ defaultWithdrawalType: s });
+                        toast.success(`Default speed set to ${s}`);
+                      }}
+                      className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-semibold capitalize disabled:opacity-40 ${
+                        speed === s
+                          ? "border-primary bg-primary/5 text-primary"
+                          : "border-border text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {s === "instant" && <Zap size={13} />}
+                      {s === "instant" ? "⚡ Instant" : "Standard (Free)"}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+            {speed === "instant" && (
+              <p className="mt-2 text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-100">
+                Instant speed settlements incur an additional fixed plus percentage withdrawal fee. Standard transfers are always free.
+              </p>
+            )}
+
+            <div className="mt-4 border-t border-slate-100 pt-1">
+              <Toggle
+                checked={notify}
+                onChange={(v) => {
+                  setNotify(v);
+                  savePrefs({ payoutNotifications: v });
+                }}
+                label="In-App Money alerts"
+                hint="Notify me inside SukaSpace whenever a payment settles or payouts process."
+              />
+            </div>
+
+            <div className="mt-4 border-t border-slate-100 pt-4 flex justify-end">
               <button
-                type="button"
-                onClick={() => setMethod("bank")}
-                className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold ${
-                  method === "bank"
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border text-foreground"
-                }`}
+                onClick={remove}
+                className="text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg"
               >
-                <Landmark size={13} /> Bank
-              </button>
-              <button
-                type="button"
-                disabled={country.mobileMoney.length === 0}
-                onClick={() => setMethod("mobile_money")}
-                className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40 ${
-                  method === "mobile_money"
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border text-foreground"
-                }`}
-              >
-                <Smartphone size={13} /> Mobile money
+                Disconnect Payout Method
               </button>
             </div>
-          </Field>
+          </Panel>
+        </div>
+      )}
 
-          {method === "bank" ? (
-            <>
-              <Field label="Bank">
-                <select
-                  value={bankCode}
-                  onChange={(e) => setBankCode(e.target.value)}
-                  className={inputCls}
-                >
-                  {country.banks.map((b) => (
-                    <option key={b.code} value={b.code}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Account number">
-                <input
-                  value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value.replace(/[^\d]/g, ""))}
-                  placeholder={account?.accountNumberMasked ?? "0123456789"}
-                  inputMode="numeric"
-                  maxLength={20}
-                  className={inputCls}
+      {/* interactive Payout Setup Wizard */}
+      {showWizard && (
+        <Panel
+          title={isEditing ? "Modify Payout Setup" : "Setup Your Payout Destination"}
+          description="A quick, step-by-step wizard to connect bank transfers, select plans, and configure currency securely."
+        >
+          {/* Progress Indicator */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground mb-2">
+              <span>Step {wizardStep} of 5</span>
+              <span>
+                {wizardStep === 1 && "Country & Currency"}
+                {wizardStep === 2 && "Payment Details"}
+                {wizardStep === 3 && "Plan & Fees Selection"}
+                {wizardStep === 4 && "Business Profile"}
+                {wizardStep === 5 && "Review & Complete"}
+              </span>
+            </div>
+            <div className="flex gap-1 h-1.5 w-full bg-accent rounded-full overflow-hidden">
+              {([1, 2, 3, 4, 5] as const).map((s) => (
+                <div
+                  key={s}
+                  className={`flex-1 transition-all rounded-full ${wizardStep >= s ? "bg-primary" : "bg-slate-200"}`}
                 />
-              </Field>
-            </>
-          ) : (
-            <>
-              <Field label="Network">
-                <select
-                  value={network}
-                  onChange={(e) => setNetwork(e.target.value)}
-                  className={inputCls}
-                >
-                  {country.mobileMoney.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Mobile money number">
-                <input
-                  value={mmNumber}
-                  onChange={(e) => setMmNumber(e.target.value)}
-                  placeholder={account?.mobileMoneyNumberMasked ?? "+233 55 000 0000"}
-                  inputMode="tel"
-                  maxLength={20}
-                  className={inputCls}
-                />
-              </Field>
-            </>
-          )}
-
-          <div className="sm:col-span-2">
-            <Field label="Account holder name">
-              <input
-                value={accountName}
-                onChange={(e) => setAccountName(e.target.value)}
-                placeholder="Exactly as it appears on the account"
-                maxLength={120}
-                className={inputCls}
-              />
-            </Field>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          <button
-            onClick={save}
-            disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {saving ? (
-              <>
-                <Loader2 size={14} className="animate-spin" />
-                Saving…
-              </>
-            ) : (
-              <>{account ? "Update account" : "Save payout account"}</>
-            )}
-          </button>
-          {account && (
-            <button
-              onClick={remove}
-              className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50"
-            >
-              Remove
-            </button>
-          )}
-        </div>
-      </Panel>
-
-      <Panel title="Speed Preference" description="Your default withdrawal speed.">
-        <Field label="Default Speed">
-          <div className="flex gap-2">
-            {(["standard", "instant"] as const).map((s) => (
-              <button
-                key={s}
-                type="button"
-                disabled={!account}
-                onClick={() => {
-                  setSpeed(s);
-                  savePrefs({ defaultWithdrawalType: s });
-                }}
-                className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold capitalize disabled:opacity-40 ${
-                  speed === s
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border text-foreground"
-                }`}
+          <div className="min-h-[220px]">
+            {/* Step 1: Country & Currency */}
+            {wizardStep === 1 && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-4"
               >
-                {s === "instant" && <Zap size={13} />}
-                {s}
-              </button>
-            ))}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">Select Your Settlement Region</h3>
+                  <p className="text-xs text-muted-foreground">
+                    We adapt payment networks depending on provider availability in your region.
+                  </p>
+                </div>
+
+                <Field label="Payout Region / Country">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => {
+                      const c = getCountry(e.target.value);
+                      setCountryCode(c.code);
+                      setBankCode(c.banks[0]?.code || "");
+                      setNetwork(c.mobileMoney[0] ?? "");
+                      if (c.mobileMoney.length === 0) setMethod("bank");
+                    }}
+                    className={inputCls}
+                  >
+                    {PAYOUT_COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.name} ({c.currency})
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <div className="rounded-xl bg-accent/50 p-4 border border-border">
+                  <div className="flex gap-2 text-xs text-muted-foreground">
+                    <Globe size={16} className="text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-foreground">Region Capabilities</p>
+                      <p className="mt-1">
+                        Settling in <strong>{country.currency}</strong>. Includes local bank channels
+                        {country.mobileMoney.length > 0 ? " and mobile money integrations." : " only."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Bank / Mobile Money Details */}
+            {wizardStep === 2 && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-4"
+              >
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1"> payout account Details</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Earnings are credited to this destination securely.
+                  </p>
+                </div>
+
+                {country.mobileMoney.length > 0 && (
+                  <Field label="Payout network method">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setMethod("bank")}
+                        className={`inline-flex items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-semibold ${
+                          method === "bank"
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-border text-foreground hover:bg-accent"
+                        }`}
+                      >
+                        <Landmark size={13} /> Local Bank
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMethod("mobile_money")}
+                        className={`inline-flex items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-semibold ${
+                          method === "mobile_money"
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-border text-foreground hover:bg-accent"
+                        }`}
+                      >
+                        <Smartphone size={13} /> Mobile money
+                      </button>
+                    </div>
+                  </Field>
+                )}
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {method === "bank" ? (
+                    <>
+                      <Field label="Choose Bank">
+                        <select
+                          value={bankCode}
+                          onChange={(e) => setBankCode(e.target.value)}
+                          className={inputCls}
+                        >
+                          {country.banks.map((b) => (
+                            <option key={b.code} value={b.code}>
+                              {b.name}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Account Number">
+                        <input
+                          value={accountNumber}
+                          onChange={(e) => setAccountNumber(e.target.value.replace(/[^\d]/g, ""))}
+                          placeholder="e.g. 0123456789"
+                          inputMode="numeric"
+                          maxLength={20}
+                          className={inputCls}
+                        />
+                      </Field>
+                    </>
+                  ) : (
+                    <>
+                      <Field label="Mobile Money Network">
+                        <select
+                          value={network}
+                          onChange={(e) => setNetwork(e.target.value)}
+                          className={inputCls}
+                        >
+                          {country.mobileMoney.map((n) => (
+                            <option key={n} value={n}>
+                              {n}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Mobile money number">
+                        <input
+                          value={mmNumber}
+                          onChange={(e) => setMmNumber(e.target.value)}
+                          placeholder="e.g. 055 123 4567"
+                          inputMode="tel"
+                          maxLength={20}
+                          className={inputCls}
+                        />
+                      </Field>
+                    </>
+                  )}
+
+                  <div className="sm:col-span-2">
+                    <Field label="Account Holder Name">
+                      <input
+                        value={accountName}
+                        onChange={(e) => setAccountName(e.target.value)}
+                        placeholder="Exactly as registered on your account"
+                        maxLength={120}
+                        className={inputCls}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 3: Plan & Billing Choice */}
+            {wizardStep === 3 && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-4"
+              >
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">Choose Platform Plan</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Select the plan that fits your creator volume. Upgrade anytime to access lower transaction rates.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    {
+                      id: "free" as const,
+                      name: "Free",
+                      fee: "7% Platform Fee",
+                      sub: "Standard bank settlements. External embeds only.",
+                      price: "Free",
+                    },
+                    {
+                      id: "pro" as const,
+                      name: "Pro Creator",
+                      fee: "3% Platform Fee",
+                      sub: "Unlocks 100GB hosted storage, Bunny.net streaming, instant payouts.",
+                      price: "$49/mo",
+                    },
+                  ].map((p) => {
+                    const selected = selectedPlanId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setSelectedPlanId(p.id)}
+                        className={`text-left rounded-xl border p-4 transition-all relative ${
+                          selected
+                            ? "border-primary bg-primary/5 ring-1 ring-primary"
+                            : "border-border bg-card hover:bg-accent"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-foreground text-sm">{p.name}</span>
+                          <span className="text-xs font-bold text-primary">{p.price}</span>
+                        </div>
+                        <p className="text-xs font-semibold text-foreground mt-1.5">{p.fee}</p>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-normal">{p.sub}</p>
+                        {selected && (
+                          <span className="absolute top-2 right-2 text-primary font-bold text-xs">✓</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Profile Name */}
+            {wizardStep === 4 && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-4"
+              >
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">Public Display &amp; Branding</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Enter the display or business name displayed to learners on SukaSpace.
+                  </p>
+                </div>
+
+                <Field label="Business / Creator Name">
+                  <input
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    placeholder="e.g. Acme Tech Academy"
+                    maxLength={100}
+                    className={inputCls}
+                  />
+                </Field>
+
+                <div className="rounded-xl bg-blue-50 border border-blue-200 p-4">
+                  <div className="flex gap-2 text-xs text-blue-800 leading-normal">
+                    <Info size={16} className="shrink-0 mt-0.5 text-blue-600" />
+                    <div>
+                      <p className="font-semibold">Learner Trust</p>
+                      <p className="mt-0.5">
+                        This branding is shown on community checkout cards. Clear, recognizable display names improve conversion.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 5: Summary & Confirm */}
+            {wizardStep === 5 && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-4"
+              >
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">Review Details</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Verify everything before finishing the setup.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-border bg-accent/40 divide-y divide-border text-xs">
+                  <div className="flex justify-between p-3">
+                    <span className="font-medium text-muted-foreground">Business Name</span>
+                    <span className="font-semibold text-foreground">{businessName}</span>
+                  </div>
+                  <div className="flex justify-between p-3">
+                    <span className="font-medium text-muted-foreground">Settlement Region</span>
+                    <span className="font-semibold text-foreground">{country.name} ({country.currency})</span>
+                  </div>
+                  <div className="flex justify-between p-3">
+                    <span className="font-medium text-muted-foreground">Payout Destination</span>
+                    <span className="font-semibold text-foreground">
+                      {method === "bank"
+                        ? `${country.banks.find((b) => b.code === bankCode)?.name ?? "Bank"} (Acc: ${accountNumber})`
+                        : `${network} (Phone: ${mmNumber})`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between p-3">
+                    <span className="font-medium text-muted-foreground">Account Holder</span>
+                    <span className="font-semibold text-foreground">{accountName}</span>
+                  </div>
+                  <div className="flex justify-between p-3">
+                    <span className="font-medium text-muted-foreground">Selected Plan</span>
+                    <span className="font-bold text-primary capitalize">
+                      {selectedPlanId} ({selectedPlanId === "pro" ? "3% fee" : "7% fee"})
+                    </span>
+                  </div>
+                </div>
+
+                {selectedPlanId === "pro" && (dashboard?.plan ?? "free") === "free" && (
+                  <p className="text-[11px] text-amber-700 bg-amber-50 rounded-xl p-3 border border-amber-200 leading-normal">
+                    <strong>Note:</strong> Since you chose the <strong>Pro Creator</strong> plan, finishing will open Paystack to authorize your monthly $49.00 payment to unlock 3% fee structure and storage metrics.
+                  </p>
+                )}
+              </motion.div>
+            )}
           </div>
-        </Field>
-        <div className="mt-4 border-t border-slate-100">
-          <Toggle
-            checked={notify}
-            onChange={(v) => {
-              setNotify(v);
-              savePrefs({ payoutNotifications: v });
-            }}
-            label="Notify me about payouts"
-            hint="Send alerts inside the app when standard or instant withdrawals process."
-          />
-        </div>
-      </Panel>
+
+          {/* Navigation Controls */}
+          <div className="mt-8 flex justify-between border-t border-border pt-4">
+            {wizardStep > 1 ? (
+              <button
+                type="button"
+                onClick={() => setWizardStep((s) => (s - 1) as any)}
+                className="rounded-lg border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-accent"
+              >
+                Back
+              </button>
+            ) : isEditing ? (
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="rounded-lg border border-border px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+              >
+                Cancel Edit
+              </button>
+            ) : (
+              <div />
+            )}
+
+            {wizardStep < 5 ? (
+              <button
+                type="button"
+                disabled={
+                  (wizardStep === 1 && !isStep1Valid) ||
+                  (wizardStep === 2 && !isStep2Valid) ||
+                  (wizardStep === 3 && !isStep3Valid) ||
+                  (wizardStep === 4 && !isStep4Valid)
+                }
+                onClick={() => setWizardStep((s) => (s + 1) as any)}
+                className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-40"
+              >
+                Continue
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={saveWizard}
+                disabled={saving}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-5 py-2 text-xs font-semibold text-white disabled:opacity-60 hover:bg-emerald-700"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" /> Completing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCheck size={13} /> Complete Setup
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </Panel>
+      )}
     </>
   );
 }

@@ -28,6 +28,8 @@ import { markWithdrawalPaid, markWithdrawalFailed } from "@/lib/monetization/wit
 import { grantCommunityAccess, grantCourseAccess } from "@/lib/monetization/access";
 import { setStorageQuota } from "@/lib/monetization/storage";
 import { env } from "@/lib/env";
+import { formatCurrency } from "@/lib/plans";
+import { sendWithdrawalFailedEmail, sendSubscriptionPastDueEmail } from "@/lib/email.functions";
 
 // ─── Route definition ─────────────────────────────────────────────────────────
 
@@ -202,7 +204,8 @@ async function handlePaymentSuccess(event: WebhookEvent): Promise<void> {
     });
   }
 
-  // Grant access to paid content
+  // Grant access to paid content and trigger in-app notifications
+  const amtStr = formatCurrency(txn.gross_amount_cents, txn.currency);
   if (txn.payment_type === "community_access" && txn.resource_id) {
     await grantCommunityAccess({
       userEmail: customerEmail,
@@ -210,6 +213,22 @@ async function handlePaymentSuccess(event: WebhookEvent): Promise<void> {
       transactionId: txn.id,
       accessType: "paid",
     });
+
+    await createInAppNotification(
+      customerEmail,
+      `Your payment of ${amtStr} was verified! You now have full access to the community.`,
+      "payment_success",
+      "/app/feed"
+    );
+
+    if (txn.to_email) {
+      await createInAppNotification(
+        txn.to_email,
+        `New member checkout: ${customerEmail} joined your community (${amtStr} gross).`,
+        "payment_success",
+        "/app/payouts"
+      );
+    }
   } else if (txn.payment_type === "course_access" && txn.resource_id) {
     await grantCourseAccess({
       userEmail: customerEmail,
@@ -217,6 +236,22 @@ async function handlePaymentSuccess(event: WebhookEvent): Promise<void> {
       transactionId: txn.id,
       accessType: "paid",
     });
+
+    await createInAppNotification(
+      customerEmail,
+      `Your payment of ${amtStr} was verified! You are now enrolled in the course.`,
+      "payment_success",
+      "/app/classroom"
+    );
+
+    if (txn.to_email) {
+      await createInAppNotification(
+        txn.to_email,
+        `New course purchase: ${customerEmail} enrolled in your course (${amtStr} gross).`,
+        "payment_success",
+        "/app/payouts"
+      );
+    }
   } else if (txn.payment_type === "pro_subscription") {
     await Promise.all([
       adminDb.upsert(
@@ -233,6 +268,13 @@ async function handlePaymentSuccess(event: WebhookEvent): Promise<void> {
       ),
       setStorageQuota(customerEmail, env.PRO_PLAN_STORAGE_BYTES),
     ]);
+
+    await createInAppNotification(
+      customerEmail,
+      `🎉 Welcome to SukaSpace Pro! 3% platform commission rates and 100GB hosted storage limits are now live.`,
+      "payment_success",
+      "/app/settings"
+    );
   }
 }
 
@@ -250,10 +292,18 @@ async function handleTransferSuccess(event: WebhookEvent): Promise<void> {
 
   if (!filter) return;
 
-  const { data: wd } = await adminDb.selectOne<{ id: string }>("withdrawal_requests", filter);
+  const { data: wd } = await adminDb.selectOne<{ id: string; creator_email: string; amount_cents: number; currency: string }>("withdrawal_requests", filter);
   if (!wd) return;
 
   await markWithdrawalPaid(wd.id, code);
+
+  const amt = formatCurrency(wd.amount_cents, wd.currency);
+  await createInAppNotification(
+    wd.creator_email,
+    `Your standard payout withdrawal request of ${amt} has settled successfully. check your connected bank account!`,
+    "payment_success",
+    "/app/payouts"
+  );
 }
 
 // ── transfer.failed / transfer.reversed ───────────────────────────────────────
@@ -264,11 +314,29 @@ async function handleTransferFailed(event: WebhookEvent): Promise<void> {
   const reason = (raw?.reason ?? "Transfer failed") as string;
 
   if (!code) return;
-  const { data: wd } = await adminDb.selectOne<{ id: string }>("withdrawal_requests", {
+  const { data: wd } = await adminDb.selectOne<{ id: string; creator_email: string; amount_cents: number; currency: string }>("withdrawal_requests", {
     paystack_transfer_code: `eq.${code}`,
   });
   if (!wd) return;
   await markWithdrawalFailed(wd.id, reason);
+
+  const amt = formatCurrency(wd.amount_cents, wd.currency);
+  await createInAppNotification(
+    wd.creator_email,
+    `Your payout withdrawal request of ${amt} failed: ${reason}. Funds are restored to your earnings balance.`,
+    "payment_failed",
+    "/app/payouts"
+  );
+
+  // Trigger critical email via Resend
+  await sendWithdrawalFailedEmail({
+    data: {
+      email: wd.creator_email,
+      amountDisplay: amt,
+      reason,
+      withdrawalId: wd.id,
+    },
+  }).catch((err) => console.error("[webhook] Resend error for failed transfer:", err));
 }
 
 // ── subscription.create ───────────────────────────────────────────────────────
@@ -292,6 +360,13 @@ async function handleSubscriptionCreated(event: WebhookEvent): Promise<void> {
     ),
     setStorageQuota(email, env.PRO_PLAN_STORAGE_BYTES),
   ]);
+
+  await createInAppNotification(
+    email,
+    `🎉 SukaSpace Pro Creator Subscription is active! Lower platform fees (3%) and media storage metrics are enabled.`,
+    "payment_success",
+    "/app/settings"
+  );
 }
 
 // ── subscription.not_renew / subscription.disable ─────────────────────────────
@@ -305,9 +380,37 @@ async function handleSubscriptionCancelled(event: WebhookEvent): Promise<void> {
     { creator_email: `eq.${email}` },
     { status: "cancelled", updated_at: new Date().toISOString() },
   );
+
+  await createInAppNotification(
+    email,
+    `⚠️ Your Pro Creator subscription has cancelled. Storage limits are capped and platform commissions are reset to 7%.`,
+    "payment_failed",
+    "/app/settings"
+  );
+
+  // Send critical transactional email via Resend
+  await sendSubscriptionPastDueEmail({
+    data: {
+      email,
+      planName: "Pro Creator",
+    },
+  }).catch((err) => console.error("[webhook] Resend error for cancelled sub:", err));
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+async function createInAppNotification(userEmail: string, text: string, type: string, link?: string) {
+  const id = Date.now() + Math.floor(Math.random() * 999);
+  await adminDb.insert("notifications", {
+    id,
+    user_email: userEmail,
+    text,
+    type,
+    link: link || null,
+    read: false,
+    created_at: new Date().toISOString(),
+  });
+}
 
 function respond(status: number, message: string): Response {
   return new Response(JSON.stringify({ message }), {

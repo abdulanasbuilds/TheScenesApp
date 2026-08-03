@@ -84,6 +84,80 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
     return { sent: true } as const;
   });
 
+export const sendWithdrawalFailedEmail = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      email: z.string().email(),
+      amountDisplay: z.string(),
+      reason: z.string(),
+      withdrawalId: z.string(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await sendEmail(
+      data.email,
+      `⚠️ Withdrawal Settlement Failed — Action Required`,
+      base(`
+        <h1>Withdrawal failed</h1>
+        <p>Your withdrawal request of <strong>${data.amountDisplay}</strong> (ID: ${data.withdrawalId}) could not be completed by our payment processor.</p>
+        <div style="background:#fff1f2; border:1px solid #fecdd3; padding:16px; border-radius:8px; margin:16px 0; color:#9f1239;">
+          <strong>Reason reported:</strong> ${data.reason}
+        </div>
+        <p>Your withdrawal amount has been fully restored to your available earnings balance. Please verify your banking details in settings and try again.</p>
+        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/settings" class="btn">Update payout settings →</a>
+      `),
+    );
+    return { sent: true } as const;
+  });
+
+export const sendSubscriptionPastDueEmail = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      email: z.string().email(),
+      planName: z.string(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await sendEmail(
+      data.email,
+      `⚠️ Payment Past Due — SukaSpace Pro Subscription`,
+      base(`
+        <h1>Your subscription payment failed</h1>
+        <p>Our payment system was unable to process your renewal payment for your <strong>SukaSpace ${data.planName}</strong> plan.</p>
+        <p>Please update your billing card details as soon as possible to avoid losing access to high-speed R2 hosted file downloads, video streaming features, and 3% lower platform commission fees.</p>
+        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/settings" class="btn">Update Billing Details →</a>
+      `),
+    );
+    return { sent: true } as const;
+  });
+
+export const sendStorageQuotaWarningEmail = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      email: z.string().email(),
+      usedPercent: z.number(),
+      usedDisplay: z.string(),
+      quotaDisplay: z.string(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await sendEmail(
+      data.email,
+      `⚠️ Storage Quota Warning — SukaSpace`,
+      base(`
+        <h1>You are running out of storage space</h1>
+        <p>This is an automated warning that your hosted creator storage is currently at <strong>${data.usedPercent}% capacity</strong>.</p>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px">
+          <tr><td style="padding:8px 0;color:#64748b">Storage Used</td><td style="padding:8px 0;text-align:right;font-weight:600">${data.usedDisplay}</td></tr>
+          <tr><td style="padding:8px 0;color:#64748b">Total Quota</td><td style="padding:8px 0;text-align:right;font-weight:600">${data.quotaDisplay}</td></tr>
+        </table>
+        <p>If you reach 100% capacity, learners will still be able to access existing files, but you will not be able to upload any new resource PDFs or stream videos until you free up space or contact us to expand your custom quota.</p>
+        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/settings" class="btn">Manage Storage settings →</a>
+      `),
+    );
+    return { sent: true } as const;
+  });
+
 export const sendEnrollmentEmail = createServerFn({ method: "POST" })
   .validator(z.object({ email: z.string().email(), name: z.string(), courseTitle: z.string() }))
   .handler(async ({ data }) => {
