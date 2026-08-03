@@ -15,7 +15,7 @@ import { z } from "zod";
 import { getPaymentProvider } from "@/lib/payment-adapter";
 import { adminDb } from "@/lib/supabase-admin";
 import { env } from "@/lib/env";
-import { checkPaymentVerifyRate, checkWithdrawalRate, checkFileAccessRate } from "@/lib/rate-limit";
+import { checkPaymentVerifyRate, checkWithdrawalRate, checkFileAccessRate, acquireLock, releaseLock } from "@/lib/rate-limit";
 import { calcPlatformFee, calcNetAmount } from "@/lib/plans";
 import {
   recordPaymentEarnings,
@@ -329,36 +329,47 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
       };
     }
 
-    // Check plan allows instant withdrawal
-    if (data.withdrawalType === "instant") {
-      const { data: sub } = await adminDb.selectOne<{ plan_id: string }>("creator_subscriptions", {
-        creator_email: `eq.${data.creatorEmail}`,
-      });
-      if ((sub?.plan_id ?? "free") !== "pro") {
-        return { ok: false, error: "Instant withdrawal requires a Pro plan." };
+    // Acquire short-lived distributed transaction lock to prevent duplicate clicks/race conditions
+    const lockKey = `withdraw_req:${data.creatorEmail}`;
+    const acquired = await acquireLock(lockKey, 15);
+    if (!acquired) {
+      return { ok: false, error: "A withdrawal request is already being processed. Please wait a moment." };
+    }
+
+    try {
+      // Check plan allows instant withdrawal
+      if (data.withdrawalType === "instant") {
+        const { data: sub } = await adminDb.selectOne<{ plan_id: string }>("creator_subscriptions", {
+          creator_email: `eq.${data.creatorEmail}`,
+        });
+        if ((sub?.plan_id ?? "free") !== "pro") {
+          return { ok: false, error: "Instant withdrawal requires a Pro plan." };
+        }
       }
+
+      // Resolve destination from the saved payout account (server-authoritative).
+      const account = await getPayoutAccount(data.creatorEmail);
+      const bankCode = data.bankCode ?? account?.bankCode ?? account?.mobileMoneyNetwork;
+      const accNumber =
+        data.bankAccountNumber ?? account?.accountNumber ?? account?.mobileMoneyNumber;
+      const accName = data.bankAccountName ?? account?.accountName;
+
+      if (!bankCode || !accNumber || !accName) {
+        return { ok: false, error: "Add a payout account before requesting a withdrawal." };
+      }
+
+      return await createWithdrawalRequest({
+        creatorEmail: data.creatorEmail,
+        amountCents: data.amountCents,
+        currency: data.currency,
+        withdrawalType: data.withdrawalType,
+        bankCode,
+        bankAccountNumber: accNumber,
+        bankAccountName: accName,
+      });
+    } finally {
+      await releaseLock(lockKey);
     }
-
-    // Resolve destination from the saved payout account (server-authoritative).
-    const account = await getPayoutAccount(data.creatorEmail);
-    const bankCode = data.bankCode ?? account?.bankCode ?? account?.mobileMoneyNetwork;
-    const accNumber =
-      data.bankAccountNumber ?? account?.accountNumber ?? account?.mobileMoneyNumber;
-    const accName = data.bankAccountName ?? account?.accountName;
-
-    if (!bankCode || !accNumber || !accName) {
-      return { ok: false, error: "Add a payout account before requesting a withdrawal." };
-    }
-
-    return createWithdrawalRequest({
-      creatorEmail: data.creatorEmail,
-      amountCents: data.amountCents,
-      currency: data.currency,
-      withdrawalType: data.withdrawalType,
-      bankCode,
-      bankAccountNumber: accNumber,
-      bankAccountName: accName,
-    });
   });
 
 // ─── 4. Creator dashboard data ────────────────────────────────────────────────
