@@ -6,7 +6,7 @@ import {
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar } from "@/components/BrowserFrame";
-import { MOCK_BADGES, xpToTier } from "@/lib/mock-data";
+import { BADGE_CATALOG, xpToTier } from "@/lib/catalog";
 import { useAppStore } from "@/lib/app-store";
 import { LevelsPanel } from "@/components/LevelsPanel";
 
@@ -123,6 +123,15 @@ function LeaderboardPage() {
   const rest = ranked.slice(3);
 
   const xpKey = period === "week" ? "weekXp" : period === "month" ? "monthXp" : "xp";
+  const myPosts = store.posts.filter((p) => p.author === store.session?.name);
+  const myEnrollments = store.enrollments.filter((e) => e.userEmail === store.session?.email);
+  const badgeProgress: Record<string, number> = {
+    streakDays: 0,
+    lessonsCompleted: myEnrollments.reduce((acc, e) => acc + e.completedLessonIds.length, 0),
+    upvotes: myPosts.reduce((acc, p) => acc + p.likes, 0),
+    bugReports: 0,
+  };
+
   const nextTier = xpToTier(userXp);
   const nextAt = nextTier.nextAt ?? 500;
   const pct = Math.min(100, Math.round((userXp / nextAt) * 100));
@@ -396,33 +405,34 @@ function LeaderboardPage() {
         <h2 className="text-sm font-semibold text-foreground">Achievements</h2>
         <p className="mt-0.5 text-xs text-muted-foreground">Complete actions to earn badges and unlock exclusive perks.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {MOCK_BADGES.map((b, i) => {
+          {BADGE_CATALOG.map((b, i) => {
             const Icon = BADGE_ICONS[b.icon] ?? Star;
             const colorClass = BADGE_COLORS[b.tone] ?? BADGE_COLORS.slate;
+            const progress = badgeProgress[b.metric] ?? 0;
+            const earned = progress >= b.target;
+            const pctDone = Math.min(100, Math.round((progress / b.target) * 100));
             return (
               <motion.div
                 key={b.id}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.06 }}
-                className={`rounded-xl border p-4 text-center transition-all ${b.locked ? "opacity-50" : b.earned ? "border-emerald-200 bg-emerald-50/50" : "border-border bg-card"}`}
+                className={`rounded-xl border p-4 text-center transition-all ${earned ? "border-emerald-200 bg-emerald-50/50" : "border-border bg-card"}`}
               >
                 <span className={`mx-auto grid h-12 w-12 place-items-center rounded-full border ${colorClass}`}>
                   <Icon size={20} />
                 </span>
                 <div className="mt-2.5 text-sm font-semibold text-foreground">{b.name}</div>
                 <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{b.desc}</p>
-                {b.locked ? (
-                  <div className="mt-2 text-[10px] font-semibold uppercase text-muted-foreground">🔒 Locked</div>
-                ) : b.earned ? (
-                  <div className="mt-2 text-[10px] font-semibold text-emerald-600">✓ {b.meta}</div>
+                {earned ? (
+                  <div className="mt-2 text-[10px] font-semibold text-emerald-600">✓ Earned</div>
                 ) : (
                   <>
                     <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((b.progress ?? 0) / (b.target ?? 1)) * 100}%` }} />
+                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pctDone}%` }} />
                     </div>
                     <div className="mt-1 text-[10px] font-semibold text-muted-foreground">
-                      {b.progress ?? 0} / {b.target ?? 1}
+                      {progress} / {b.target}
                     </div>
                   </>
                 )}
@@ -467,7 +477,4 @@ function LeaderboardPage() {
   );
 }
 
-// Need to extend the xpToTier type to include nextAt
-declare module "@/lib/mock-data" {
-  // This is a type augmentation hint — actual implementation is in mock-data.ts
-}
+
