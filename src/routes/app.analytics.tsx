@@ -1,15 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Users, DollarSign, Activity, HeartHandshake, Eye, Target, BarChart3,
-} from "lucide-react";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-} from "recharts";
-import {
-  buildDailySeries, buildSummary, sumSeries, type RangeKey,
-} from "@/lib/analytics-data";
+import { Users, DollarSign, Activity, HeartHandshake, Eye, Target, BarChart3 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { buildDailySeries, buildSummary, sumSeries, type RangeKey } from "@/lib/analytics-data";
 import { useAppStore } from "@/lib/app-store";
 import { EmptyState } from "@/components/EmptyState";
 import { SPRING_FAST, hapticTap } from "@/lib/pwa";
@@ -19,9 +13,16 @@ export const Route = createFileRoute("/app/analytics")({
   head: () => ({
     meta: [
       { title: "Community Analytics · SukaSpace" },
-      { name: "description", content: "Track member growth, revenue, engagement, and course enrolments for your SukaSpace community." },
+      {
+        name: "description",
+        content:
+          "Track member growth, revenue, engagement, and course enrolments for your SukaSpace community.",
+      },
       { property: "og:title", content: "Community Analytics · SukaSpace" },
-      { property: "og:description", content: "Member count, revenue, engagement, and enrolment tracking in one dashboard." },
+      {
+        property: "og:description",
+        content: "Member count, revenue, engagement, and enrolment tracking in one dashboard.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -74,7 +75,10 @@ function AnalyticsPage() {
     () => store.enrollments.filter((e) => myCourseIds.has(e.courseId)),
     [store.enrollments, myCourseIds],
   );
-  const enrollmentTimestamps = useMemo(() => myEnrollments.map((e) => e.enrolledAt), [myEnrollments]);
+  const enrollmentTimestamps = useMemo(
+    () => myEnrollments.map((e) => e.enrolledAt),
+    [myEnrollments],
+  );
   const lessonCompletionTimestamps = useMemo(
     () => myEnrollments.flatMap((e) => e.completedLessonIds.map(() => e.enrolledAt)),
     [myEnrollments],
@@ -93,13 +97,31 @@ function AnalyticsPage() {
         revenueUsd: 0,
         publishedCourses,
       }),
-    [range, members, postTimestamps, enrollmentTimestamps, lessonCompletionTimestamps, publishedCourses],
+    [
+      range,
+      members,
+      postTimestamps,
+      enrollmentTimestamps,
+      lessonCompletionTimestamps,
+      publishedCourses,
+    ],
   );
 
-  const postSeries = useMemo(() => buildDailySeries(postTimestamps, range), [postTimestamps, range]);
-  const enrolSeries = useMemo(() => buildDailySeries(enrollmentTimestamps, range), [enrollmentTimestamps, range]);
+  const postSeries = useMemo(
+    () => buildDailySeries(postTimestamps, range),
+    [postTimestamps, range],
+  );
+  const enrolSeries = useMemo(
+    () => buildDailySeries(enrollmentTimestamps, range),
+    [enrollmentTimestamps, range],
+  );
   const activityData = useMemo(
-    () => postSeries.map((p, i) => ({ label: p.label, posts: p.value, enrolments: enrolSeries[i]?.value ?? 0 })),
+    () =>
+      postSeries.map((p, i) => ({
+        label: p.label,
+        posts: p.value,
+        enrolments: enrolSeries[i]?.value ?? 0,
+      })),
     [postSeries, enrolSeries],
   );
 
@@ -133,7 +155,9 @@ function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">Community analytics</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+            Community analytics
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Live numbers from your own communities — nothing simulated.
           </p>
@@ -142,10 +166,15 @@ function AnalyticsPage() {
           {RANGES.map((r) => (
             <button
               key={r.key}
-              onClick={() => { hapticTap(); setRange(r.key); }}
+              onClick={() => {
+                hapticTap();
+                setRange(r.key);
+              }}
               className={cn(
                 "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
-                range === r.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                range === r.key
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {r.label}
@@ -169,7 +198,9 @@ function AnalyticsPage() {
               <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary/10 text-primary">
                 <Icon size={16} />
               </span>
-              <div className="mt-3 text-2xl font-bold tracking-tight text-foreground">{m.value}</div>
+              <div className="mt-3 text-2xl font-bold tracking-tight text-foreground">
+                {m.value}
+              </div>
               <div className="text-xs font-semibold text-muted-foreground">{m.label}</div>
               <p className="mt-1.5 text-[11px] text-muted-foreground">{m.hint}</p>
             </motion.div>
@@ -187,7 +218,12 @@ function AnalyticsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={activityData} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" minTickGap={24} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 10 }}
+                  interval="preserveStartEnd"
+                  minTickGap={24}
+                />
                 <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                 <Tooltip contentStyle={{ fontSize: 12, borderRadius: 10 }} />
                 <Bar dataKey="posts" name="Posts" fill="var(--primary)" radius={[3, 3, 0, 0]} />
@@ -233,10 +269,15 @@ function AnalyticsPage() {
             {myCommunities.map((c) => {
               const count = store.getJoinedEmails(c.id).length;
               return (
-                <div key={c.id} className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+                <div
+                  key={c.id}
+                  className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2"
+                >
                   <div className="min-w-0">
                     <div className="truncate text-xs font-semibold text-foreground">{c.title}</div>
-                    <div className="text-[11px] text-muted-foreground">{c.tag === "PAID" ? "Paid" : "Free"} · {c.category}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {c.tag === "PAID" ? "Paid" : "Free"} · {c.category}
+                    </div>
                   </div>
                   <div className="text-sm font-bold text-foreground">{count.toLocaleString()}</div>
                 </div>

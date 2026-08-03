@@ -2,35 +2,30 @@
 // Strategy: Cache-first for static assets, network-first for navigation/API.
 
 const CACHE_VERSION = "sukaspace-v1";
-const STATIC_CACHE  = `${CACHE_VERSION}-static`;
-const IMAGE_CACHE   = `${CACHE_VERSION}-images`;
+const STATIC_CACHE = `${CACHE_VERSION}-static`;
+const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 
 // Assets to pre-cache on install
-const PRECACHE_ASSETS = [
-  "/",
-  "/manifest.json",
-  "/favicon-256.png",
-  "/apple-touch-icon.png",
-];
+const PRECACHE_ASSETS = ["/", "/manifest.json", "/favicon-256.png", "/apple-touch-icon.png"];
 
 // ─── Install ───────────────────────────────────────────────────────────────────
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => cache.addAll(PRECACHE_ASSETS))
-  );
+  event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(PRECACHE_ASSETS)));
   self.skipWaiting();
 });
 
 // ─── Activate ──────────────────────────────────────────────────────────────────
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((k) => k.startsWith("sukaspace-") && k !== STATIC_CACHE && k !== IMAGE_CACHE)
-          .map((k) => caches.delete(k))
-      )
-    )
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((k) => k.startsWith("sukaspace-") && k !== STATIC_CACHE && k !== IMAGE_CACHE)
+            .map((k) => caches.delete(k)),
+        ),
+      ),
   );
   self.clients.claim();
 });
@@ -89,6 +84,77 @@ async function cacheFirst(request, cacheName) {
   }
 }
 
+const OFFLINE_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're Offline · SukaSpace</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #F8FAFC;
+      color: #1E293B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      max-width: 400px;
+      width: 100%;
+      border: 1px solid #E2E8F0;
+    }
+    .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+      color: #0F172A;
+    }
+    p {
+      font-size: 14px;
+      color: #64748B;
+      line-height: 1.5;
+      margin: 0 0 20px 0;
+    }
+    button {
+      background-color: #1D4ED8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #1E40AF;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">📶</div>
+    <h1>You are currently offline</h1>
+    <p>SukaSpace is cached on your device, but the requested page requires a live connection. Check your internet connection and try again.</p>
+    <button onclick="window.location.reload()">Retry Connection</button>
+  </div>
+</body>
+</html>`;
+
 async function networkFirst(request, cacheName) {
   try {
     const response = await fetch(request);
@@ -99,7 +165,17 @@ async function networkFirst(request, cacheName) {
     return response;
   } catch {
     const cached = await caches.match(request);
-    return cached ?? new Response("Network unavailable", { status: 503 });
+    if (cached) return cached;
+
+    // If request mode is navigate (visiting a page), serve our offline HTML fallback
+    if (request.mode === "navigate") {
+      return new Response(OFFLINE_HTML, {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+        status: 200,
+      });
+    }
+
+    return new Response("Network unavailable", { status: 503 });
   }
 }
 
@@ -111,6 +187,6 @@ self.addEventListener("push", (event) => {
       body: data.body,
       icon: "/favicon-256.png",
       badge: "/favicon-32.png",
-    })
+    }),
   );
 });

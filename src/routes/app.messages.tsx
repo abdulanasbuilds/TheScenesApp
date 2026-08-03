@@ -2,8 +2,15 @@ import { EmptyState } from "@/components/EmptyState";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
-  Send, MessagesSquare, Plus, X, ArrowLeft, Check, CheckCheck,
-  Search, Circle,
+  Send,
+  MessagesSquare,
+  Plus,
+  X,
+  ArrowLeft,
+  Check,
+  CheckCheck,
+  Search,
+  Circle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore, type Conversation, type DirectMessage } from "@/lib/app-store";
@@ -23,33 +30,42 @@ function initials(name: string) {
 
 function formatTime(ts: number): string {
   const diff = Date.now() - ts;
-  const sec  = Math.floor(diff / 1000);
-  if (sec < 60)   return "Just now";
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return "Just now";
   const min = Math.floor(sec / 60);
-  if (min < 60)   return `${min}m`;
-  const hr  = Math.floor(min / 60);
-  if (hr < 24)    return `${hr}h`;
+  if (min < 60) return `${min}m`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h`;
   const day = Math.floor(hr / 24);
-  if (day === 1)  return "Yesterday";
-  if (day < 7)    return new Date(ts).toLocaleDateString([], { weekday: "short" });
+  if (day === 1) return "Yesterday";
+  if (day < 7) return new Date(ts).toLocaleDateString([], { weekday: "short" });
   return new Date(ts).toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
 function formatFullTime(ts: number): string {
-  const d   = new Date(ts);
+  const d = new Date(ts);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - ts) / 86_400_000);
 
   if (diffDays === 0) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  if (diffDays === 1) return `Yesterday ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-  if (diffDays < 7)   return d.toLocaleDateString([], { weekday: "short", hour: "2-digit", minute: "2-digit" });
-  return d.toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  if (diffDays === 1)
+    return `Yesterday ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+  if (diffDays < 7)
+    return d.toLocaleDateString([], { weekday: "short", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 // ─── Conversation list item ───────────────────────────────────────────────────
 
 function ConvoItem({
-  convo, active, onClick,
+  convo,
+  active,
+  onClick,
 }: {
   convo: Conversation;
   active: boolean;
@@ -79,17 +95,24 @@ function ConvoItem({
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <span className={cn("text-sm font-semibold truncate", active ? "text-blue-700" : "text-slate-800")}>
+          <span
+            className={cn(
+              "text-sm font-semibold truncate",
+              active ? "text-blue-700" : "text-slate-800",
+            )}
+          >
             {convo.peerEmail}
           </span>
           <span className="text-xs text-slate-400 flex-shrink-0 ml-2">
             {formatTime(convo.lastMessage.createdAt)}
           </span>
         </div>
-        <p className={cn(
-          "text-xs truncate mt-0.5",
-          convo.unreadCount > 0 ? "text-slate-700 font-medium" : "text-slate-400",
-        )}>
+        <p
+          className={cn(
+            "text-xs truncate mt-0.5",
+            convo.unreadCount > 0 ? "text-slate-700 font-medium" : "text-slate-400",
+          )}
+        >
           {convo.lastMessage.body}
         </p>
       </div>
@@ -107,25 +130,27 @@ function Bubble({ msg, isMine }: { msg: DirectMessage; isMine: boolean }) {
       transition={SPRING_FAST}
       className={cn("flex", isMine ? "justify-end" : "justify-start")}
     >
-      <div className={cn(
-        "max-w-[72%] rounded-2xl px-4 py-2.5 text-sm",
-        isMine
-          ? "bg-blue-500 text-white rounded-br-sm"
-          : "bg-white border border-slate-200 text-slate-800 rounded-bl-sm shadow-sm",
-      )}>
+      <div
+        className={cn(
+          "max-w-[72%] rounded-2xl px-4 py-2.5 text-sm",
+          isMine
+            ? "bg-blue-500 text-white rounded-br-sm"
+            : "bg-white border border-slate-200 text-slate-800 rounded-bl-sm shadow-sm",
+        )}
+      >
         <p className="leading-relaxed whitespace-pre-wrap">{msg.body}</p>
-        <div className={cn(
-          "flex items-center gap-1 mt-1",
-          isMine ? "justify-end" : "justify-start",
-        )}>
+        <div
+          className={cn("flex items-center gap-1 mt-1", isMine ? "justify-end" : "justify-start")}
+        >
           <span className={cn("text-[10px]", isMine ? "text-blue-200" : "text-slate-400")}>
             {formatFullTime(msg.createdAt)}
           </span>
-          {isMine && (
-            msg.read
-              ? <CheckCheck className="w-3 h-3 text-blue-200" />
-              : <Check className="w-3 h-3 text-blue-300" />
-          )}
+          {isMine &&
+            (msg.read ? (
+              <CheckCheck className="w-3 h-3 text-blue-200" />
+            ) : (
+              <Check className="w-3 h-3 text-blue-300" />
+            ))}
         </div>
       </div>
     </motion.div>
@@ -149,7 +174,7 @@ function Thread({
 }) {
   const [text, setText] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef  = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -203,12 +228,8 @@ function Thread({
             helper="This thread is private and only visible to the two of you."
           />
         )}
-        {messages.map(msg => (
-          <Bubble
-            key={msg.id}
-            msg={msg}
-            isMine={msg.fromEmail === myEmail}
-          />
+        {messages.map((msg) => (
+          <Bubble key={msg.id} msg={msg} isMine={msg.fromEmail === myEmail} />
         ))}
         <div ref={bottomRef} />
       </div>
@@ -219,7 +240,7 @@ function Thread({
           <textarea
             ref={inputRef}
             value={text}
-            onChange={e => setText(e.target.value)}
+            onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKey}
             placeholder="Type a message… (Enter to send)"
             rows={1}
@@ -234,9 +255,7 @@ function Thread({
             <Send className="w-4 h-4 text-white" />
           </button>
         </div>
-        <p className="text-xs text-slate-400 mt-1.5 text-center">
-          Shift+Enter for new line
-        </p>
+        <p className="text-xs text-slate-400 mt-1.5 text-center">Shift+Enter for new line</p>
       </div>
     </div>
   );
@@ -253,7 +272,7 @@ function NewDMModal({
 }) {
   const [email, setEmail] = useState("");
   const trimmed = email.trim();
-  const valid   = /\S+@\S+\.\S+/.test(trimmed);
+  const valid = /\S+@\S+\.\S+/.test(trimmed);
 
   return (
     <motion.div
@@ -268,7 +287,7 @@ function NewDMModal({
         animate={{ y: 0, scale: 1 }}
         exit={{ y: 48, scale: 0.96 }}
         transition={SPRING_FAST}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
         className="w-full sm:max-w-md bg-white rounded-2xl shadow-2xl p-6"
       >
         <div className="flex items-center justify-between mb-4">
@@ -277,15 +296,13 @@ function NewDMModal({
             <X className="w-5 h-5" />
           </button>
         </div>
-        <label className="block text-xs font-medium text-slate-500 mb-1.5">
-          Recipient email
-        </label>
+        <label className="block text-xs font-medium text-slate-500 mb-1.5">Recipient email</label>
         <input
           autoFocus
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && valid && onStart(trimmed)}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && valid && onStart(trimmed)}
           placeholder="user@example.com"
           className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
         />
@@ -304,16 +321,16 @@ function NewDMModal({
 // ─── Root Messages page ───────────────────────────────────────────────────────
 
 function Messages() {
-  const store        = useAppStore();
-  const myEmail      = store.session?.email ?? "";
-  const [peer, setPeer]       = useState<string | null>(null);
+  const store = useAppStore();
+  const myEmail = store.session?.email ?? "";
+  const [peer, setPeer] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [mobileView, setMobileView] = useState<"list" | "thread">("list");
-  const [search, setSearch]   = useState("");
+  const [search, setSearch] = useState("");
 
   const allConvos = store.getConversations();
-  const convos    = search
-    ? allConvos.filter(c => c.peerEmail.toLowerCase().includes(search.toLowerCase()))
+  const convos = search
+    ? allConvos.filter((c) => c.peerEmail.toLowerCase().includes(search.toLowerCase()))
     : allConvos;
 
   const totalUnread = allConvos.reduce((s, c) => s + c.unreadCount, 0);
@@ -339,15 +356,16 @@ function Messages() {
   return (
     <>
       <div className="flex h-[calc(100dvh-56px)] overflow-hidden bg-white">
-
         {/* ── Sidebar (conversation list) ── */}
-        <div className={cn(
-          "flex flex-col border-r border-slate-100 bg-white",
-          "w-full lg:w-80 xl:w-96 flex-shrink-0",
-          "transition-all duration-200",
-          // Mobile: hide list when viewing thread
-          mobileView === "thread" ? "hidden lg:flex" : "flex",
-        )}>
+        <div
+          className={cn(
+            "flex flex-col border-r border-slate-100 bg-white",
+            "w-full lg:w-80 xl:w-96 flex-shrink-0",
+            "transition-all duration-200",
+            // Mobile: hide list when viewing thread
+            mobileView === "thread" ? "hidden lg:flex" : "flex",
+          )}
+        >
           {/* Sidebar header */}
           <div className="px-4 pt-4 pb-2 flex-shrink-0">
             <div className="flex items-center justify-between mb-3">
@@ -372,7 +390,7 @@ function Messages() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search conversations…"
                 className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
@@ -388,17 +406,22 @@ function Messages() {
                   variant={search ? "no-results" : "empty"}
                   icon={<MessagesSquare className="w-5 h-5" />}
                   title={search ? "No conversations match" : "No messages yet"}
-                  description={search
-                    ? "Nothing matches that name. Clear the search to see every conversation you are part of."
-                    : "Direct messages you send or receive show up here. Reach out to a member of your community to get started."}
-                  primary={search ? undefined : { label: "Start a conversation", onClick: () => setShowNew(true) }}
+                  description={
+                    search
+                      ? "Nothing matches that name. Clear the search to see every conversation you are part of."
+                      : "Direct messages you send or receive show up here. Reach out to a member of your community to get started."
+                  }
+                  primary={
+                    search
+                      ? undefined
+                      : { label: "Start a conversation", onClick: () => setShowNew(true) }
+                  }
                   helper="Only people in your communities can message you."
                 />
-
               </div>
             )}
             <AnimatePresence>
-              {convos.map(c => (
+              {convos.map((c) => (
                 <ConvoItem
                   key={c.peerEmail}
                   convo={c}
@@ -411,10 +434,12 @@ function Messages() {
         </div>
 
         {/* ── Thread panel ── */}
-        <div className={cn(
-          "flex-1 flex flex-col min-w-0",
-          mobileView === "list" ? "hidden lg:flex" : "flex",
-        )}>
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0",
+            mobileView === "list" ? "hidden lg:flex" : "flex",
+          )}
+        >
           {peer ? (
             <Thread
               peerEmail={peer}
@@ -446,9 +471,7 @@ function Messages() {
 
       {/* ── New DM modal ── */}
       <AnimatePresence>
-        {showNew && (
-          <NewDMModal onClose={() => setShowNew(false)} onStart={startNew} />
-        )}
+        {showNew && <NewDMModal onClose={() => setShowNew(false)} onStart={startNew} />}
       </AnimatePresence>
     </>
   );

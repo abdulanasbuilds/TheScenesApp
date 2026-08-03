@@ -52,9 +52,9 @@ export const submitFeedback = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     // Use non-VITE server-side names — VITE_* are build-time client vars only.
     // Set SUPABASE_URL and SUPABASE_ANON_KEY as runtime bindings in Cloudflare dashboard.
-    const supabaseUrl  = process.env.SUPABASE_URL;
+    const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseAnon = process.env.SUPABASE_ANON_KEY;
-    const telegramToken  = process.env.TELEGRAM_BOT_TOKEN;
+    const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
     const telegramChatId = process.env.TELEGRAM_PRIVATE_CHAT_ID;
 
     let storedInSupabase = false;
@@ -67,9 +67,9 @@ export const submitFeedback = createServerFn({ method: "POST" })
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "apikey": supabaseAnon,
-            "Authorization": `Bearer ${supabaseAnon}`,
-            "Prefer": "return=minimal",
+            apikey: supabaseAnon,
+            Authorization: `Bearer ${supabaseAnon}`,
+            Prefer: "return=minimal",
           },
           body: JSON.stringify({
             id: Date.now(),

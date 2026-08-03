@@ -38,9 +38,22 @@ export function PublicHeader() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
-          <Link to="/auth" search={{ mode: "signin" }} className="rounded-full px-4 py-2 text-sm font-extrabold text-foreground border border-neutral-200 hover:bg-neutral-50">Log in</Link>
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}>
-            <button onClick={goCreate} className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90">
+          <Link
+            to="/auth"
+            search={{ mode: "signin" }}
+            className="rounded-full px-4 py-2 text-sm font-extrabold text-foreground border border-neutral-200 hover:bg-neutral-50"
+          >
+            Log in
+          </Link>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          >
+            <button
+              onClick={goCreate}
+              className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-white border border-transparent hover:bg-primary/90"
+            >
               Get started
             </button>
           </motion.div>
@@ -57,14 +70,31 @@ export function PublicHeader() {
         <div className="border-t border-neutral-100 bg-card px-4 py-3 md:hidden">
           <nav className="grid gap-1 text-sm font-semibold text-foreground">
             {PUBLIC_NAV.map((item) => (
-              <Link key={item.to} to={item.to} onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 hover:bg-neutral-50">
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-3 py-2 hover:bg-neutral-50"
+              >
                 {item.label}
               </Link>
             ))}
           </nav>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <Link to="/auth" search={{ mode: "signin" }} onClick={() => setOpen(false)} className="rounded-full border border-neutral-200 bg-card px-3 py-2 text-center text-sm font-extrabold text-foreground">Log in</Link>
-            <button onClick={goCreate} className="rounded-full bg-primary px-3 py-2 text-center text-sm font-extrabold text-white border border-transparent">Get started</button>
+            <Link
+              to="/auth"
+              search={{ mode: "signin" }}
+              onClick={() => setOpen(false)}
+              className="rounded-full border border-neutral-200 bg-card px-3 py-2 text-center text-sm font-extrabold text-foreground"
+            >
+              Log in
+            </Link>
+            <button
+              onClick={goCreate}
+              className="rounded-full bg-primary px-3 py-2 text-center text-sm font-extrabold text-white border border-transparent"
+            >
+              Get started
+            </button>
           </div>
         </div>
       )}

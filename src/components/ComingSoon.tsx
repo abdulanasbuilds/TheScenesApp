@@ -82,7 +82,9 @@ export function ComingSoon({
 
           {/* Body */}
           <div className="p-7 sm:p-9">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {title}
+            </h1>
             <p className="mt-1 text-sm font-semibold text-primary">{subtitle}</p>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{description}</p>
 
@@ -101,7 +103,9 @@ export function ComingSoon({
                     </span>
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-foreground">{f.label}</div>
-                      <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{f.desc}</div>
+                      <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                        {f.desc}
+                      </div>
                     </div>
                   </motion.div>
                 ))}
@@ -139,8 +143,8 @@ export function ComingSoon({
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          We're building {title} to be more powerful than anything on the market.
-          You'll receive an in-app notification the moment early access opens.
+          We're building {title} to be more powerful than anything on the market. You'll receive an
+          in-app notification the moment early access opens.
         </p>
       </motion.div>
     </div>

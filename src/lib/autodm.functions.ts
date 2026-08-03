@@ -3,58 +3,68 @@ import { createServerFn } from "@tanstack/react-start";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type NotifType =
-  | "welcome" | "system" | "new_post" | "new_comment" | "new_member"
-  | "new_message" | "event" | "course_published" | "lesson_published"
-  | "payment_success" | "payment_failed" | "announcement" | "community_live"
+  | "welcome"
+  | "system"
+  | "new_post"
+  | "new_comment"
+  | "new_member"
+  | "new_message"
+  | "event"
+  | "course_published"
+  | "lesson_published"
+  | "payment_success"
+  | "payment_failed"
+  | "announcement"
+  | "community_live"
   | "onboarding";
 
 interface PushNotifInput {
-  userEmail:  string;
-  text:       string;
-  type?:      NotifType;
-  link?:      string;
+  userEmail: string;
+  text: string;
+  type?: NotifType;
+  link?: string;
   actorName?: string;
-  dedupKey?:  string;        // prevents duplicate spam
+  dedupKey?: string; // prevents duplicate spam
 }
 
 interface AutoDMInput {
-  fromEmail:  string;        // sender (creator or "system")
-  toEmail:    string;
-  body:       string;
+  fromEmail: string; // sender (creator or "system")
+  toEmail: string;
+  body: string;
 }
 
 interface MemberJoinInput {
-  userEmail:        string;
-  userName:         string;
-  communityId:      number;
-  communityTitle:   string;
-  creatorEmail:     string;
-  creatorName:      string;
-  welcomeMessage?:  string;
+  userEmail: string;
+  userName: string;
+  communityId: number;
+  communityTitle: string;
+  creatorEmail: string;
+  creatorName: string;
+  welcomeMessage?: string;
 }
 
 interface OnboardingCompleteInput {
-  userEmail:  string;
-  userName:   string;
-  role:       "creator" | "learner";
+  userEmail: string;
+  userName: string;
+  role: "creator" | "learner";
 }
 
 interface AnnouncementInput {
-  memberEmails:     string[];
-  communityTitle:   string;
-  communityId:      number;
-  creatorEmail:     string;
-  creatorName:      string;
-  title:            string;
-  body:             string;
+  memberEmails: string[];
+  communityTitle: string;
+  communityId: number;
+  creatorEmail: string;
+  creatorName: string;
+  title: string;
+  body: string;
 }
 
 interface CoursePublishedInput {
-  memberEmails:  string[];
-  courseTitle:   string;
-  courseId:      number;
-  communityId:   number;
-  creatorName:   string;
+  memberEmails: string[];
+  courseTitle: string;
+  courseId: number;
+  communityId: number;
+  creatorName: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -69,10 +79,10 @@ function serviceKey(): string {
 
 function adminHeaders() {
   return {
-    "Content-Type":  "application/json",
-    "apikey":        serviceKey(),
-    "Authorization": `Bearer ${serviceKey()}`,
-    "Prefer":        "return=minimal",
+    "Content-Type": "application/json",
+    apikey: serviceKey(),
+    Authorization: `Bearer ${serviceKey()}`,
+    Prefer: "return=minimal",
   };
 }
 
@@ -82,9 +92,9 @@ async function dbInsert(table: string, row: Record<string, unknown>): Promise<bo
   if (!url || !key) return false; // graceful degradation — localStorage takes over client-side
 
   const res = await fetch(`${url}/rest/v1/${table}`, {
-    method:  "POST",
+    method: "POST",
     headers: adminHeaders(),
-    body:    JSON.stringify(row),
+    body: JSON.stringify(row),
   });
   if (!res.ok) {
     const err = await res.text();
@@ -106,15 +116,15 @@ export const pushNotificationForUser = createServerFn({ method: "POST" })
   .validator((d: PushNotifInput) => d)
   .handler(async ({ data }) => {
     const ok = await dbInsert("notifications", {
-      id:           nowId(),
-      user_email:   data.userEmail,
-      text:         data.text,
-      type:         data.type ?? "system",
-      link:         data.link ?? null,
-      actor_name:   data.actorName ?? null,
-      read:         false,
-      created_at:   new Date().toISOString(),
-      dedup_key:    data.dedupKey ?? null,
+      id: nowId(),
+      user_email: data.userEmail,
+      text: data.text,
+      type: data.type ?? "system",
+      link: data.link ?? null,
+      actor_name: data.actorName ?? null,
+      read: false,
+      created_at: new Date().toISOString(),
+      dedup_key: data.dedupKey ?? null,
     });
     return { ok };
   });
@@ -125,22 +135,22 @@ export const sendAutoDM = createServerFn({ method: "POST" })
   .validator((d: AutoDMInput) => d)
   .handler(async ({ data }) => {
     const ok = await dbInsert("direct_messages", {
-      id:         nowId(),
+      id: nowId(),
       from_email: data.fromEmail,
-      to_email:   data.toEmail,
-      body:       data.body,
-      read:       false,
+      to_email: data.toEmail,
+      body: data.body,
+      read: false,
       created_at: new Date().toISOString(),
     });
     // Push a "new_message" notification to the recipient
     if (ok) {
       await dbInsert("notifications", {
-        id:         nowId() + 1,
+        id: nowId() + 1,
         user_email: data.toEmail,
-        text:       `You have a new message`,
+        text: `You have a new message`,
         type: "new_message",
-        link:       "/app/messages",
-        read:       false,
+        link: "/app/messages",
+        read: false,
         created_at: new Date().toISOString(),
       });
     }
@@ -153,46 +163,47 @@ export const onMemberJoin = createServerFn({ method: "POST" })
   .validator((d: MemberJoinInput) => d)
   .handler(async ({ data }) => {
     const now = new Date().toISOString();
-    const welcome = data.welcomeMessage
-      ?? `Hey ${data.userName}! 👋 Welcome to **${data.communityTitle}**. Explore the community, introduce yourself in the feed, and check out our courses. We're glad you're here!`;
+    const welcome =
+      data.welcomeMessage ??
+      `Hey ${data.userName}! 👋 Welcome to **${data.communityTitle}**. Explore the community, introduce yourself in the feed, and check out our courses. We're glad you're here!`;
 
     const results = await Promise.allSettled([
       // 1. Welcome DM from creator to new member
       dbInsert("direct_messages", {
-        id:         nowId(),
+        id: nowId(),
         from_email: data.creatorEmail,
-        to_email:   data.userEmail,
-        body:       welcome,
-        read:       false,
+        to_email: data.userEmail,
+        body: welcome,
+        read: false,
         created_at: now,
       }),
       // 2. "new_message" notification so the member sees it
       dbInsert("notifications", {
-        id:         nowId() + 1,
+        id: nowId() + 1,
         user_email: data.userEmail,
-        text:       `${data.creatorName} sent you a welcome message`,
+        text: `${data.creatorName} sent you a welcome message`,
         type: "new_message",
-        link:       "/app/messages",
+        link: "/app/messages",
         actor_name: data.creatorName,
-        read:       false,
+        read: false,
         created_at: now,
-        dedup_key:  `join-${data.communityId}-${data.userEmail}`,
+        dedup_key: `join-${data.communityId}-${data.userEmail}`,
       }),
       // 3. "new_member" notification for the creator
       dbInsert("notifications", {
-        id:         nowId() + 2,
+        id: nowId() + 2,
         user_email: data.creatorEmail,
-        text:       `${data.userName} joined ${data.communityTitle}`,
+        text: `${data.userName} joined ${data.communityTitle}`,
         type: "new_member",
-        link:       "/app/members",
+        link: "/app/members",
         actor_name: data.userName,
-        read:       false,
+        read: false,
         created_at: now,
-        dedup_key:  `join-creator-${data.communityId}-${data.userEmail}`,
+        dedup_key: `join-creator-${data.communityId}-${data.userEmail}`,
       }),
     ]);
 
-    const ok = results.every(r => r.status === "fulfilled" && r.value === true);
+    const ok = results.every((r) => r.status === "fulfilled" && r.value === true);
     return { ok };
   });
 
@@ -202,19 +213,20 @@ export const onOnboardingComplete = createServerFn({ method: "POST" })
   .validator((d: OnboardingCompleteInput) => d)
   .handler(async ({ data }) => {
     const label = data.role === "creator" ? "creator" : "learner";
-    const tips  = data.role === "creator"
-      ? "Start by creating your first community and adding courses."
-      : "Browse communities and join one that matches your interests.";
+    const tips =
+      data.role === "creator"
+        ? "Start by creating your first community and adding courses."
+        : "Browse communities and join one that matches your interests.";
 
     const ok = await dbInsert("notifications", {
-      id:         nowId(),
+      id: nowId(),
       user_email: data.userEmail,
-      text:       `Welcome, ${data.userName}! Your ${label} account is ready. ${tips}`,
+      text: `Welcome, ${data.userName}! Your ${label} account is ready. ${tips}`,
       type: "onboarding",
-      link:       data.role === "creator" ? "/app/creator" : "/discover",
-      read:       false,
+      link: data.role === "creator" ? "/app/creator" : "/discover",
+      read: false,
       created_at: new Date().toISOString(),
-      dedup_key:  `onboarding-complete-${data.userEmail}`,
+      dedup_key: `onboarding-complete-${data.userEmail}`,
     });
     return { ok };
   });
@@ -234,25 +246,25 @@ export const sendCommunityAnnouncement = createServerFn({ method: "POST" })
     }
 
     const rows = data.memberEmails.map((email, i) => ({
-      id:         nowId() + i,
+      id: nowId() + i,
       user_email: email,
-      text:       `📢 ${data.creatorName} in ${data.communityTitle}: ${data.title}`,
+      text: `📢 ${data.creatorName} in ${data.communityTitle}: ${data.title}`,
       type: "announcement",
-      link:       `/app/feed`,
+      link: `/app/feed`,
       actor_name: data.creatorName,
-      read:       false,
+      read: false,
       created_at: now,
-      dedup_key:  `announcement-${data.communityId}-${Date.now()}-${email}`,
+      dedup_key: `announcement-${data.communityId}-${Date.now()}-${email}`,
     }));
 
     const url = supabaseUrl();
-    const key  = serviceKey();
+    const key = serviceKey();
     if (!url || !key) return { ok: false };
 
     const res = await fetch(`${url}/rest/v1/notifications`, {
-      method:  "POST",
+      method: "POST",
       headers: adminHeaders(),
-      body:    JSON.stringify(rows),
+      body: JSON.stringify(rows),
     });
 
     return { ok: res.ok };
@@ -265,25 +277,25 @@ export const notifyCoursePublished = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const now = new Date().toISOString();
     const rows = data.memberEmails.map((email, i) => ({
-      id:         nowId() + i,
+      id: nowId() + i,
       user_email: email,
-      text:       `🎓 New course: "${data.courseTitle}" by ${data.creatorName} is now available`,
+      text: `🎓 New course: "${data.courseTitle}" by ${data.creatorName} is now available`,
       type: "course_published",
-      link:       `/app/classroom`,
+      link: `/app/classroom`,
       actor_name: data.creatorName,
-      read:       false,
+      read: false,
       created_at: now,
-      dedup_key:  `course-pub-${data.courseId}-${email}`,
+      dedup_key: `course-pub-${data.courseId}-${email}`,
     }));
 
     const url = supabaseUrl();
-    const key  = serviceKey();
+    const key = serviceKey();
     if (!url || !key) return { ok: false };
 
     const res = await fetch(`${url}/rest/v1/notifications`, {
-      method:  "POST",
+      method: "POST",
       headers: adminHeaders(),
-      body:    JSON.stringify(rows),
+      body: JSON.stringify(rows),
     });
 
     return { ok: res.ok };

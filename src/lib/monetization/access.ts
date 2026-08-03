@@ -45,12 +45,12 @@ function isExpired(expiresAt: string | null): boolean {
 /** Check if a user can access a community. */
 export async function checkCommunityAccess(
   userEmail: string,
-  communityId: number
+  communityId: number,
 ): Promise<CheckResult> {
   // First: check if the community is free
   const { data: community } = await adminDb.selectOne<{ tag: string; creator_email: string }>(
     "communities",
-    { "id": `eq.${communityId}` }
+    { id: `eq.${communityId}` },
   );
 
   if (!community) return { hasAccess: false };
@@ -69,10 +69,7 @@ export async function checkCommunityAccess(
   const { data: access } = await adminDb.selectOne<{
     access_type: string;
     expires_at: string | null;
-  }>(
-    "community_access",
-    { "community_id": `eq.${communityId}`, "user_email": `eq.${userEmail}` }
-  );
+  }>("community_access", { community_id: `eq.${communityId}`, user_email: `eq.${userEmail}` });
 
   if (!access || isExpired(access.expires_at)) {
     return { hasAccess: false };
@@ -100,15 +97,15 @@ export async function grantCommunityAccess(opts: {
   const { error } = await adminDb.upsert(
     "community_access",
     {
-      id:             generateId(),
-      community_id:   opts.communityId,
-      user_email:     opts.userEmail,
+      id: generateId(),
+      community_id: opts.communityId,
+      user_email: opts.userEmail,
       transaction_id: opts.transactionId,
-      access_type:    opts.accessType ?? "paid",
-      granted_at:     new Date().toISOString(),
-      expires_at:     opts.expiresAt ?? null,
+      access_type: opts.accessType ?? "paid",
+      granted_at: new Date().toISOString(),
+      expires_at: opts.expiresAt ?? null,
     },
-    "community_id,user_email"
+    "community_id,user_email",
   );
 
   return { ok: !error, alreadyHad: false };
@@ -117,19 +114,13 @@ export async function grantCommunityAccess(opts: {
 // ─── Course access ────────────────────────────────────────────────────────────
 
 /** Check if a user can access a course. */
-export async function checkCourseAccess(
-  userEmail: string,
-  courseId: number
-): Promise<CheckResult> {
+export async function checkCourseAccess(userEmail: string, courseId: number): Promise<CheckResult> {
   // Get course details
   const { data: course } = await adminDb.selectOne<{
     creator_email: string;
     published: boolean;
     community_id: number | null;
-  }>(
-    "courses",
-    { "id": `eq.${courseId}` }
-  );
+  }>("courses", { id: `eq.${courseId}` });
 
   if (!course) return { hasAccess: false };
 
@@ -142,10 +133,7 @@ export async function checkCourseAccess(
   const { data: access } = await adminDb.selectOne<{
     access_type: string;
     expires_at: string | null;
-  }>(
-    "course_access",
-    { "course_id": `eq.${courseId}`, "user_email": `eq.${userEmail}` }
-  );
+  }>("course_access", { course_id: `eq.${courseId}`, user_email: `eq.${userEmail}` });
 
   if (access && !isExpired(access.expires_at)) {
     return {
@@ -182,15 +170,15 @@ export async function grantCourseAccess(opts: {
   const { error } = await adminDb.upsert(
     "course_access",
     {
-      id:             generateId(),
-      course_id:      opts.courseId,
-      user_email:     opts.userEmail,
+      id: generateId(),
+      course_id: opts.courseId,
+      user_email: opts.userEmail,
       transaction_id: opts.transactionId,
-      access_type:    opts.accessType ?? "paid",
-      granted_at:     new Date().toISOString(),
-      expires_at:     opts.expiresAt ?? null,
+      access_type: opts.accessType ?? "paid",
+      granted_at: new Date().toISOString(),
+      expires_at: opts.expiresAt ?? null,
     },
-    "course_id,user_email"
+    "course_id,user_email",
   );
 
   return { ok: !error, alreadyHad: false };
@@ -204,22 +192,16 @@ export async function getUserEntitlements(userEmail: string): Promise<{
   courseIds: number[];
 }> {
   const [{ data: ca }, { data: coa }] = await Promise.all([
-    adminDb.select<{ community_id: number; expires_at: string | null }>(
-      "community_access",
-      { "user_email": `eq.${userEmail}` }
-    ),
-    adminDb.select<{ course_id: number; expires_at: string | null }>(
-      "course_access",
-      { "user_email": `eq.${userEmail}` }
-    ),
+    adminDb.select<{ community_id: number; expires_at: string | null }>("community_access", {
+      user_email: `eq.${userEmail}`,
+    }),
+    adminDb.select<{ course_id: number; expires_at: string | null }>("course_access", {
+      user_email: `eq.${userEmail}`,
+    }),
   ]);
 
   return {
-    communityIds: (ca ?? [])
-      .filter(r => !isExpired(r.expires_at))
-      .map(r => r.community_id),
-    courseIds: (coa ?? [])
-      .filter(r => !isExpired(r.expires_at))
-      .map(r => r.course_id),
+    communityIds: (ca ?? []).filter((r) => !isExpired(r.expires_at)).map((r) => r.community_id),
+    courseIds: (coa ?? []).filter((r) => !isExpired(r.expires_at)).map((r) => r.course_id),
   };
 }

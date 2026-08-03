@@ -20,7 +20,7 @@ function getConfig() {
   if (!url || !key) {
     throw new Error(
       "[supabase-admin] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set. " +
-      "These are server-only variables — never expose in the browser."
+        "These are server-only variables — never expose in the browser.",
     );
   }
   return { url, key };
@@ -33,7 +33,7 @@ type SupabaseResponse<T> = { data: T | null; error: { message: string } | null }
 
 async function adminFetch<T = SupabaseRow[]>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<SupabaseResponse<T>> {
   const { url, key } = getConfig();
   // New-format Supabase keys (sb_secret_…) are opaque strings, not JWTs —
@@ -52,7 +52,9 @@ async function adminFetch<T = SupabaseRow[]>(
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     const message = tryParseErrorMessage(body) ?? `HTTP ${res.status}`;
-    console.error(`[supabase-admin] ${options.method ?? "GET"} ${path} → ${res.status}: ${message}`);
+    console.error(
+      `[supabase-admin] ${options.method ?? "GET"} ${path} → ${res.status}: ${message}`,
+    );
     return { data: null, error: { message } };
   }
 
@@ -60,7 +62,7 @@ async function adminFetch<T = SupabaseRow[]>(
     return { data: null, error: null };
   }
 
-  const data = await res.json() as T;
+  const data = (await res.json()) as T;
   return { data, error: null };
 }
 
@@ -74,7 +76,9 @@ function tryParseErrorMessage(body: string): string | null {
 }
 
 function qs(params: Record<string, string>): string {
-  const parts = Object.entries(params).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`);
+  const parts = Object.entries(params).map(
+    ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`,
+  );
   return parts.length ? `?${parts.join("&")}` : "";
 }
 
@@ -82,13 +86,19 @@ function qs(params: Record<string, string>): string {
 
 export const adminDb = {
   /** SELECT rows with optional filter (e.g. "email=eq.foo@bar.com"). */
-  async select<T = SupabaseRow>(table: string, filter?: Record<string, string>): Promise<SupabaseResponse<T[]>> {
+  async select<T = SupabaseRow>(
+    table: string,
+    filter?: Record<string, string>,
+  ): Promise<SupabaseResponse<T[]>> {
     const q = filter ? qs(filter) : "";
     return adminFetch<T[]>(`/${table}${q}`);
   },
 
   /** SELECT single row. */
-  async selectOne<T = SupabaseRow>(table: string, filter: Record<string, string>): Promise<SupabaseResponse<T>> {
+  async selectOne<T = SupabaseRow>(
+    table: string,
+    filter: Record<string, string>,
+  ): Promise<SupabaseResponse<T>> {
     const q = qs(filter);
     return adminFetch<T>(`/${table}${q}`, {
       headers: { Accept: "application/vnd.pgrst.object+json", Prefer: "return=representation" },
@@ -104,7 +114,11 @@ export const adminDb = {
   },
 
   /** UPDATE matching rows. */
-  async update<T = SupabaseRow>(table: string, filter: Record<string, string>, patch: SupabaseRow): Promise<SupabaseResponse<T[]>> {
+  async update<T = SupabaseRow>(
+    table: string,
+    filter: Record<string, string>,
+    patch: SupabaseRow,
+  ): Promise<SupabaseResponse<T[]>> {
     const q = qs(filter);
     return adminFetch<T[]>(`/${table}${q}`, {
       method: "PATCH",
@@ -113,7 +127,11 @@ export const adminDb = {
   },
 
   /** UPSERT (insert or update on conflict). */
-  async upsert<T = SupabaseRow>(table: string, row: SupabaseRow, onConflict?: string): Promise<SupabaseResponse<T>> {
+  async upsert<T = SupabaseRow>(
+    table: string,
+    row: SupabaseRow,
+    onConflict?: string,
+  ): Promise<SupabaseResponse<T>> {
     const prefer = `return=representation${onConflict ? `,resolution=merge-duplicates` : ""}`;
     return adminFetch<T>(`/${table}`, {
       method: "POST",
@@ -125,7 +143,10 @@ export const adminDb = {
   /** DELETE matching rows. */
   async delete(table: string, filter: Record<string, string>): Promise<SupabaseResponse<null>> {
     const q = qs(filter);
-    return adminFetch<null>(`/${table}${q}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
+    return adminFetch<null>(`/${table}${q}`, {
+      method: "DELETE",
+      headers: { Prefer: "return=minimal" },
+    });
   },
 
   /** Run a raw RPC function. */

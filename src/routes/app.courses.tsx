@@ -1,13 +1,41 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import {
-  BookOpen, Plus, ChevronRight, ChevronDown, GraduationCap, Video,
-  FileText, Link2, Trash2, Edit3, Eye, EyeOff, Check, X,
-  MoreVertical, Lock, Globe, Users, Clock, Star, ArrowLeft,
-  AlertCircle, Sparkles, Play, ExternalLink, Layers,
+  BookOpen,
+  Plus,
+  ChevronRight,
+  ChevronDown,
+  GraduationCap,
+  Video,
+  FileText,
+  Link2,
+  Trash2,
+  Edit3,
+  Eye,
+  EyeOff,
+  Check,
+  X,
+  MoreVertical,
+  Lock,
+  Globe,
+  Users,
+  Clock,
+  Star,
+  ArrowLeft,
+  AlertCircle,
+  Sparkles,
+  Play,
+  ExternalLink,
+  Layers,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAppStore, type Course, type Module, type Lesson, type LessonResource } from "@/lib/app-store";
+import {
+  useAppStore,
+  type Course,
+  type Module,
+  type Lesson,
+  type LessonResource,
+} from "@/lib/app-store";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { cn } from "@/lib/utils";
 import { notifyCoursePublished } from "@/lib/autodm.functions";
@@ -19,21 +47,29 @@ export const Route = createFileRoute("/app/courses")({
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function randomId() { return Date.now() + Math.floor(Math.random() * 9999); }
+function randomId() {
+  return Date.now() + Math.floor(Math.random() * 9999);
+}
 
 const SOURCE_ICONS: Record<string, string> = {
-  gdrive: "📄", dropbox: "📦", onedrive: "☁️", notion: "📝",
-  github: "🐙", canva: "🎨", figma: "🖌️", other: "🔗",
+  gdrive: "📄",
+  dropbox: "📦",
+  onedrive: "☁️",
+  notion: "📝",
+  github: "🐙",
+  canva: "🎨",
+  figma: "🖌️",
+  other: "🔗",
 };
 
 function detectSource(url: string): LessonResource["source"] {
-  if (url.includes("drive.google"))  return "gdrive";
-  if (url.includes("dropbox"))       return "dropbox";
-  if (url.includes("onedrive"))      return "onedrive";
-  if (url.includes("notion"))        return "notion";
-  if (url.includes("github"))        return "github";
-  if (url.includes("canva"))         return "canva";
-  if (url.includes("figma"))         return "figma";
+  if (url.includes("drive.google")) return "gdrive";
+  if (url.includes("dropbox")) return "dropbox";
+  if (url.includes("onedrive")) return "onedrive";
+  if (url.includes("notion")) return "notion";
+  if (url.includes("github")) return "github";
+  if (url.includes("canva")) return "canva";
+  if (url.includes("figma")) return "figma";
   return "other";
 }
 
@@ -50,8 +86,8 @@ function extractVideoId(url: string): { type: "youtube" | "vimeo" | "loom" | nul
 function videoEmbedUrl(url: string): string | null {
   const { type, id } = extractVideoId(url);
   if (type === "youtube") return `https://www.youtube.com/embed/${id}`;
-  if (type === "vimeo")   return `https://player.vimeo.com/video/${id}`;
-  if (type === "loom")    return `https://www.loom.com/embed/${id}`;
+  if (type === "vimeo") return `https://player.vimeo.com/video/${id}`;
+  if (type === "loom") return `https://www.loom.com/embed/${id}`;
   return null;
 }
 
@@ -59,12 +95,12 @@ function videoEmbedUrl(url: string): string | null {
 
 function StatusBadge({ published }: { published?: boolean }) {
   return (
-    <span className={cn(
-      "inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full",
-      published
-        ? "bg-emerald-100 text-emerald-700"
-        : "bg-amber-100 text-amber-700",
-    )}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full",
+        published ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700",
+      )}
+    >
       {published ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
       {published ? "Published" : "Draft"}
     </span>
@@ -74,7 +110,10 @@ function StatusBadge({ published }: { published?: boolean }) {
 // ─── Course card (creator view) ───────────────────────────────────────────────
 
 function CourseCard({
-  course, onEdit, onTogglePublish, onDelete,
+  course,
+  onEdit,
+  onTogglePublish,
+  onDelete,
 }: {
   course: Course;
   onEdit: () => void;
@@ -118,26 +157,43 @@ function CourseCard({
           </h3>
           <div className="relative flex-shrink-0">
             <button
-              onClick={() => setMenuOpen(v => !v)}
+              onClick={() => setMenuOpen((v) => !v)}
               className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"
             >
               <MoreVertical className="w-4 h-4" />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-7 z-20 bg-white border border-slate-200 rounded-xl shadow-xl py-1 w-44"
-                onMouseLeave={() => setMenuOpen(false)}>
-                <button onClick={() => { onEdit(); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3.5 py-2 text-sm hover:bg-slate-50 text-slate-700">
+              <div
+                className="absolute right-0 top-7 z-20 bg-white border border-slate-200 rounded-xl shadow-xl py-1 w-44"
+                onMouseLeave={() => setMenuOpen(false)}
+              >
+                <button
+                  onClick={() => {
+                    onEdit();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3.5 py-2 text-sm hover:bg-slate-50 text-slate-700"
+                >
                   <Edit3 className="w-4 h-4" /> Edit course
                 </button>
-                <button onClick={() => { onTogglePublish(); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3.5 py-2 text-sm hover:bg-slate-50 text-slate-700">
+                <button
+                  onClick={() => {
+                    onTogglePublish();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3.5 py-2 text-sm hover:bg-slate-50 text-slate-700"
+                >
                   {course.published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   {course.published ? "Unpublish" : "Publish"}
                 </button>
                 <div className="border-t border-slate-100 my-1" />
-                <button onClick={() => { onDelete(); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3.5 py-2 text-sm hover:bg-red-50 text-red-600">
+                <button
+                  onClick={() => {
+                    onDelete();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3.5 py-2 text-sm hover:bg-red-50 text-red-600"
+                >
                   <Trash2 className="w-4 h-4" /> Delete
                 </button>
               </div>
@@ -145,7 +201,9 @@ function CourseCard({
           </div>
         </div>
 
-        <p className="text-xs text-slate-500 mt-1.5 line-clamp-2">{course.description || "No description yet."}</p>
+        <p className="text-xs text-slate-500 mt-1.5 line-clamp-2">
+          {course.description || "No description yet."}
+        </p>
 
         <div className="flex items-center gap-3 mt-3 text-xs text-slate-400">
           <span className="flex items-center gap-1">
@@ -175,7 +233,11 @@ function CourseCard({
                 : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200",
             )}
           >
-            {course.published ? <EyeOff className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
+            {course.published ? (
+              <EyeOff className="w-3.5 h-3.5" />
+            ) : (
+              <Globe className="w-3.5 h-3.5" />
+            )}
             {course.published ? "Unpublish" : "Publish"}
           </button>
         </div>
@@ -186,23 +248,42 @@ function CourseCard({
 
 // ─── Learner course card ──────────────────────────────────────────────────────
 
-function LearnerCourseCard({ course, enrolled, onEnroll }: { course: Course; enrolled: boolean; onEnroll: () => void }) {
+function LearnerCourseCard({
+  course,
+  enrolled,
+  onEnroll,
+}: {
+  course: Course;
+  enrolled: boolean;
+  onEnroll: () => void;
+}) {
   const lessonCount = course.modules?.reduce((s, m) => s + (m.lessons?.length ?? 0), 0) ?? 0;
   const nav = useNavigate();
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <div className="aspect-video bg-gradient-to-br from-blue-100 to-violet-100 overflow-hidden relative">
-        {course.cover
-          ? <img src={course.cover} alt={course.title} className="w-full h-full object-cover" />
-          : <div className="absolute inset-0 flex items-center justify-center"><BookOpen className="w-10 h-10 text-blue-300" /></div>
-        }
+        {course.cover ? (
+          <img src={course.cover} alt={course.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <BookOpen className="w-10 h-10 text-blue-300" />
+          </div>
+        )}
       </div>
       <div className="p-4">
         <h3 className="font-bold text-slate-900 text-sm line-clamp-2">{course.title}</h3>
-        <p className="text-xs text-slate-500 mt-1 line-clamp-2">{course.description || "No description."}</p>
+        <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+          {course.description || "No description."}
+        </p>
         <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
-          <span className="flex items-center gap-1"><Layers className="w-3.5 h-3.5" />{course.modules?.length ?? 0} modules</span>
-          <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{lessonCount} lessons</span>
+          <span className="flex items-center gap-1">
+            <Layers className="w-3.5 h-3.5" />
+            {course.modules?.length ?? 0} modules
+          </span>
+          <span className="flex items-center gap-1">
+            <BookOpen className="w-3.5 h-3.5" />
+            {lessonCount} lessons
+          </span>
         </div>
         <button
           onClick={enrolled ? () => nav({ to: "/app/classroom" }) : onEnroll}
@@ -223,17 +304,19 @@ function LearnerCourseCard({ course, enrolled, onEnroll }: { course: Course; enr
 // ─── Lesson editor ────────────────────────────────────────────────────────────
 
 function LessonEditor({
-  lesson, onSave, onClose,
+  lesson,
+  onSave,
+  onClose,
 }: {
   lesson: Lesson;
   onSave: (updated: Lesson) => void;
   onClose: () => void;
 }) {
-  const [title,    setTitle]    = useState(lesson.title);
-  const [body,     setBody]     = useState(lesson.body ?? "");
+  const [title, setTitle] = useState(lesson.title);
+  const [body, setBody] = useState(lesson.body ?? "");
   const [videoUrl, setVideoUrl] = useState(lesson.videoUrl ?? "");
-  const [locked,   setLocked]   = useState(lesson.locked ?? false);
-  const [resUrl,   setResUrl]   = useState("");
+  const [locked, setLocked] = useState(lesson.locked ?? false);
+  const [resUrl, setResUrl] = useState("");
   const [resLabel, setResLabel] = useState("");
   const [resources, setResources] = useState<LessonResource[]>(lesson.resources ?? []);
 
@@ -242,15 +325,16 @@ function LessonEditor({
   const addResource = () => {
     if (!resUrl.trim()) return;
     const newRes: LessonResource = {
-      id:     randomId(),
-      title:  resLabel.trim() || resUrl,
-      label:  resLabel.trim() || resUrl,
-      url:    resUrl.trim(),
+      id: randomId(),
+      title: resLabel.trim() || resUrl,
+      label: resLabel.trim() || resUrl,
+      url: resUrl.trim(),
       source: detectSource(resUrl.trim()),
       addedAt: Date.now(),
     };
-    setResources(r => [...r, newRes]);
-    setResUrl(""); setResLabel("");
+    setResources((r) => [...r, newRes]);
+    setResUrl("");
+    setResLabel("");
   };
 
   const save = () => {
@@ -270,14 +354,16 @@ function LessonEditor({
         exit={{ x: "100%" }}
         transition={{ type: "spring", stiffness: 320, damping: 32 }}
         className="relative ml-auto w-full max-w-2xl bg-white shadow-2xl flex flex-col h-full overflow-y-auto"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white z-10">
           <h3 className="font-bold text-slate-900">Edit Lesson</h3>
           <div className="flex items-center gap-2">
-            <button onClick={save}
-              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+            <button
+              onClick={save}
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            >
               <Check className="w-4 h-4" /> Save
             </button>
             <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400">
@@ -289,11 +375,13 @@ function LessonEditor({
         <div className="flex-1 p-6 space-y-5">
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Lesson title *</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+              Lesson title *
+            </label>
             <input
               autoFocus
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Lesson title…"
               className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
@@ -306,27 +394,41 @@ function LessonEditor({
               <p className="text-xs text-slate-500">Learners must reach a level to unlock</p>
             </div>
             <button
-              onClick={() => setLocked(v => !v)}
-              className={cn("w-10 h-6 rounded-full transition-colors", locked ? "bg-blue-500" : "bg-slate-300")}
+              onClick={() => setLocked((v) => !v)}
+              className={cn(
+                "w-10 h-6 rounded-full transition-colors",
+                locked ? "bg-blue-500" : "bg-slate-300",
+              )}
             >
-              <span className={cn("block w-4 h-4 rounded-full bg-white shadow transition-transform mx-1", locked ? "translate-x-4" : "translate-x-0")} />
+              <span
+                className={cn(
+                  "block w-4 h-4 rounded-full bg-white shadow transition-transform mx-1",
+                  locked ? "translate-x-4" : "translate-x-0",
+                )}
+              />
             </button>
           </div>
 
           {/* Video URL */}
           <div>
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-              Video URL <span className="font-normal text-slate-400 normal-case">(YouTube, Vimeo, Loom)</span>
+              Video URL{" "}
+              <span className="font-normal text-slate-400 normal-case">(YouTube, Vimeo, Loom)</span>
             </label>
             <input
               value={videoUrl}
-              onChange={e => setVideoUrl(e.target.value)}
+              onChange={(e) => setVideoUrl(e.target.value)}
               placeholder="https://youtube.com/watch?v=..."
               className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
             {embedUrl && (
               <div className="mt-2 rounded-xl overflow-hidden aspect-video border border-slate-200">
-                <iframe src={embedUrl} className="w-full h-full" allowFullScreen title="video preview" />
+                <iframe
+                  src={embedUrl}
+                  className="w-full h-full"
+                  allowFullScreen
+                  title="video preview"
+                />
               </div>
             )}
           </div>
@@ -336,7 +438,11 @@ function LessonEditor({
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
               Lesson content
             </label>
-            <RichTextEditor value={body} onChange={setBody} placeholder="Write the lesson content here…" />
+            <RichTextEditor
+              value={body}
+              onChange={setBody}
+              placeholder="Write the lesson content here…"
+            />
           </div>
 
           {/* Resources */}
@@ -347,32 +453,44 @@ function LessonEditor({
             <div className="flex gap-2 mb-2">
               <input
                 value={resLabel}
-                onChange={e => setResLabel(e.target.value)}
+                onChange={(e) => setResLabel(e.target.value)}
                 placeholder="Label (optional)"
                 className="w-32 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
               <input
                 value={resUrl}
-                onChange={e => setResUrl(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && addResource()}
+                onChange={(e) => setResUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addResource()}
                 placeholder="https://… (Drive, Notion, GitHub…)"
                 className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
-              <button onClick={addResource}
-                className="flex items-center gap-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-medium transition-colors">
+              <button
+                onClick={addResource}
+                className="flex items-center gap-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-medium transition-colors"
+              >
                 <Plus className="w-4 h-4" /> Add
               </button>
             </div>
             <div className="space-y-1.5">
-              {resources.map(r => (
-                <div key={r.id} className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100">
+              {resources.map((r) => (
+                <div
+                  key={r.id}
+                  className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100"
+                >
                   <span>{SOURCE_ICONS[r.source] ?? "🔗"}</span>
                   <span className="flex-1 text-sm text-slate-700 truncate">{r.label || r.url}</span>
-                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-500">
+                  <a
+                    href={r.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-slate-400 hover:text-blue-500"
+                  >
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
-                  <button onClick={() => setResources(rs => rs.filter(x => x.id !== r.id))}
-                    className="text-slate-400 hover:text-red-500">
+                  <button
+                    onClick={() => setResources((rs) => rs.filter((x) => x.id !== r.id))}
+                    className="text-slate-400 hover:text-red-500"
+                  >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -388,54 +506,90 @@ function LessonEditor({
 // ─── Course editor (modules + lessons) ───────────────────────────────────────
 
 function CourseEditor({
-  course: initial, onSave, onBack,
+  course: initial,
+  onSave,
+  onBack,
 }: {
   course: Course;
   onSave: (c: Course) => void;
   onBack: () => void;
 }) {
-  const [course, setCourse]         = useState<Course>({ ...initial, modules: initial.modules ?? [] });
+  const [course, setCourse] = useState<Course>({ ...initial, modules: initial.modules ?? [] });
   const [editingLesson, setEditing] = useState<{ moduleId: number; lesson: Lesson } | null>(null);
-  const [expanded, setExpanded]     = useState<Set<number>>(new Set(course.modules.map(m => m.id)));
+  const [expanded, setExpanded] = useState<Set<number>>(new Set(course.modules.map((m) => m.id)));
   const [newModTitle, setNewModTitle] = useState("");
-  const [addingMod, setAddingMod]   = useState(false);
-  const [titleEdit, setTitleEdit]   = useState(false);
-  const [editTitle, setEditTitle]   = useState(course.title);
-  const [editDesc,  setEditDesc]    = useState(course.description);
+  const [addingMod, setAddingMod] = useState(false);
+  const [titleEdit, setTitleEdit] = useState(false);
+  const [editTitle, setEditTitle] = useState(course.title);
+  const [editDesc, setEditDesc] = useState(course.description);
 
   const update = (fn: (c: Course) => Course) => setCourse(fn);
 
   const addModule = () => {
     if (!newModTitle.trim()) return;
-    update(c => ({ ...c, modules: [...c.modules, { id: randomId(), title: newModTitle.trim(), lessons: [], order: c.modules.length + 1 }] }));
-    setNewModTitle(""); setAddingMod(false);
+    update((c) => ({
+      ...c,
+      modules: [
+        ...c.modules,
+        { id: randomId(), title: newModTitle.trim(), lessons: [], order: c.modules.length + 1 },
+      ],
+    }));
+    setNewModTitle("");
+    setAddingMod(false);
   };
 
-  const deleteModule = (mid: number) => update(c => ({ ...c, modules: c.modules.filter(m => m.id !== mid) }));
+  const deleteModule = (mid: number) =>
+    update((c) => ({ ...c, modules: c.modules.filter((m) => m.id !== mid) }));
 
   const addLesson = (mid: number) => {
-    const lesson: Lesson = { id: randomId(), moduleId: mid, title: "New Lesson", description: "", body: "", videoUrl: "", resources: [], locked: false, published: false, order: 1, dripDays: 0 };
-    update(c => ({ ...c, modules: c.modules.map(m => m.id === mid ? { ...m, lessons: [...(m.lessons ?? []), lesson] } : m) }));
+    const lesson: Lesson = {
+      id: randomId(),
+      moduleId: mid,
+      title: "New Lesson",
+      description: "",
+      body: "",
+      videoUrl: "",
+      resources: [],
+      locked: false,
+      published: false,
+      order: 1,
+      dripDays: 0,
+    };
+    update((c) => ({
+      ...c,
+      modules: c.modules.map((m) =>
+        m.id === mid ? { ...m, lessons: [...(m.lessons ?? []), lesson] } : m,
+      ),
+    }));
     setEditing({ moduleId: mid, lesson });
   };
 
   const deleteLesson = (mid: number, lid: number) =>
-    update(c => ({ ...c, modules: c.modules.map(m => m.id === mid ? { ...m, lessons: m.lessons.filter(l => l.id !== lid) } : m) }));
+    update((c) => ({
+      ...c,
+      modules: c.modules.map((m) =>
+        m.id === mid ? { ...m, lessons: m.lessons.filter((l) => l.id !== lid) } : m,
+      ),
+    }));
 
   const saveLesson = (updated: Lesson) => {
-    update(c => ({ ...c, modules: c.modules.map(m =>
-      m.id === editingLesson?.moduleId
-        ? { ...m, lessons: m.lessons.map(l => l.id === updated.id ? updated : l) }
-        : m
-    )}));
+    update((c) => ({
+      ...c,
+      modules: c.modules.map((m) =>
+        m.id === editingLesson?.moduleId
+          ? { ...m, lessons: m.lessons.map((l) => (l.id === updated.id ? updated : l)) }
+          : m,
+      ),
+    }));
     setEditing(null);
   };
 
-  const toggleExpanded = (mid: number) => setExpanded(s => {
-    const next = new Set(s);
-    next.has(mid) ? next.delete(mid) : next.add(mid);
-    return next;
-  });
+  const toggleExpanded = (mid: number) =>
+    setExpanded((s) => {
+      const next = new Set(s);
+      next.has(mid) ? next.delete(mid) : next.add(mid);
+      return next;
+    });
 
   const lessonCount = course.modules.reduce((s, m) => s + (m.lessons?.length ?? 0), 0);
 
@@ -451,9 +605,19 @@ function CourseEditor({
             <input
               autoFocus
               value={editTitle}
-              onChange={e => setEditTitle(e.target.value)}
-              onBlur={() => { update(c => ({ ...c, title: editTitle.trim() || c.title, description: editDesc })); setTitleEdit(false); }}
-              onKeyDown={e => e.key === "Enter" && (update(c => ({ ...c, title: editTitle.trim() || c.title })), setTitleEdit(false))}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onBlur={() => {
+                update((c) => ({
+                  ...c,
+                  title: editTitle.trim() || c.title,
+                  description: editDesc,
+                }));
+                setTitleEdit(false);
+              }}
+              onKeyDown={(e) =>
+                e.key === "Enter" &&
+                (update((c) => ({ ...c, title: editTitle.trim() || c.title })), setTitleEdit(false))
+              }
               className="font-bold text-slate-900 text-lg w-full border-b-2 border-blue-400 focus:outline-none bg-transparent"
             />
           ) : (
@@ -480,19 +644,23 @@ function CourseEditor({
       <div className="px-4 sm:px-6 py-4 border-b border-slate-100 bg-white">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Cover image URL</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+              Cover image URL
+            </label>
             <input
               value={course.cover ?? ""}
-              onChange={e => update(c => ({ ...c, cover: e.target.value }))}
+              onChange={(e) => update((c) => ({ ...c, cover: e.target.value }))}
               placeholder="https://… (1460×752 recommended)"
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+              Description
+            </label>
             <textarea
               value={course.description}
-              onChange={e => update(c => ({ ...c, description: e.target.value }))}
+              onChange={(e) => update((c) => ({ ...c, description: e.target.value }))}
               placeholder="What will learners get from this course?"
               rows={2}
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -505,25 +673,51 @@ function CourseEditor({
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3">
         <AnimatePresence>
           {course.modules.map((mod, mi) => (
-            <motion.div key={mod.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
-              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-
+            <motion.div
+              key={mod.id}
+              layout
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm"
+            >
               {/* Module header */}
               <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100">
-                <button onClick={() => toggleExpanded(mod.id)} className="text-slate-400 hover:text-slate-600">
-                  {expanded.has(mod.id) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                <button
+                  onClick={() => toggleExpanded(mod.id)}
+                  className="text-slate-400 hover:text-slate-600"
+                >
+                  {expanded.has(mod.id) ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
                 </button>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide w-6">M{mi + 1}</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide w-6">
+                  M{mi + 1}
+                </span>
                 <input
                   value={mod.title}
-                  onChange={e => update(c => ({ ...c, modules: c.modules.map(m => m.id === mod.id ? { ...m, title: e.target.value } : m) }))}
+                  onChange={(e) =>
+                    update((c) => ({
+                      ...c,
+                      modules: c.modules.map((m) =>
+                        m.id === mod.id ? { ...m, title: e.target.value } : m,
+                      ),
+                    }))
+                  }
                   className="flex-1 font-semibold text-slate-800 text-sm bg-transparent focus:outline-none border-b border-transparent focus:border-blue-400"
                 />
-                <button onClick={() => addLesson(mod.id)}
-                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors">
+                <button
+                  onClick={() => addLesson(mod.id)}
+                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                >
                   <Plus className="w-3.5 h-3.5" /> Lesson
                 </button>
-                <button onClick={() => deleteModule(mod.id)} className="text-slate-300 hover:text-red-500 transition-colors">
+                <button
+                  onClick={() => deleteModule(mod.id)}
+                  className="text-slate-300 hover:text-red-500 transition-colors"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -534,16 +728,27 @@ function CourseEditor({
                   {(mod.lessons ?? []).length === 0 && (
                     <div className="px-4 py-4 text-center">
                       <p className="text-xs text-slate-400">No lessons yet</p>
-                      <button onClick={() => addLesson(mod.id)}
-                        className="mt-1 text-xs text-blue-500 hover:underline">
+                      <button
+                        onClick={() => addLesson(mod.id)}
+                        className="mt-1 text-xs text-blue-500 hover:underline"
+                      >
                         Add first lesson
                       </button>
                     </div>
                   )}
                   {(mod.lessons ?? []).map((lesson, li) => (
-                    <div key={lesson.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50 transition-colors group">
-                      <span className="text-xs text-slate-400 w-5 text-center font-mono">{li + 1}</span>
-                      {lesson.videoUrl ? <Video className="w-4 h-4 text-blue-400 flex-shrink-0" /> : <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />}
+                    <div
+                      key={lesson.id}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50 transition-colors group"
+                    >
+                      <span className="text-xs text-slate-400 w-5 text-center font-mono">
+                        {li + 1}
+                      </span>
+                      {lesson.videoUrl ? (
+                        <Video className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                      ) : (
+                        <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                      )}
                       <span className="flex-1 text-sm text-slate-700 truncate">{lesson.title}</span>
                       {lesson.locked && <Lock className="w-3.5 h-3.5 text-slate-400" />}
                       {(lesson.resources?.length ?? 0) > 0 && (
@@ -552,12 +757,16 @@ function CourseEditor({
                         </span>
                       )}
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => setEditing({ moduleId: mod.id, lesson })}
-                          className="p-1 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-500">
+                        <button
+                          onClick={() => setEditing({ moduleId: mod.id, lesson })}
+                          className="p-1 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-500"
+                        >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={() => deleteLesson(mod.id, lesson.id)}
-                          className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500">
+                        <button
+                          onClick={() => deleteLesson(mod.id, lesson.id)}
+                          className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500"
+                        >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -575,17 +784,27 @@ function CourseEditor({
             <input
               autoFocus
               value={newModTitle}
-              onChange={e => setNewModTitle(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") addModule(); if (e.key === "Escape") setAddingMod(false); }}
+              onChange={(e) => setNewModTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") addModule();
+                if (e.key === "Escape") setAddingMod(false);
+              }}
               placeholder="Module title…"
               className="flex-1 border border-blue-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none ring-2 ring-blue-200"
             />
-            <button onClick={addModule}
-              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors">
+            <button
+              onClick={addModule}
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
               Add
             </button>
-            <button onClick={() => { setAddingMod(false); setNewModTitle(""); }}
-              className="px-3 py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 text-sm">
+            <button
+              onClick={() => {
+                setAddingMod(false);
+                setNewModTitle("");
+              }}
+              className="px-3 py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 text-sm"
+            >
               Cancel
             </button>
           </div>
@@ -617,46 +836,49 @@ function CourseEditor({
 
 function CoursesPage() {
   const store = useAppStore();
-  const nav   = useNavigate();
+  const nav = useNavigate();
 
-  const session    = store.session;
-  const isCreator  = session?.role === "creator";
+  const session = store.session;
+  const isCreator = session?.role === "creator";
   const allCourses = store.courses ?? [];
 
   // Creator sees their own courses; learner sees only published ones
   const visibleCourses = isCreator
-    ? allCourses.filter(c => c.creatorEmail === session?.email)
-    : allCourses.filter(c => c.published);
+    ? allCourses.filter((c) => c.creatorEmail === session?.email)
+    : allCourses.filter((c) => c.published);
 
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-  const [showCreateModal, setShowCreate]  = useState(false);
+  const [showCreateModal, setShowCreate] = useState(false);
 
   // New course form state
   const [newTitle, setNewTitle] = useState("");
-  const [newDesc,  setNewDesc]  = useState("");
+  const [newDesc, setNewDesc] = useState("");
 
-  const creatorCommunities = (store.userCommunities ?? []).filter(c => c.creatorEmail === session?.email);
+  const creatorCommunities = (store.userCommunities ?? []).filter(
+    (c) => c.creatorEmail === session?.email,
+  );
   const [selectedCommunityId, setSelectedCommunityId] = useState<number | null>(
-    creatorCommunities[0]?.id ?? null
+    creatorCommunities[0]?.id ?? null,
   );
 
   const handleCreate = () => {
     if (!newTitle.trim() || !session) return;
     const course: Course = {
-      id:            Date.now(),
-      communityId:   selectedCommunityId ?? 0,
-      title:         newTitle.trim(),
-      description:   newDesc.trim(),
-      cover:         "",
-      creatorEmail:  session.email,
-      modules:       [],
-      createdAt:     Date.now(),
-      published:     false,
+      id: Date.now(),
+      communityId: selectedCommunityId ?? 0,
+      title: newTitle.trim(),
+      description: newDesc.trim(),
+      cover: "",
+      creatorEmail: session.email,
+      modules: [],
+      createdAt: Date.now(),
+      published: false,
       enrollmentCount: 0,
     };
     store.addCourse?.(course);
     setShowCreate(false);
-    setNewTitle(""); setNewDesc("");
+    setNewTitle("");
+    setNewDesc("");
     setEditingCourse(course);
   };
 
@@ -671,20 +893,24 @@ function CoursesPage() {
 
     if (willPublish) {
       // Notify members
-      const community = (store.userCommunities ?? []).find(c => c.id === course.communityId);
+      const community = (store.userCommunities ?? []).find((c) => c.id === course.communityId);
       const memberEmails = store.getJoinedEmails?.(course.communityId ?? 0) ?? [];
       if (memberEmails.length > 0 && community) {
         await notifyCoursePublished({
           data: {
             memberEmails,
-            courseTitle:  course.title,
-            courseId:     course.id,
-            communityId:  course.communityId ?? 0,
-            creatorName:  session?.name ?? "Creator",
+            courseTitle: course.title,
+            courseId: course.id,
+            communityId: course.communityId ?? 0,
+            creatorName: session?.name ?? "Creator",
           },
         }).catch(() => null);
       }
-      store.pushNotification(`✅ "${course.title}" is now published and visible to learners.`, "course_published", "/app/courses");
+      store.pushNotification(
+        `✅ "${course.title}" is now published and visible to learners.`,
+        "course_published",
+        "/app/courses",
+      );
     } else {
       store.pushNotification(`"${course.title}" has been unpublished.`, "system");
     }
@@ -712,7 +938,6 @@ function CoursesPage() {
   // ── List view ────────────────────────────────────────────────────────────────
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -721,16 +946,19 @@ function CoursesPage() {
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">
             {isCreator
-              ? `${visibleCourses.length} course${visibleCourses.length !== 1 ? "s" : ""} · ${visibleCourses.filter(c => c.published).length} published`
-              : `${visibleCourses.length} course${visibleCourses.length !== 1 ? "s" : ""} available`
-            }
+              ? `${visibleCourses.length} course${visibleCourses.length !== 1 ? "s" : ""} · ${visibleCourses.filter((c) => c.published).length} published`
+              : `${visibleCourses.length} course${visibleCourses.length !== 1 ? "s" : ""} available`}
           </p>
         </div>
         {isCreator && (
           <button
             onClick={() => {
               if (creatorCommunities.length === 0) {
-                store.pushNotification("Create a community first before adding courses.", "system", "/create-community");
+                store.pushNotification(
+                  "Create a community first before adding courses.",
+                  "system",
+                  "/create-community",
+                );
                 nav({ to: "/create-community" });
                 return;
               }
@@ -749,7 +977,9 @@ function CoursesPage() {
           <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-semibold text-amber-800">You need a community first</p>
-            <p className="text-xs text-amber-600 mt-0.5">Courses live inside communities. Create your first community to get started.</p>
+            <p className="text-xs text-amber-600 mt-0.5">
+              Courses live inside communities. Create your first community to get started.
+            </p>
             <button
               onClick={() => nav({ to: "/create-community" })}
               className="mt-2 text-sm text-amber-700 hover:text-amber-800 font-semibold hover:underline"
@@ -772,8 +1002,7 @@ function CoursesPage() {
           <p className="text-sm text-slate-400 mt-1">
             {isCreator
               ? "Create your first course to start teaching your community"
-              : "Join a community to access its courses"
-            }
+              : "Join a community to access its courses"}
           </p>
           {isCreator && creatorCommunities.length > 0 && (
             <button
@@ -787,7 +1016,7 @@ function CoursesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {isCreator
-            ? visibleCourses.map(c => (
+            ? visibleCourses.map((c) => (
                 <CourseCard
                   key={c.id}
                   course={c}
@@ -796,15 +1025,16 @@ function CoursesPage() {
                   onDelete={() => handleDelete(c.id)}
                 />
               ))
-            : visibleCourses.map(c => (
+            : visibleCourses.map((c) => (
                 <LearnerCourseCard
                   key={c.id}
                   course={c}
-                  enrolled={(store.enrollments ?? []).some(e => e.courseId === c.id && e.userEmail === session?.email)}
+                  enrolled={(store.enrollments ?? []).some(
+                    (e) => e.courseId === c.id && e.userEmail === session?.email,
+                  )}
                   onEnroll={() => store.enrollInCourse?.(c.id)}
                 />
-              ))
-          }
+              ))}
         </div>
       )}
 
@@ -823,12 +1053,15 @@ function CoursesPage() {
               animate={{ y: 0, scale: 1 }}
               exit={{ y: 48, scale: 0.96 }}
               transition={{ type: "spring", stiffness: 340, damping: 30 }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               className="w-full sm:max-w-md bg-white rounded-2xl shadow-2xl p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-slate-900">New Course</h3>
-                <button onClick={() => setShowCreate(false)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400">
+                <button
+                  onClick={() => setShowCreate(false)}
+                  className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -836,35 +1069,44 @@ function CoursesPage() {
               {/* Community selector */}
               {creatorCommunities.length > 1 && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Community</label>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                    Community
+                  </label>
                   <select
                     value={selectedCommunityId ?? ""}
-                    onChange={e => setSelectedCommunityId(Number(e.target.value))}
+                    onChange={(e) => setSelectedCommunityId(Number(e.target.value))}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                   >
-                    {creatorCommunities.map(c => (
-                      <option key={c.id} value={c.id}>{c.title}</option>
+                    {creatorCommunities.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.title}
+                      </option>
                     ))}
                   </select>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Course title *</label>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                  Course title *
+                </label>
                 <input
                   autoFocus
                   value={newTitle}
-                  onChange={e => setNewTitle(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleCreate()}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                   placeholder="e.g. Zero to AI Developer"
                   className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description <span className="font-normal normal-case text-slate-400">(optional)</span></label>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                  Description{" "}
+                  <span className="font-normal normal-case text-slate-400">(optional)</span>
+                </label>
                 <textarea
                   value={newDesc}
-                  onChange={e => setNewDesc(e.target.value)}
+                  onChange={(e) => setNewDesc(e.target.value)}
                   placeholder="What will students learn?"
                   rows={3}
                   className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -873,8 +1115,8 @@ function CoursesPage() {
               <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl p-3">
                 <GraduationCap className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-blue-700">
-                  Your course starts as a <strong>Draft</strong> — invisible to learners until you publish it.
-                  You'll add modules and lessons in the editor.
+                  Your course starts as a <strong>Draft</strong> — invisible to learners until you
+                  publish it. You'll add modules and lessons in the editor.
                 </p>
               </div>
               <button

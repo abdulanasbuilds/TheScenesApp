@@ -137,9 +137,17 @@ async function renderRouteFromServer(server, routePath, requestPath) {
     waitUntil() {},
     passThroughOnException() {},
   };
-  let response = await server.fetch(new Request(`https://sukaspace.local${requestPath}`), {}, context);
+  let response = await server.fetch(
+    new Request(`https://sukaspace.local${requestPath}`),
+    {},
+    context,
+  );
 
-  for (let redirectCount = 0; response.status >= 300 && response.status < 400 && redirectCount < 5; redirectCount += 1) {
+  for (
+    let redirectCount = 0;
+    response.status >= 300 && response.status < 400 && redirectCount < 5;
+    redirectCount += 1
+  ) {
     const location = response.headers.get("location");
     if (!location) break;
     const redirectUrl = new URL(location, "https://sukaspace.local");
@@ -152,7 +160,9 @@ async function renderRouteFromServer(server, routePath, requestPath) {
 
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("text/html")) {
-    throw new Error(`Server render for ${requestPath} returned ${contentType || "an unknown content type"}.`);
+    throw new Error(
+      `Server render for ${requestPath} returned ${contentType || "an unknown content type"}.`,
+    );
   }
 
   const indexPath = distIndexPath(routePath);
@@ -201,4 +211,6 @@ await Promise.all(staticRoutes.map(([routePath]) => writeStaticFallback(routePat
 await writeFile(join(dist, "404.html"), await readFile(join(dist, "index.html"), "utf8"));
 await writeFile(join(dist, "_redirects"), "/* /index.html 200\n");
 
-console.log("Synced Nitro public assets and prerendered route HTML to dist/ for static artifact checks.");
+console.log(
+  "Synced Nitro public assets and prerendered route HTML to dist/ for static artifact checks.",
+);

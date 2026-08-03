@@ -23,9 +23,7 @@ const recordSchema = z.object({
   currency: z.string().default("NGN"),
 });
 
-export type RecordPaymentResult =
-  | { success: true }
-  | { success: false; error: string };
+export type RecordPaymentResult = { success: true } | { success: false; error: string };
 
 export const recordPayment = createServerFn({ method: "POST" })
   .validator(recordSchema)

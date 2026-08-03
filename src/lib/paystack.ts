@@ -38,8 +38,14 @@ const PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string | undefine
 
 function loadPaystackScript(): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (typeof window === "undefined") { reject(new Error("Not a browser")); return; }
-    if (window.PaystackPop) { resolve(); return; }
+    if (typeof window === "undefined") {
+      reject(new Error("Not a browser"));
+      return;
+    }
+    if (window.PaystackPop) {
+      resolve();
+      return;
+    }
     const existing = document.querySelector('script[src*="paystack"]');
     if (existing) {
       existing.addEventListener("load", () => resolve());
@@ -49,7 +55,8 @@ function loadPaystackScript(): Promise<void> {
     script.src = "https://js.paystack.co/v1/inline.js";
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Paystack SDK. Check your internet connection."));
+    script.onerror = () =>
+      reject(new Error("Failed to load Paystack SDK. Check your internet connection."));
     document.head.appendChild(script);
   });
 }

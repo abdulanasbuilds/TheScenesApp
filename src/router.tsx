@@ -7,8 +7,8 @@ export const getRouter = () => {
     defaultOptions: {
       queries: {
         // Serve cached data instantly; re-validate silently in the background
-        staleTime: 5 * 60 * 1000,   // 5 minutes
-        gcTime:    30 * 60 * 1000,  // 30 minutes — keep in memory well past stale
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 30 * 60 * 1000, // 30 minutes — keep in memory well past stale
         retry: 2,
         refetchOnWindowFocus: false, // avoid jarring re-fetches when switching tabs
       },

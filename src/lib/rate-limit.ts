@@ -34,7 +34,7 @@ async function redis(command: (string | number)[]): Promise<unknown> {
       body: JSON.stringify(command),
     });
     if (!res.ok) return null;
-    const json = await res.json() as { result: unknown };
+    const json = (await res.json()) as { result: unknown };
     return json.result;
   } catch {
     // Redis call failed — degrade gracefully (don't block the user)
@@ -70,8 +70,7 @@ async function del(key: string): Promise<void> {
 // ─── Rate limiter ─────────────────────────────────────────────────────────────
 
 export type RateLimitResult =
-  | { allowed: true; remaining: number }
-  | { allowed: false; retryAfterSeconds: number };
+  { allowed: true; remaining: number } | { allowed: false; retryAfterSeconds: number };
 
 /**
  * Sliding window rate limiter.
@@ -83,7 +82,7 @@ export type RateLimitResult =
 export async function rateLimit(
   key: string,
   limit: number,
-  windowSec: number
+  windowSec: number,
 ): Promise<RateLimitResult> {
   const redisKey = `rl:${key}`;
   const count = await incr(redisKey);

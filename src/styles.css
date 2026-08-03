@@ -31,38 +31,45 @@
   --color-ring: var(--ring);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
 }
 
 :root {
   --radius: 0.75rem;
   /* Professional Workspace Design System */
-  --background: oklch(0.972 0.008 254.604);   /* #F8FAFC / slate-50 - Subtle cool off-white */
-  --foreground: oklch(0.11 0.022 264.361);    /* #0F172A / slate-900 - Dark neutral gray for headings */
-  --card: oklch(1 0 0);                       /* #FFFFFF - Pure white for cards/content */
+  --background: oklch(0.972 0.008 254.604); /* #F8FAFC / slate-50 - Subtle cool off-white */
+  --foreground: oklch(
+    0.11 0.022 264.361
+  ); /* #0F172A / slate-900 - Dark neutral gray for headings */
+  --card: oklch(1 0 0); /* #FFFFFF - Pure white for cards/content */
   --card-foreground: oklch(0.11 0.022 264.361);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.11 0.022 264.361);
-  --primary: oklch(0.357 0.238 263.051);      /* #1D4ED8 / blue-700 - Deep navy/ocean blue */
+  --primary: oklch(0.357 0.238 263.051); /* #1D4ED8 / blue-700 - Deep navy/ocean blue */
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(1 0 0);                  /* #FFFFFF - Secondary is white */
+  --secondary: oklch(1 0 0); /* #FFFFFF - Secondary is white */
   --secondary-foreground: oklch(0.11 0.022 264.361);
-  --muted: oklch(0.927 0.016 255.228);        /* #E2E8F0 / slate-200 - Muted gray for borders */
+  --muted: oklch(0.927 0.016 255.228); /* #E2E8F0 / slate-200 - Muted gray for borders */
   --muted-foreground: oklch(0.554 0.046 257.417); /* #64748B / slate-500 - Medium-dark gray text */
-  --accent: oklch(1 0 0);                     /* #FFFFFF - Accent is white */
+  --accent: oklch(1 0 0); /* #FFFFFF - Accent is white */
   --accent-foreground: oklch(0.11 0.022 264.361);
-  --destructive: oklch(0.357 0.238 263.051);  /* #1D4ED8 / blue-700 - Use primary blue */
+  --destructive: oklch(0.357 0.238 263.051); /* #1D4ED8 / blue-700 - Use primary blue */
   --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.357 0.238 263.051);      /* #1D4ED8 / blue-700 - Use primary blue */
+  --success: oklch(0.357 0.238 263.051); /* #1D4ED8 / blue-700 - Use primary blue */
   --success-foreground: oklch(1 0 0);
-  --border: oklch(0.927 0.016 255.228);       /* #E2E8F0 / slate-200 - Muted gray borders */
+  --border: oklch(0.927 0.016 255.228); /* #E2E8F0 / slate-200 - Muted gray borders */
   --input: oklch(0.927 0.016 255.228);
   --ring: oklch(0.357 0.238 263.051);
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body {
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
@@ -73,68 +80,77 @@
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  
+
   /* Premium mobile app typography system */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-extrabold tracking-tighter text-[#151515];
   }
-  
+
   h1 {
     @apply text-4xl sm:text-5xl;
   }
-  
+
   h2 {
     @apply text-3xl sm:text-4xl;
   }
-  
+
   h3 {
     @apply text-2xl sm:text-3xl;
   }
-  
+
   h4 {
     @apply text-xl;
   }
-  
+
   h5 {
     @apply text-lg;
   }
-  
+
   h6 {
     @apply text-base;
   }
-  
+
   /* Remove excessive vertical margins for high-density layouts */
-  h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p {
+  h1 + p,
+  h2 + p,
+  h3 + p,
+  h4 + p,
+  h5 + p,
+  h6 + p {
     @apply mt-2.5;
   }
-  
+
   /* Crisp borders instead of shadows */
   .shadow-sm {
     @apply shadow-none border border-neutral-100;
   }
-  
-  .shadow { 
+
+  .shadow {
     @apply shadow-none border border-neutral-100;
   }
-  
+
   .shadow-lg {
     @apply shadow-none border border-neutral-100;
   }
-  
+
   .shadow-md {
     @apply shadow-none border border-neutral-100;
   }
-  
+
   /* Hide default scrollbars for horizontal scroll areas */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
 }
 
 /* Native mobile scroll snap behavior */
@@ -144,11 +160,11 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .snap-scroll::-webkit-scrollbar {
     display: none;
   }
-  
+
   .snap-item {
     @apply snap-start shrink-0;
   }

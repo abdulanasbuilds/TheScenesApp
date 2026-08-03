@@ -68,12 +68,12 @@ There are **two types of vars** — both must be set.
 
 These are public values baked into the client JS bundle by Vite at build time.
 
-| Variable | Where to get it |
-|---|---|
-| `VITE_SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → anon public key |
-| `VITE_PAYSTACK_PUBLIC_KEY` | Paystack → Settings → API Keys → Public Key |
-| `VITE_APP_URL` | Your production domain, e.g. `https://sukaspace.com` |
+| Variable                   | Where to get it                                      |
+| -------------------------- | ---------------------------------------------------- |
+| `VITE_SUPABASE_URL`        | Supabase → Project Settings → API → Project URL      |
+| `VITE_SUPABASE_ANON_KEY`   | Supabase → Project Settings → API → anon public key  |
+| `VITE_PAYSTACK_PUBLIC_KEY` | Paystack → Settings → API Keys → Public Key          |
+| `VITE_APP_URL`             | Your production domain, e.g. `https://sukaspace.com` |
 
 **In Cloudflare dashboard:** Workers & Pages → Your project → Settings → Environment Variables → Add as plain variables.
 
@@ -81,19 +81,20 @@ These are public values baked into the client JS bundle by Vite at build time.
 
 These are read by Cloudflare Worker server functions at runtime.
 
-| Variable | Value |
-|---|---|
-| `SUPABASE_URL` | Same value as `VITE_SUPABASE_URL` |
-| `SUPABASE_ANON_KEY` | Same value as `VITE_SUPABASE_ANON_KEY` |
-| `SUPABASE_SERVICE_KEY` | Supabase → Project Settings → API → service_role key |
-| `PAYSTACK_SECRET_KEY` | Paystack → Settings → API Keys → Secret Key |
-| `RESEND_API_KEY` | Resend → API Keys |
-| `RESEND_FROM_EMAIL` | e.g. `hello@yourdomain.com` |
-| `APP_URL` | Same value as `VITE_APP_URL` |
-| `TELEGRAM_BOT_TOKEN` | Optional — from @BotFather |
-| `TELEGRAM_PRIVATE_CHAT_ID` | Optional — negative group ID |
+| Variable                   | Value                                                |
+| -------------------------- | ---------------------------------------------------- |
+| `SUPABASE_URL`             | Same value as `VITE_SUPABASE_URL`                    |
+| `SUPABASE_ANON_KEY`        | Same value as `VITE_SUPABASE_ANON_KEY`               |
+| `SUPABASE_SERVICE_KEY`     | Supabase → Project Settings → API → service_role key |
+| `PAYSTACK_SECRET_KEY`      | Paystack → Settings → API Keys → Secret Key          |
+| `RESEND_API_KEY`           | Resend → API Keys                                    |
+| `RESEND_FROM_EMAIL`        | e.g. `hello@yourdomain.com`                          |
+| `APP_URL`                  | Same value as `VITE_APP_URL`                         |
+| `TELEGRAM_BOT_TOKEN`       | Optional — from @BotFather                           |
+| `TELEGRAM_PRIVATE_CHAT_ID` | Optional — negative group ID                         |
 
 **Via CLI:**
+
 ```bash
 bunx wrangler secret put SUPABASE_URL
 bunx wrangler secret put SUPABASE_ANON_KEY
@@ -156,6 +157,7 @@ After deploying, test these flows:
 
 **Server functions returning 500**
 → Check Cloudflare Worker logs: Workers & Pages → Your Worker → Logs → tail live logs with:
+
 ```bash
 bunx wrangler tail
 ```

@@ -86,7 +86,7 @@ export class PaystackProvider implements PaymentProvider {
     try {
       res = await fetch(
         `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-        { headers: { Authorization: `Bearer ${this.secretKey}` } }
+        { headers: { Authorization: `Bearer ${this.secretKey}` } },
       );
     } catch (err) {
       return { ok: false, error: "Network error contacting Paystack." };
@@ -98,7 +98,7 @@ export class PaystackProvider implements PaymentProvider {
       return { ok: false, error: `Paystack returned ${res.status}.` };
     }
 
-    const json = await res.json() as {
+    const json = (await res.json()) as {
       status: boolean;
       message: string;
       data?: {
@@ -146,7 +146,7 @@ export class PaystackProvider implements PaymentProvider {
         enc.encode(secret),
         { name: "HMAC", hash: "SHA-512" },
         false,
-        ["sign"]
+        ["sign"],
       );
       const sig = await crypto.subtle.sign("HMAC", key, enc.encode(rawBody));
       const hex = Array.from(new Uint8Array(sig))
@@ -170,20 +170,19 @@ export class PaystackProvider implements PaymentProvider {
     const data = (payload.data ?? {}) as Record<string, unknown>;
 
     const typeMap: Record<string, WebhookEventType> = {
-      "charge.success":           "payment.success",
-      "charge.failed":            "payment.failed",
-      "subscription.create":      "subscription.created",
-      "subscription.not_renew":   "subscription.not_renewing",
-      "subscription.disable":     "subscription.disabled",
-      "transfer.success":         "transfer.success",
-      "transfer.failed":          "transfer.failed",
-      "transfer.reversed":        "transfer.reversed",
+      "charge.success": "payment.success",
+      "charge.failed": "payment.failed",
+      "subscription.create": "subscription.created",
+      "subscription.not_renew": "subscription.not_renewing",
+      "subscription.disable": "subscription.disabled",
+      "transfer.success": "transfer.success",
+      "transfer.failed": "transfer.failed",
+      "transfer.reversed": "transfer.reversed",
     };
 
     const customer = data.customer as Record<string, unknown> | undefined;
     // Paystack doesn't provide a top-level event.id; use reference as fallback
-    const eventId = (data.reference as string | undefined)
-      ?? `${eventType}:${Date.now()}`;
+    const eventId = (data.reference as string | undefined) ?? `${eventType}:${Date.now()}`;
 
     return {
       id: eventId,

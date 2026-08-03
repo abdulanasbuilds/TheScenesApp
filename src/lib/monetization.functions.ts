@@ -13,20 +13,32 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { getPaymentProvider } from "@/lib/payment-adapter";
-import { adminDb }             from "@/lib/supabase-admin";
-import { env }                 from "@/lib/env";
-import {
-  checkPaymentVerifyRate,
-  checkWithdrawalRate,
-  checkFileAccessRate,
-} from "@/lib/rate-limit";
+import { adminDb } from "@/lib/supabase-admin";
+import { env } from "@/lib/env";
+import { checkPaymentVerifyRate, checkWithdrawalRate, checkFileAccessRate } from "@/lib/rate-limit";
 import { calcPlatformFee, calcNetAmount } from "@/lib/plans";
-import { recordPaymentEarnings, getEarningsSummary, getEarningsHistory } from "@/lib/monetization/earnings";
-import { createWithdrawalRequest, getWithdrawalHistory }                 from "@/lib/monetization/withdrawals";
-import { checkCommunityAccess, checkCourseAccess, grantCommunityAccess, grantCourseAccess } from "@/lib/monetization/access";
+import {
+  recordPaymentEarnings,
+  getEarningsSummary,
+  getEarningsHistory,
+} from "@/lib/monetization/earnings";
+import { createWithdrawalRequest, getWithdrawalHistory } from "@/lib/monetization/withdrawals";
+import {
+  checkCommunityAccess,
+  checkCourseAccess,
+  grantCommunityAccess,
+  grantCourseAccess,
+} from "@/lib/monetization/access";
 import { getPayoutAccount } from "@/lib/monetization/payout-accounts";
 
-import { getStorageUsage, checkUploadAllowed, generatePresignedUrl, buildFileKey, isValidFileKey, setStorageQuota } from "@/lib/monetization/storage";
+import {
+  getStorageUsage,
+  checkUploadAllowed,
+  generatePresignedUrl,
+  buildFileKey,
+  isValidFileKey,
+  setStorageQuota,
+} from "@/lib/monetization/storage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -35,10 +47,9 @@ function newId(prefix: string): string {
 }
 
 async function getCreatorPlanFeeBps(creatorEmail: string): Promise<number> {
-  const { data } = await adminDb.selectOne<{ plan_id: string }>(
-    "creator_subscriptions",
-    { "creator_email": `eq.${creatorEmail}` }
-  );
+  const { data } = await adminDb.selectOne<{ plan_id: string }>("creator_subscriptions", {
+    creator_email: `eq.${creatorEmail}`,
+  });
   const planId = data?.plan_id ?? "free";
   return planId === "pro" ? env.PRO_PLAN_FEE_BPS : env.FREE_PLAN_FEE_BPS;
 }
@@ -49,14 +60,14 @@ async function getCreatorPlanFeeBps(creatorEmail: string): Promise<number> {
 // and cannot be manipulated by the client.
 
 const initPaymentSchema = z.object({
-  payerEmail:    z.string().email(),
-  paymentType:   z.enum(["community_access", "course_access", "pro_subscription"]),
-  resourceId:    z.number().int().positive().optional(),
-  currency:      z.string().default("NGN"),
+  payerEmail: z.string().email(),
+  paymentType: z.enum(["community_access", "course_access", "pro_subscription"]),
+  resourceId: z.number().int().positive().optional(),
+  currency: z.string().default("NGN"),
 });
 
 export type InitPaymentResult =
-  | { ok: true;  reference: string; amountCents: number; currency: string; transactionId: string }
+  | { ok: true; reference: string; amountCents: number; currency: string; transactionId: string }
   | { ok: false; error: string };
 
 export const initializePayment = createServerFn({ method: "POST" })
@@ -73,36 +84,41 @@ export const initializePayment = createServerFn({ method: "POST" })
     let resourceType: "community" | "course" | "subscription" | null = null;
 
     if (data.paymentType === "pro_subscription") {
-      amountCents  = env.PRO_PLAN_PRICE_CENTS;
+      amountCents = env.PRO_PLAN_PRICE_CENTS;
       resourceType = "subscription";
-
     } else if (data.paymentType === "community_access") {
-      if (!data.resourceId) return { ok: false, error: "resourceId is required for community_access." };
-      const { data: comm } = await adminDb.selectOne<{ price: string | null; creator_email: string; tag: string }>(
-        "communities", { "id": `eq.${data.resourceId}` }
-      );
+      if (!data.resourceId)
+        return { ok: false, error: "resourceId is required for community_access." };
+      const { data: comm } = await adminDb.selectOne<{
+        price: string | null;
+        creator_email: string;
+        tag: string;
+      }>("communities", { id: `eq.${data.resourceId}` });
       if (!comm) return { ok: false, error: "Community not found." };
-      if (comm.tag !== "PAID") return { ok: false, error: "This community is free — no payment needed." };
+      if (comm.tag !== "PAID")
+        return { ok: false, error: "This community is free — no payment needed." };
       // Check if already has access
       const existing = await checkCommunityAccess(data.payerEmail, data.resourceId);
-      if (existing.hasAccess) return { ok: false, error: "You already have access to this community." };
+      if (existing.hasAccess)
+        return { ok: false, error: "You already have access to this community." };
       // Parse price string ("₦5,000/mo" → amount in kobo)
       const raw = (comm.price ?? "0").replace(/[^0-9.]/g, "");
-      amountCents  = Math.round(parseFloat(raw || "0") * 100);
-      toEmail      = comm.creator_email;
+      amountCents = Math.round(parseFloat(raw || "0") * 100);
+      toEmail = comm.creator_email;
       resourceType = "community";
-
     } else if (data.paymentType === "course_access") {
-      if (!data.resourceId) return { ok: false, error: "resourceId is required for course_access." };
-      const { data: course } = await adminDb.selectOne<{ creator_email: string }>(
-        "courses", { "id": `eq.${data.resourceId}` }
-      );
+      if (!data.resourceId)
+        return { ok: false, error: "resourceId is required for course_access." };
+      const { data: course } = await adminDb.selectOne<{ creator_email: string }>("courses", {
+        id: `eq.${data.resourceId}`,
+      });
       if (!course) return { ok: false, error: "Course not found." };
       const existing = await checkCourseAccess(data.payerEmail, data.resourceId);
-      if (existing.hasAccess) return { ok: false, error: "You already have access to this course." };
+      if (existing.hasAccess)
+        return { ok: false, error: "You already have access to this course." };
       // TODO: when courses have explicit prices, read from there
-      amountCents  = 0; // placeholder
-      toEmail      = course.creator_email;
+      amountCents = 0; // placeholder
+      toEmail = course.creator_email;
       resourceType = "course";
     } else {
       return { ok: false, error: "Unknown payment type." };
@@ -111,31 +127,31 @@ export const initializePayment = createServerFn({ method: "POST" })
     if (amountCents <= 0) return { ok: false, error: "Invalid payment amount." };
 
     // Generate idempotent reference and transaction ID
-    const reference     = `suka_${newId("pay")}`;
+    const reference = `suka_${newId("pay")}`;
     const transactionId = newId("txn");
 
     // Record pending transaction
-    const feeBps       = toEmail ? await getCreatorPlanFeeBps(toEmail) : 0;
-    const feeCents     = calcPlatformFee(amountCents, feeBps);
-    const netCents     = calcNetAmount(amountCents, feeBps);
+    const feeBps = toEmail ? await getCreatorPlanFeeBps(toEmail) : 0;
+    const feeCents = calcPlatformFee(amountCents, feeBps);
+    const netCents = calcNetAmount(amountCents, feeBps);
 
     const { error } = await adminDb.insert("payment_transactions", {
-      id:                  transactionId,
-      paystack_reference:  reference,
-      payment_type:        data.paymentType,
-      from_email:          data.payerEmail,
-      to_email:            toEmail,
-      resource_id:         data.resourceId ?? null,
-      resource_type:       resourceType,
-      gross_amount_cents:  amountCents,
-      platform_fee_cents:  feeCents,
-      net_amount_cents:    netCents,
-      currency:            data.currency,
-      status:              "pending",
-      provider:            "paystack",
-      metadata:            {},
-      created_at:          new Date().toISOString(),
-      updated_at:          new Date().toISOString(),
+      id: transactionId,
+      paystack_reference: reference,
+      payment_type: data.paymentType,
+      from_email: data.payerEmail,
+      to_email: toEmail,
+      resource_id: data.resourceId ?? null,
+      resource_type: resourceType,
+      gross_amount_cents: amountCents,
+      platform_fee_cents: feeCents,
+      net_amount_cents: netCents,
+      currency: data.currency,
+      status: "pending",
+      provider: "paystack",
+      metadata: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
 
     if (error) {
@@ -151,14 +167,13 @@ export const initializePayment = createServerFn({ method: "POST" })
 // Verifies with Paystack, records earnings, grants access. Idempotent.
 
 const verifyPaymentSchema = z.object({
-  reference:     z.string().min(1),
+  reference: z.string().min(1),
   transactionId: z.string().min(1),
-  userEmail:     z.string().email(),
+  userEmail: z.string().email(),
 });
 
 export type VerifyPaymentResult =
-  | { ok: true;  accessGranted: boolean; message: string }
-  | { ok: false; error: string };
+  { ok: true; accessGranted: boolean; message: string } | { ok: false; error: string };
 
 export const verifyAndRecordPayment = createServerFn({ method: "POST" })
   .validator(verifyPaymentSchema)
@@ -171,20 +186,30 @@ export const verifyAndRecordPayment = createServerFn({ method: "POST" })
 
     // Fetch the pending transaction
     const { data: txn } = await adminDb.selectOne<{
-      id: string; status: string; payment_type: string;
-      from_email: string; to_email: string | null;
-      resource_id: number | null; resource_type: string | null;
-      gross_amount_cents: number; platform_fee_cents: number; currency: string;
+      id: string;
+      status: string;
+      payment_type: string;
+      from_email: string;
+      to_email: string | null;
+      resource_id: number | null;
+      resource_type: string | null;
+      gross_amount_cents: number;
+      platform_fee_cents: number;
+      currency: string;
     }>("payment_transactions", {
-      "id":         `eq.${data.transactionId}`,
-      "paystack_reference": `eq.${data.reference}`,
+      id: `eq.${data.transactionId}`,
+      paystack_reference: `eq.${data.reference}`,
     });
 
     if (!txn) return { ok: false, error: "Transaction not found. Please contact support." };
 
     // Idempotency: already processed
     if (txn.status === "completed") {
-      return { ok: true, accessGranted: true, message: "Payment already processed. Access granted." };
+      return {
+        ok: true,
+        accessGranted: true,
+        message: "Payment already processed. Access granted.",
+      };
     }
     if (txn.status === "failed") {
       return { ok: false, error: "This payment has already failed. Please start a new payment." };
@@ -195,35 +220,39 @@ export const verifyAndRecordPayment = createServerFn({ method: "POST" })
     const verified = await provider.verifyPayment(data.reference);
 
     if (!verified.ok) {
-      await adminDb.update("payment_transactions",
-        { "id": `eq.${data.transactionId}` },
-        { status: "failed", updated_at: new Date().toISOString() }
+      await adminDb.update(
+        "payment_transactions",
+        { id: `eq.${data.transactionId}` },
+        { status: "failed", updated_at: new Date().toISOString() },
       );
       return { ok: false, error: verified.error };
     }
 
     // Confirm amounts match (within 1 unit — avoid floating point issues)
     if (Math.abs(verified.amountCents - txn.gross_amount_cents) > 1) {
-      console.error(`[monetization] Amount mismatch: expected ${txn.gross_amount_cents}, got ${verified.amountCents}`);
+      console.error(
+        `[monetization] Amount mismatch: expected ${txn.gross_amount_cents}, got ${verified.amountCents}`,
+      );
       return { ok: false, error: "Payment amount mismatch. Please contact support." };
     }
 
     // Mark transaction completed
-    await adminDb.update("payment_transactions",
-      { "id": `eq.${data.transactionId}` },
-      { status: "completed", updated_at: new Date().toISOString() }
+    await adminDb.update(
+      "payment_transactions",
+      { id: `eq.${data.transactionId}` },
+      { status: "completed", updated_at: new Date().toISOString() },
     );
 
     // Record earnings in ledger (only if payment goes to a creator)
     if (txn.to_email && txn.payment_type !== "pro_subscription") {
       const feeBps = await getCreatorPlanFeeBps(txn.to_email);
       await recordPaymentEarnings({
-        creatorEmail:    txn.to_email,
-        transactionId:   txn.id,
+        creatorEmail: txn.to_email,
+        transactionId: txn.id,
         grossAmountCents: txn.gross_amount_cents,
-        platformFeeBps:  feeBps,
-        currency:        txn.currency,
-        description:     `Payment from ${data.userEmail}`,
+        platformFeeBps: feeBps,
+        currency: txn.currency,
+        description: `Payment from ${data.userEmail}`,
       });
     }
 
@@ -231,32 +260,36 @@ export const verifyAndRecordPayment = createServerFn({ method: "POST" })
     let accessGranted = false;
     if (txn.payment_type === "community_access" && txn.resource_id) {
       const result = await grantCommunityAccess({
-        userEmail:     data.userEmail,
-        communityId:   txn.resource_id,
+        userEmail: data.userEmail,
+        communityId: txn.resource_id,
         transactionId: txn.id,
-        accessType:    "paid",
+        accessType: "paid",
       });
       accessGranted = result.ok;
     } else if (txn.payment_type === "course_access" && txn.resource_id) {
       const result = await grantCourseAccess({
-        userEmail:   data.userEmail,
-        courseId:    txn.resource_id,
+        userEmail: data.userEmail,
+        courseId: txn.resource_id,
         transactionId: txn.id,
-        accessType:  "paid",
+        accessType: "paid",
       });
       accessGranted = result.ok;
     } else if (txn.payment_type === "pro_subscription") {
       // Activate Pro plan
       const proStorageBytes = env.PRO_PLAN_STORAGE_BYTES;
       await Promise.all([
-        adminDb.upsert("creator_subscriptions", {
-          creator_email: data.userEmail,
-          plan_id:       "pro",
-          status:        "active",
-          current_period_start: new Date().toISOString(),
-          current_period_end:   new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at:    new Date().toISOString(),
-        }, "creator_email"),
+        adminDb.upsert(
+          "creator_subscriptions",
+          {
+            creator_email: data.userEmail,
+            plan_id: "pro",
+            status: "active",
+            current_period_start: new Date().toISOString(),
+            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          "creator_email",
+        ),
         setStorageQuota(data.userEmail, proStorageBytes),
       ]);
       accessGranted = true;
@@ -272,15 +305,15 @@ export const verifyAndRecordPayment = createServerFn({ method: "POST" })
 // ─── 3. Request withdrawal ────────────────────────────────────────────────────
 
 const withdrawalSchema = z.object({
-  creatorEmail:       z.string().email(),
-  amountCents:        z.number().int().positive(),
-  currency:           z.string().default("NGN"),
-  withdrawalType:     z.enum(["standard", "instant"]).default("standard"),
+  creatorEmail: z.string().email(),
+  amountCents: z.number().int().positive(),
+  currency: z.string().default("NGN"),
+  withdrawalType: z.enum(["standard", "instant"]).default("standard"),
   // Bank details are optional — when omitted, the creator's saved payout
   // account is used. The client never needs to hold account details.
-  bankCode:           z.string().min(1).optional(),
-  bankAccountNumber:  z.string().min(1).optional(),
-  bankAccountName:    z.string().min(1).optional(),
+  bankCode: z.string().min(1).optional(),
+  bankAccountNumber: z.string().min(1).optional(),
+  bankAccountName: z.string().min(1).optional(),
 });
 
 export const requestWithdrawal = createServerFn({ method: "POST" })
@@ -297,9 +330,9 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
 
     // Check plan allows instant withdrawal
     if (data.withdrawalType === "instant") {
-      const { data: sub } = await adminDb.selectOne<{ plan_id: string }>(
-        "creator_subscriptions", { "creator_email": `eq.${data.creatorEmail}` }
-      );
+      const { data: sub } = await adminDb.selectOne<{ plan_id: string }>("creator_subscriptions", {
+        creator_email: `eq.${data.creatorEmail}`,
+      });
       if ((sub?.plan_id ?? "free") !== "pro") {
         return { ok: false, error: "Instant withdrawal requires a Pro plan." };
       }
@@ -307,25 +340,25 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
 
     // Resolve destination from the saved payout account (server-authoritative).
     const account = await getPayoutAccount(data.creatorEmail);
-    const bankCode    = data.bankCode          ?? account?.bankCode          ?? account?.mobileMoneyNetwork;
-    const accNumber   = data.bankAccountNumber ?? account?.accountNumber     ?? account?.mobileMoneyNumber;
-    const accName     = data.bankAccountName   ?? account?.accountName;
+    const bankCode = data.bankCode ?? account?.bankCode ?? account?.mobileMoneyNetwork;
+    const accNumber =
+      data.bankAccountNumber ?? account?.accountNumber ?? account?.mobileMoneyNumber;
+    const accName = data.bankAccountName ?? account?.accountName;
 
     if (!bankCode || !accNumber || !accName) {
       return { ok: false, error: "Add a payout account before requesting a withdrawal." };
     }
 
     return createWithdrawalRequest({
-      creatorEmail:       data.creatorEmail,
-      amountCents:        data.amountCents,
-      currency:           data.currency,
-      withdrawalType:     data.withdrawalType,
+      creatorEmail: data.creatorEmail,
+      amountCents: data.amountCents,
+      currency: data.currency,
+      withdrawalType: data.withdrawalType,
       bankCode,
-      bankAccountNumber:  accNumber,
-      bankAccountName:    accName,
+      bankAccountNumber: accNumber,
+      bankAccountName: accName,
     });
   });
-
 
 // ─── 4. Creator dashboard data ────────────────────────────────────────────────
 
@@ -341,7 +374,7 @@ export const getCreatorDashboard = createServerFn({ method: "POST" })
       getStorageUsage(data.creatorEmail),
       adminDb.selectOne<{ plan_id: string; status: string; current_period_end: string | null }>(
         "creator_subscriptions",
-        { "creator_email": `eq.${data.creatorEmail}` }
+        { creator_email: `eq.${data.creatorEmail}` },
       ),
     ]);
 
@@ -359,9 +392,9 @@ export const getCreatorDashboard = createServerFn({ method: "POST" })
 // ─── 5. Check content access (server gate) ───────────────────────────────────
 
 const accessCheckSchema = z.object({
-  userEmail:    z.string().email(),
+  userEmail: z.string().email(),
   resourceType: z.enum(["community", "course"]),
-  resourceId:   z.number().int().positive(),
+  resourceId: z.number().int().positive(),
 });
 
 export const checkContentAccess = createServerFn({ method: "POST" })
@@ -376,9 +409,9 @@ export const checkContentAccess = createServerFn({ method: "POST" })
 // ─── 6. File upload presigned URL ────────────────────────────────────────────
 
 const fileUploadSchema = z.object({
-  creatorEmail:  z.string().email(),
-  filename:      z.string().min(1).max(255),
-  contentType:   z.string().min(1),
+  creatorEmail: z.string().email(),
+  filename: z.string().min(1).max(255),
+  contentType: z.string().min(1),
   fileSizeBytes: z.number().int().positive(),
 });
 
@@ -390,9 +423,9 @@ export const getFileUploadUrl = createServerFn({ method: "POST" })
     if (!rate.allowed) return { ok: false as const, error: "Rate limit exceeded." };
 
     // Check plan allows file uploads
-    const { data: sub } = await adminDb.selectOne<{ plan_id: string }>(
-      "creator_subscriptions", { "creator_email": `eq.${data.creatorEmail}` }
-    );
+    const { data: sub } = await adminDb.selectOne<{ plan_id: string }>("creator_subscriptions", {
+      creator_email: `eq.${data.creatorEmail}`,
+    });
     if ((sub?.plan_id ?? "free") !== "pro") {
       return { ok: false as const, error: "File uploads require a Pro plan." };
     }
@@ -402,7 +435,12 @@ export const getFileUploadUrl = createServerFn({ method: "POST" })
     if (!allowed.allowed) return { ok: false as const, error: allowed.reason! };
 
     const key = buildFileKey(data.creatorEmail, data.filename);
-    const url = await generatePresignedUrl({ key, method: "PUT", expiresInSeconds: 3600, contentType: data.contentType });
+    const url = await generatePresignedUrl({
+      key,
+      method: "PUT",
+      expiresInSeconds: 3600,
+      contentType: data.contentType,
+    });
     if (!url) return { ok: false as const, error: "Storage not configured." };
 
     return { ok: true as const, uploadUrl: url, fileKey: key };
@@ -411,10 +449,10 @@ export const getFileUploadUrl = createServerFn({ method: "POST" })
 // ─── 7. File download presigned URL ──────────────────────────────────────────
 
 const fileDownloadSchema = z.object({
-  userEmail:    z.string().email(),
-  fileKey:      z.string().min(1),
+  userEmail: z.string().email(),
+  fileKey: z.string().min(1),
   resourceType: z.enum(["community", "course"]),
-  resourceId:   z.number().int().positive(),
+  resourceId: z.number().int().positive(),
 });
 
 export const getFileDownloadUrl = createServerFn({ method: "POST" })
@@ -444,7 +482,11 @@ export const getFileDownloadUrl = createServerFn({ method: "POST" })
       return { ok: false as const, error: "You do not have access to this file." };
     }
 
-    const url = await generatePresignedUrl({ key: data.fileKey, method: "GET", expiresInSeconds: 900 });
+    const url = await generatePresignedUrl({
+      key: data.fileKey,
+      method: "GET",
+      expiresInSeconds: 900,
+    });
     if (!url) return { ok: false as const, error: "Storage not configured." };
 
     return { ok: true as const, downloadUrl: url };

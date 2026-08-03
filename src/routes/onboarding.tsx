@@ -2,10 +2,28 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
-  Sparkles, Rocket, GraduationCap, Check, ArrowRight, ArrowLeft,
-  Zap, Trophy, MessagesSquare, BookOpen, Users, BarChart3,
-  Lightbulb, Target, Code2, Palette, TrendingUp, Layers,
-  Brain, Globe, ShieldCheck, Star,
+  Sparkles,
+  Rocket,
+  GraduationCap,
+  Check,
+  ArrowRight,
+  ArrowLeft,
+  Zap,
+  Trophy,
+  MessagesSquare,
+  BookOpen,
+  Users,
+  BarChart3,
+  Lightbulb,
+  Target,
+  Code2,
+  Palette,
+  TrendingUp,
+  Layers,
+  Brain,
+  Globe,
+  ShieldCheck,
+  Star,
 } from "lucide-react";
 import { useAppStore } from "@/lib/app-store";
 import { Logo } from "@/components/Logo";
@@ -23,18 +41,18 @@ type Skill = "beginner" | "intermediate" | "advanced" | null;
 // ─── Static data ──────────────────────────────────────────────────────────────
 
 const INTERESTS = [
-  { id: "ai",        label: "Generative AI",       icon: Brain },
-  { id: "llm",       label: "LLM Development",     icon: Code2 },
-  { id: "saas",      label: "SaaS & Automation",   icon: Zap },
-  { id: "nocode",    label: "No-Code Tools",        icon: Layers },
-  { id: "software",  label: "Software Engineering", icon: Code2 },
-  { id: "marketing", label: "Digital Marketing",   icon: TrendingUp },
-  { id: "design",    label: "Design Systems",       icon: Palette },
-  { id: "growth",    label: "Growth & Scale",       icon: BarChart3 },
-  { id: "content",   label: "Content Creation",     icon: Globe },
-  { id: "business",  label: "Online Business",      icon: Target },
-  { id: "web3",      label: "Web3 / Crypto",        icon: ShieldCheck },
-  { id: "data",      label: "Data & Analytics",     icon: BarChart3 },
+  { id: "ai", label: "Generative AI", icon: Brain },
+  { id: "llm", label: "LLM Development", icon: Code2 },
+  { id: "saas", label: "SaaS & Automation", icon: Zap },
+  { id: "nocode", label: "No-Code Tools", icon: Layers },
+  { id: "software", label: "Software Engineering", icon: Code2 },
+  { id: "marketing", label: "Digital Marketing", icon: TrendingUp },
+  { id: "design", label: "Design Systems", icon: Palette },
+  { id: "growth", label: "Growth & Scale", icon: BarChart3 },
+  { id: "content", label: "Content Creation", icon: Globe },
+  { id: "business", label: "Online Business", icon: Target },
+  { id: "web3", label: "Web3 / Crypto", icon: ShieldCheck },
+  { id: "data", label: "Data & Analytics", icon: BarChart3 },
 ];
 
 const GOALS_CREATOR = [
@@ -56,9 +74,9 @@ const GOALS_LEARNER = [
 ];
 
 const SKILLS: { id: Skill; label: string; desc: string }[] = [
-  { id: "beginner",     label: "Just starting out",  desc: "New to this space, ready to learn" },
-  { id: "intermediate", label: "Some experience",    desc: "Know the basics, want to go deeper" },
-  { id: "advanced",     label: "Experienced",        desc: "Looking to refine and grow further" },
+  { id: "beginner", label: "Just starting out", desc: "New to this space, ready to learn" },
+  { id: "intermediate", label: "Some experience", desc: "Know the basics, want to go deeper" },
+  { id: "advanced", label: "Experienced", desc: "Looking to refine and grow further" },
 ];
 
 // ─── Framer Motion variants ───────────────────────────────────────────────────
@@ -66,7 +84,7 @@ const SKILLS: { id: Skill; label: string; desc: string }[] = [
 const slide = {
   initial: (dir: number) => ({ opacity: 0, x: dir > 0 ? 40 : -40 }),
   animate: { opacity: 1, x: 0 },
-  exit:    (dir: number) => ({ opacity: 0, x: dir > 0 ? -40 : 40 }),
+  exit: (dir: number) => ({ opacity: 0, x: dir > 0 ? -40 : 40 }),
   transition: { type: "spring", stiffness: 340, damping: 32 },
 };
 
@@ -81,9 +99,7 @@ function Steps({ total, current }: { total: number; current: number }) {
           animate={{ width: i === current ? 24 : 8 }}
           className={cn(
             "h-2 rounded-full transition-colors duration-300",
-            i < current  ? "bg-blue-400"
-            : i === current ? "bg-blue-600"
-            : "bg-slate-200",
+            i < current ? "bg-blue-400" : i === current ? "bg-blue-600" : "bg-slate-200",
           )}
         />
       ))}
@@ -94,31 +110,31 @@ function Steps({ total, current }: { total: number; current: number }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function Onboarding() {
-  const nav   = useNavigate();
+  const nav = useNavigate();
   const store = useAppStore();
 
-  const [step,       setStep]       = useState(0);
-  const [direction,  setDirection]  = useState(1);
-  const [role,       setRole]       = useState<Role>(null);
-  const [interests,  setInterests]  = useState<string[]>([]);
-  const [goals,      setGoals]      = useState<string[]>([]);
-  const [skill,      setSkill]      = useState<Skill>(null);
-  const [name,       setName]       = useState(store.session?.name ?? "");
-  const [bio,        setBio]        = useState(store.session?.bio ?? "");
-  const [saving,     setSaving]     = useState(false);
+  const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [role, setRole] = useState<Role>(null);
+  const [interests, setInterests] = useState<string[]>([]);
+  const [goals, setGoals] = useState<string[]>([]);
+  const [skill, setSkill] = useState<Skill>(null);
+  const [name, setName] = useState(store.session?.name ?? "");
+  const [bio, setBio] = useState(store.session?.bio ?? "");
+  const [saving, setSaving] = useState(false);
 
   const TOTAL_STEPS = 5;
 
   const go = (delta: number) => {
     setDirection(delta);
-    setStep(s => s + delta);
+    setStep((s) => s + delta);
   };
 
   const toggleInterest = (id: string) =>
-    setInterests(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    setInterests((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
 
   const toggleGoal = (g: string) =>
-    setGoals(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
+    setGoals((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
 
   const finish = async () => {
     if (!store.session) {
@@ -127,9 +143,9 @@ function Onboarding() {
     }
     setSaving(true);
     try {
-      if (name.trim())   store.updateProfile({ name: name.trim() });
-      if (bio.trim())    store.updateProfile({ bio: bio.trim() });
-      if (role)          store.updateProfile({ role });
+      if (name.trim()) store.updateProfile({ name: name.trim() });
+      if (bio.trim()) store.updateProfile({ bio: bio.trim() });
+      if (role) store.updateProfile({ role });
 
       // Persist onboarding state in store
       store.completeOnboarding?.({
@@ -143,8 +159,8 @@ function Onboarding() {
       await onOnboardingComplete({
         data: {
           userEmail: store.session.email,
-          userName:  name.trim() || store.session.name,
-          role:      role ?? store.session.role,
+          userName: name.trim() || store.session.name,
+          role: role ?? store.session.role,
         },
       }).catch(() => null);
 
@@ -176,20 +192,23 @@ function Onboarding() {
           Welcome to SukaSpace
         </h1>
         <p className="mt-2 text-slate-500 text-base max-w-xs mx-auto leading-relaxed">
-          The platform where creators build communities and learners grow together.
-          Let's set up your account in 2 minutes.
+          The platform where creators build communities and learners grow together. Let's set up
+          your account in 2 minutes.
         </p>
       </div>
 
       {/* Quick feature pills */}
       <div className="flex flex-wrap justify-center gap-2">
         {[
-          { icon: Users,           text: "Communities" },
-          { icon: BookOpen,        text: "Courses" },
-          { icon: MessagesSquare,  text: "Private DMs" },
-          { icon: Trophy,          text: "Leaderboards" },
+          { icon: Users, text: "Communities" },
+          { icon: BookOpen, text: "Courses" },
+          { icon: MessagesSquare, text: "Private DMs" },
+          { icon: Trophy, text: "Leaderboards" },
         ].map(({ icon: Icon, text }) => (
-          <span key={text} className="flex items-center gap-1.5 bg-slate-100 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-full">
+          <span
+            key={text}
+            className="flex items-center gap-1.5 bg-slate-100 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-full"
+          >
             <Icon className="w-3.5 h-3.5 text-blue-500" />
             {text}
           </span>
@@ -204,8 +223,8 @@ function Onboarding() {
         <input
           autoFocus
           value={name}
-          onChange={e => setName(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && go(1)}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && go(1)}
           placeholder="Your name"
           className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
         />
@@ -245,7 +264,12 @@ function Onboarding() {
             Build communities, sell courses, and grow your audience
           </p>
           <ul className="mt-3 space-y-1 text-xs text-slate-600 text-left w-full">
-            {["Create unlimited communities", "Build & sell courses", "Earn from memberships", "Creator analytics"].map(f => (
+            {[
+              "Create unlimited communities",
+              "Build & sell courses",
+              "Earn from memberships",
+              "Creator analytics",
+            ].map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <Check className="w-3 h-3 text-blue-500 flex-shrink-0" />
                 {f}
@@ -277,7 +301,12 @@ function Onboarding() {
             Join communities, take courses, and connect with creators
           </p>
           <ul className="mt-3 space-y-1 text-xs text-slate-600 text-left w-full">
-            {["Join paid & free communities", "Access premium courses", "Private messaging", "Track your progress"].map(f => (
+            {[
+              "Join paid & free communities",
+              "Access premium courses",
+              "Private messaging",
+              "Track your progress",
+            ].map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <Check className="w-3 h-3 text-emerald-500 flex-shrink-0" />
                 {f}
@@ -294,7 +323,9 @@ function Onboarding() {
     <div className="space-y-5">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-slate-900">What are you into?</h2>
-        <p className="text-slate-500 text-sm mt-1">Pick at least one. We'll surface the best content for you.</p>
+        <p className="text-slate-500 text-sm mt-1">
+          Pick at least one. We'll surface the best content for you.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -311,7 +342,12 @@ function Onboarding() {
                   : "border-slate-200 hover:border-blue-200 text-slate-700 hover:bg-slate-50",
               )}
             >
-              <Icon className={cn("w-4 h-4 flex-shrink-0", selected ? "text-blue-500" : "text-slate-400")} />
+              <Icon
+                className={cn(
+                  "w-4 h-4 flex-shrink-0",
+                  selected ? "text-blue-500" : "text-slate-400",
+                )}
+              />
               <span className="leading-tight">{label}</span>
               {selected && <Check className="w-3.5 h-3.5 text-blue-500 ml-auto flex-shrink-0" />}
             </button>
@@ -340,7 +376,7 @@ function Onboarding() {
       <div>
         <p className="text-sm font-semibold text-slate-700 mb-2">What do you want to achieve?</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {goalList.map(g => {
+          {goalList.map((g) => {
             const sel = goals.includes(g);
             return (
               <button
@@ -353,7 +389,12 @@ function Onboarding() {
                     : "border-slate-200 hover:border-violet-200 text-slate-700",
                 )}
               >
-                <Target className={cn("w-4 h-4 flex-shrink-0", sel ? "text-violet-500" : "text-slate-400")} />
+                <Target
+                  className={cn(
+                    "w-4 h-4 flex-shrink-0",
+                    sel ? "text-violet-500" : "text-slate-400",
+                  )}
+                />
                 {g}
                 {sel && <Check className="w-3.5 h-3.5 text-violet-500 ml-auto" />}
               </button>
@@ -366,7 +407,7 @@ function Onboarding() {
       <div>
         <p className="text-sm font-semibold text-slate-700 mb-2">Your current level</p>
         <div className="space-y-2">
-          {SKILLS.map(s => (
+          {SKILLS.map((s) => (
             <button
               key={s.id}
               onClick={() => setSkill(s.id)}
@@ -377,9 +418,19 @@ function Onboarding() {
                   : "border-slate-200 hover:border-amber-200",
               )}
             >
-              <Star className={cn("w-4 h-4 flex-shrink-0", skill === s.id ? "text-amber-500" : "text-slate-300")} />
+              <Star
+                className={cn(
+                  "w-4 h-4 flex-shrink-0",
+                  skill === s.id ? "text-amber-500" : "text-slate-300",
+                )}
+              />
               <div>
-                <p className={cn("text-sm font-semibold", skill === s.id ? "text-amber-800" : "text-slate-800")}>
+                <p
+                  className={cn(
+                    "text-sm font-semibold",
+                    skill === s.id ? "text-amber-800" : "text-slate-800",
+                  )}
+                >
                   {s.label}
                 </p>
                 <p className="text-xs text-slate-500">{s.desc}</p>
@@ -414,7 +465,7 @@ function Onboarding() {
         </label>
         <input
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           placeholder="Your name"
           className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
         />
@@ -427,7 +478,7 @@ function Onboarding() {
         </label>
         <textarea
           value={bio}
-          onChange={e => setBio(e.target.value)}
+          onChange={(e) => setBio(e.target.value)}
           placeholder="Tell the community what you're working on or excited about…"
           rows={3}
           className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -440,22 +491,29 @@ function Onboarding() {
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Your profile</p>
         <div className="flex flex-wrap gap-2">
           {role && (
-            <span className={cn(
-              "text-xs font-medium px-2.5 py-1 rounded-full",
-              role === "creator" ? "bg-blue-100 text-blue-700" : "bg-emerald-100 text-emerald-700",
-            )}>
+            <span
+              className={cn(
+                "text-xs font-medium px-2.5 py-1 rounded-full",
+                role === "creator"
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-emerald-100 text-emerald-700",
+              )}
+            >
               {role === "creator" ? "🚀 Creator" : "🎓 Learner"}
             </span>
           )}
           {skill && (
             <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
-              {SKILLS.find(s => s.id === skill)?.label}
+              {SKILLS.find((s) => s.id === skill)?.label}
             </span>
           )}
-          {interests.slice(0, 3).map(id => {
-            const item = INTERESTS.find(i => i.id === id);
+          {interests.slice(0, 3).map((id) => {
+            const item = INTERESTS.find((i) => i.id === id);
             return item ? (
-              <span key={id} className="text-xs font-medium px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">
+              <span
+                key={id}
+                className="text-xs font-medium px-2.5 py-1 rounded-full bg-violet-100 text-violet-700"
+              >
                 {item.label}
               </span>
             ) : null;
@@ -473,16 +531,15 @@ function Onboarding() {
   const STEPS = [Step0, Step1, Step2, Step3, Step4];
 
   const canNext = [
-    true,                        // step 0: always can continue (name optional)
-    role !== null,               // step 1: must pick a role
-    interests.length > 0,        // step 2: at least one interest
+    true, // step 0: always can continue (name optional)
+    role !== null, // step 1: must pick a role
+    interests.length > 0, // step 2: at least one interest
     goals.length > 0 || skill !== null, // step 3: at least one goal or skill
-    true,                        // step 4: always can finish
+    true, // step 4: always can finish
   ];
 
   return (
     <div className="min-h-dvh bg-gradient-to-br from-slate-50 via-blue-50/30 to-violet-50/20 flex flex-col">
-
       {/* Logo bar */}
       <div className="flex items-center justify-between px-6 py-4">
         <Logo />

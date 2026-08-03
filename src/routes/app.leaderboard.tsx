@@ -1,7 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Trophy, Flame, Users2, GraduationCap, MessageSquare, Bug, ChevronDown,
-  Star, Zap, TrendingUp, Crown, Medal, Award
+  Trophy,
+  Flame,
+  Users2,
+  GraduationCap,
+  MessageSquare,
+  Bug,
+  ChevronDown,
+  Star,
+  Zap,
+  TrendingUp,
+  Crown,
+  Medal,
+  Award,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,22 +46,33 @@ export const Route = createFileRoute("/app/leaderboard")({
 });
 
 type Period = "week" | "month" | "all";
-const PERIOD_LABEL: Record<Period, string> = { week: "This Week", month: "This Month", all: "All Time" };
+const PERIOD_LABEL: Record<Period, string> = {
+  week: "This Week",
+  month: "This Month",
+  all: "All Time",
+};
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
-  flame: Flame, graduation: GraduationCap, message: MessageSquare, bug: Bug, star: Star, zap: Zap,
+  flame: Flame,
+  graduation: GraduationCap,
+  message: MessageSquare,
+  bug: Bug,
+  star: Star,
+  zap: Zap,
 };
 
 const BADGE_COLORS: Record<string, string> = {
   emerald: "bg-emerald-100 text-emerald-600 border-emerald-200",
-  sky:     "bg-sky-100 text-sky-600 border-sky-200",
-  amber:   "bg-amber-100 text-amber-600 border-amber-200",
-  violet:  "bg-violet-100 text-violet-600 border-violet-200",
-  slate:   "bg-slate-100 text-slate-500 border-slate-200",
+  sky: "bg-sky-100 text-sky-600 border-sky-200",
+  amber: "bg-amber-100 text-amber-600 border-amber-200",
+  violet: "bg-violet-100 text-violet-600 border-violet-200",
+  slate: "bg-slate-100 text-slate-500 border-slate-200",
 };
 
 function PodiumCard({
-  member, rank, delay,
+  member,
+  rank,
+  delay,
 }: {
   member: LeaderMember;
   rank: 1 | 2 | 3;
@@ -58,9 +80,27 @@ function PodiumCard({
 }) {
   const tier = xpToTier(member.xp);
   const config = {
-    1: { height: "h-24", icon: Crown,  bg: "bg-amber-50 border-amber-200",  iconColor: "text-amber-500", label: "Gold" },
-    2: { height: "h-16", icon: Medal,  bg: "bg-slate-50 border-slate-200",  iconColor: "text-slate-500", label: "Silver" },
-    3: { height: "h-12", icon: Award,  bg: "bg-orange-50 border-orange-200", iconColor: "text-orange-500", label: "Bronze" },
+    1: {
+      height: "h-24",
+      icon: Crown,
+      bg: "bg-amber-50 border-amber-200",
+      iconColor: "text-amber-500",
+      label: "Gold",
+    },
+    2: {
+      height: "h-16",
+      icon: Medal,
+      bg: "bg-slate-50 border-slate-200",
+      iconColor: "text-slate-500",
+      label: "Silver",
+    },
+    3: {
+      height: "h-12",
+      icon: Award,
+      bg: "bg-orange-50 border-orange-200",
+      iconColor: "text-orange-500",
+      label: "Bronze",
+    },
   }[rank];
   const Icon = config.icon;
   return (
@@ -72,15 +112,25 @@ function PodiumCard({
     >
       <div className="relative">
         <Avatar initials={member.avatar} size={44} tone={rank === 1 ? "primary" : "slate"} />
-        <span className={`absolute -top-1 -right-1 grid h-5 w-5 place-items-center rounded-full border-2 border-white text-[9px] font-bold ${rank === 1 ? "bg-amber-400 text-white" : rank === 2 ? "bg-slate-400 text-white" : "bg-orange-400 text-white"}`}>
+        <span
+          className={`absolute -top-1 -right-1 grid h-5 w-5 place-items-center rounded-full border-2 border-white text-[9px] font-bold ${rank === 1 ? "bg-amber-400 text-white" : rank === 2 ? "bg-slate-400 text-white" : "bg-orange-400 text-white"}`}
+        >
           {rank}
         </span>
       </div>
       <div className="text-center">
-        <div className="max-w-[80px] truncate text-xs font-semibold text-foreground">{member.name.split(" ")[0]}</div>
-        <span className={`mt-0.5 inline-block rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${tier.color}`}>{tier.name}</span>
+        <div className="max-w-[80px] truncate text-xs font-semibold text-foreground">
+          {member.name.split(" ")[0]}
+        </div>
+        <span
+          className={`mt-0.5 inline-block rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${tier.color}`}
+        >
+          {tier.name}
+        </span>
       </div>
-      <div className={`w-16 rounded-t-lg border-t border-x ${config.bg} ${config.height} flex items-start justify-center pt-1.5`}>
+      <div
+        className={`w-16 rounded-t-lg border-t border-x ${config.bg} ${config.height} flex items-start justify-center pt-1.5`}
+      >
         <Icon size={14} className={config.iconColor} />
       </div>
       <div className="text-xs font-bold text-foreground">{member.xp.toLocaleString()} XP</div>
@@ -100,7 +150,7 @@ function LeaderboardPage() {
     avatar: store.session?.avatar || "YU",
     xp: userXp,
     streak: 0,
-    postsCount: store.posts.filter(p => p.author === store.session?.name).length,
+    postsCount: store.posts.filter((p) => p.author === store.session?.name).length,
     coursesCompleted: 0,
     joinDate: "Today",
     weekXp: 0,
@@ -114,7 +164,9 @@ function LeaderboardPage() {
 
   const ranked = useMemo(() => {
     const key: Record<Period, keyof LeaderMember> = {
-      week: "weekXp", month: "monthXp", all: "xp",
+      week: "weekXp",
+      month: "monthXp",
+      all: "xp",
     };
     return [...members].sort((a, b) => (b[key[period]] as number) - (a[key[period]] as number));
   }, [members, period]);
@@ -150,7 +202,9 @@ function LeaderboardPage() {
           </p>
         </div>
         <div className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
-          <span className={`inline-block rounded-full px-1.5 py-0.5 text-[10px] font-bold ${youTier.color}`}>
+          <span
+            className={`inline-block rounded-full px-1.5 py-0.5 text-[10px] font-bold ${youTier.color}`}
+          >
             {youTier.name}
           </span>
           <span className="text-muted-foreground">Your Tier</span>
@@ -187,12 +241,21 @@ function LeaderboardPage() {
           <div className="min-w-[140px] flex-1">
             <div className="mb-1 flex items-center justify-between text-[11px]">
               <span className="font-semibold text-foreground">{youTier.name}</span>
-              {nextTier.nextAt && <span className="text-muted-foreground">{nextTier.nextAt?.toLocaleString()} XP to next</span>}
+              {nextTier.nextAt && (
+                <span className="text-muted-foreground">
+                  {nextTier.nextAt?.toLocaleString()} XP to next
+                </span>
+              )}
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-white">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${pct}%` }}
+              />
             </div>
-            <div className="mt-1 text-[10px] text-muted-foreground">{userXp} / {nextAt} XP ({pct}%)</div>
+            <div className="mt-1 text-[10px] text-muted-foreground">
+              {userXp} / {nextAt} XP ({pct}%)
+            </div>
           </div>
         </div>
       </motion.div>
@@ -226,7 +289,10 @@ function LeaderboardPage() {
                       {(["week", "month", "all"] as Period[]).map((p) => (
                         <button
                           key={p}
-                          onClick={() => { setPeriod(p); setPeriodMenu(false); }}
+                          onClick={() => {
+                            setPeriod(p);
+                            setPeriodMenu(false);
+                          }}
                           className={`block w-full rounded-md px-2.5 py-1.5 text-left text-xs font-medium hover:bg-accent ${p === period ? "text-primary font-semibold" : "text-foreground"}`}
                         >
                           {PERIOD_LABEL[p]}
@@ -267,7 +333,8 @@ function LeaderboardPage() {
                 {rest.length === 0 && (
                   <tr>
                     <td colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
-                      No other members yet. Start posting and completing lessons to earn XP and climb the ranks!
+                      No other members yet. Start posting and completing lessons to earn XP and
+                      climb the ranks!
                     </td>
                   </tr>
                 )}
@@ -282,25 +349,36 @@ function LeaderboardPage() {
                       transition={{ delay: 0.04 * i }}
                       className="hover:bg-accent/50 transition-colors"
                     >
-                      <td className="py-2.5 pl-4 pr-2 font-semibold text-muted-foreground">#{rank}</td>
+                      <td className="py-2.5 pl-4 pr-2 font-semibold text-muted-foreground">
+                        #{rank}
+                      </td>
                       <td className="py-2.5 pr-3">
                         <div className="flex items-center gap-2.5">
                           <Avatar initials={m.avatar} size={28} />
                           <div>
-                            <div className="font-medium text-foreground text-xs sm:text-sm">{m.name}</div>
+                            <div className="font-medium text-foreground text-xs sm:text-sm">
+                              {m.name}
+                            </div>
                             <div className="text-[10px] text-muted-foreground">{m.joinDate}</div>
                           </div>
                         </div>
                       </td>
                       <td className="py-2.5 hidden sm:table-cell">
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${tier.color}`}>{tier.name}</span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${tier.color}`}
+                        >
+                          {tier.name}
+                        </span>
                       </td>
                       <td className="py-2.5 hidden md:table-cell">
                         <span className="inline-flex items-center gap-1 font-semibold text-orange-500 text-xs">
-                          <Flame size={11} />{m.streak}d
+                          <Flame size={11} />
+                          {m.streak}d
                         </span>
                       </td>
-                      <td className="py-2.5 hidden md:table-cell text-xs text-muted-foreground">{m.postsCount}</td>
+                      <td className="py-2.5 hidden md:table-cell text-xs text-muted-foreground">
+                        {m.postsCount}
+                      </td>
                       <td className="py-2.5 pr-4 text-right font-bold text-foreground text-sm">
                         {(m[xpKey] as number).toLocaleString()}
                       </td>
@@ -309,23 +387,36 @@ function LeaderboardPage() {
                 })}
                 {/* You at bottom */}
                 <tr className="bg-primary/5 border-t-2 border-primary/20">
-                  <td className="py-2.5 pl-4 pr-2 font-semibold text-muted-foreground">#{ranked.length + 1}</td>
+                  <td className="py-2.5 pl-4 pr-2 font-semibold text-muted-foreground">
+                    #{ranked.length + 1}
+                  </td>
                   <td className="py-2.5 pr-3">
                     <div className="flex items-center gap-2.5">
                       <Avatar initials={you.avatar} size={28} tone="primary" />
                       <div>
-                        <div className="font-medium text-foreground text-xs sm:text-sm">{you.name}</div>
+                        <div className="font-medium text-foreground text-xs sm:text-sm">
+                          {you.name}
+                        </div>
                         <div className="text-[10px] text-primary font-semibold">You</div>
                       </div>
                     </div>
                   </td>
                   <td className="py-2.5 hidden sm:table-cell">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${youTier.color}`}>{youTier.name}</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${youTier.color}`}
+                    >
+                      {youTier.name}
+                    </span>
                   </td>
                   <td className="py-2.5 hidden md:table-cell text-xs font-semibold text-orange-500">
-                    <span className="inline-flex items-center gap-1"><Flame size={11} />{you.streak}d</span>
+                    <span className="inline-flex items-center gap-1">
+                      <Flame size={11} />
+                      {you.streak}d
+                    </span>
                   </td>
-                  <td className="py-2.5 hidden md:table-cell text-xs text-muted-foreground">{you.postsCount}</td>
+                  <td className="py-2.5 hidden md:table-cell text-xs text-muted-foreground">
+                    {you.postsCount}
+                  </td>
                   <td className="py-2.5 pr-4 text-right font-bold text-foreground">{you.xp}</td>
                 </tr>
               </tbody>
@@ -342,19 +433,28 @@ function LeaderboardPage() {
             </h2>
             <div className="mt-3 space-y-2">
               {[
-                { name: "Bronze",        at: 0,    color: "bg-orange-400" },
-                { name: "Silver",        at: 500,  color: "bg-slate-400" },
-                { name: "Gold I",        at: 900,  color: "bg-amber-400" },
-                { name: "Gold II",       at: 1400, color: "bg-amber-500" },
-                { name: "Platinum",      at: 2000, color: "bg-slate-600" },
-                { name: "Diamond I",     at: 2800, color: "bg-sky-500" },
+                { name: "Bronze", at: 0, color: "bg-orange-400" },
+                { name: "Silver", at: 500, color: "bg-slate-400" },
+                { name: "Gold I", at: 900, color: "bg-amber-400" },
+                { name: "Gold II", at: 1400, color: "bg-amber-500" },
+                { name: "Platinum", at: 2000, color: "bg-slate-600" },
+                { name: "Diamond I", at: 2800, color: "bg-sky-500" },
                 { name: "Diamond Elite", at: 4000, color: "bg-sky-600" },
               ].map((t) => (
-                <div key={t.name} className={`flex items-center gap-2.5 rounded-lg border p-2.5 ${userXp >= t.at ? "border-primary/20 bg-primary/5" : "border-border bg-background"}`}>
-                  <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${userXp >= t.at ? t.color : "bg-slate-200"}`} />
+                <div
+                  key={t.name}
+                  className={`flex items-center gap-2.5 rounded-lg border p-2.5 ${userXp >= t.at ? "border-primary/20 bg-primary/5" : "border-border bg-background"}`}
+                >
+                  <span
+                    className={`h-2.5 w-2.5 shrink-0 rounded-full ${userXp >= t.at ? t.color : "bg-slate-200"}`}
+                  />
                   <span className="flex-1 text-xs font-semibold text-foreground">{t.name}</span>
-                  <span className="text-[10px] text-muted-foreground">{t.at.toLocaleString()} XP</span>
-                  {userXp >= t.at && <span className="text-[10px] font-semibold text-primary">✓</span>}
+                  <span className="text-[10px] text-muted-foreground">
+                    {t.at.toLocaleString()} XP
+                  </span>
+                  {userXp >= t.at && (
+                    <span className="text-[10px] font-semibold text-primary">✓</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -368,7 +468,9 @@ function LeaderboardPage() {
             {store.communities.length === 0 ? (
               <div className="mt-3 py-4 text-center text-xs text-muted-foreground">
                 No communities yet. <br />
-                <a href="/create-community" className="text-primary hover:underline font-semibold">Create the first one →</a>
+                <a href="/create-community" className="text-primary hover:underline font-semibold">
+                  Create the first one →
+                </a>
               </div>
             ) : (
               <div className="mt-3 space-y-2">
@@ -379,16 +481,30 @@ function LeaderboardPage() {
                     const maxMembers = store.communities[0]?.members || 1;
                     const pct = Math.round((c.members / maxMembers) * 100);
                     return (
-                      <div key={c.id} className="flex items-center gap-2.5 rounded-lg border border-border bg-background p-2.5">
-                        <span className="w-5 text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                      <div
+                        key={c.id}
+                        className="flex items-center gap-2.5 rounded-lg border border-border bg-background p-2.5"
+                      >
+                        <span className="w-5 text-xs font-bold text-muted-foreground">
+                          #{i + 1}
+                        </span>
                         <div className="min-w-0 flex-1">
-                          <div className="truncate text-xs font-semibold text-foreground">{c.title}</div>
-                          <div className="text-[10px] text-muted-foreground">{c.members.toLocaleString()} members</div>
+                          <div className="truncate text-xs font-semibold text-foreground">
+                            {c.title}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {c.members.toLocaleString()} members
+                          </div>
                         </div>
                         <div className="w-16 shrink-0">
-                          <div className="mb-0.5 text-right text-[10px] text-muted-foreground">{pct}%</div>
+                          <div className="mb-0.5 text-right text-[10px] text-muted-foreground">
+                            {pct}%
+                          </div>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                            <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                            <div
+                              className="h-full rounded-full bg-primary"
+                              style={{ width: `${pct}%` }}
+                            />
                           </div>
                         </div>
                       </div>
@@ -403,7 +519,9 @@ function LeaderboardPage() {
       {/* Achievements */}
       <div className="mt-5 rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
         <h2 className="text-sm font-semibold text-foreground">Achievements</h2>
-        <p className="mt-0.5 text-xs text-muted-foreground">Complete actions to earn badges and unlock exclusive perks.</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Complete actions to earn badges and unlock exclusive perks.
+        </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {BADGE_CATALOG.map((b, i) => {
             const Icon = BADGE_ICONS[b.icon] ?? Star;
@@ -419,7 +537,9 @@ function LeaderboardPage() {
                 transition={{ delay: i * 0.06 }}
                 className={`rounded-xl border p-4 text-center transition-all ${earned ? "border-emerald-200 bg-emerald-50/50" : "border-border bg-card"}`}
               >
-                <span className={`mx-auto grid h-12 w-12 place-items-center rounded-full border ${colorClass}`}>
+                <span
+                  className={`mx-auto grid h-12 w-12 place-items-center rounded-full border ${colorClass}`}
+                >
                   <Icon size={20} />
                 </span>
                 <div className="mt-2.5 text-sm font-semibold text-foreground">{b.name}</div>
@@ -429,7 +549,10 @@ function LeaderboardPage() {
                 ) : (
                   <>
                     <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pctDone}%` }} />
+                      <div
+                        className="h-full rounded-full bg-primary transition-all"
+                        style={{ width: `${pctDone}%` }}
+                      />
                     </div>
                     <div className="mt-1 text-[10px] font-semibold text-muted-foreground">
                       {progress} / {b.target}
@@ -447,14 +570,17 @@ function LeaderboardPage() {
         <h2 className="text-sm font-semibold text-foreground">How to Earn XP</h2>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
           {[
-            { label: "Post in community",  xp: "+15 XP", icon: MessageSquare },
-            { label: "Complete a lesson",  xp: "+25 XP", icon: GraduationCap },
+            { label: "Post in community", xp: "+15 XP", icon: MessageSquare },
+            { label: "Complete a lesson", xp: "+25 XP", icon: GraduationCap },
             { label: "Daily login streak", xp: "+10 XP", icon: Flame },
-            { label: "Receive an upvote",  xp: "+5 XP",  icon: Star },
+            { label: "Receive an upvote", xp: "+5 XP", icon: Star },
           ].map((e) => {
             const Icon = e.icon;
             return (
-              <div key={e.label} className="flex items-center gap-2.5 rounded-lg border border-border bg-background p-3">
+              <div
+                key={e.label}
+                className="flex items-center gap-2.5 rounded-lg border border-border bg-background p-3"
+              >
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
                   <Icon size={14} />
                 </span>
@@ -476,5 +602,3 @@ function LeaderboardPage() {
     </div>
   );
 }
-
-

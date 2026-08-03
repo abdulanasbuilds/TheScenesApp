@@ -36,10 +36,10 @@ type R2Config = {
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 function getR2Config(): R2Config | null {
-  const accountId        = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const accessKeyId      = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-  const secretAccessKey  = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-  const bucketName       = process.env.CLOUDFLARE_R2_BUCKET_NAME;
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+  const bucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME;
 
   if (!accountId || !accessKeyId || !secretAccessKey || !bucketName) return null;
   return { accountId, accessKeyId, secretAccessKey, bucketName };
@@ -50,10 +50,10 @@ function getR2Config(): R2Config | null {
 export async function getStorageUsage(creatorEmail: string): Promise<StorageUsage> {
   const { data } = await adminDb.selectOne<{ used_bytes: number; quota_bytes: number }>(
     "storage_usage",
-    { "creator_email": `eq.${creatorEmail}` }
+    { creator_email: `eq.${creatorEmail}` },
   );
 
-  const usedBytes  = data?.used_bytes  ?? 0;
+  const usedBytes = data?.used_bytes ?? 0;
   const quotaBytes = data?.quota_bytes ?? 0;
 
   return {
@@ -68,12 +68,15 @@ export async function getStorageUsage(creatorEmail: string): Promise<StorageUsag
 /** Check if a creator is allowed to upload a file of the given size. */
 export async function checkUploadAllowed(
   creatorEmail: string,
-  fileSizeBytes: number
+  fileSizeBytes: number,
 ): Promise<{ allowed: boolean; reason?: string }> {
   const usage = await getStorageUsage(creatorEmail);
 
   if (usage.quotaBytes === 0) {
-    return { allowed: false, reason: "Your plan does not include hosted storage. Upgrade to Pro to upload files." };
+    return {
+      allowed: false,
+      reason: "Your plan does not include hosted storage. Upgrade to Pro to upload files.",
+    };
   }
 
   if (usage.usedBytes + fileSizeBytes > usage.quotaBytes) {
@@ -109,29 +112,36 @@ export async function setStorageQuota(creatorEmail: string, quotaBytes: number):
     "storage_usage",
     {
       creator_email: creatorEmail,
-      quota_bytes:   quotaBytes,
-      updated_at:    new Date().toISOString(),
+      quota_bytes: quotaBytes,
+      updated_at: new Date().toISOString(),
     },
-    "creator_email"
+    "creator_email",
   );
 }
 
 // ─── AWS SigV4 helper (Cloudflare Worker / Web Crypto compatible) ─────────────
 
 async function hmacSha256(key: CryptoKey | BufferSource, data: string): Promise<ArrayBuffer> {
-  const cryptoKey = key instanceof CryptoKey
-    ? key
-    : await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const cryptoKey =
+    key instanceof CryptoKey
+      ? key
+      : await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, [
+          "sign",
+        ]);
   return crypto.subtle.sign("HMAC", cryptoKey, new TextEncoder().encode(data));
 }
 
 async function sha256Hex(data: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function toHex(buf: ArrayBuffer): string {
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /**
@@ -139,7 +149,7 @@ function toHex(buf: ArrayBuffer): string {
  * Works in Cloudflare Workers (Web Crypto) and Node.js.
  */
 export async function generatePresignedUrl(opts: {
-  key: string;           // object key in R2, e.g. "creators/foo@bar.com/file.pdf"
+  key: string; // object key in R2, e.g. "creators/foo@bar.com/file.pdf"
   method: "GET" | "PUT";
   expiresInSeconds?: number;
   contentType?: string;
@@ -151,12 +161,12 @@ export async function generatePresignedUrl(opts: {
   }
 
   const expiresIn = opts.expiresInSeconds ?? 3600;
-  const now       = new Date();
-  const region    = "auto";
-  const service   = "s3";
-  const host      = `${cfg.accountId}.r2.cloudflarestorage.com`;
-  const dateStr   = now.toISOString().replace(/[:-]/g, "").slice(0, 8);
-  const timeStr   = now.toISOString().replace(/[:-]/g, "").slice(0, 15) + "Z";
+  const now = new Date();
+  const region = "auto";
+  const service = "s3";
+  const host = `${cfg.accountId}.r2.cloudflarestorage.com`;
+  const dateStr = now.toISOString().replace(/[:-]/g, "").slice(0, 8);
+  const timeStr = now.toISOString().replace(/[:-]/g, "").slice(0, 15) + "Z";
 
   const credScope = `${dateStr}/${region}/${service}/aws4_request`;
   const credential = `${cfg.accessKeyId}/${credScope}`;
@@ -189,13 +199,17 @@ export async function generatePresignedUrl(opts: {
 
   // Derive signing key
   const enc = new TextEncoder();
-  const kDate    = await hmacSha256(enc.encode(`AWS4${cfg.secretAccessKey}`), dateStr);
-  const kRegion  = await hmacSha256(kDate, region);
+  const kDate = await hmacSha256(enc.encode(`AWS4${cfg.secretAccessKey}`), dateStr);
+  const kRegion = await hmacSha256(kDate, region);
   const kService = await hmacSha256(kRegion, service);
   const kSigning = await hmacSha256(kService, "aws4_request");
 
   const sigKey = await crypto.subtle.importKey(
-    "raw", kSigning, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+    "raw",
+    kSigning,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
   );
   const signature = toHex(await crypto.subtle.sign("HMAC", sigKey, enc.encode(stringToSign)));
 
