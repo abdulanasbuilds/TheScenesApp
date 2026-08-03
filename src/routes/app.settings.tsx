@@ -400,7 +400,7 @@ function MessagesTab() {
   const [selectedCommunityId, setSelectedCommunityId] = useState<number | "">("");
 
   useEffect(() => {
-    if (selectedCommunityId && selectedCommunityId !== "") {
+    if (selectedCommunityId !== "") {
       const comm = myCommunities.find((c) => c.id === selectedCommunityId);
       setWelcomeMessage(comm?.welcomeMessage || "");
     } else {
@@ -409,7 +409,7 @@ function MessagesTab() {
   }, [selectedCommunityId, myCommunities]);
 
   const handleSaveWelcome = () => {
-    if (!selectedCommunityId || selectedCommunityId === "") {
+    if (selectedCommunityId === "") {
       toast.error("Please select a community first.");
       return;
     }
