@@ -17,37 +17,44 @@ CREATE TABLE IF NOT EXISTS feedback (
 CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at DESC);
 
 -- ─── payment_transactions ─────────────────────────────────────────────────────
--- Server-verified Paystack charges, stored idempotently by reference.
+-- Server-verified Paystack charges, stored idempotently by paystack_reference.
+-- Column names match what monetization.functions.ts reads and writes.
 CREATE TABLE IF NOT EXISTS payment_transactions (
-  id               TEXT        PRIMARY KEY,          -- e.g. "txn_<timestamp>_<random>"
-  reference        TEXT        UNIQUE NOT NULL,       -- Paystack reference — idempotency key
-  payer_email      TEXT        NOT NULL,
-  creator_email    TEXT        NOT NULL,
-  resource_type    TEXT        NOT NULL CHECK (resource_type IN ('community','course','subscription')),
-  resource_id      BIGINT,
-  amount_cents     INTEGER     NOT NULL CHECK (amount_cents > 0),
-  currency         TEXT        NOT NULL DEFAULT 'NGN',
-  platform_fee_bps INTEGER     NOT NULL DEFAULT 0,
-  status           TEXT        NOT NULL DEFAULT 'success' CHECK (status IN ('success','failed','refunded')),
-  paystack_data    JSONB,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                  TEXT        PRIMARY KEY,          -- e.g. "txn_<timestamp>_<random>"
+  paystack_reference  TEXT        UNIQUE NOT NULL,      -- Paystack reference — idempotency key
+  payment_type        TEXT        NOT NULL CHECK (payment_type IN ('community_access','course_access','pro_subscription')),
+  from_email          TEXT        NOT NULL,             -- payer
+  to_email            TEXT,                             -- creator (NULL for pro subscription)
+  resource_id         BIGINT,
+  resource_type       TEXT        CHECK (resource_type IN ('community','course','subscription')),
+  gross_amount_cents  INTEGER     NOT NULL CHECK (gross_amount_cents > 0),
+  platform_fee_cents  INTEGER     NOT NULL DEFAULT 0,
+  net_amount_cents    INTEGER     NOT NULL DEFAULT 0,
+  currency            TEXT        NOT NULL DEFAULT 'NGN',
+  status              TEXT        NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','completed','failed')),
+  provider            TEXT        NOT NULL DEFAULT 'paystack',
+  metadata            JSONB       NOT NULL DEFAULT '{}',
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_pt_creator    ON payment_transactions(creator_email, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_pt_payer      ON payment_transactions(payer_email);
-CREATE INDEX IF NOT EXISTS idx_pt_reference  ON payment_transactions(reference);
+CREATE INDEX IF NOT EXISTS idx_pt_from_email   ON payment_transactions(from_email, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pt_to_email     ON payment_transactions(to_email);
+CREATE INDEX IF NOT EXISTS idx_pt_reference    ON payment_transactions(paystack_reference);
+CREATE INDEX IF NOT EXISTS idx_pt_status       ON payment_transactions(status);
 
 -- ─── creator_subscriptions ────────────────────────────────────────────────────
 -- Tracks which creators are on the Pro plan.
+-- Uses plan_id column to match monetization.functions.ts reads/writes.
 CREATE TABLE IF NOT EXISTS creator_subscriptions (
-  creator_email    TEXT        PRIMARY KEY REFERENCES profiles(email) ON DELETE CASCADE,
-  plan             TEXT        NOT NULL DEFAULT 'free' CHECK (plan IN ('free','pro')),
-  status           TEXT        NOT NULL DEFAULT 'active' CHECK (status IN ('active','past_due','cancelled','trialing')),
-  paystack_code    TEXT,                               -- Paystack subscription code
+  creator_email         TEXT        PRIMARY KEY REFERENCES profiles(email) ON DELETE CASCADE,
+  plan_id               TEXT        NOT NULL DEFAULT 'free' CHECK (plan_id IN ('free','pro')),
+  status                TEXT        NOT NULL DEFAULT 'active' CHECK (status IN ('active','past_due','cancelled','trialing')),
+  paystack_code         TEXT,                               -- Paystack subscription code
   current_period_start  TIMESTAMPTZ,
   current_period_end    TIMESTAMPTZ,
-  cancel_at_period_end  BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  cancel_at_period_end  BOOLEAN     NOT NULL DEFAULT FALSE,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ─── webhook_events ───────────────────────────────────────────────────────────
@@ -134,8 +141,8 @@ SELECT
   creator_email,
   currency,
   SUM(CASE WHEN entry_type = 'revenue'      THEN amount_cents ELSE 0 END) AS gross_earned_cents,
-  SUM(CASE WHEN entry_type = 'platform_fee' THEN amount_cents ELSE 0 END) AS total_fees_cents,    -- negative values
-  SUM(CASE WHEN entry_type = 'withdrawal'   THEN amount_cents ELSE 0 END) AS total_withdrawn_cents, -- negative
+  SUM(CASE WHEN entry_type = 'platform_fee' THEN amount_cents ELSE 0 END) AS total_fees_cents,
+  SUM(CASE WHEN entry_type = 'withdrawal'   THEN amount_cents ELSE 0 END) AS total_withdrawn_cents,
   SUM(amount_cents)                                                         AS balance_cents,
   MAX(created_at)                                                           AS last_transaction_at
 FROM earnings_ledger
@@ -162,7 +169,7 @@ CREATE TABLE IF NOT EXISTS community_access (
   expires_at     TIMESTAMPTZ,
   UNIQUE (community_id, user_email)
 );
-CREATE INDEX IF NOT EXISTS idx_ca_user ON community_access(user_email);
+CREATE INDEX IF NOT EXISTS idx_ca_user      ON community_access(user_email);
 CREATE INDEX IF NOT EXISTS idx_ca_community ON community_access(community_id);
 
 -- ─── course_access ────────────────────────────────────────────────────────────
@@ -186,7 +193,7 @@ CREATE INDEX IF NOT EXISTS idx_coa_course ON course_access(course_id);
 -- SCHEMA ADDITIONS — safe to run on an existing database
 -- ══════════════════════════════════════════════════════════════════════════════
 
--- notifications: dedup_key (prevents duplicate spam from autodm)
+-- notifications: dedup_key prevents duplicate spam from autodm
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS dedup_key TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_dedup ON notifications(user_email, dedup_key)
   WHERE dedup_key IS NOT NULL;
@@ -195,6 +202,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_dedup ON notifications(user_
 ALTER TABLE communities ADD COLUMN IF NOT EXISTS icon_url             TEXT;
 ALTER TABLE communities ADD COLUMN IF NOT EXISTS discovery_keywords   TEXT[]  NOT NULL DEFAULT '{}';
 ALTER TABLE communities ADD COLUMN IF NOT EXISTS screening_questions  JSONB;
+ALTER TABLE communities ADD COLUMN IF NOT EXISTS welcome_message      TEXT;
 
 -- community_events: richer event metadata
 ALTER TABLE community_events ADD COLUMN IF NOT EXISTS description   TEXT;
@@ -202,6 +210,11 @@ ALTER TABLE community_events ADD COLUMN IF NOT EXISTS host_platform TEXT;
 ALTER TABLE community_events ADD COLUMN IF NOT EXISTS meeting_url   TEXT;
 ALTER TABLE community_events ADD COLUMN IF NOT EXISTS visibility    TEXT NOT NULL DEFAULT 'members'
   CHECK (visibility IN ('members','public'));
+
+-- profiles: interests for personalisation + onboarding completion flag
+-- (these may already exist from schema.sql but are idempotent)
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS interests            TEXT[]  NOT NULL DEFAULT '{}';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN NOT NULL DEFAULT false;
 
 
 -- ══════════════════════════════════════════════════════════════════════════════
@@ -223,15 +236,12 @@ ALTER TABLE course_access         ENABLE ROW LEVEL SECURITY;
 CREATE POLICY IF NOT EXISTS "feedback_insert"  ON feedback FOR INSERT WITH CHECK (true);
 
 -- payment_transactions: participants can read their own; service-role inserts
-CREATE POLICY IF NOT EXISTS "pt_read_payer"   ON payment_transactions FOR SELECT USING (payer_email = auth.email());
-CREATE POLICY IF NOT EXISTS "pt_read_creator" ON payment_transactions FOR SELECT USING (creator_email = auth.email());
-CREATE POLICY IF NOT EXISTS "pt_insert"       ON payment_transactions FOR INSERT WITH CHECK (true);  -- service-role only
+CREATE POLICY IF NOT EXISTS "pt_read_payer"   ON payment_transactions FOR SELECT USING (from_email = auth.email());
+CREATE POLICY IF NOT EXISTS "pt_read_creator" ON payment_transactions FOR SELECT USING (to_email = auth.email());
+CREATE POLICY IF NOT EXISTS "pt_insert"       ON payment_transactions FOR INSERT WITH CHECK (true);
 
 -- creator_subscriptions: own row only
 CREATE POLICY IF NOT EXISTS "cs_own" ON creator_subscriptions FOR ALL USING (creator_email = auth.email());
-
--- webhook_events: service-role only — no client access
--- (no SELECT/INSERT policy → only the service role key can touch this table)
 
 -- payout_accounts: own row only
 CREATE POLICY IF NOT EXISTS "pa_own" ON payout_accounts FOR ALL USING (creator_email = auth.email());
@@ -240,7 +250,7 @@ CREATE POLICY IF NOT EXISTS "pa_own" ON payout_accounts FOR ALL USING (creator_e
 CREATE POLICY IF NOT EXISTS "wr_own" ON withdrawal_requests FOR ALL USING (creator_email = auth.email());
 
 -- earnings_ledger: creator reads own; service-role inserts
-CREATE POLICY IF NOT EXISTS "el_read" ON earnings_ledger FOR SELECT USING (creator_email = auth.email());
+CREATE POLICY IF NOT EXISTS "el_read"   ON earnings_ledger FOR SELECT USING (creator_email = auth.email());
 CREATE POLICY IF NOT EXISTS "el_insert" ON earnings_ledger FOR INSERT WITH CHECK (true);
 
 -- storage_usage: own row
@@ -259,7 +269,6 @@ CREATE POLICY IF NOT EXISTS "coa_insert" ON course_access FOR INSERT WITH CHECK 
 -- HELPER FUNCTIONS — used by earnings.ts via adminDb.rpc()
 -- ══════════════════════════════════════════════════════════════════════════════
 
--- Atomically add bytes to a creator's storage usage (or create the row).
 CREATE OR REPLACE FUNCTION increment_storage_usage(p_creator_email TEXT, p_bytes BIGINT)
 RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
@@ -280,3 +289,7 @@ BEGIN
   WHERE creator_email = p_creator_email;
 END;
 $$;
+
+-- ─── Notification preferences column (idempotent) ────────────────────────────
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS notification_prefs JSONB DEFAULT '{"posts":true,"dms":true,"comments":true,"sales":true}'::jsonb;

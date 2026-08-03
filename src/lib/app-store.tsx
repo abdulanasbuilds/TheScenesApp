@@ -2,10 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { toast } from "sonner";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { sendWelcomeEmail, sendEnrollmentEmail, sendCommunityJoinEmail, sendPaymentReceiptEmail } from "@/lib/email.functions";
-import { recordPayment } from "@/lib/payments.functions";
 import { onMemberJoin } from "@/lib/autodm.functions";
 import { initiatePaystackPayment, isPaystackConfigured, priceStringToAmount } from "@/lib/paystack";
-import { verifyPaystackPayment } from "@/lib/paystack.functions";
+import { initializePayment, verifyAndRecordPayment } from "@/lib/monetization.functions";
 
 // ─── Core Types ──────────────────────────────────────────────────────────────
 
@@ -296,6 +295,8 @@ type PersistedState = {
   // Onboarding
   onboardingCompleted: boolean;
   onboardingInterests: string[];
+  // Notification preferences (persisted to profiles.notification_prefs)
+  notificationPrefs: Record<string, boolean>;
 };
 
 function defaultState(): PersistedState {
@@ -317,6 +318,7 @@ function defaultState(): PersistedState {
     directMessages: [],
     onboardingCompleted: false,
     onboardingInterests: [],
+    notificationPrefs: { posts: true, dms: true, comments: true, sales: true },
   };
 }
 
@@ -561,6 +563,9 @@ type AppStoreValue = {
   onboardingCompleted: boolean;
   onboardingInterests: string[];
   completeOnboarding: (data: { role: "creator" | "learner"; interests: string[]; goals?: string[]; skillLevel?: string; name?: string; bio?: string }) => void;
+  // notification preferences (synced to Supabase profiles.notification_prefs)
+  notificationPrefs: Record<string, boolean>;
+  updateNotificationPrefs: (prefs: Record<string, boolean>) => void;
   // notifications
   markAllNotificationsRead: () => void;
   markNotificationRead: (id: number) => void;
@@ -584,14 +589,20 @@ type AppStoreValue = {
 
 const AppStoreContext = createContext<AppStoreValue | null>(null);
 
-async function fetchProfile(userId: string, fallbackEmail: string, meta: Record<string, unknown>): Promise<SessionUser | null> {
+type ProfileResult = SessionUser & { onboardingCompleted: boolean; interests: string[]; notificationPrefs: Record<string, boolean> };
+
+async function fetchProfile(userId: string, fallbackEmail: string, meta: Record<string, unknown>): Promise<ProfileResult | null> {
   if (!supabase) return null;
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  const defaultPrefs = { posts: true, dms: true, comments: true, sales: true };
   if (profile) {
     return {
       name: profile.name, email: profile.email,
       avatar: profile.avatar || profile.name.slice(0, 2).toUpperCase(),
       role: profile.role, photoUrl: profile.photo_url || undefined, bio: profile.bio || undefined,
+      onboardingCompleted: profile.onboarding_completed ?? false,
+      interests: profile.interests ?? [],
+      notificationPrefs: (profile.notification_prefs as Record<string, boolean>) ?? defaultPrefs,
     };
   }
   // First sign-in after signup (or a project with email confirmation delay):
@@ -604,8 +615,14 @@ async function fetchProfile(userId: string, fallbackEmail: string, meta: Record<
     .upsert({ id: userId, email: fallbackEmail, name, role, avatar })
     .select()
     .maybeSingle();
-  if (!created) return { name, email: fallbackEmail, avatar, role };
-  return { name: created.name, email: created.email, avatar: created.avatar, role: created.role, photoUrl: created.photo_url || undefined, bio: created.bio || undefined };
+  if (!created) return { name, email: fallbackEmail, avatar, role, onboardingCompleted: false, interests: [], notificationPrefs: defaultPrefs };
+  return {
+    name: created.name, email: created.email, avatar: created.avatar, role: created.role,
+    photoUrl: created.photo_url || undefined, bio: created.bio || undefined,
+    onboardingCompleted: created.onboarding_completed ?? false,
+    interests: created.interests ?? [],
+    notificationPrefs: (created.notification_prefs as Record<string, boolean>) ?? defaultPrefs,
+  };
 }
 
 export function AppStoreProvider({ children }: { children: ReactNode }) {
@@ -843,16 +860,16 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           enrollments: (enrollmentsRes.data || []).map((r: any): Enrollment => ({ courseId: r.course_id, userEmail: r.user_email, completedLessonIds: r.completed_lesson_ids || [], enrolledAt: r.enrolled_at })),
           accessRecords: (accessRes.data || []).map((r: any): AccessRecord => ({ id: r.id, resourceId: r.resource_id, resourceTitle: r.resource_title, resourceType: r.resource_type, communityId: r.community_id ?? undefined, userEmail: r.user_email, accessedAt: r.accessed_at })),
           directMessages: (dmsRes.data || []).map(dmFromRow),
-          // Preserve onboarding state from localStorage (not yet in Supabase session fetch)
-          onboardingCompleted: loadState().onboardingCompleted ?? false,
-          onboardingInterests: loadState().onboardingInterests ?? [],
+          onboardingCompleted: (session as any)?.onboardingCompleted ?? false,
+          onboardingInterests: (session as any)?.interests ?? [],
+          notificationPrefs: (session as any)?.notificationPrefs ?? { posts: true, dms: true, comments: true, sales: true },
         });
 
         // Set up realtime subscriptions for this user
         if (!cancelled) setupRealtime(email);
       } catch (err) {
-        console.error("[SukaSpace] Failed to load from Supabase, falling back to this device's local cache:", err);
-        setState(loadState());
+        console.error("[SukaSpace] Failed to load from Supabase:", err);
+        setState(defaultState());
       } finally {
         bootingRef.current = false;
       }
@@ -871,22 +888,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       };
     }
 
-    setState(loadState());
+    console.error("[SukaSpace] Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.");
+    setState(defaultState());
     setIsHydrated(true);
     return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    if (!isHydrated) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (err) {
-      // Saving can fail if storage is full or disabled (private browsing, etc).
-      // Surface it instead of silently losing the user's changes.
-      console.error("Failed to save SukaSpace data to this browser:", err);
-      toast.error("Couldn't save your latest changes on this device. Free up storage or try a different browser.");
-    }
-  }, [state, isHydrated]);
+  // All state is persisted to Supabase — no localStorage write needed.
 
   const communities = useMemo(() =>
     [...state.userCommunities].sort((a, b) => b.createdAt - a.createdAt),
@@ -926,6 +934,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     dmUnreadCount: state.directMessages.filter(dm => !dm.read && dm.toEmail === state.session?.email).length,
     onboardingCompleted: state.onboardingCompleted,
     onboardingInterests: state.onboardingInterests,
+    notificationPrefs: state.notificationPrefs,
+    updateNotificationPrefs: (prefs) => {
+      setState(s => ({ ...s, notificationPrefs: prefs }));
+      if (supabase && state.session) {
+        sync(supabase.from("profiles").update({ notification_prefs: prefs }).eq("email", state.session.email), "notification preferences");
+      }
+    },
     userCommunities: communities.filter(c => c.creatorEmail === state.session?.email),
     getJoinedEmails: (_communityId: number) => (state.session?.email ? [state.session.email] : []),
     completeOnboarding: (data) => {
@@ -941,14 +956,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
     // ── auth ──
     signIn: async (email, password) => {
-      if (!supabase) {
-        const account = state.accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
-        if (!account) return "not_found";
-        if (account.password !== password) return "wrong_password";
-        const user: SessionUser = { name: account.name, email: account.email, avatar: account.name.slice(0, 2).toUpperCase(), role: account.role, photoUrl: account.photoUrl, bio: account.bio };
-        setState(s => ({ ...s, session: user }));
-        return user;
-      }
+      if (!supabase) throw new Error("Authentication is unavailable. Check environment configuration.");
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error || !data.user) return "wrong_password";
       const user = await fetchProfile(data.user.id, data.user.email || email, data.user.user_metadata || {});
@@ -957,19 +965,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       return user;
     },
     signUp: async (name, email, password, role) => {
-      if (!supabase) {
-        const exists = state.accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
-        if (exists) return "email_taken";
-        const user: SessionUser = { name, email, avatar: name.slice(0, 2).toUpperCase() || "YU", role };
-        const account: StoredAccount = { email, name, password, role };
-        setState(s => ({
-          ...s,
-          session: user,
-          accounts: [...s.accounts, account],
-          notifications: [{ id: generateId(), text: `Welcome to SukaSpace, ${name}!`, time: "Just now", read: false }],
-        }));
-        return user;
-      }
+      if (!supabase) throw new Error("Authentication is unavailable. Check environment configuration.");
       const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name, role } } });
       if (error) {
         if (error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("already exists")) return "email_taken";
@@ -1489,55 +1485,86 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       if (!community || state.joinedCommunityIds.includes(communityId)) return;
       const session = state.session;
 
-      // Free community or Paystack not configured → join directly
-      if (community.tag === "FREE" || !isPaystackConfigured() || !session) {
+      // Free community or no session → join directly (no payment needed)
+      if (community.tag === "FREE" || !session) {
         setState(s => s.joinedCommunityIds.includes(communityId) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, communityId] });
         if (supabase && session?.email) {
           sync(supabase.from("joined_communities").insert({ community_id: communityId, user_email: session.email }), "community join");
         }
         if (session) {
           sendCommunityJoinEmail({ data: { email: session.email, name: session.name, communityTitle: community.title, communityTag: community.tag } }).catch(() => {});
+          onMemberJoin({
+            data: {
+              userEmail: session.email, userName: session.name,
+              communityId, communityTitle: community.title,
+              creatorEmail: community.creatorEmail, creatorName: community.creator,
+              welcomeMessage: (community as any).welcomeMessage,
+            },
+          }).catch(() => {});
         }
         return;
       }
 
-      // Paid community — open Paystack popup
-      const amount = priceStringToAmount(community.price || "0", "NGN");
+      // Paid community — initialize server-side transaction first, then open Paystack popup
       try {
+        // Step 1: create a pending transaction server-side (amount is set server-side, not by client)
+        const init = await initializePayment({
+          data: {
+            payerEmail: session.email,
+            paymentType: "community_access",
+            resourceId: communityId,
+            currency: "NGN",
+          },
+        });
+
+        if (!init.ok) {
+          // Already has access (e.g. navigated back after payment)
+          if (init.error?.includes("already have access")) {
+            setState(s => s.joinedCommunityIds.includes(communityId) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, communityId] });
+            if (supabase) sync(supabase.from("joined_communities").insert({ community_id: communityId, user_email: session.email }), "re-join sync");
+            toast.success(`You already have access to ${community.title}.`);
+            return;
+          }
+          onError?.(init.error ?? "Could not start payment. Please try again.");
+          return;
+        }
+
+        const { reference, amountCents, transactionId } = init;
+
+        // Step 2: open Paystack popup with the server-generated reference + amount
         await initiatePaystackPayment({
           email: session.email,
-          amount,
+          amount: amountCents,
           currency: "NGN",
-          metadata: { communityId, communityTitle: community.title },
-          onSuccess: async (reference) => {
+          reference,
+          metadata: { communityId, communityTitle: community.title, transactionId },
+          onSuccess: async (successRef) => {
             try {
-              await verifyPaystackPayment({ data: { reference, communityId, expectedEmail: session.email } });
-              await recordPayment({
-                data: {
-                  id: generateId(),
-                  communityId,
-                  fromEmail: session.email,
-                  toEmail: community.creatorEmail,
-                  reference,
-                  amountCents: amount,
-                  currency: "NGN",
-                },
+              // Step 3: verify with Paystack + record earnings in ledger + grant access
+              const verified = await verifyAndRecordPayment({
+                data: { reference: successRef, transactionId, userEmail: session.email },
               });
+
+              if (!verified.ok) {
+                onError?.(verified.error ?? "Payment verification failed. Please contact support.");
+                return;
+              }
+
+              // Step 4: update local state + persist join to Supabase
               setState(s => s.joinedCommunityIds.includes(communityId) ? s : { ...s, joinedCommunityIds: [...s.joinedCommunityIds, communityId] });
               if (supabase) {
                 sync(supabase.from("joined_communities").insert({ community_id: communityId, user_email: session.email }), "paid community join");
               }
-              sendPaymentReceiptEmail({
-                data: {
-                  email: session.email,
-                  name: session.name,
-                  communityTitle: community.title,
-                  amountDisplay: community.price || `${(amount / 100).toLocaleString()} NGN`,
-                  reference,
-                },
-              }).catch(() => {});
-              sendCommunityJoinEmail({ data: { email: session.email, name: session.name, communityTitle: community.title, communityTag: "PAID" } }).catch(() => {});
-              toast.success(`Welcome to ${community.title}! Payment confirmed.`);
+
+              // Step 5: fire emails + welcome DM + creator notification (all best-effort)
+              const displayPrice = community.price || `${(amountCents / 100).toLocaleString()} NGN`;
+              Promise.allSettled([
+                sendPaymentReceiptEmail({ data: { email: session.email, name: session.name, communityTitle: community.title, amountDisplay: displayPrice, reference: successRef } }),
+                sendCommunityJoinEmail({ data: { email: session.email, name: session.name, communityTitle: community.title, communityTag: "PAID" } }),
+                onMemberJoin({ data: { userEmail: session.email, userName: session.name, communityId, communityTitle: community.title, creatorEmail: community.creatorEmail, creatorName: community.creator, welcomeMessage: (community as any).welcomeMessage } }),
+              ]);
+
+              toast.success(`Welcome to ${community.title}! Payment confirmed. ✅`);
             } catch (err: any) {
               console.error("[payment] post-payment error:", err);
               onError?.(err?.message ?? "Payment verification failed. Please contact support with your reference.");

@@ -537,19 +537,11 @@ const NOTIF_KEYS = [
 ] as const;
 
 function NotificationsTab() {
-  const [prefs, setPrefs] = useState<Record<string, boolean>>(() => {
-    if (typeof window === "undefined") return { posts: true, dms: true, comments: true, sales: true };
-    try {
-      return JSON.parse(localStorage.getItem("sukaspace_notif_prefs") ?? "") as Record<string, boolean>;
-    } catch {
-      return { posts: true, dms: true, comments: true, sales: true };
-    }
-  });
+  const store = useAppStore();
+  const prefs = store.notificationPrefs;
 
   const set = (key: string, value: boolean) => {
-    const next = { ...prefs, [key]: value };
-    setPrefs(next);
-    try { localStorage.setItem("sukaspace_notif_prefs", JSON.stringify(next)); } catch { /* ignore */ }
+    store.updateNotificationPrefs({ ...prefs, [key]: value });
   };
 
   return (
