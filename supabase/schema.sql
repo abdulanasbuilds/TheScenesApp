@@ -40,7 +40,13 @@ create table if not exists communities (
   tag text not null default 'FREE' check (tag in ('FREE', 'PAID')),
   price text,
   summary text,
-  created_at bigint not null
+  created_at bigint not null,
+  icon_url text,
+  discovery_keywords text[] not null default '{}',
+  screening_questions text[] not null default '{}',
+  welcome_message text,
+  affiliate_settings jsonb not null default '{"enabled": false, "commissionRate": 20, "commissionType": "recurring", "cookieDays": 30, "referralCode": ""}'::jsonb,
+  gamification_levels jsonb not null default '[]'::jsonb
 );
 
 create table if not exists joined_communities (

@@ -18,6 +18,7 @@ import {
 import { onMemberJoin } from "@/lib/autodm.functions";
 import { initiatePaystackPayment, isPaystackConfigured, priceStringToAmount } from "@/lib/paystack";
 import { initializePayment, verifyAndRecordPayment } from "@/lib/monetization.functions";
+import { type CommunityLevel } from "@/lib/gamification";
 
 // ─── Core Types ──────────────────────────────────────────────────────────────
 
@@ -42,6 +43,14 @@ export type Community = {
   discoveryKeywords?: string[]; // up to 11 keywords for search / SEO (Skool parity)
   screeningQuestions?: string[]; // up to 3 join-request questions
   welcomeMessage?: string; // auto-DM sent when a member joins
+  affiliateSettings?: {
+    enabled: boolean;
+    commissionRate: number;
+    commissionType: "recurring" | "one-time";
+    cookieDays: 30 | 60 | 90;
+    referralCode: string;
+  };
+  gamificationLevels?: CommunityLevel[];
 };
 
 export type SessionUser = {
@@ -239,8 +248,6 @@ export type SignUpResult = SessionUser | "email_taken";
 
 // ─── Persisted State ──────────────────────────────────────────────────────────
 
-const STORAGE_KEY = "sukaspace_app_state_v3";
-
 const BANNERS = [
   "from-sky-100 to-blue-50",
   "from-emerald-100 to-teal-50",
@@ -334,17 +341,6 @@ function defaultState(): PersistedState {
   };
 }
 
-function loadState(): PersistedState {
-  if (typeof window === "undefined") return defaultState();
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultState();
-    return { ...defaultState(), ...JSON.parse(raw) };
-  } catch {
-    return defaultState();
-  }
-}
-
 // ─── Supabase <-> app-shape mapping ────────────────────────────────────────────
 // Row ids stay client-generated numbers (see generateId above) so nested
 // module/lesson updates don't need to change shape when a real database is
@@ -371,6 +367,8 @@ function communityToRow(c: Community) {
     discovery_keywords: c.discoveryKeywords ?? [],
     screening_questions: c.screeningQuestions ?? [],
     welcome_message: c.welcomeMessage ?? null,
+    affiliate_settings: c.affiliateSettings ?? null,
+    gamification_levels: c.gamificationLevels ?? null,
   };
 }
 function communityFromRow(r: any): Community {
@@ -394,6 +392,8 @@ function communityFromRow(r: any): Community {
     discoveryKeywords: r.discovery_keywords ?? [],
     screeningQuestions: r.screening_questions ?? [],
     welcomeMessage: r.welcome_message ?? undefined,
+    affiliateSettings: r.affiliate_settings ?? undefined,
+    gamificationLevels: r.gamification_levels ?? undefined,
   };
 }
 function postToRow(p: FeedPost) {
@@ -1405,16 +1405,14 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         ],
       }));
       sync(
-        supabase
-          .from("notifications")
-          .insert({
-            id: generateId(),
-            user_email: email,
-            text: `Welcome to SukaSpace, ${name}!`,
-            time: "Just now",
-            read: false,
-            created_at: Date.now(),
-          }),
+        supabase.from("notifications").insert({
+          id: generateId(),
+          user_email: email,
+          text: `Welcome to SukaSpace, ${name}!`,
+          time: "Just now",
+          read: false,
+          created_at: Date.now(),
+        }),
         "welcome notification",
       );
       // Fire-and-forget welcome email — never blocks the sign-up flow
@@ -1521,6 +1519,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         if (patch.screeningQuestions !== undefined)
           row.screening_questions = patch.screeningQuestions;
         if (patch.welcomeMessage !== undefined) row.welcome_message = patch.welcomeMessage;
+        if (patch.affiliateSettings !== undefined) row.affiliate_settings = patch.affiliateSettings;
+        if (patch.gamificationLevels !== undefined)
+          row.gamification_levels = patch.gamificationLevels;
         sync(supabase.from("communities").update(row).eq("id", id), "community update");
       }
     },
@@ -1969,14 +1970,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       }));
       if (supabase) {
         sync(
-          supabase
-            .from("enrollments")
-            .insert({
-              course_id: courseId,
-              user_email: enrollment.userEmail,
-              completed_lesson_ids: [],
-              enrolled_at: enrollment.enrolledAt,
-            }),
+          supabase.from("enrollments").insert({
+            course_id: courseId,
+            user_email: enrollment.userEmail,
+            completed_lesson_ids: [],
+            enrolled_at: enrollment.enrolledAt,
+          }),
           "enrollment create",
         );
         sync(

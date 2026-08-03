@@ -69,28 +69,14 @@ export const DEFAULT_LEVELS: CommunityLevel[] = [
   },
 ];
 
-const STORAGE_KEY = "sukaspace_levels_v1";
+let _inMemoryLevels = DEFAULT_LEVELS;
 
 export function loadLevels(): CommunityLevel[] {
-  if (typeof window === "undefined") return DEFAULT_LEVELS;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_LEVELS;
-    const parsed = JSON.parse(raw) as CommunityLevel[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_LEVELS;
-    return sortLevels(parsed);
-  } catch {
-    return DEFAULT_LEVELS;
-  }
+  return sortLevels(_inMemoryLevels);
 }
 
 export function saveLevels(levels: CommunityLevel[]) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sortLevels(levels)));
-  } catch {
-    /* storage unavailable — in-memory state still applies */
-  }
+  _inMemoryLevels = sortLevels(levels);
 }
 
 export function sortLevels(levels: CommunityLevel[]): CommunityLevel[] {

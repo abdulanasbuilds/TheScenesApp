@@ -52,20 +52,6 @@ const DEFAULTS: AffiliateSettings = {
   referralCode: "",
 };
 
-function load(communityId: number): AffiliateSettings {
-  if (typeof window === "undefined") return DEFAULTS;
-  try {
-    const raw = localStorage.getItem(`sukaspace_aff_${communityId}`);
-    return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : DEFAULTS;
-  } catch {
-    return DEFAULTS;
-  }
-}
-
-function persist(communityId: number, s: AffiliateSettings) {
-  localStorage.setItem(`sukaspace_aff_${communityId}`, JSON.stringify(s));
-}
-
 function makeCode(title: string) {
   const slug = title
     .toLowerCase()
@@ -97,13 +83,19 @@ function AffiliatePage() {
 
   const [selectedId, setSelectedId] = useState<number>(() => myCommunities[0]?.id ?? -1);
   const community = myCommunities.find((c) => c.id === selectedId) ?? myCommunities[0];
-  const [aff, setAff] = useState<AffiliateSettings>(() =>
-    community ? load(community.id) : DEFAULTS,
+  const aff = community?.affiliateSettings ?? DEFAULTS;
+  const [rate, setRate] = useState(() =>
+    (community?.affiliateSettings?.commissionRate ?? 20).toString(),
   );
-  const [rate, setRate] = useState(aff.commissionRate.toString());
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
   const [expandFaq, setExpandFaq] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (community) {
+      setRate((community.affiliateSettings?.commissionRate ?? 20).toString());
+    }
+  }, [selectedId, community]);
 
   const referralLink = aff.referralCode
     ? `${typeof window !== "undefined" ? window.location.origin : "https://sukaspace.com"}/ref/${aff.referralCode}`
@@ -121,9 +113,6 @@ function AffiliatePage() {
 
   const switchCommunity = (id: number) => {
     setSelectedId(id);
-    const s = load(id);
-    setAff(s);
-    setRate(s.commissionRate.toString());
   };
 
   const toggle = () => {
@@ -134,8 +123,7 @@ function AffiliatePage() {
       referralCode:
         !aff.enabled && !aff.referralCode ? makeCode(community.title) : aff.referralCode,
     };
-    setAff(next);
-    persist(community.id, next);
+    store.updateCommunity(community.id, { affiliateSettings: next });
     toast.success(next.enabled ? "Affiliate program enabled!" : "Affiliate program disabled.");
   };
 
@@ -144,8 +132,7 @@ function AffiliatePage() {
     const parsed = Math.min(50, Math.max(5, parseInt(rate) || 20));
     const next = { ...aff, commissionRate: parsed };
     setRate(parsed.toString());
-    setAff(next);
-    persist(community.id, next);
+    store.updateCommunity(community.id, { affiliateSettings: next });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     toast.success("Settings saved!");
@@ -154,8 +141,7 @@ function AffiliatePage() {
   const update = (patch: Partial<AffiliateSettings>) => {
     if (!community) return;
     const next = { ...aff, ...patch };
-    setAff(next);
-    persist(community.id, next);
+    store.updateCommunity(community.id, { affiliateSettings: next });
   };
 
   const copyLink = () => {

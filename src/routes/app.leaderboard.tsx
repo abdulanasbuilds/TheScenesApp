@@ -143,6 +143,9 @@ function LeaderboardPage() {
   const [period, setPeriod] = useState<Period>("all");
   const [periodMenu, setPeriodMenu] = useState(false);
 
+  const myCommunities = store.communities.filter((c) => c.creatorEmail === store.session?.email);
+  const community = myCommunities[0] ?? store.communities[0];
+
   const userXp = 0;
   const you: LeaderMember = {
     id: 0,
@@ -598,6 +601,7 @@ function LeaderboardPage() {
       <LevelsPanel
         viewerPoints={userXp}
         members={members.map((m) => ({ name: m.name, avatar: m.avatar, points: m.xp }))}
+        community={community}
       />
     </div>
   );

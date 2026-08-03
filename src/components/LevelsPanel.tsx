@@ -7,11 +7,13 @@ import {
   sortLevels,
   levelForPoints,
   REWARD_LABEL,
+  DEFAULT_LEVELS,
   type CommunityLevel,
   type RewardKind,
 } from "@/lib/gamification";
 import { SPRING_FAST, hapticTap, hapticMilestone } from "@/lib/pwa";
 import { cn } from "@/lib/utils";
+import { useAppStore, type Community } from "@/lib/app-store";
 
 type Member = { name: string; avatar: string; points: number };
 
@@ -20,17 +22,30 @@ const REWARD_KINDS: RewardKind[] = ["course", "content", "badge", "perk"];
 export function LevelsPanel({
   viewerPoints,
   members,
+  community,
 }: {
   viewerPoints: number;
   members: Member[];
+  community?: Community;
 }) {
-  const [levels, setLevels] = useState<CommunityLevel[]>(() => sortLevels(loadLevels()));
+  const store = useAppStore();
+  const dbLevels =
+    community?.gamificationLevels && community.gamificationLevels.length > 0
+      ? community.gamificationLevels
+      : null;
+  const [levels, setLevels] = useState<CommunityLevel[]>(() =>
+    sortLevels(dbLevels ?? loadLevels()),
+  );
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    setLevels(sortLevels(loadLevels()));
-  }, []);
+    const activeLevels =
+      community?.gamificationLevels && community.gamificationLevels.length > 0
+        ? community.gamificationLevels
+        : loadLevels();
+    setLevels(sortLevels(activeLevels));
+  }, [community]);
 
   const viewer = useMemo(() => levelForPoints(viewerPoints, levels), [viewerPoints, levels]);
 
@@ -103,7 +118,11 @@ export function LevelsPanel({
       })),
     );
     setLevels(clean);
-    saveLevels(clean);
+    if (community) {
+      store.updateCommunity(community.id, { gamificationLevels: clean });
+    } else {
+      saveLevels(clean);
+    }
     setEditing(false);
     setSaved(true);
     hapticMilestone();

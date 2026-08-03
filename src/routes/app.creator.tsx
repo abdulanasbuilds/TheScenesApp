@@ -69,20 +69,6 @@ const AFF_DEFAULTS: AffiliateSettings = {
   referralCode: "",
 };
 
-function loadAff(communityId: number): AffiliateSettings {
-  if (typeof window === "undefined") return AFF_DEFAULTS;
-  try {
-    const raw = localStorage.getItem(`sukaspace_aff_${communityId}`);
-    return raw ? { ...AFF_DEFAULTS, ...JSON.parse(raw) } : AFF_DEFAULTS;
-  } catch {
-    return AFF_DEFAULTS;
-  }
-}
-
-function saveAff(communityId: number, s: AffiliateSettings) {
-  localStorage.setItem(`sukaspace_aff_${communityId}`, JSON.stringify(s));
-}
-
 function makeCode(title: string) {
   const slug = title
     .toLowerCase()
@@ -879,12 +865,10 @@ function AnalyticsTab({
     week: w,
     enrollments: courses.reduce((s, c) => s + Math.min(c.enrollmentCount, i + 1), 0),
   }));
-  const courseData = courses
-    .slice(0, 6)
-    .map((c) => ({
-      name: c.title.length > 16 ? c.title.slice(0, 16) + "…" : c.title,
-      enrolled: c.enrollmentCount,
-    }));
+  const courseData = courses.slice(0, 6).map((c) => ({
+    name: c.title.length > 16 ? c.title.slice(0, 16) + "…" : c.title,
+    enrolled: c.enrollmentCount,
+  }));
 
   return (
     <div className="space-y-5">
@@ -997,8 +981,11 @@ function AnalyticsTab({
 // ─── Affiliate Tab ────────────────────────────────────────────────────────────
 
 function AffiliateTab({ community }: { community: Community }) {
-  const [aff, setAff] = useState<AffiliateSettings>(() => loadAff(community.id));
-  const [rate, setRate] = useState(aff.commissionRate.toString());
+  const store = useAppStore();
+  const aff = community?.affiliateSettings ?? AFF_DEFAULTS;
+  const [rate, setRate] = useState(() =>
+    (community?.affiliateSettings?.commissionRate ?? 20).toString(),
+  );
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -1013,8 +1000,7 @@ function AffiliateTab({ community }: { community: Community }) {
       referralCode:
         !aff.enabled && !aff.referralCode ? makeCode(community.title) : aff.referralCode,
     };
-    setAff(next);
-    saveAff(community.id, next);
+    store.updateCommunity(community.id, { affiliateSettings: next });
     toast.success(next.enabled ? "Affiliate program enabled!" : "Affiliate program disabled.");
   };
 
@@ -1022,8 +1008,7 @@ function AffiliateTab({ community }: { community: Community }) {
     const parsed = Math.min(50, Math.max(5, parseInt(rate) || 20));
     const next = { ...aff, commissionRate: parsed };
     setRate(parsed.toString());
-    setAff(next);
-    saveAff(community.id, next);
+    store.updateCommunity(community.id, { affiliateSettings: next });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     toast.success("Affiliate settings saved!");
@@ -1134,13 +1119,10 @@ function AffiliateTab({ community }: { community: Community }) {
                 {(["recurring", "one-time"] as const).map((t) => (
                   <button
                     key={t}
-                    onClick={() =>
-                      setAff((prev) => {
-                        const n = { ...prev, commissionType: t };
-                        saveAff(community.id, n);
-                        return n;
-                      })
-                    }
+                    onClick={() => {
+                      const next = { ...aff, commissionType: t };
+                      store.updateCommunity(community.id, { affiliateSettings: next });
+                    }}
                     className={`rounded-xl border p-3 text-left transition-all ${aff.commissionType === t ? "border-primary bg-primary/5" : "border-border hover:bg-accent"}`}
                   >
                     <div className="text-xs font-semibold text-foreground capitalize">{t}</div>
@@ -1166,13 +1148,10 @@ function AffiliateTab({ community }: { community: Community }) {
                 {([30, 60, 90] as const).map((d) => (
                   <button
                     key={d}
-                    onClick={() =>
-                      setAff((prev) => {
-                        const n = { ...prev, cookieDays: d };
-                        saveAff(community.id, n);
-                        return n;
-                      })
-                    }
+                    onClick={() => {
+                      const next = { ...aff, cookieDays: d };
+                      store.updateCommunity(community.id, { affiliateSettings: next });
+                    }}
                     className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${aff.cookieDays === d ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground hover:bg-accent"}`}
                   >
                     {d} days

@@ -5,7 +5,9 @@ ALTER TABLE public.communities
   ADD COLUMN IF NOT EXISTS icon_url            text,
   ADD COLUMN IF NOT EXISTS discovery_keywords  text[] NOT NULL DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS screening_questions text[] NOT NULL DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS welcome_message     text;
+  ADD COLUMN IF NOT EXISTS welcome_message     text,
+  ADD COLUMN IF NOT EXISTS affiliate_settings  jsonb NOT NULL DEFAULT '{"enabled": false, "commissionRate": 20, "commissionType": "recurring", "cookieDays": 30, "referralCode": ""}'::jsonb,
+  ADD COLUMN IF NOT EXISTS gamification_levels jsonb NOT NULL DEFAULT '[]'::jsonb;
 
 -- Cap array sizes at the app layer, but add a defensive DB check too.
 DO $$
