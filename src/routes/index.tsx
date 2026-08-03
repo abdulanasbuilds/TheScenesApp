@@ -5,7 +5,6 @@ import { useAppStore } from "@/lib/app-store";
 import { ArrowRight, Sparkles, Users, GraduationCap, MessagesSquare, BarChart3, CheckCircle2, Hash, ChevronRight, PlayCircle, Download } from "lucide-react";
 import { PublicHeader } from "@/components/PublicHeader";
 import { BrowserFrame, Avatar } from "@/components/BrowserFrame";
-import { MOCK_COMMUNITY_POSTS, MOCK_CHANNELS, MOCK_ONLINE, MOCK_CLASSROOM_MODULES, MOCK_DIRECT_MESSAGES, MOCK_ANALYTICS, MOCK_GROWTH_SERIES } from "@/lib/mock-data";
 import { MOCKUP_GALLERY, UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 
 export const Route = createFileRoute("/")({

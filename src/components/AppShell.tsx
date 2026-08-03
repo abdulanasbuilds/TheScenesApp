@@ -11,7 +11,7 @@ import { Avatar } from "./BrowserFrame";
 import { useAppStore } from "@/lib/app-store";
 import { Logo } from "@/components/Logo";
 import { GlobalFeedbackDrawer, openFeedbackDrawer } from "@/components/GlobalFeedbackDrawer";
-import { xpToTier } from "@/lib/mock-data";
+import { xpToTier } from "@/lib/catalog";
 import { hapticTap, SPRING_FAST, SPRING_STRUCTURAL, captureInstallPrompt, hasInstallPrompt, triggerInstallPrompt } from "@/lib/pwa";
 import { AppLoadingSkeleton } from "@/components/PageSkeleton";
 

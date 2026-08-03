@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/EmptyState";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
@@ -159,11 +160,14 @@ function OverviewTab({ enrolledCourses, joinedCommunities, upcomingEvents, recen
           <CourseProgressCard course={continueCourse} />
         </div>
       ) : enrolledCourses.length === 0 ? (
-        <EmptySection
+        <EmptyState
+          variant="empty"
           icon={<BookOpen size={22} />}
           title="No courses yet"
-          desc="Browse your communities for courses to enroll in."
-          action={<Link to="/app/feed" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Explore communities <ArrowRight size={13} /></Link>}
+          description="You have not enrolled in a course. Communities publish their curriculum in the classroom \u2014 join one and enroll to start tracking progress."
+          primary={{ label: "Explore communities", to: "/discover" }}
+          secondary={{ label: "Open your feed", to: "/app/feed" }}
+          helper="Your lesson progress and XP start counting from your first lesson."
         />
       ) : (
         <div>
@@ -219,17 +223,19 @@ function OverviewTab({ enrolledCourses, joinedCommunities, upcomingEvents, recen
 
       {/* Quick actions if no data */}
       {enrolledCourses.length === 0 && joinedCommunities.length === 0 && (
-        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-sky-50">
-            <Rocket size={20} className="text-primary" />
-          </div>
-          <h3 className="mt-3 text-base font-semibold text-foreground">Welcome to SukaSpace!</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Discover communities and enroll in courses to get started.</p>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <Link to="/discover" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Browse communities</Link>
-            <Link to="/app/feed" className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-accent">Explore feed</Link>
-          </div>
-        </div>
+        <EmptyState
+          variant="empty"
+          icon={<Rocket size={20} />}
+          title="Welcome to SukaSpace"
+          description="Your workspace is ready and completely clean. Two steps get you to a working day-one setup."
+          checklist={[
+            { label: "Join or create a community" },
+            { label: "Enroll in your first course" },
+          ]}
+          primary={{ label: "Browse communities", to: "/discover" }}
+          secondary={{ label: "Create a community", to: "/create-community" }}
+          helper="Nothing here is pre-filled \u2014 every number you see later is your own activity."
+        />
       )}
     </div>
   );

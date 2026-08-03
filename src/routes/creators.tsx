@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { BarChart3, CheckCircle2, Settings, Users } from "lucide-react";
 import { PublicHeader } from "@/components/PublicHeader";
 import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
-import { MOCK_ANALYTICS, MOCK_GROWTH_SERIES } from "@/lib/mock-data";
 import { useAppStore } from "@/lib/app-store";
 
 export const Route = createFileRoute("/creators")({
@@ -24,7 +23,6 @@ function CreatorsPage() {
     if (store.isHydrated && store.session) nav({ to: "/create-community" });
     else nav({ to: "/auth", search: { mode: "signup" } });
   };
-  const max = Math.max(...MOCK_GROWTH_SERIES);
   return (
     <div className="min-h-screen bg-background">
       <PublicHeader />
@@ -51,19 +49,27 @@ function CreatorsPage() {
 
         <section className="bg-card">
           <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-            <div className="grid gap-4 md:grid-cols-4">
-              {[{ icon: BarChart3, label: "MRR", value: MOCK_ANALYTICS.mrr }, { icon: Users, label: "Active members", value: MOCK_ANALYTICS.activeMembers }, { icon: CheckCircle2, label: "Completion", value: MOCK_ANALYTICS.courseCompletionRate }, { icon: Settings, label: "Discovery growth", value: MOCK_ANALYTICS.growthPercentage }].map((metric) => (
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold tracking-tight text-foreground">What you get on day one</h2>
+              <p className="mt-2 text-base font-medium text-muted-foreground">Your workspace starts clean \u2014 every number below is measured from your own community, never simulated.</p>
+            </div>
+            <div className="mt-8 grid gap-4 md:grid-cols-4">
+              {[
+                { icon: BarChart3,   label: "Revenue tracking",  body: "Server-verified payments only, so what you see is what you can withdraw." },
+                { icon: Users,       label: "Member insights",   body: "Joins, active contributors, and engagement measured per community." },
+                { icon: CheckCircle2,label: "Course completion", body: "Module and lesson progress for every enrolled member." },
+                { icon: Settings,    label: "Discovery controls",body: "Keywords, screening questions, and a public about page you control." },
+              ].map((metric) => (
                 <div key={metric.label} className="rounded-xl border border-border bg-card p-5 shadow-sm">
                   <div className="flex items-center justify-between"><span className="text-xs font-semibold uppercase text-muted-foreground">{metric.label}</span><metric.icon size={16} className="text-primary" /></div>
-                  <div className="mt-2 text-3xl font-bold text-foreground">{metric.value}</div>
+                  <p className="mt-3 text-sm text-muted-foreground">{metric.body}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 rounded-xl border border-border bg-background p-5">
-              <div className="mb-4 text-base font-semibold text-foreground">Member growth timeline</div>
-              <div className="flex h-48 items-end gap-2 rounded-lg border border-border bg-card p-4">
-                {MOCK_GROWTH_SERIES.map((value, index) => <div key={index} className="flex-1 rounded-t bg-primary" style={{ height: `${(value / max) * 100}%` }} />)}
-              </div>
+            <div className="mt-4 rounded-xl border border-border bg-background p-5 text-center">
+              <div className="text-base font-semibold text-foreground">Your growth timeline starts with your first member</div>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">Create a community and the analytics dashboard begins recording joins, posts, and enrolments from that moment.</p>
+              <button onClick={goCreate} className="mt-5 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary/90">Create a Community</button>
             </div>
           </div>
         </section>

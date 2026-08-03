@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Search, Users, GraduationCap, Hash, Building2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAppStore } from "@/lib/app-store";
+import { EmptyState } from "@/components/EmptyState";
 
 export const Route = createFileRoute("/app/search")({
   head: () => ({ meta: [
@@ -79,11 +80,25 @@ function SearchPage() {
               <div>
                 <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground"><Building2 size={12} />Top Communities</h2>
                 {communities.length === 0 ? (
-                  <p className="rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">
-                    {store.communities.length === 0
-                      ? <>No communities have launched yet — <Link to="/create-community" className="font-semibold text-primary">create one</Link>.</>
-                      : "No matches for your search."}
-                  </p>
+                  store.communities.length === 0 ? (
+                    <EmptyState
+                      compact
+                      variant="empty"
+                      title="No communities have launched yet"
+                      description="You are early. Create the first community and it becomes searchable for everyone the moment you publish it."
+                      primary={{ label: "Create a community", to: "/create-community" }}
+                      helper="Setup takes about 2 minutes and you can change everything later."
+                    />
+                  ) : (
+                    <EmptyState
+                      compact
+                      variant="no-results"
+                      title="No communities match your search"
+                      description="Try a shorter phrase, or browse everything in Discover to see what is available right now."
+                      primary={{ label: "Browse all communities", to: "/discover" }}
+                      helper="Search covers community names, topics, and descriptions."
+                    />
+                  )
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2">
                     {communities.map((c) => (
@@ -105,9 +120,14 @@ function SearchPage() {
             {show("courses") && types.courses && (
               <div>
                 <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground"><GraduationCap size={12} />Relevant Courses</h2>
-                <p className="rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">
-                  No courses available yet. Courses will appear here once community creators publish their curriculum.
-                </p>
+                <EmptyState
+                  compact
+                  variant="empty"
+                  title="No courses published yet"
+                  description="Courses appear here as soon as a creator publishes a curriculum. Join a community to be notified when its first course goes live."
+                  primary={{ label: "Explore communities", to: "/discover" }}
+                  secondary={{ label: "Create a course", to: "/app/courses" }}
+                />
               </div>
             )}
 
