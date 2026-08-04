@@ -135,6 +135,14 @@ export class PaystackProvider implements PaymentProvider {
   async verifyWebhookSignature(rawBody: string, signature: string): Promise<boolean> {
     const secret = this.webhookSecret;
     if (!secret) {
+      // In production, we must fail securely! Never bypass webhook signature validation.
+      const isProd = process.env.NODE_ENV === "production";
+      if (isProd) {
+        console.error(
+          "[paystack] CRITICAL: PAYSTACK_WEBHOOK_SECRET is not set in production. Rejecting webhook.",
+        );
+        return false;
+      }
       // If no secret configured, warn and allow (for local dev without webhook secret)
       console.warn("[paystack] PAYSTACK_WEBHOOK_SECRET not set — skipping signature verification.");
       return true;
@@ -152,7 +160,9 @@ export class PaystackProvider implements PaymentProvider {
       const hex = Array.from(new Uint8Array(sig))
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
-      return hex === signature;
+
+      // Use constant-time comparison to prevent timing attacks, and normalize casing
+      return safeCompare(hex.toLowerCase(), signature.toLowerCase());
     } catch {
       return false;
     }
@@ -207,4 +217,18 @@ export function getPaymentProvider(): PaymentProvider {
     _provider = new PaystackProvider();
   }
   return _provider;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Constant-time string comparison helper to prevent timing attacks. */
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
 }
