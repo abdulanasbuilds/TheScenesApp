@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * Transactional email via Resend.
@@ -63,8 +64,13 @@ function base(content: string): string {
 // ─── Server Functions ──────────────────────────────────────────────────────────
 
 export const sendWelcomeEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(z.object({ email: z.string().email(), name: z.string() }))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context?.claims?.email;
+    if (context && (!userEmail || userEmail !== data.email)) {
+      throw new Error("Unauthorized: Recipient email mismatch.");
+    }
     await sendEmail(
       data.email,
       "Welcome to SukaSpace 🎉",
@@ -85,6 +91,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
   });
 
 export const sendWithdrawalFailedEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(
     z.object({
       email: z.string().email(),
@@ -93,7 +100,11 @@ export const sendWithdrawalFailedEmail = createServerFn({ method: "POST" })
       withdrawalId: z.string(),
     }),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context?.claims?.email;
+    if (context && (!userEmail || userEmail !== data.email)) {
+      throw new Error("Unauthorized: Recipient email mismatch.");
+    }
     await sendEmail(
       data.email,
       `⚠️ Withdrawal Settlement Failed — Action Required`,
@@ -111,13 +122,18 @@ export const sendWithdrawalFailedEmail = createServerFn({ method: "POST" })
   });
 
 export const sendSubscriptionPastDueEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(
     z.object({
       email: z.string().email(),
       planName: z.string(),
     }),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context?.claims?.email;
+    if (context && (!userEmail || userEmail !== data.email)) {
+      throw new Error("Unauthorized: Recipient email mismatch.");
+    }
     await sendEmail(
       data.email,
       `⚠️ Payment Past Due — SukaSpace Pro Subscription`,
@@ -132,6 +148,7 @@ export const sendSubscriptionPastDueEmail = createServerFn({ method: "POST" })
   });
 
 export const sendStorageQuotaWarningEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(
     z.object({
       email: z.string().email(),
@@ -140,7 +157,11 @@ export const sendStorageQuotaWarningEmail = createServerFn({ method: "POST" })
       quotaDisplay: z.string(),
     }),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context?.claims?.email;
+    if (context && (!userEmail || userEmail !== data.email)) {
+      throw new Error("Unauthorized: Recipient email mismatch.");
+    }
     await sendEmail(
       data.email,
       `⚠️ Storage Quota Warning — SukaSpace`,
@@ -159,8 +180,13 @@ export const sendStorageQuotaWarningEmail = createServerFn({ method: "POST" })
   });
 
 export const sendEnrollmentEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(z.object({ email: z.string().email(), name: z.string(), courseTitle: z.string() }))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context?.claims?.email;
+    if (context && (!userEmail || userEmail !== data.email)) {
+      throw new Error("Unauthorized: Recipient email mismatch.");
+    }
     await sendEmail(
       data.email,
       `You're enrolled in "${data.courseTitle}" 🎓`,
@@ -177,6 +203,7 @@ export const sendEnrollmentEmail = createServerFn({ method: "POST" })
   });
 
 export const sendCommunityJoinEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(
     z.object({
       email: z.string().email(),
@@ -185,7 +212,11 @@ export const sendCommunityJoinEmail = createServerFn({ method: "POST" })
       communityTag: z.enum(["FREE", "PAID"]),
     }),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context?.claims?.email;
+    if (context && (!userEmail || userEmail !== data.email)) {
+      throw new Error("Unauthorized: Recipient email mismatch.");
+    }
     const tagLine =
       data.communityTag === "PAID"
         ? "Your payment was confirmed and your access is now active."
@@ -205,6 +236,7 @@ export const sendCommunityJoinEmail = createServerFn({ method: "POST" })
   });
 
 export const sendPaymentReceiptEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(
     z.object({
       email: z.string().email(),
@@ -214,7 +246,11 @@ export const sendPaymentReceiptEmail = createServerFn({ method: "POST" })
       reference: z.string(),
     }),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context?.claims?.email;
+    if (context && (!userEmail || userEmail !== data.email)) {
+      throw new Error("Unauthorized: Recipient email mismatch.");
+    }
     await sendEmail(
       data.email,
       `Payment confirmed — ${data.communityTitle}`,
