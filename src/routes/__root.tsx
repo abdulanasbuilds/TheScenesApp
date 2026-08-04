@@ -122,10 +122,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  // Read runtime environment variables during SSR on Cloudflare Pages Workers
+  const runtimeUrl = typeof process !== "undefined" ? (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) : undefined;
+  const runtimeKey = typeof process !== "undefined" ? (process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY) : undefined;
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        {runtimeUrl && runtimeKey && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.__SUPABASE_RUNTIME_URL = "${runtimeUrl}"; window.__SUPABASE_RUNTIME_KEY = "${runtimeKey}";`,
+            }}
+          />
+        )}
       </head>
       <body>
         {children}
