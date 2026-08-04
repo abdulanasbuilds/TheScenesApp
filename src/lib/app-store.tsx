@@ -51,6 +51,7 @@ export type SessionUser = {
   role: "creator" | "learner";
   photoUrl?: string;
   bio?: string;
+  country?: string; // Two-letter country code, default e.g. "NG"
 };
 
 export type AccessRecord = {
@@ -638,6 +639,7 @@ type AppStoreValue = {
     bio?: string;
     photoUrl?: string;
     role?: "creator" | "learner";
+    country?: string;
   }) => void;
   getAccountRole: (email: string) => "creator" | "learner" | undefined;
   // access records
@@ -821,6 +823,7 @@ async function fetchProfile(
       role: profile.role,
       photoUrl: profile.photo_url || undefined,
       bio: profile.bio || undefined,
+      country: profile.country || "NG",
       onboardingCompleted: profile.onboarding_completed ?? false,
       interests: profile.interests ?? [],
       notificationPrefs: (profile.notification_prefs as Record<string, boolean>) ?? defaultPrefs,
@@ -833,7 +836,7 @@ async function fetchProfile(
   const avatar = name.slice(0, 2).toUpperCase() || "YU";
   const { data: created } = await supabase
     .from("profiles")
-    .upsert({ id: userId, email: fallbackEmail, name, role, avatar })
+    .upsert({ id: userId, email: fallbackEmail, name, role, avatar, country: "NG" })
     .select()
     .maybeSingle();
   if (!created)
@@ -842,6 +845,7 @@ async function fetchProfile(
       email: fallbackEmail,
       avatar,
       role,
+      country: "NG",
       onboardingCompleted: false,
       interests: [],
       notificationPrefs: defaultPrefs,
@@ -853,6 +857,7 @@ async function fetchProfile(
     role: created.role,
     photoUrl: created.photo_url || undefined,
     bio: created.bio || undefined,
+    country: created.country || "NG",
     onboardingCompleted: created.onboarding_completed ?? false,
     interests: created.interests ?? [],
     notificationPrefs: (created.notification_prefs as Record<string, boolean>) ?? defaultPrefs,
@@ -1390,8 +1395,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       }
       if (!data.user) return "email_taken";
       const avatar = name.slice(0, 2).toUpperCase() || "YU";
-      await supabase.from("profiles").upsert({ id: data.user.id, email, name, role, avatar });
-      const user: SessionUser = { name, email, avatar, role };
+      await supabase.from("profiles").upsert({ id: data.user.id, email, name, role, avatar, country: "NG" });
+      const user: SessionUser = { name, email, avatar, role, country: "NG" };
       setState((s) => ({
         ...s,
         session: user,
@@ -1445,6 +1450,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
               ...(patch.name !== undefined ? { name: patch.name } : {}),
               ...(patch.bio !== undefined ? { bio: patch.bio } : {}),
               ...(patch.photoUrl !== undefined ? { photo_url: patch.photoUrl } : {}),
+              ...(patch.country !== undefined ? { country: patch.country } : {}),
             })
             .eq("email", state.session.email),
           "profile update",
@@ -2314,12 +2320,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
         const { reference, amountCents, transactionId } = init;
 
+        // Resolve supported checkout channels dynamically based on the buyer's country
+        const learnerCountry = session.country || "NG";
+        let channels: string[] = ["card"];
+        if (learnerCountry === "NG") {
+          channels = ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"];
+        } else if (learnerCountry === "GH" || learnerCountry === "KE") {
+          channels = ["card", "mobile_money"];
+        } else if (learnerCountry === "ZA") {
+          channels = ["card", "bank", "eft"];
+        }
+
         // Step 2: open Paystack popup with the server-generated reference + amount
         await initiatePaystackPayment({
           email: session.email,
           amount: amountCents,
-          currency: "NGN",
+          currency: init.currency as any,
           reference,
+          channels,
           metadata: { communityId, communityTitle: community.title, transactionId },
           onSuccess: async (successRef) => {
             try {

@@ -11,6 +11,7 @@ import crypto from "crypto";
 import { PaystackProvider } from "../src/lib/payment-adapter";
 import { calcPlatformFee, calcNetAmount, calcWithdrawalFee } from "../src/lib/plans";
 import { maskNumber } from "../src/lib/monetization/payout-accounts";
+import { convertPrice } from "../src/lib/monetization.functions";
 
 // ─── Assertion Helpers ───────────────────────────────────────────────────────
 
@@ -156,6 +157,37 @@ async function runTests() {
     assert(parsed?.customerEmail === "learner@sukaspace.com", "Parsed customer email must match");
   } catch (err: any) {
     console.error("  💥 Error in Test 4:", err.message);
+    failedTests++;
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // TEST 5: Country-Aware Currency Overrides & Conversion Math
+  // ───────────────────────────────────────────────────────────────────────────
+  console.log("\n🧪 Test 5: Country-Aware Currency Conversion & Override Rules");
+  try {
+    const basePriceNgnCents = 160000; // ₦1,600 (approx $1)
+
+    // Convert NGN base price to USD checkout currency
+    const usdCents = convertPrice(basePriceNgnCents, "NGN", "USD");
+    assert(usdCents === 100, "₦1,600 base NGN price should convert to exactly $1.00 (100 cents) at 1600 rate");
+
+    // Convert NGN base price to GHS checkout currency
+    const ghsCents = convertPrice(basePriceNgnCents, "NGN", "GHS");
+    assert(ghsCents === 1600, "₦1,600 base NGN price should convert to exactly ₵16.00 (1600 cents) at 100 rate");
+
+    // Convert NGN base price to KES checkout currency
+    const kesCents = convertPrice(basePriceNgnCents, "NGN", "KES");
+    assert(kesCents === 13333, "₦1,600 base NGN price should convert to exactly KSh133.33 (13333 cents) at 12 rate");
+
+    // Convert NGN base price to ZAR checkout currency
+    const zarCents = convertPrice(basePriceNgnCents, "NGN", "ZAR");
+    assert(zarCents === 1778, "₦1,600 base NGN price should convert to exactly R17.78 (1778 cents) at 90 rate");
+
+    // Verify same-currency return value (no conversion)
+    const baseUnchanged = convertPrice(50000, "NGN", "NGN");
+    assert(baseUnchanged === 50000, "Converting NGN to NGN should maintain exact same value");
+  } catch (err: any) {
+    console.error("  💥 Error in Test 5:", err.message);
     failedTests++;
   }
 

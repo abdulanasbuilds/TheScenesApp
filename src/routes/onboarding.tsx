@@ -29,6 +29,25 @@ import { useAppStore } from "@/lib/app-store";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 import { onOnboardingComplete } from "@/lib/autodm.functions";
+import { PAYOUT_COUNTRIES } from "@/lib/banks";
+
+function detectCountry(): string {
+  if (typeof window === "undefined" || !window.Intl) return "NG";
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz.includes("Lagos")) return "NG";
+    if (tz.includes("Accra")) return "GH";
+    if (tz.includes("Nairobi")) return "KE";
+    if (tz.includes("Johannesburg")) return "ZA";
+
+    const lang = navigator.language || "";
+    if (lang.endsWith("NG") || lang.startsWith("en-NG")) return "NG";
+    if (lang.endsWith("GH") || lang.startsWith("en-GH")) return "GH";
+    if (lang.endsWith("KE") || lang.startsWith("en-KE")) return "KE";
+    if (lang.endsWith("ZA") || lang.startsWith("en-ZA")) return "ZA";
+  } catch {}
+  return "NG";
+}
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Welcome to SukaSpace · Get Started" }] }),
@@ -121,6 +140,7 @@ function Onboarding() {
   const [skill, setSkill] = useState<Skill>(null);
   const [name, setName] = useState(store.session?.name ?? "");
   const [bio, setBio] = useState(store.session?.bio ?? "");
+  const [countryCode, setCountryCode] = useState(() => store.session?.country || detectCountry());
   const [saving, setSaving] = useState(false);
 
   const TOTAL_STEPS = 5;
@@ -146,6 +166,7 @@ function Onboarding() {
       if (name.trim()) store.updateProfile({ name: name.trim() });
       if (bio.trim()) store.updateProfile({ bio: bio.trim() });
       if (role) store.updateProfile({ role });
+      store.updateProfile({ country: countryCode });
 
       // Persist onboarding state in store
       store.completeOnboarding?.({
@@ -153,6 +174,7 @@ function Onboarding() {
         interests,
         goals,
         skillLevel: skill ?? undefined,
+        country: countryCode,
       });
 
       // Push welcome notification (server fn — degrades if Supabase not configured)
@@ -216,18 +238,40 @@ function Onboarding() {
       </div>
 
       {/* Name input */}
-      <div className="w-full max-w-xs">
-        <label className="block text-sm font-medium text-slate-700 mb-1.5 text-left">
-          What should we call you?
-        </label>
-        <input
-          autoFocus
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && go(1)}
-          placeholder="Your name"
-          className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
-        />
+      <div className="w-full max-w-xs space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5 text-left">
+            What should we call you?
+          </label>
+          <input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && go(1)}
+            placeholder="Your name"
+            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+          />
+        </div>
+
+        <div className="text-left">
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            Your Settlement Country / Currency region
+          </label>
+          <select
+            value={countryCode}
+            onChange={(e) => setCountryCode(e.target.value)}
+            className="w-full border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+          >
+            {PAYOUT_COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name} ({c.currency})
+              </option>
+            ))}
+          </select>
+          <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+            <Globe size={11} /> Auto-detected region. Currency and payment adapters will configure specifically to your location.
+          </p>
+        </div>
       </div>
     </div>
   );

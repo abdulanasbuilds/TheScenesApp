@@ -15,6 +15,7 @@ export interface PaystackPaymentConfig {
   metadata?: Record<string, unknown>;
   onSuccess: (reference: string) => void;
   onClose: () => void;
+  channels?: string[];
 }
 
 declare global {
@@ -29,6 +30,7 @@ declare global {
         metadata?: Record<string, unknown>;
         onClose(): void;
         callback(response: { reference: string }): void;
+        channels?: string[];
       }): { openIframe(): void };
     };
   }
@@ -110,6 +112,7 @@ export async function initiatePaystackPayment(config: PaystackPaymentConfig): Pr
     metadata: config.metadata,
     onClose: config.onClose,
     callback: (res) => config.onSuccess(res.reference),
+    channels: config.channels,
   });
   handler.openIframe();
 }

@@ -43,6 +43,29 @@ import { sendStorageQuotaWarningEmail } from "@/lib/email.functions";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+const EXCHANGE_RATES_FROM_NGN: Record<string, number> = {
+  NGN: 1,
+  USD: 1 / 1600, // Approx 1 USD = 1600 NGN
+  GHS: 1 / 100,  // Approx 1 GHS = 100 NGN
+  KES: 1 / 12,   // Approx 1 KES = 12 NGN
+  ZAR: 1 / 90,   // Approx 1 ZAR = 90 NGN
+};
+
+export function convertPrice(amountCents: number, baseCurrency: string, targetCurrency: string): number {
+  if (baseCurrency === targetCurrency) return amountCents;
+
+  // Convert base to NGN first
+  let amountNgnCents = amountCents;
+  if (baseCurrency === "USD") amountNgnCents = amountCents * 1600;
+  else if (baseCurrency === "GHS") amountNgnCents = amountCents * 100;
+  else if (baseCurrency === "KES") amountNgnCents = amountCents * 12;
+  else if (baseCurrency === "ZAR") amountNgnCents = amountCents * 90;
+
+  // Convert NGN to target currency
+  const targetRate = EXCHANGE_RATES_FROM_NGN[targetCurrency] || 1;
+  return Math.round(amountNgnCents * targetRate);
+}
+
 function newId(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -127,6 +150,41 @@ export const initializePayment = createServerFn({ method: "POST" })
 
     if (amountCents <= 0) return { ok: false, error: "Invalid payment amount." };
 
+    // Resolve buyer country
+    const { data: buyer } = await adminDb.selectOne<{ country: string }>("profiles", {
+      email: `eq.${data.payerEmail}`,
+    }).catch(() => ({ data: { country: "NG" } }));
+    const buyerCountry = buyer?.country ?? "NG";
+
+    // Resolve target checkout currency server-side based on country overrides
+    let targetCurrency = "NGN";
+    if (data.paymentType === "pro_subscription") {
+      targetCurrency = "USD";
+    } else if (toEmail) {
+      const { data: settings } = await adminDb.selectOne<{ global_currency: string }>("creator_monetization_settings", {
+        creator_email: `eq.${toEmail}`,
+      }).catch(() => ({ data: null }));
+
+      const { data: override } = await adminDb.selectOne<{ override_currency: string }>("creator_currency_overrides", {
+        creator_email: `eq.${toEmail}`,
+        country_code: `eq.${buyerCountry}`,
+      }).catch(() => ({ data: null }));
+
+      if (override) {
+        targetCurrency = override.override_currency;
+      } else if (settings) {
+        targetCurrency = settings.global_currency;
+      } else {
+        const countryDefaults: Record<string, string> = { NG: "NGN", GH: "GHS", KE: "KES", ZA: "ZAR" };
+        targetCurrency = countryDefaults[buyerCountry] ?? "NGN";
+      }
+    } else {
+      targetCurrency = data.currency;
+    }
+
+    const baseCurrency = data.paymentType === "pro_subscription" ? "USD" : "NGN";
+    amountCents = convertPrice(amountCents, baseCurrency, targetCurrency);
+
     // Generate idempotent reference and transaction ID
     const reference = `suka_${newId("pay")}`;
     const transactionId = newId("txn");
@@ -147,7 +205,7 @@ export const initializePayment = createServerFn({ method: "POST" })
       gross_amount_cents: amountCents,
       platform_fee_cents: feeCents,
       net_amount_cents: netCents,
-      currency: data.currency,
+      currency: targetCurrency,
       status: "pending",
       provider: "paystack",
       metadata: {},
@@ -531,4 +589,61 @@ export const getFileDownloadUrl = createServerFn({ method: "POST" })
     if (!url) return { ok: false as const, error: "Storage not configured." };
 
     return { ok: true as const, downloadUrl: url };
+  });
+
+// ─── 8. Creator Monetization Currency Settings & Overrides ───────────────────
+
+export const getCreatorMonetizationSettings = createServerFn({ method: "POST" })
+  .validator(z.object({ creatorEmail: z.string().email() }))
+  .handler(async ({ data }) => {
+    const { data: settings } = await adminDb.selectOne<{
+      global_currency: string;
+      preferred_buyer_currency: string;
+    }>("creator_monetization_settings", { creator_email: `eq.${data.creatorEmail}` }).catch(() => ({ data: null }));
+
+    const { data: overrides } = await adminDb.select<{
+      country_code: string;
+      override_currency: string;
+    }>("creator_currency_overrides", { creator_email: `eq.${data.creatorEmail}` }).catch(() => ({ data: [] }));
+
+    return {
+      globalCurrency: settings?.global_currency ?? "NGN",
+      preferredBuyerCurrency: settings?.preferred_buyer_currency ?? "NGN",
+      overrides: (overrides ?? []).map(r => ({
+        countryCode: r.country_code,
+        overrideCurrency: r.override_currency
+      }))
+    };
+  });
+
+export const saveCreatorMonetizationSettings = createServerFn({ method: "POST" })
+  .validator(z.object({
+    creatorEmail: z.string().email(),
+    globalCurrency: z.string().min(3).max(3),
+    preferredBuyerCurrency: z.string().min(3).max(3),
+    overrides: z.array(z.object({
+      countryCode: z.string().min(2).max(2),
+      overrideCurrency: z.string().min(3).max(3)
+    }))
+  }))
+  .handler(async ({ data }) => {
+    // 1. Save global settings
+    await adminDb.upsert("creator_monetization_settings", {
+      creator_email: data.creatorEmail,
+      global_currency: data.globalCurrency,
+      preferred_buyer_currency: data.preferredBuyerCurrency,
+      updated_at: new Date().toISOString()
+    }, "creator_email");
+
+    // 2. Delete old overrides and insert new ones
+    await adminDb.delete("creator_currency_overrides", { creator_email: `eq.${data.creatorEmail}` });
+    for (const override of data.overrides) {
+      await adminDb.insert("creator_currency_overrides", {
+        creator_email: data.creatorEmail,
+        country_code: override.countryCode,
+        override_currency: override.overrideCurrency
+      });
+    }
+
+    return { ok: true };
   });

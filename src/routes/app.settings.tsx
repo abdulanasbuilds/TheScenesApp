@@ -56,6 +56,8 @@ import {
   requestWithdrawal,
   initializePayment,
   verifyAndRecordPayment,
+  getCreatorMonetizationSettings,
+  saveCreatorMonetizationSettings,
 } from "@/lib/monetization.functions";
 import { initiatePaystackPayment } from "@/lib/paystack";
 import { hasInstallPrompt, triggerInstallPrompt, hapticTap, SPRING_FAST } from "@/lib/pwa";
@@ -497,25 +499,95 @@ function MonetizationTab({ email }: { email: string }) {
   const [wdType, setWdType] = useState<"standard" | "instant">("standard");
   const [submitting, setSubmitting] = useState(false);
 
+  // Currency & Override states
+  const [globalCurrency, setGlobalCurrency] = useState("NGN");
+  const [overrideGHS, setOverrideGHS] = useState(false);
+  const [overrideKES, setOverrideKES] = useState(false);
+  const [overrideZAR, setOverrideZAR] = useState(false);
+  const [currencyGHS, setCurrencyGHS] = useState("GHS");
+  const [currencyKES, setCurrencyKES] = useState("KES");
+  const [currencyZAR, setCurrencyZAR] = useState("ZAR");
+  const [savingSettings, setSavingSettings] = useState(false);
+
   const isCreator = store.session?.role === "creator";
 
   const load = async () => {
     if (!email) return;
     setLoading(true);
     try {
-      const [dash, payout] = await Promise.all([
+      const [dash, payout, currencyConfig] = await Promise.all([
         getCreatorDashboard({ data: { creatorEmail: email } }),
         getPayoutSetup({ data: { creatorEmail: email } }).catch(() => ({ account: null })),
+        getCreatorMonetizationSettings({ data: { creatorEmail: email } }).catch(() => ({
+          globalCurrency: "NGN",
+          preferredBuyerCurrency: "NGN",
+          overrides: []
+        }))
       ]);
       setData(dash);
       setPayoutAcct(payout.account);
       if (payout.account?.defaultWithdrawalType) {
         setWdType(payout.account.defaultWithdrawalType);
       }
+
+      // Populate currency configurations
+      setGlobalCurrency(currencyConfig.globalCurrency);
+
+      const ghOverride = currencyConfig.overrides.find(o => o.countryCode === "GH");
+      if (ghOverride) {
+        setOverrideGHS(true);
+        setCurrencyGHS(ghOverride.overrideCurrency);
+      } else {
+        setOverrideGHS(false);
+        setCurrencyGHS("GHS");
+      }
+
+      const keOverride = currencyConfig.overrides.find(o => o.countryCode === "KE");
+      if (keOverride) {
+        setOverrideKES(true);
+        setCurrencyKES(keOverride.overrideCurrency);
+      } else {
+        setOverrideKES(false);
+        setCurrencyKES("KES");
+      }
+
+      const zaOverride = currencyConfig.overrides.find(o => o.countryCode === "ZA");
+      if (zaOverride) {
+        setOverrideZAR(true);
+        setCurrencyZAR(zaOverride.overrideCurrency);
+      } else {
+        setOverrideZAR(false);
+        setCurrencyZAR("ZAR");
+      }
     } catch {
       toast.error("Could not load financials.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveMonetizationSettings = async () => {
+    setSavingSettings(true);
+    try {
+      const overrides: { countryCode: string; overrideCurrency: string }[] = [];
+      if (overrideGHS) overrides.push({ countryCode: "GH", overrideCurrency: currencyGHS });
+      if (overrideKES) overrides.push({ countryCode: "KE", overrideCurrency: currencyKES });
+      if (overrideZAR) overrides.push({ countryCode: "ZA", overrideCurrency: currencyZAR });
+
+      await saveCreatorMonetizationSettings({
+        data: {
+          creatorEmail: email,
+          globalCurrency,
+          preferredBuyerCurrency: globalCurrency,
+          overrides
+        }
+      });
+      toast.success("Region-aware currency configurations updated successfully!");
+      await load();
+    } catch {
+      toast.error("Could not save currency configurations.");
+    } finally {
+      setSavingSettings(false);
     }
   };
 
@@ -617,6 +689,152 @@ function MonetizationTab({ email }: { email: string }) {
               tab to enable withdrawals.
             </p>
           )}
+        </div>
+      </Panel>
+
+      <Panel
+        title="Region-Aware Currency Settings & Overrides"
+        description="Establish your global default checkout currency, or override currencies for visitors from specific countries."
+      >
+        <div className="space-y-5">
+          {/* Global settlement currency select */}
+          <Field label="Global Settlement Currency">
+            <select
+              value={globalCurrency}
+              onChange={(e) => setGlobalCurrency(e.target.value)}
+              className={inputCls}
+            >
+              <option value="NGN">Nigerian Naira (NGN - ₦)</option>
+              <option value="USD">United States Dollar (USD - $)</option>
+              <option value="GHS">Ghanaian Cedi (GHS - ₵)</option>
+              <option value="KES">Kenyan Shilling (KES - KSh)</option>
+              <option value="ZAR">South African Rand (ZAR - R)</option>
+            </select>
+            <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+              Standard checkout pricing defaults to this currency unless customized in the country-specific overrides below.
+            </p>
+          </Field>
+
+          {/* Overrides header */}
+          <div className="border-t border-slate-100 pt-4">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-1">
+              <Globe size={15} className="text-primary" /> Country-Specific Currency Overrides
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Enable checkout overrides to charge local country currencies directly instead of converting to your global default.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {/* Ghana GHS */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-accent/30 rounded-xl border border-border">
+              <div className="flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  id="overrideGHS"
+                  checked={overrideGHS}
+                  onChange={(e) => setOverrideGHS(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <div>
+                  <label htmlFor="overrideGHS" className="text-xs font-bold text-foreground cursor-pointer">
+                    Ghana Override (GHS)
+                  </label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-normal">
+                    Check to charge learners in Ghana using Cedi or custom currency.
+                  </p>
+                </div>
+              </div>
+              {overrideGHS && (
+                <select
+                  value={currencyGHS}
+                  onChange={(e) => setCurrencyGHS(e.target.value)}
+                  className="bg-card border border-border text-xs rounded-lg px-2.5 py-1.5 focus:border-primary outline-none"
+                >
+                  <option value="GHS">Ghanaian Cedi (GHS)</option>
+                  <option value="USD">United States Dollar (USD)</option>
+                </select>
+              )}
+            </div>
+
+            {/* Kenya KES */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-accent/30 rounded-xl border border-border">
+              <div className="flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  id="overrideKES"
+                  checked={overrideKES}
+                  onChange={(e) => setOverrideKES(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <div>
+                  <label htmlFor="overrideKES" className="text-xs font-bold text-foreground cursor-pointer">
+                    Kenya Override (KES)
+                  </label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-normal">
+                    Check to charge learners in Kenya using Shillings or custom currency.
+                  </p>
+                </div>
+              </div>
+              {overrideKES && (
+                <select
+                  value={currencyKES}
+                  onChange={(e) => setCurrencyKES(e.target.value)}
+                  className="bg-card border border-border text-xs rounded-lg px-2.5 py-1.5 focus:border-primary outline-none"
+                >
+                  <option value="KES">Kenyan Shilling (KES)</option>
+                  <option value="USD">United States Dollar (USD)</option>
+                </select>
+              )}
+            </div>
+
+            {/* South Africa ZAR */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-accent/30 rounded-xl border border-border">
+              <div className="flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  id="overrideZAR"
+                  checked={overrideZAR}
+                  onChange={(e) => setOverrideZAR(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <div>
+                  <label htmlFor="overrideZAR" className="text-xs font-bold text-foreground cursor-pointer">
+                    South Africa Override (ZAR)
+                  </label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-normal">
+                    Check to charge learners in South Africa using Rand or custom currency.
+                  </p>
+                </div>
+              </div>
+              {overrideZAR && (
+                <select
+                  value={currencyZAR}
+                  onChange={(e) => setCurrencyZAR(e.target.value)}
+                  className="bg-card border border-border text-xs rounded-lg px-2.5 py-1.5 focus:border-primary outline-none"
+                >
+                  <option value="ZAR">South African Rand (ZAR)</option>
+                  <option value="USD">United States Dollar (USD)</option>
+                </select>
+              )}
+            </div>
+          </div>
+
+          <div className="border-t border-slate-100 pt-4 flex justify-end">
+            <button
+              onClick={handleSaveMonetizationSettings}
+              disabled={savingSettings}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-40"
+            >
+              {savingSettings ? (
+                <>
+                  <Loader2 size={13} className="animate-spin" /> Saving...
+                </>
+              ) : (
+                "Save Currency Preferences"
+              )}
+            </button>
+          </div>
         </div>
       </Panel>
 
@@ -730,7 +948,7 @@ function PayoutsTab({ email }: { email: string }) {
   const [isEditing, setIsEditing] = useState(false);
 
   // Input states
-  const [countryCode, setCountryCode] = useState("NG");
+  const [countryCode, setCountryCode] = useState(store.session?.country || "NG");
   const [method, setMethod] = useState<"bank" | "mobile_money">("bank");
   const [bankCode, setBankCode] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
