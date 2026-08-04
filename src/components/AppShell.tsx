@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { Link, Outlet, useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import {
   Home,
   GraduationCap,
@@ -18,10 +18,12 @@ import {
   MessageCircle,
   Compass,
   Download,
+  Link2,
+  Info,
   X as XIcon,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Drawer } from "vaul";
 import { Avatar } from "./BrowserFrame";
@@ -48,7 +50,32 @@ interface NavItem {
   comingSoon?: boolean;
 }
 
-// ─── Nav definitions ───────────────────────────────────────────────────────────
+// ─── Dynamic Navigation Builder ───────────────────────────────────────────────
+
+function getWorkspaceNav(communitySlug: string, isOwner: boolean): NavItem[] {
+  const base = `/${communitySlug}`;
+  const nav: NavItem[] = [
+    { to: `${base}/posts`, label: "Community", icon: Home },
+    { to: `${base}/courses`, label: "Courses", icon: BookOpen },
+    { to: `${base}/members`, label: "Members", icon: Users },
+    { to: `${base}/resources`, label: "Resources", icon: Link2 },
+    { to: `${base}/events`, label: "Events", icon: Calendar },
+    { to: `${base}/about`, label: "About", icon: Info },
+  ];
+
+  if (isOwner) {
+    nav.push({ to: `${base}/settings`, label: "Workspace Settings", icon: Settings });
+  }
+
+  // General app links
+  nav.push(
+    { to: "/discover", label: "Discover", icon: Compass },
+    { to: "/app/messages", label: "Messages", icon: MessagesSquare },
+    { to: "/app/settings", label: "My Settings", icon: Settings }
+  );
+
+  return nav;
+}
 
 const CREATOR_NAV: NavItem[] = [
   { to: "/app/creator", label: "Creator Hub", icon: BarChart3 },
@@ -200,6 +227,9 @@ export function AppShell() {
   const loc = useLocation();
   const nav = useNavigate();
   const store = useAppStore();
+  const params = useParams({ strict: false });
+  const communitySlug = (params as any)?.communitySlug;
+
   const [showNotifs, setShowNotifs] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -224,15 +254,43 @@ export function AppShell() {
     if (store.isHydrated && !store.session) window.location.replace("/auth");
   }, [store.isHydrated, store.session]);
 
+  const slugify = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+  const activeCommunity = useMemo(() => {
+    if (!communitySlug) return null;
+    return store.communities.find((c) => slugify(c.title) === communitySlug);
+  }, [store.communities, communitySlug]);
+
+  const isOwner = useMemo(() => {
+    if (!activeCommunity || !store.session) return false;
+    return store.session.email === activeCommunity.creatorEmail;
+  }, [store.session, activeCommunity]);
+
   if (!store.isHydrated) {
     return <AppLoadingSkeleton />;
   }
   if (!store.session) return null;
 
   const isCreator = store.session.role === "creator";
-  const NAV = isCreator ? CREATOR_NAV : LEARNER_NAV;
-  const MOBILE_TOPS = isCreator ? CREATOR_MOBILE : LEARNER_MOBILE;
-  const MOBILE_NAV = NAV.filter((n) => MOBILE_TOPS.includes(n.to));
+
+  // Build the dynamic workspace/app sidebar links
+  const NAV = activeCommunity
+    ? getWorkspaceNav(communitySlug, isOwner)
+    : isCreator
+      ? CREATOR_NAV
+      : LEARNER_NAV;
+
+  const MOBILE_TOPS = activeCommunity
+    ? [`/${communitySlug}/posts`, `/${communitySlug}/courses`, `/${communitySlug}/members`]
+    : isCreator
+      ? CREATOR_MOBILE
+      : LEARNER_MOBILE;
+
+  const MOBILE_NAV = NAV.filter((n) => MOBILE_TOPS.some((mTo) => n.to === mTo || n.to.startsWith(mTo)));
 
   const displayName = store.session.name;
   const initials = store.session.avatar;
@@ -250,9 +308,31 @@ export function AppShell() {
     <div className="flex min-h-screen bg-background">
       {/* ── Desktop sidebar ── */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-card md:flex">
-        {/* Logo */}
+        {/* Logo / Branding */}
         <div className="flex h-14 items-center gap-2 border-b border-neutral-100 px-4">
-          <Logo className="h-6 w-auto" />
+          {activeCommunity ? (
+            <div className="flex items-center gap-2">
+              <div
+                className="w-7 h-7 rounded-lg text-white font-bold text-xs flex items-center justify-center"
+                style={{ backgroundColor: activeCommunity.color || "#3B82F6" }}
+              >
+                {activeCommunity.iconUrl ? (
+                  <img
+                    src={activeCommunity.iconUrl}
+                    alt=""
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                ) : (
+                  activeCommunity.title.charAt(0).toUpperCase()
+                )}
+              </div>
+              <span className="text-sm font-bold truncate text-foreground max-w-[120px]">
+                {activeCommunity.title}
+              </span>
+            </div>
+          ) : (
+            <Logo className="h-6 w-auto" />
+          )}
         </div>
 
         {/* Nav links */}
@@ -472,9 +552,9 @@ export function AppShell() {
           </div>
         )}
 
-        {/* Mobile scrollable nav — secondary items only (primary items are in the bottom tab bar) */}
+        {/* Mobile scrollable nav ── secondary items */}
         <nav className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto border-b border-neutral-100 bg-card px-3 py-2 scrollbar-hide snap-x snap-mandatory md:hidden">
-          {NAV.filter((n) => !MOBILE_TOPS.includes(n.to)).map((n) => {
+          {NAV.filter((n) => !MOBILE_TOPS.some((mTo) => n.to === mTo || n.to.startsWith(mTo))).map((n) => {
             const active = loc.pathname.startsWith(n.to);
             const Icon = n.icon;
             const label = n.label === "Creator Hub" ? "Creator" : n.label;
