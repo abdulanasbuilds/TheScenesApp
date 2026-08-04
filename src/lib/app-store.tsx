@@ -9,6 +9,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { recordOrganicTraffic, isPauseError, runLegitimateHeartbeat } from "@/lib/activity-resilience";
 import {
   sendWelcomeEmail,
   sendEnrollmentEmail,
@@ -619,6 +620,7 @@ type AppStoreValue = {
   notifications: AppNotification[];
   unreadCount: number;
   isHydrated: boolean;
+  isDatabasePaused: boolean;
   joinedCommunityIds: number[];
   courses: Course[];
   communityResources: CommunityResource[];
@@ -881,6 +883,7 @@ async function fetchProfile(
 export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedState>(defaultState);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isDatabasePaused, setIsDatabasePaused] = useState(false);
   const bootingRef = useRef(false);
   const realtimeChannelRef = useRef<ReturnType<NonNullable<typeof supabase>["channel"]> | null>(
     null,
@@ -1251,15 +1254,31 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           },
         });
 
+        // Record that database was queried successfully
+        recordOrganicTraffic();
+        setIsDatabasePaused(false);
+
         // Set up realtime subscriptions for this user
         if (!cancelled) setupRealtime(email);
       } catch (err) {
         console.error("[SukaSpace] Failed to load from Supabase:", err);
-        setState(defaultState());
+        if (isPauseError(err)) {
+          setIsDatabasePaused(true);
+        } else {
+          setState(defaultState());
+        }
       } finally {
         bootingRef.current = false;
       }
     }
+
+    // Best-effort check connection and keep alive on mount of application
+    runLegitimateHeartbeat("client").then((res) => {
+      if (!res.success && isDatabasePaused === false) {
+        // If query fails on mount, double check if it is paused
+        setIsDatabasePaused(true);
+      }
+    });
 
     if (isSupabaseConfigured && supabase) {
       bootFromSupabase().finally(() => {
@@ -1333,6 +1352,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     notifications: state.notifications,
     unreadCount: state.notifications.filter((n) => !n.read).length,
     isHydrated,
+    isDatabasePaused,
     joinedCommunityIds: state.joinedCommunityIds,
     courses: state.courses,
     communityResources: state.communityResources,

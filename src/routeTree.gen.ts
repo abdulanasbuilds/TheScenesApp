@@ -40,6 +40,7 @@ import { Route as AppAutomationsRouteImport } from './routes/app.automations'
 import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 import { Route as AppAffiliateRouteImport } from './routes/app.affiliate'
 import { Route as ApiWebhookRouteImport } from './routes/api/webhook'
+import { Route as ApiHeartbeatRouteImport } from './routes/api/heartbeat'
 import { Route as CSlugAboutRouteImport } from './routes/c.$slug.about'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -197,6 +198,11 @@ const ApiWebhookRoute = ApiWebhookRouteImport.update({
   path: '/api/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHeartbeatRoute = ApiHeartbeatRouteImport.update({
+  id: '/api/heartbeat',
+  path: '/api/heartbeat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CSlugAboutRoute = CSlugAboutRouteImport.update({
   id: '/c/$slug/about',
   path: '/c/$slug/about',
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/heartbeat': typeof ApiHeartbeatRoute
   '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/analytics': typeof AppAnalyticsRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/heartbeat': typeof ApiHeartbeatRoute
   '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/analytics': typeof AppAnalyticsRoute
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/heartbeat': typeof ApiHeartbeatRoute
   '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/analytics': typeof AppAnalyticsRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/api/heartbeat'
     | '/api/webhook'
     | '/app/affiliate'
     | '/app/analytics'
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/api/heartbeat'
     | '/api/webhook'
     | '/app/affiliate'
     | '/app/analytics'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/api/heartbeat'
     | '/api/webhook'
     | '/app/affiliate'
     | '/app/analytics'
@@ -421,6 +433,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiHeartbeatRoute: typeof ApiHeartbeatRoute
   ApiWebhookRoute: typeof ApiWebhookRoute
   CSlugAboutRoute: typeof CSlugAboutRoute
 }
@@ -644,6 +657,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/heartbeat': {
+      id: '/api/heartbeat'
+      path: '/api/heartbeat'
+      fullPath: '/api/heartbeat'
+      preLoaderRoute: typeof ApiHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/c/$slug/about': {
       id: '/c/$slug/about'
       path: '/c/$slug/about'
@@ -712,6 +732,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiHeartbeatRoute: ApiHeartbeatRoute,
   ApiWebhookRoute: ApiWebhookRoute,
   CSlugAboutRoute: CSlugAboutRoute,
 }
