@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { adminDb } from "@/lib/supabase-admin";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -113,8 +115,14 @@ function nowId(): number {
 // ─── Core: push one notification ─────────────────────────────────────────────
 
 export const pushNotificationForUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator((d: PushNotifInput) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.userEmail) {
+      throw new Error("Unauthorized: User email mismatch.");
+    }
+
     const ok = await dbInsert("notifications", {
       id: nowId(),
       user_email: data.userEmail,
@@ -132,8 +140,14 @@ export const pushNotificationForUser = createServerFn({ method: "POST" })
 // ─── Core: send one DM ───────────────────────────────────────────────────────
 
 export const sendAutoDM = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator((d: AutoDMInput) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.fromEmail) {
+      throw new Error("Unauthorized: Sender email mismatch.");
+    }
+
     const ok = await dbInsert("direct_messages", {
       id: nowId(),
       from_email: data.fromEmail,
@@ -160,8 +174,14 @@ export const sendAutoDM = createServerFn({ method: "POST" })
 // ─── Triggered: member joins a community ─────────────────────────────────────
 
 export const onMemberJoin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator((d: MemberJoinInput) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.userEmail) {
+      throw new Error("Unauthorized: User email mismatch.");
+    }
+
     const now = new Date().toISOString();
     const welcome =
       data.welcomeMessage ??
@@ -210,8 +230,14 @@ export const onMemberJoin = createServerFn({ method: "POST" })
 // ─── Triggered: onboarding completed ─────────────────────────────────────────
 
 export const onOnboardingComplete = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator((d: OnboardingCompleteInput) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.userEmail) {
+      throw new Error("Unauthorized: User email mismatch.");
+    }
+
     const label = data.role === "creator" ? "creator" : "learner";
     const tips =
       data.role === "creator"
@@ -234,8 +260,21 @@ export const onOnboardingComplete = createServerFn({ method: "POST" })
 // ─── Triggered: creator sends announcement to all community members ───────────
 
 export const sendCommunityAnnouncement = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator((d: AnnouncementInput) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.creatorEmail) {
+      throw new Error("Unauthorized: Creator email mismatch.");
+    }
+
+    const { data: community } = await adminDb.selectOne<{ creator_email: string }>("communities", {
+      id: `eq.${data.communityId}`,
+    });
+    if (!community || community.creator_email !== userEmail) {
+      throw new Error("Unauthorized: Not the community creator.");
+    }
+
     const now = new Date().toISOString();
     const batchSize = 50; // Supabase REST allows bulk insert
 
@@ -273,8 +312,21 @@ export const sendCommunityAnnouncement = createServerFn({ method: "POST" })
 // ─── Triggered: creator publishes a new course / lesson ─────────────────────
 
 export const notifyCoursePublished = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator((d: CoursePublishedInput) => d)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail) {
+      throw new Error("Unauthorized");
+    }
+
+    const { data: course } = await adminDb.selectOne<{ creator_email: string }>("courses", {
+      id: `eq.${data.courseId}`,
+    });
+    if (!course || course.creator_email !== userEmail) {
+      throw new Error("Unauthorized: Not the course creator.");
+    }
+
     const now = new Date().toISOString();
     const rows = data.memberEmails.map((email, i) => ({
       id: nowId() + i,

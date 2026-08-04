@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * Server-side Paystack payment verification.
@@ -18,8 +19,17 @@ export type VerifyPaystackResult =
   | { success: false; error: string };
 
 export const verifyPaystackPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(verifySchema)
-  .handler(async ({ data }): Promise<VerifyPaystackResult> => {
+  .handler(async ({ data, context }): Promise<VerifyPaystackResult> => {
+    const userEmail = context.claims?.email;
+    if (!userEmail) {
+      throw new Error("Unauthorized");
+    }
+    if (data.expectedEmail && userEmail !== data.expectedEmail) {
+      throw new Error("Unauthorized: Email mismatch");
+    }
+
     const secretKey = process.env.PAYSTACK_SECRET_KEY;
     if (!secretKey) {
       console.error("[paystack] PAYSTACK_SECRET_KEY not configured.");

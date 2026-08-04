@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * Server-side payment recording.
@@ -26,8 +27,14 @@ const recordSchema = z.object({
 export type RecordPaymentResult = { success: true } | { success: false; error: string };
 
 export const recordPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(recordSchema)
-  .handler(async ({ data }): Promise<RecordPaymentResult> => {
+  .handler(async ({ data, context }): Promise<RecordPaymentResult> => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.fromEmail) {
+      return { success: false, error: "Unauthorized: Payer email mismatch" };
+    }
+
     // Use non-VITE server-side name — VITE_* are build-time client vars only.
     // Set SUPABASE_URL as a runtime binding in Cloudflare dashboard.
     const supabaseUrl = process.env.SUPABASE_URL;

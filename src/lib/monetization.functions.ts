@@ -11,6 +11,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { getPaymentProvider } from "@/lib/payment-adapter";
 import { adminDb } from "@/lib/supabase-admin";
@@ -72,8 +73,14 @@ export type InitPaymentResult =
   | { ok: false; error: string };
 
 export const initializePayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(initPaymentSchema)
-  .handler(async ({ data }): Promise<InitPaymentResult> => {
+  .handler(async ({ data, context }): Promise<InitPaymentResult> => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.payerEmail) {
+      return { ok: false, error: "Unauthorized: Payer email mismatch." };
+    }
+
     // Rate limit: prevent initialization spam
     const rate = await checkPaymentVerifyRate(data.payerEmail);
     if (!rate.allowed) {
@@ -177,8 +184,14 @@ export type VerifyPaymentResult =
   { ok: true; accessGranted: boolean; message: string } | { ok: false; error: string };
 
 export const verifyAndRecordPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(verifyPaymentSchema)
-  .handler(async ({ data }): Promise<VerifyPaymentResult> => {
+  .handler(async ({ data, context }): Promise<VerifyPaymentResult> => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.userEmail) {
+      return { ok: false, error: "Unauthorized: User email mismatch." };
+    }
+
     // Rate limit
     const rate = await checkPaymentVerifyRate(data.userEmail);
     if (!rate.allowed) {
@@ -318,8 +331,14 @@ const withdrawalSchema = z.object({
 });
 
 export const requestWithdrawal = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(withdrawalSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.creatorEmail) {
+      return { ok: false, error: "Unauthorized: Creator email mismatch." };
+    }
+
     // Rate limit: max 3 withdrawal requests per creator per hour
     const rate = await checkWithdrawalRate(data.creatorEmail);
     if (!rate.allowed) {
@@ -366,8 +385,14 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
 const dashboardSchema = z.object({ creatorEmail: z.string().email() });
 
 export const getCreatorDashboard = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(dashboardSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.creatorEmail) {
+      throw new Error("Unauthorized: Creator email mismatch.");
+    }
+
     const [summary, withdrawals, history, storage, subscription] = await Promise.all([
       getEarningsSummary(data.creatorEmail),
       getWithdrawalHistory(data.creatorEmail, 10),
@@ -399,8 +424,14 @@ const accessCheckSchema = z.object({
 });
 
 export const checkContentAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(accessCheckSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.userEmail) {
+      throw new Error("Unauthorized: User email mismatch.");
+    }
+
     if (data.resourceType === "community") {
       return checkCommunityAccess(data.userEmail, data.resourceId);
     }
@@ -417,8 +448,14 @@ const fileUploadSchema = z.object({
 });
 
 export const getFileUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(fileUploadSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.creatorEmail) {
+      return { ok: false as const, error: "Unauthorized: Creator email mismatch." };
+    }
+
     // Rate limit
     const rate = await checkFileAccessRate(data.creatorEmail);
     if (!rate.allowed) return { ok: false as const, error: "Rate limit exceeded." };
@@ -486,8 +523,14 @@ const fileDownloadSchema = z.object({
 });
 
 export const getFileDownloadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(fileDownloadSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.userEmail) {
+      return { ok: false as const, error: "Unauthorized: User email mismatch." };
+    }
+
     // Rate limit
     const rate = await checkFileAccessRate(data.userEmail);
     if (!rate.allowed) return { ok: false as const, error: "Rate limit exceeded." };

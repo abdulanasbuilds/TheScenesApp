@@ -7,6 +7,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import {
   getPayoutAccount,
@@ -19,8 +20,13 @@ import {
 const emailSchema = z.object({ creatorEmail: z.string().email() });
 
 export const getPayoutSetup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(emailSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.creatorEmail) {
+      throw new Error("Unauthorized: Creator email mismatch.");
+    }
     const account = await getPayoutAccount(data.creatorEmail);
     return { account: account ? toPublicPayoutAccount(account) : null };
   });
@@ -39,8 +45,15 @@ const saveAccountSchema = z.object({
 });
 
 export const savePayoutAccountFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(saveAccountSchema)
-  .handler(async ({ data }) => savePayoutAccount(data));
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.creatorEmail) {
+      throw new Error("Unauthorized: Creator email mismatch.");
+    }
+    return savePayoutAccount(data);
+  });
 
 const prefsSchema = z.object({
   creatorEmail: z.string().email(),
@@ -49,9 +62,23 @@ const prefsSchema = z.object({
 });
 
 export const savePayoutPreferencesFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(prefsSchema)
-  .handler(async ({ data }) => savePayoutPreferences(data));
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.creatorEmail) {
+      throw new Error("Unauthorized: Creator email mismatch.");
+    }
+    return savePayoutPreferences(data);
+  });
 
 export const removePayoutAccountFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(emailSchema)
-  .handler(async ({ data }) => removePayoutAccount(data.creatorEmail));
+  .handler(async ({ data, context }) => {
+    const userEmail = context.claims?.email;
+    if (!userEmail || userEmail !== data.creatorEmail) {
+      throw new Error("Unauthorized: Creator email mismatch.");
+    }
+    return removePayoutAccount(data.creatorEmail);
+  });
