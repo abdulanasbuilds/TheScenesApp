@@ -19,8 +19,10 @@ import { Route as CreateCommunityRouteImport } from './routes/create-community'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as CommunitySlugRouteImport } from './routes/$communitySlug'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as CommunitySlugIndexRouteImport } from './routes/$communitySlug.index'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSearchRouteImport } from './routes/app.search'
 import { Route as AppPayoutsRouteImport } from './routes/app.payouts'
@@ -40,6 +42,13 @@ import { Route as AppAutomationsRouteImport } from './routes/app.automations'
 import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 import { Route as AppAffiliateRouteImport } from './routes/app.affiliate'
 import { Route as ApiWebhookRouteImport } from './routes/api/webhook'
+import { Route as CommunitySlugSettingsRouteImport } from './routes/$communitySlug.settings'
+import { Route as CommunitySlugResourcesRouteImport } from './routes/$communitySlug.resources'
+import { Route as CommunitySlugPostsRouteImport } from './routes/$communitySlug.posts'
+import { Route as CommunitySlugMembersRouteImport } from './routes/$communitySlug.members'
+import { Route as CommunitySlugEventsRouteImport } from './routes/$communitySlug.events'
+import { Route as CommunitySlugCoursesRouteImport } from './routes/$communitySlug.courses'
+import { Route as CommunitySlugAboutRouteImport } from './routes/$communitySlug.about'
 import { Route as CSlugAboutRouteImport } from './routes/c.$slug.about'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -92,6 +101,11 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunitySlugRoute = CommunitySlugRouteImport.update({
+  id: '/$communitySlug',
+  path: '/$communitySlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -101,6 +115,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const CommunitySlugIndexRoute = CommunitySlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CommunitySlugRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
@@ -197,6 +216,41 @@ const ApiWebhookRoute = ApiWebhookRouteImport.update({
   path: '/api/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunitySlugSettingsRoute = CommunitySlugSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => CommunitySlugRoute,
+} as any)
+const CommunitySlugResourcesRoute = CommunitySlugResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => CommunitySlugRoute,
+} as any)
+const CommunitySlugPostsRoute = CommunitySlugPostsRouteImport.update({
+  id: '/posts',
+  path: '/posts',
+  getParentRoute: () => CommunitySlugRoute,
+} as any)
+const CommunitySlugMembersRoute = CommunitySlugMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => CommunitySlugRoute,
+} as any)
+const CommunitySlugEventsRoute = CommunitySlugEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => CommunitySlugRoute,
+} as any)
+const CommunitySlugCoursesRoute = CommunitySlugCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => CommunitySlugRoute,
+} as any)
+const CommunitySlugAboutRoute = CommunitySlugAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => CommunitySlugRoute,
+} as any)
 const CSlugAboutRoute = CSlugAboutRouteImport.update({
   id: '/c/$slug/about',
   path: '/c/$slug/about',
@@ -205,6 +259,7 @@ const CSlugAboutRoute = CSlugAboutRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$communitySlug': typeof CommunitySlugRouteWithChildren
   '/about': typeof AboutRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
@@ -215,6 +270,13 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/$communitySlug/about': typeof CommunitySlugAboutRoute
+  '/$communitySlug/courses': typeof CommunitySlugCoursesRoute
+  '/$communitySlug/events': typeof CommunitySlugEventsRoute
+  '/$communitySlug/members': typeof CommunitySlugMembersRoute
+  '/$communitySlug/posts': typeof CommunitySlugPostsRoute
+  '/$communitySlug/resources': typeof CommunitySlugResourcesRoute
+  '/$communitySlug/settings': typeof CommunitySlugSettingsRoute
   '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/analytics': typeof AppAnalyticsRoute
@@ -234,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/app/payouts': typeof AppPayoutsRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
+  '/$communitySlug/': typeof CommunitySlugIndexRoute
   '/app/': typeof AppIndexRoute
   '/c/$slug/about': typeof CSlugAboutRoute
 }
@@ -248,6 +311,13 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/$communitySlug/about': typeof CommunitySlugAboutRoute
+  '/$communitySlug/courses': typeof CommunitySlugCoursesRoute
+  '/$communitySlug/events': typeof CommunitySlugEventsRoute
+  '/$communitySlug/members': typeof CommunitySlugMembersRoute
+  '/$communitySlug/posts': typeof CommunitySlugPostsRoute
+  '/$communitySlug/resources': typeof CommunitySlugResourcesRoute
+  '/$communitySlug/settings': typeof CommunitySlugSettingsRoute
   '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/analytics': typeof AppAnalyticsRoute
@@ -267,12 +337,14 @@ export interface FileRoutesByTo {
   '/app/payouts': typeof AppPayoutsRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
+  '/$communitySlug': typeof CommunitySlugIndexRoute
   '/app': typeof AppIndexRoute
   '/c/$slug/about': typeof CSlugAboutRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$communitySlug': typeof CommunitySlugRouteWithChildren
   '/about': typeof AboutRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
@@ -283,6 +355,13 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/$communitySlug/about': typeof CommunitySlugAboutRoute
+  '/$communitySlug/courses': typeof CommunitySlugCoursesRoute
+  '/$communitySlug/events': typeof CommunitySlugEventsRoute
+  '/$communitySlug/members': typeof CommunitySlugMembersRoute
+  '/$communitySlug/posts': typeof CommunitySlugPostsRoute
+  '/$communitySlug/resources': typeof CommunitySlugResourcesRoute
+  '/$communitySlug/settings': typeof CommunitySlugSettingsRoute
   '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/analytics': typeof AppAnalyticsRoute
@@ -302,6 +381,7 @@ export interface FileRoutesById {
   '/app/payouts': typeof AppPayoutsRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
+  '/$communitySlug/': typeof CommunitySlugIndexRoute
   '/app/': typeof AppIndexRoute
   '/c/$slug/about': typeof CSlugAboutRoute
 }
@@ -309,6 +389,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$communitySlug'
     | '/about'
     | '/app'
     | '/auth'
@@ -319,6 +400,13 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/$communitySlug/about'
+    | '/$communitySlug/courses'
+    | '/$communitySlug/events'
+    | '/$communitySlug/members'
+    | '/$communitySlug/posts'
+    | '/$communitySlug/resources'
+    | '/$communitySlug/settings'
     | '/api/webhook'
     | '/app/affiliate'
     | '/app/analytics'
@@ -338,6 +426,7 @@ export interface FileRouteTypes {
     | '/app/payouts'
     | '/app/search'
     | '/app/settings'
+    | '/$communitySlug/'
     | '/app/'
     | '/c/$slug/about'
   fileRoutesByTo: FileRoutesByTo
@@ -352,6 +441,13 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/$communitySlug/about'
+    | '/$communitySlug/courses'
+    | '/$communitySlug/events'
+    | '/$communitySlug/members'
+    | '/$communitySlug/posts'
+    | '/$communitySlug/resources'
+    | '/$communitySlug/settings'
     | '/api/webhook'
     | '/app/affiliate'
     | '/app/analytics'
@@ -371,11 +467,13 @@ export interface FileRouteTypes {
     | '/app/payouts'
     | '/app/search'
     | '/app/settings'
+    | '/$communitySlug'
     | '/app'
     | '/c/$slug/about'
   id:
     | '__root__'
     | '/'
+    | '/$communitySlug'
     | '/about'
     | '/app'
     | '/auth'
@@ -386,6 +484,13 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/sitemap.xml'
+    | '/$communitySlug/about'
+    | '/$communitySlug/courses'
+    | '/$communitySlug/events'
+    | '/$communitySlug/members'
+    | '/$communitySlug/posts'
+    | '/$communitySlug/resources'
+    | '/$communitySlug/settings'
     | '/api/webhook'
     | '/app/affiliate'
     | '/app/analytics'
@@ -405,12 +510,14 @@ export interface FileRouteTypes {
     | '/app/payouts'
     | '/app/search'
     | '/app/settings'
+    | '/$communitySlug/'
     | '/app/'
     | '/c/$slug/about'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CommunitySlugRoute: typeof CommunitySlugRouteWithChildren
   AboutRoute: typeof AboutRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
@@ -497,6 +604,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$communitySlug': {
+      id: '/$communitySlug'
+      path: '/$communitySlug'
+      fullPath: '/$communitySlug'
+      preLoaderRoute: typeof CommunitySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -510,6 +624,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/$communitySlug/': {
+      id: '/$communitySlug/'
+      path: '/'
+      fullPath: '/$communitySlug/'
+      preLoaderRoute: typeof CommunitySlugIndexRouteImport
+      parentRoute: typeof CommunitySlugRoute
     }
     '/app/settings': {
       id: '/app/settings'
@@ -644,6 +765,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$communitySlug/settings': {
+      id: '/$communitySlug/settings'
+      path: '/settings'
+      fullPath: '/$communitySlug/settings'
+      preLoaderRoute: typeof CommunitySlugSettingsRouteImport
+      parentRoute: typeof CommunitySlugRoute
+    }
+    '/$communitySlug/resources': {
+      id: '/$communitySlug/resources'
+      path: '/resources'
+      fullPath: '/$communitySlug/resources'
+      preLoaderRoute: typeof CommunitySlugResourcesRouteImport
+      parentRoute: typeof CommunitySlugRoute
+    }
+    '/$communitySlug/posts': {
+      id: '/$communitySlug/posts'
+      path: '/posts'
+      fullPath: '/$communitySlug/posts'
+      preLoaderRoute: typeof CommunitySlugPostsRouteImport
+      parentRoute: typeof CommunitySlugRoute
+    }
+    '/$communitySlug/members': {
+      id: '/$communitySlug/members'
+      path: '/members'
+      fullPath: '/$communitySlug/members'
+      preLoaderRoute: typeof CommunitySlugMembersRouteImport
+      parentRoute: typeof CommunitySlugRoute
+    }
+    '/$communitySlug/events': {
+      id: '/$communitySlug/events'
+      path: '/events'
+      fullPath: '/$communitySlug/events'
+      preLoaderRoute: typeof CommunitySlugEventsRouteImport
+      parentRoute: typeof CommunitySlugRoute
+    }
+    '/$communitySlug/courses': {
+      id: '/$communitySlug/courses'
+      path: '/courses'
+      fullPath: '/$communitySlug/courses'
+      preLoaderRoute: typeof CommunitySlugCoursesRouteImport
+      parentRoute: typeof CommunitySlugRoute
+    }
+    '/$communitySlug/about': {
+      id: '/$communitySlug/about'
+      path: '/about'
+      fullPath: '/$communitySlug/about'
+      preLoaderRoute: typeof CommunitySlugAboutRouteImport
+      parentRoute: typeof CommunitySlugRoute
+    }
     '/c/$slug/about': {
       id: '/c/$slug/about'
       path: '/c/$slug/about'
@@ -653,6 +823,32 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface CommunitySlugRouteChildren {
+  CommunitySlugAboutRoute: typeof CommunitySlugAboutRoute
+  CommunitySlugCoursesRoute: typeof CommunitySlugCoursesRoute
+  CommunitySlugEventsRoute: typeof CommunitySlugEventsRoute
+  CommunitySlugMembersRoute: typeof CommunitySlugMembersRoute
+  CommunitySlugPostsRoute: typeof CommunitySlugPostsRoute
+  CommunitySlugResourcesRoute: typeof CommunitySlugResourcesRoute
+  CommunitySlugSettingsRoute: typeof CommunitySlugSettingsRoute
+  CommunitySlugIndexRoute: typeof CommunitySlugIndexRoute
+}
+
+const CommunitySlugRouteChildren: CommunitySlugRouteChildren = {
+  CommunitySlugAboutRoute: CommunitySlugAboutRoute,
+  CommunitySlugCoursesRoute: CommunitySlugCoursesRoute,
+  CommunitySlugEventsRoute: CommunitySlugEventsRoute,
+  CommunitySlugMembersRoute: CommunitySlugMembersRoute,
+  CommunitySlugPostsRoute: CommunitySlugPostsRoute,
+  CommunitySlugResourcesRoute: CommunitySlugResourcesRoute,
+  CommunitySlugSettingsRoute: CommunitySlugSettingsRoute,
+  CommunitySlugIndexRoute: CommunitySlugIndexRoute,
+}
+
+const CommunitySlugRouteWithChildren = CommunitySlugRoute._addFileChildren(
+  CommunitySlugRouteChildren,
+)
 
 interface AppRouteChildren {
   AppAffiliateRoute: typeof AppAffiliateRoute
@@ -702,6 +898,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CommunitySlugRoute: CommunitySlugRouteWithChildren,
   AboutRoute: AboutRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
