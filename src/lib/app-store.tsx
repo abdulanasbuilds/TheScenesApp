@@ -807,55 +807,74 @@ async function fetchProfile(
   meta: Record<string, unknown>,
 ): Promise<ProfileResult | null> {
   if (!supabase) return null;
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
   const defaultPrefs = { posts: true, dms: true, comments: true, sales: true };
-  if (profile) {
-    return {
-      name: profile.name,
-      email: profile.email,
-      avatar: profile.avatar || profile.name.slice(0, 2).toUpperCase(),
-      role: profile.role,
-      photoUrl: profile.photo_url || undefined,
-      bio: profile.bio || undefined,
-      onboardingCompleted: profile.onboarding_completed ?? false,
-      interests: profile.interests ?? [],
-      notificationPrefs: (profile.notification_prefs as Record<string, boolean>) ?? defaultPrefs,
-    };
-  }
-  // First sign-in after signup (or a project with email confirmation delay):
-  // bootstrap the profile row from the auth user's metadata instead of failing.
   const name = (meta.name as string) || fallbackEmail.split("@")[0] || "User";
   const role: "creator" | "learner" = meta.role === "creator" ? "creator" : "learner";
   const avatar = name.slice(0, 2).toUpperCase() || "YU";
-  const { data: created } = await supabase
-    .from("profiles")
-    .upsert({ id: userId, email: fallbackEmail, name, role, avatar })
-    .select()
-    .maybeSingle();
-  if (!created)
-    return {
-      name,
-      email: fallbackEmail,
-      avatar,
-      role,
-      onboardingCompleted: false,
-      interests: [],
-      notificationPrefs: defaultPrefs,
-    };
+
+  try {
+    const { data: profile, error: selectError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (selectError) {
+      console.warn("[fetchProfile] Failed to fetch profile from database:", selectError);
+    } else if (profile) {
+      return {
+        name: profile.name,
+        email: profile.email,
+        avatar: profile.avatar || profile.name.slice(0, 2).toUpperCase(),
+        role: profile.role,
+        photoUrl: profile.photo_url || undefined,
+        bio: profile.bio || undefined,
+        onboardingCompleted: profile.onboarding_completed ?? false,
+        interests: profile.interests ?? [],
+        notificationPrefs: (profile.notification_prefs as Record<string, boolean>) ?? defaultPrefs,
+      };
+    }
+  } catch (err) {
+    console.warn("[fetchProfile] Query threw an error:", err);
+  }
+
+  // First sign-in after signup (or a project with email confirmation delay):
+  // bootstrap the profile row from the auth user's metadata instead of failing.
+  try {
+    const { data: created, error: upsertError } = await supabase
+      .from("profiles")
+      .upsert({ id: userId, email: fallbackEmail, name, role, avatar })
+      .select()
+      .maybeSingle();
+
+    if (upsertError) {
+      console.warn("[fetchProfile] Profile upsert failed:", upsertError);
+    } else if (created) {
+      return {
+        name: created.name,
+        email: created.email,
+        avatar: created.avatar,
+        role: created.role,
+        photoUrl: created.photo_url || undefined,
+        bio: created.bio || undefined,
+        onboardingCompleted: created.onboarding_completed ?? false,
+        interests: created.interests ?? [],
+        notificationPrefs: (created.notification_prefs as Record<string, boolean>) ?? defaultPrefs,
+      };
+    }
+  } catch (err) {
+    console.warn("[fetchProfile] Bootstrap upsert threw an error:", err);
+  }
+
+  // Extreme fallback if tables are missing or query fails: return default metadata
   return {
-    name: created.name,
-    email: created.email,
-    avatar: created.avatar,
-    role: created.role,
-    photoUrl: created.photo_url || undefined,
-    bio: created.bio || undefined,
-    onboardingCompleted: created.onboarding_completed ?? false,
-    interests: created.interests ?? [],
-    notificationPrefs: (created.notification_prefs as Record<string, boolean>) ?? defaultPrefs,
+    name,
+    email: fallbackEmail,
+    avatar,
+    role,
+    onboardingCompleted: false,
+    interests: [],
+    notificationPrefs: defaultPrefs,
   };
 }
 
@@ -1390,7 +1409,17 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       }
       if (!data.user) return "email_taken";
       const avatar = name.slice(0, 2).toUpperCase() || "YU";
-      await supabase.from("profiles").upsert({ id: data.user.id, email, name, role, avatar });
+
+      try {
+        await supabase.from("profiles").upsert({ id: data.user.id, email, name, role, avatar });
+      } catch (profileErr) {
+        console.warn("[signUp] Profile upsert failed (will proceed):", profileErr);
+      }
+
+      if (!data.session) {
+        return "verification_required";
+      }
+
       const user: SessionUser = { name, email, avatar, role };
       setState((s) => ({
         ...s,
@@ -1404,19 +1433,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           },
         ],
       }));
-      sync(
-        supabase
-          .from("notifications")
-          .insert({
-            id: generateId(),
-            user_email: email,
-            text: `Welcome to SukaSpace, ${name}!`,
-            time: "Just now",
-            read: false,
-            created_at: Date.now(),
-          }),
-        "welcome notification",
-      );
+
+      try {
+        sync(
+          supabase
+            .from("notifications")
+            .insert({
+              id: generateId(),
+              user_email: email,
+              text: `Welcome to SukaSpace, ${name}!`,
+              time: "Just now",
+              read: false,
+              created_at: Date.now(),
+            }),
+          "welcome notification",
+        );
+      } catch (notifErr) {
+        console.warn("[signUp] Welcome notification insertion failed:", notifErr);
+      }
       // Fire-and-forget welcome email — never blocks the sign-up flow
       sendWelcomeEmail({ data: { email, name } }).catch((err) =>
         console.warn("[email] welcome email failed:", err),

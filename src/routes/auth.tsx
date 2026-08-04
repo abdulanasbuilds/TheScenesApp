@@ -59,6 +59,7 @@ function Auth() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [forgotMode, setForgotMode] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
   const nav = useNavigate();
   const store = useAppStore();
 
@@ -101,6 +102,10 @@ function Auth() {
         if (result === "email_taken") {
           hapticError();
           setError("An account with that email already exists. Sign in instead.");
+          return;
+        }
+        if (result === "verification_required") {
+          setVerificationSent(true);
           return;
         }
         // ── Instant provisioning: skip onboarding, route straight to feed ──
@@ -170,6 +175,52 @@ function Auth() {
             className="mt-6 w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-accent"
           >
             Back to sign in
+          </motion.button>
+        </div>
+        <Footer />
+      </motion.div>
+    );
+  }
+
+  if (verificationSent) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={SPRING_PAGE}
+        className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 pb-24"
+      >
+        <div className="w-full max-w-sm rounded-2xl border border-neutral-100 bg-card p-8 shadow-sm">
+          <div className="mb-6 text-center">
+            <Link to="/" className="inline-flex items-center justify-center gap-2 mb-4">
+              <Logo className="h-7 w-auto" />
+            </Link>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l8-5.333a2 2 0 012.22 0l8 5.333A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
+              </svg>
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-primary">
+              Verify your email
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We've sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>.
+            </p>
+          </div>
+          <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-4 text-xs text-muted-foreground leading-relaxed">
+            Please click the link in the email to activate your account. Once verified, you will be able to sign in.
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            transition={SPRING_FAST}
+            onClick={() => {
+              hapticTap();
+              setVerificationSent(false);
+              setMode("signin");
+            }}
+            className="mt-6 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90"
+          >
+            Go to Sign In
           </motion.button>
         </div>
         <Footer />
