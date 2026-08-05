@@ -86,12 +86,17 @@ export async function getEarningsSummary(
     };
   }
 
-  // Get pending withdrawal total
-  const { data: pending } = await adminDb.select<{ net_amount_cents: number }>(
-    "withdrawal_requests",
-    { creator_email: `eq.${creatorEmail}`, status: `eq.pending`, currency: `eq.${currency}` },
-  );
-  const pendingCents = (pending ?? []).reduce((sum, w) => sum + w.net_amount_cents, 0);
+  // Get pending withdrawal total (reconciliation of gross and net values)
+  const { data: pending } = await adminDb.select<{
+    amount_cents: number;
+    net_amount_cents: number;
+  }>("withdrawal_requests", {
+    creator_email: `eq.${creatorEmail}`,
+    status: `eq.pending`,
+    currency: `eq.${currency}`,
+  });
+  const pendingGrossCents = (pending ?? []).reduce((sum, w) => sum + w.amount_cents, 0);
+  const pendingNetCents = (pending ?? []).reduce((sum, w) => sum + w.net_amount_cents, 0);
 
   return {
     creatorEmail,
@@ -99,8 +104,8 @@ export async function getEarningsSummary(
     grossEarnedCents: data.gross_earned_cents ?? 0,
     totalFeesCents: Math.abs(data.total_fees_cents ?? 0),
     totalWithdrawnCents: Math.abs(data.total_withdrawn_cents ?? 0),
-    availableBalanceCents: Math.max(0, (data.balance_cents ?? 0) - pendingCents),
-    pendingCents,
+    availableBalanceCents: Math.max(0, (data.balance_cents ?? 0) - pendingGrossCents),
+    pendingCents: pendingNetCents,
     lastTransactionAt: data.last_transaction_at,
   };
 }
