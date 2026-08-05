@@ -102,12 +102,20 @@ export async function createWithdrawalRequest(
     };
   }
 
-  // Check available balance
+  // Check available balance (excluding pending withdrawals gross amounts to prevent overdraft and duplicate request abuse)
   const balance = await getCreatorBalance(input.creatorEmail, currency);
-  if (balance < input.amountCents) {
+  const { data: pending } = await adminDb.select<{ amount_cents: number }>("withdrawal_requests", {
+    creator_email: `eq.${input.creatorEmail}`,
+    status: `eq.pending`,
+    currency: `eq.${currency}`,
+  });
+  const pendingGrossCents = (pending ?? []).reduce((sum, w) => sum + w.amount_cents, 0);
+  const availableBalanceCents = Math.max(0, balance - pendingGrossCents);
+
+  if (availableBalanceCents < input.amountCents) {
     return {
       ok: false,
-      error: `Insufficient balance. Available: ${(balance / 100).toLocaleString()} ${currency}.`,
+      error: `Insufficient balance. Available: ${(availableBalanceCents / 100).toLocaleString()} ${currency}.`,
     };
   }
 
@@ -166,8 +174,17 @@ export async function processWithdrawal(
     { id: `eq.${withdrawalId}` },
   );
   if (fetchErr || !wd) return { ok: false, error: "Withdrawal not found." };
-  if (wd.status !== "pending")
-    return { ok: false, error: `Cannot process withdrawal in '${wd.status}' state.` };
+
+  // Update status to processing atomically, but ONLY if it is currently 'pending'
+  const { data: updated, error: updateErr } = await adminDb.update<Record<string, unknown>>(
+    "withdrawal_requests",
+    { id: `eq.${withdrawalId}`, status: "eq.pending" },
+    { status: "processing", updated_at: new Date().toISOString() },
+  );
+
+  if (updateErr || !updated || updated.length === 0) {
+    return { ok: false, error: "Withdrawal is already being processed or not in pending state." };
+  }
 
   // Deduct from earnings ledger
   const deducted = await recordWithdrawalDeduction({
@@ -176,16 +193,18 @@ export async function processWithdrawal(
     amountCents: wd.amount_cents as number,
     currency: wd.currency as string,
   });
-  if (!deducted.ok) return { ok: false, error: "Insufficient balance to process withdrawal." };
 
-  // Update status to processing
-  const { error } = await adminDb.update(
-    "withdrawal_requests",
-    { id: `eq.${withdrawalId}` },
-    { status: "processing", updated_at: new Date().toISOString() },
-  );
+  if (!deducted.ok) {
+    // Revert status back to pending if ledger deduction failed
+    await adminDb.update(
+      "withdrawal_requests",
+      { id: `eq.${withdrawalId}`, status: "eq.processing" },
+      { status: "pending", updated_at: new Date().toISOString() },
+    );
+    return { ok: false, error: "Insufficient balance to process withdrawal." };
+  }
 
-  return { ok: !error, error: error?.message };
+  return { ok: true };
 }
 
 /** Mark a withdrawal as paid (after Paystack transfer confirms). */
@@ -195,7 +214,7 @@ export async function markWithdrawalPaid(
 ): Promise<void> {
   await adminDb.update(
     "withdrawal_requests",
-    { id: `eq.${withdrawalId}` },
+    { id: `eq.${withdrawalId}`, status: "eq.processing" },
     {
       status: "paid",
       paystack_transfer_code: paystackTransferCode ?? null,
@@ -207,19 +226,37 @@ export async function markWithdrawalPaid(
 
 /** Mark a withdrawal as failed (with optional reason). */
 export async function markWithdrawalFailed(withdrawalId: string, reason?: string): Promise<void> {
-  // Reverse the ledger deduction if it was processing
+  // Fetch the current request first to see if it's 'processing' or 'pending'
   const { data: wd } = await adminDb.selectOne<Record<string, unknown>>("withdrawal_requests", {
     id: `eq.${withdrawalId}`,
   });
+  if (!wd) return;
 
-  if (wd && wd.status === "processing") {
+  const originalStatus = wd.status as string;
+  if (originalStatus !== "processing" && originalStatus !== "pending") {
+    // Already in a final state (paid, failed, etc.) — do nothing!
+    return;
+  }
+
+  // Atomically transition from the original status to 'failed'
+  const { data: updated, error } = await adminDb.update<Record<string, unknown>>(
+    "withdrawal_requests",
+    { id: `eq.${withdrawalId}`, status: `eq.${originalStatus}` },
+    {
+      status: "failed",
+      failure_reason: reason ?? "Unknown error",
+      updated_at: new Date().toISOString(),
+    },
+  );
+
+  // If the atomic transition succeeded, and the original status was 'processing',
+  // we can safely re-credit the funds! This is strictly thread-safe and prevents double-crediting.
+  if (!error && updated && updated.length > 0 && originalStatus === "processing") {
     // Re-credit the amount back to the creator's balance
     const { getCreatorBalance: getBalance } = await import("./earnings");
     const balance = await getBalance(wd.creator_email as string, wd.currency as string);
-    await (
-      await import("@/lib/supabase-admin")
-    ).adminDb.insert("earnings_ledger", {
-      id: `earn_rev_${Date.now()}`,
+    await adminDb.insert("earnings_ledger", {
+      id: `earn_rev_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
       creator_email: wd.creator_email,
       transaction_id: null,
       entry_type: "reversal",
@@ -230,16 +267,6 @@ export async function markWithdrawalFailed(withdrawalId: string, reason?: string
       created_at: new Date().toISOString(),
     });
   }
-
-  await adminDb.update(
-    "withdrawal_requests",
-    { id: `eq.${withdrawalId}` },
-    {
-      status: "failed",
-      failure_reason: reason ?? "Unknown error",
-      updated_at: new Date().toISOString(),
-    },
-  );
 }
 
 // ─── History ──────────────────────────────────────────────────────────────────
