@@ -1390,19 +1390,29 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       }
       if (!data.user) return "email_taken";
       const avatar = name.slice(0, 2).toUpperCase() || "YU";
-      await supabase.from("profiles").upsert({ id: data.user.id, email, name, role, avatar });
+
+      // Safe profile creation (handled securely by Postgres trigger, with client-side fallback)
+      try {
+        await supabase.from("profiles").upsert({ id: data.user.id, email, name, role, avatar });
+      } catch (e) {
+        console.warn("[SukaSpace] Profiles upsert skipped or deferred (already auto-created by database trigger):", e);
+      }
+
       const user: SessionUser = { name, email, avatar, role };
+      // Only set active session if registration automatically signed the user in (e.g. Email Confirmation disabled)
+      const isConfirmedSession = !!data.session;
+
       setState((s) => ({
         ...s,
-        session: user,
-        notifications: [
+        session: isConfirmedSession ? user : null,
+        notifications: isConfirmedSession ? [
           {
             id: generateId(),
             text: `Welcome to SukaSpace, ${name}!`,
             time: "Just now",
             read: false,
           },
-        ],
+        ] : [],
       }));
       sync(
         supabase
