@@ -540,6 +540,30 @@ export const getFileDownloadUrl = createServerFn({ method: "POST" })
     if (parts.length < 3 || parts[0] !== "creators") {
       return { ok: false as const, error: "Invalid file key." };
     }
+    const fileCreatorEmail = parts[1];
+
+    if (!isValidFileKey(data.fileKey, fileCreatorEmail)) {
+      return { ok: false as const, error: "Invalid file key format." };
+    }
+
+    // Verify that the file belongs to the creator of the resource to prevent cross-tenant/BOLA bypass
+    if (data.resourceType === "community") {
+      const { data: comm } = await adminDb.selectOne<{ creator_email: string }>("communities", {
+        id: `eq.${data.resourceId}`,
+      });
+      if (!comm || comm.creator_email !== fileCreatorEmail) {
+        return { ok: false as const, error: "File key mismatch for the specified community." };
+      }
+    } else if (data.resourceType === "course") {
+      const { data: course } = await adminDb.selectOne<{ creator_email: string }>("courses", {
+        id: `eq.${data.resourceId}`,
+      });
+      if (!course || course.creator_email !== fileCreatorEmail) {
+        return { ok: false as const, error: "File key mismatch for the specified course." };
+      }
+    } else {
+      return { ok: false as const, error: "Invalid resource type." };
+    }
 
     // Verify user has access to the resource
     let hasAccess = false;
