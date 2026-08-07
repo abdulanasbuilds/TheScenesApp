@@ -587,6 +587,22 @@ CREATE TABLE IF NOT EXISTS public.webhook_events (
 GRANT ALL ON public.webhook_events TO service_role;
 ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
 
+-- Legacy payments table
+CREATE TABLE IF NOT EXISTS public.payments (
+  id bigint PRIMARY KEY,
+  community_id bigint REFERENCES public.communities(id) ON DELETE SET NULL,
+  from_email text NOT NULL,
+  to_email text NOT NULL,
+  reference text NOT NULL,
+  amount_cents int NOT NULL,
+  currency text NOT NULL DEFAULT 'NGN',
+  status text NOT NULL DEFAULT 'completed' CHECK (status in ('pending','completed','refunded','failed')),
+  created_at bigint NOT NULL
+);
+GRANT SELECT, INSERT ON public.payments TO authenticated;
+GRANT ALL ON public.payments TO service_role;
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+
 -- creator wallet view
 CREATE OR REPLACE VIEW public.creator_wallet
 WITH (security_invoker = true) AS
