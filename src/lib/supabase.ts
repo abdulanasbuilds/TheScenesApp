@@ -14,8 +14,8 @@ const hasUrl =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
   (typeof process !== "undefined" && process.env?.SUPABASE_URL);
 const hasKey =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY) ||
-  (typeof process !== "undefined" && process.env?.SUPABASE_PUBLISHABLE_KEY);
+  (typeof import.meta !== "undefined" && (import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY)) ||
+  (typeof process !== "undefined" && (process.env?.SUPABASE_PUBLISHABLE_KEY || process.env?.SUPABASE_ANON_KEY));
 
 export const isSupabaseConfigured = !!(hasUrl && hasKey);
 
