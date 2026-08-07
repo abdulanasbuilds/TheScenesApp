@@ -1395,7 +1395,10 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       try {
         await supabase.from("profiles").upsert({ id: data.user.id, email, name, role, avatar });
       } catch (e) {
-        console.warn("[SukaSpace] Profiles upsert skipped or deferred (already auto-created by database trigger):", e);
+        console.warn(
+          "[SukaSpace] Profiles upsert skipped or deferred (already auto-created by database trigger):",
+          e,
+        );
       }
 
       const user: SessionUser = { name, email, avatar, role };
@@ -1405,26 +1408,26 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       setState((s) => ({
         ...s,
         session: isConfirmedSession ? user : null,
-        notifications: isConfirmedSession ? [
-          {
-            id: generateId(),
-            text: `Welcome to SukaSpace, ${name}!`,
-            time: "Just now",
-            read: false,
-          },
-        ] : [],
+        notifications: isConfirmedSession
+          ? [
+              {
+                id: generateId(),
+                text: `Welcome to SukaSpace, ${name}!`,
+                time: "Just now",
+                read: false,
+              },
+            ]
+          : [],
       }));
       sync(
-        supabase
-          .from("notifications")
-          .insert({
-            id: generateId(),
-            user_email: email,
-            text: `Welcome to SukaSpace, ${name}!`,
-            time: "Just now",
-            read: false,
-            created_at: Date.now(),
-          }),
+        supabase.from("notifications").insert({
+          id: generateId(),
+          user_email: email,
+          text: `Welcome to SukaSpace, ${name}!`,
+          time: "Just now",
+          read: false,
+          created_at: Date.now(),
+        }),
         "welcome notification",
       );
       // Fire-and-forget welcome email — never blocks the sign-up flow
@@ -1979,14 +1982,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       }));
       if (supabase) {
         sync(
-          supabase
-            .from("enrollments")
-            .insert({
-              course_id: courseId,
-              user_email: enrollment.userEmail,
-              completed_lesson_ids: [],
-              enrolled_at: enrollment.enrolledAt,
-            }),
+          supabase.from("enrollments").insert({
+            course_id: courseId,
+            user_email: enrollment.userEmail,
+            completed_lesson_ids: [],
+            enrolled_at: enrollment.enrolledAt,
+          }),
           "enrollment create",
         );
         sync(

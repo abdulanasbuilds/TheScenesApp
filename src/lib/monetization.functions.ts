@@ -475,7 +475,8 @@ export const getFileUploadUrl = createServerFn({ method: "POST" })
     // Proactive quota warnings (triggered at 80% capacity)
     const storageUsage = await getStorageUsage(data.creatorEmail);
     const projectedUsed = storageUsage.usedBytes + data.fileSizeBytes;
-    const projectedPercent = storageUsage.quotaBytes > 0 ? Math.round((projectedUsed / storageUsage.quotaBytes) * 100) : 0;
+    const projectedPercent =
+      storageUsage.quotaBytes > 0 ? Math.round((projectedUsed / storageUsage.quotaBytes) * 100) : 0;
     if (projectedPercent >= 80) {
       const id = Date.now() + Math.floor(Math.random() * 999);
       // In-app warning
@@ -487,7 +488,7 @@ export const getFileUploadUrl = createServerFn({ method: "POST" })
         link: "/app/settings",
         read: false,
         created_at: new Date().toISOString(),
-        dedup_key: `storage-quota-warning-80-${data.creatorEmail}`
+        dedup_key: `storage-quota-warning-80-${data.creatorEmail}`,
       });
 
       // Email warning via Resend
@@ -496,9 +497,9 @@ export const getFileUploadUrl = createServerFn({ method: "POST" })
           email: data.creatorEmail,
           usedPercent: projectedPercent,
           usedDisplay: `${Math.round(projectedUsed / (1024 * 1024))} MB`,
-          quotaDisplay: `${Math.round(storageUsage.quotaBytes / (1024 * 1024))} MB`
-        }
-      }).catch(err => console.error("[monetization] Storage quota warning email failure:", err));
+          quotaDisplay: `${Math.round(storageUsage.quotaBytes / (1024 * 1024))} MB`,
+        },
+      }).catch((err) => console.error("[monetization] Storage quota warning email failure:", err));
     }
 
     const key = buildFileKey(data.creatorEmail, data.filename);

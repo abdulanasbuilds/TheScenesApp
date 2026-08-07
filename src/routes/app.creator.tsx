@@ -879,12 +879,10 @@ function AnalyticsTab({
     week: w,
     enrollments: courses.reduce((s, c) => s + Math.min(c.enrollmentCount, i + 1), 0),
   }));
-  const courseData = courses
-    .slice(0, 6)
-    .map((c) => ({
-      name: c.title.length > 16 ? c.title.slice(0, 16) + "…" : c.title,
-      enrolled: c.enrollmentCount,
-    }));
+  const courseData = courses.slice(0, 6).map((c) => ({
+    name: c.title.length > 16 ? c.title.slice(0, 16) + "…" : c.title,
+    enrolled: c.enrollmentCount,
+  }));
 
   return (
     <div className="space-y-5">

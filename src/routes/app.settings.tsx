@@ -901,7 +901,10 @@ function PayoutsTab({ email }: { email: string }) {
   const isStep1Valid = !!countryCode;
   const isStep2Valid =
     method === "bank"
-      ? !!bankCode && !!accountNumber && accountNumber.replace(/\s+/g, "").length >= 6 && !!accountName
+      ? !!bankCode &&
+        !!accountNumber &&
+        accountNumber.replace(/\s+/g, "").length >= 6 &&
+        !!accountName
       : !!network && !!mmNumber && mmNumber.replace(/\s+/g, "").length >= 7 && !!accountName;
   const isStep3Valid = !!selectedPlanId;
   const isStep4Valid = !!businessName.trim();
@@ -941,7 +944,10 @@ function PayoutsTab({ email }: { email: string }) {
           </div>
 
           {/* Preferences and defaults */}
-          <Panel title="Withdrawal Speed Preference" description="Your default withdrawal speed and notification preferences.">
+          <Panel
+            title="Withdrawal Speed Preference"
+            description="Your default withdrawal speed and notification preferences."
+          >
             <Field label="Default Withdrawal Speed">
               <div className="flex gap-2">
                 {(["standard", "instant"] as const).map((s) => {
@@ -971,7 +977,8 @@ function PayoutsTab({ email }: { email: string }) {
             </Field>
             {speed === "instant" && (
               <p className="mt-2 text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-100">
-                Instant speed settlements incur an additional fixed plus percentage withdrawal fee. Standard transfers are always free.
+                Instant speed settlements incur an additional fixed plus percentage withdrawal fee.
+                Standard transfers are always free.
               </p>
             )}
 
@@ -1036,7 +1043,9 @@ function PayoutsTab({ email }: { email: string }) {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-1">Select Your Settlement Region</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
+                    Select Your Settlement Region
+                  </h3>
                   <p className="text-xs text-muted-foreground">
                     We adapt payment networks depending on provider availability in your region.
                   </p>
@@ -1068,8 +1077,11 @@ function PayoutsTab({ email }: { email: string }) {
                     <div>
                       <p className="font-semibold text-foreground">Region Capabilities</p>
                       <p className="mt-1">
-                        Settling in <strong>{country.currency}</strong>. Includes local bank channels
-                        {country.mobileMoney.length > 0 ? " and mobile money integrations." : " only."}
+                        Settling in <strong>{country.currency}</strong>. Includes local bank
+                        channels
+                        {country.mobileMoney.length > 0
+                          ? " and mobile money integrations."
+                          : " only."}
                       </p>
                     </div>
                   </div>
@@ -1085,7 +1097,10 @@ function PayoutsTab({ email }: { email: string }) {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-1"> payout account Details</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
+                    {" "}
+                    payout account Details
+                  </h3>
                   <p className="text-xs text-muted-foreground">
                     Earnings are credited to this destination securely.
                   </p>
@@ -1198,9 +1213,12 @@ function PayoutsTab({ email }: { email: string }) {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-1">Choose Platform Plan</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
+                    Choose Platform Plan
+                  </h3>
                   <p className="text-xs text-muted-foreground">
-                    Select the plan that fits your creator volume. Upgrade anytime to access lower transaction rates.
+                    Select the plan that fits your creator volume. Upgrade anytime to access lower
+                    transaction rates.
                   </p>
                 </div>
 
@@ -1238,9 +1256,13 @@ function PayoutsTab({ email }: { email: string }) {
                           <span className="text-xs font-bold text-primary">{p.price}</span>
                         </div>
                         <p className="text-xs font-semibold text-foreground mt-1.5">{p.fee}</p>
-                        <p className="text-[11px] text-muted-foreground mt-1 leading-normal">{p.sub}</p>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-normal">
+                          {p.sub}
+                        </p>
                         {selected && (
-                          <span className="absolute top-2 right-2 text-primary font-bold text-xs">✓</span>
+                          <span className="absolute top-2 right-2 text-primary font-bold text-xs">
+                            ✓
+                          </span>
                         )}
                       </button>
                     );
@@ -1257,7 +1279,9 @@ function PayoutsTab({ email }: { email: string }) {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-1">Public Display &amp; Branding</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
+                    Public Display &amp; Branding
+                  </h3>
                   <p className="text-xs text-muted-foreground">
                     Enter the display or business name displayed to learners on SukaSpace.
                   </p>
@@ -1279,7 +1303,8 @@ function PayoutsTab({ email }: { email: string }) {
                     <div>
                       <p className="font-semibold">Learner Trust</p>
                       <p className="mt-0.5">
-                        This branding is shown on community checkout cards. Clear, recognizable display names improve conversion.
+                        This branding is shown on community checkout cards. Clear, recognizable
+                        display names improve conversion.
                       </p>
                     </div>
                   </div>
@@ -1308,7 +1333,9 @@ function PayoutsTab({ email }: { email: string }) {
                   </div>
                   <div className="flex justify-between p-3">
                     <span className="font-medium text-muted-foreground">Settlement Region</span>
-                    <span className="font-semibold text-foreground">{country.name} ({country.currency})</span>
+                    <span className="font-semibold text-foreground">
+                      {country.name} ({country.currency})
+                    </span>
                   </div>
                   <div className="flex justify-between p-3">
                     <span className="font-medium text-muted-foreground">Payout Destination</span>
@@ -1332,7 +1359,9 @@ function PayoutsTab({ email }: { email: string }) {
 
                 {selectedPlanId === "pro" && (dashboard?.plan ?? "free") === "free" && (
                   <p className="text-[11px] text-amber-700 bg-amber-50 rounded-xl p-3 border border-amber-200 leading-normal">
-                    <strong>Note:</strong> Since you chose the <strong>Pro Creator</strong> plan, finishing will open Paystack to authorize your monthly $49.00 payment to unlock 3% fee structure and storage metrics.
+                    <strong>Note:</strong> Since you chose the <strong>Pro Creator</strong> plan,
+                    finishing will open Paystack to authorize your monthly $49.00 payment to unlock
+                    3% fee structure and storage metrics.
                   </p>
                 )}
               </motion.div>
