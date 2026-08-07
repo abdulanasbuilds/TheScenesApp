@@ -106,7 +106,9 @@ function Auth() {
 
         // Handle case where email confirmation is required by your Supabase settings
         if (!store.session) {
-          setError("Account created! Please check your email inbox to confirm your account before logging in.");
+          setError(
+            "Account created! Please check your email inbox to confirm your account before logging in.",
+          );
           setSubmitting(false);
           return;
         }
@@ -336,7 +338,6 @@ function Auth() {
                 : "Sign In"}
           </motion.button>
         </form>
-
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {mode === "signup" ? (

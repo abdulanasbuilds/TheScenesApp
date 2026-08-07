@@ -1,10 +1,10 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 // Helper to parse .replit file
 function parseReplitEnv() {
   try {
-    const replitContent = fs.readFileSync(path.join(process.cwd(), '.replit'), 'utf8');
+    const replitContent = fs.readFileSync(path.join(process.cwd(), ".replit"), "utf8");
     const envVars = {};
     const regex = /^\s*([A-Z0-9_]+)\s*=\s*"(.*)"\s*$/gm;
     let match;
@@ -20,16 +20,31 @@ function parseReplitEnv() {
 
 // Prepare configuration
 const replitEnv = parseReplitEnv();
-const SUPABASE_URL = process.env.SUPABASE_URL || replitEnv.SUPABASE_URL || replitEnv.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || replitEnv.SUPABASE_ANON_KEY || replitEnv.VITE_SUPABASE_ANON_KEY;
-const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || replitEnv.SUPABASE_PUBLISHABLE_KEY || replitEnv.VITE_SUPABASE_PUBLISHABLE_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || replitEnv.SUPABASE_SERVICE_ROLE_KEY || replitEnv.SUPABASE_SERVICE_KEY;
+const SUPABASE_URL =
+  process.env.SUPABASE_URL || replitEnv.SUPABASE_URL || replitEnv.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY || replitEnv.SUPABASE_ANON_KEY || replitEnv.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_PUBLISHABLE_KEY =
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  replitEnv.SUPABASE_PUBLISHABLE_KEY ||
+  replitEnv.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_KEY ||
+  replitEnv.SUPABASE_SERVICE_ROLE_KEY ||
+  replitEnv.SUPABASE_SERVICE_KEY;
 
 console.log("=== SUPABASE CONFIGURATION DIAGNOSTICS ===");
 console.log(`SUPABASE_URL: ${SUPABASE_URL}`);
-console.log(`SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY ? (SUPABASE_ANON_KEY.substring(0, 15) + "...") : "Not set"}`);
-console.log(`SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY ? (SUPABASE_PUBLISHABLE_KEY.substring(0, 15) + "...") : "Not set"}`);
-console.log(`SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY ? (SUPABASE_SERVICE_ROLE_KEY.substring(0, 15) + "...") : "Not set"}`);
+console.log(
+  `SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.substring(0, 15) + "..." : "Not set"}`,
+);
+console.log(
+  `SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY ? SUPABASE_PUBLISHABLE_KEY.substring(0, 15) + "..." : "Not set"}`,
+);
+console.log(
+  `SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY ? SUPABASE_SERVICE_ROLE_KEY.substring(0, 15) + "..." : "Not set"}`,
+);
 
 if (!SUPABASE_URL) {
   console.error("❌ SUPABASE_URL is not set.");
@@ -48,9 +63,9 @@ async function runTests() {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
       headers: {
-        'apikey': keyToUse,
-        'Authorization': `Bearer ${keyToUse}`
-      }
+        apikey: keyToUse,
+        Authorization: `Bearer ${keyToUse}`,
+      },
     });
     console.log(`Status: ${res.status} ${res.statusText}`);
     if (res.ok) {
@@ -70,9 +85,9 @@ async function runTests() {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?select=*&limit=1`, {
       headers: {
-        'apikey': keyToUse,
-        'Authorization': `Bearer ${keyToUse}`
-      }
+        apikey: keyToUse,
+        Authorization: `Bearer ${keyToUse}`,
+      },
     });
     console.log(`Status: ${res.status} ${res.statusText}`);
     const body = await res.text();
@@ -90,9 +105,9 @@ async function runTests() {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/communities?select=*&limit=1`, {
       headers: {
-        'apikey': keyToUse,
-        'Authorization': `Bearer ${keyToUse}`
-      }
+        apikey: keyToUse,
+        Authorization: `Bearer ${keyToUse}`,
+      },
     });
     console.log(`Status: ${res.status} ${res.statusText}`);
     const body = await res.text();
@@ -109,10 +124,12 @@ async function runTests() {
   if (SUPABASE_SERVICE_ROLE_KEY) {
     console.log("\n--- TEST 4: Querying 'profiles' table with Service Role Key ---");
     try {
-      const isOpaqueKey = SUPABASE_SERVICE_ROLE_KEY.startsWith("sb_secret_") || SUPABASE_SERVICE_ROLE_KEY.startsWith("sb_publishable_");
+      const isOpaqueKey =
+        SUPABASE_SERVICE_ROLE_KEY.startsWith("sb_secret_") ||
+        SUPABASE_SERVICE_ROLE_KEY.startsWith("sb_publishable_");
       const headers = {
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        ...(isOpaqueKey ? {} : { 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` })
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        ...(isOpaqueKey ? {} : { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }),
       };
       const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?select=*&limit=1`, { headers });
       console.log(`Status: ${res.status} ${res.statusText}`);

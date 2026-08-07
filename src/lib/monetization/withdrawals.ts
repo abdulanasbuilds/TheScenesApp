@@ -160,14 +160,22 @@ export async function createWithdrawalRequest(
 export async function processWithdrawal(
   withdrawalId: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  // Fetch the request
-  const { data: wd, error: fetchErr } = await adminDb.selectOne<Record<string, unknown>>(
+  // Atomic state transition: pending -> processing
+  const { data: updatedRows, error: updateErr } = await adminDb.update<Record<string, unknown>>(
     "withdrawal_requests",
-    { id: `eq.${withdrawalId}` },
+    { id: `eq.${withdrawalId}`, status: "eq.pending" },
+    { status: "processing", updated_at: new Date().toISOString() },
   );
-  if (fetchErr || !wd) return { ok: false, error: "Withdrawal not found." };
-  if (wd.status !== "pending")
-    return { ok: false, error: `Cannot process withdrawal in '${wd.status}' state.` };
+
+  if (updateErr) {
+    return { ok: false, error: updateErr.message };
+  }
+
+  const wd = updatedRows?.[0];
+  if (!wd) {
+    // No row updated: either already processed, or doesn't exist
+    return { ok: false, error: "Withdrawal not found or already processed." };
+  }
 
   // Deduct from earnings ledger
   const deducted = await recordWithdrawalDeduction({
@@ -176,16 +184,18 @@ export async function processWithdrawal(
     amountCents: wd.amount_cents as number,
     currency: wd.currency as string,
   });
-  if (!deducted.ok) return { ok: false, error: "Insufficient balance to process withdrawal." };
 
-  // Update status to processing
-  const { error } = await adminDb.update(
-    "withdrawal_requests",
-    { id: `eq.${withdrawalId}` },
-    { status: "processing", updated_at: new Date().toISOString() },
-  );
+  if (!deducted.ok) {
+    // Rollback the status back to pending
+    await adminDb.update(
+      "withdrawal_requests",
+      { id: `eq.${withdrawalId}`, status: "eq.processing" },
+      { status: "pending", updated_at: new Date().toISOString() },
+    );
+    return { ok: false, error: "Insufficient balance to process withdrawal." };
+  }
 
-  return { ok: !error, error: error?.message };
+  return { ok: true };
 }
 
 /** Mark a withdrawal as paid (after Paystack transfer confirms). */
@@ -193,9 +203,10 @@ export async function markWithdrawalPaid(
   withdrawalId: string,
   paystackTransferCode?: string,
 ): Promise<void> {
+  // Atomic state transition: processing -> paid
   await adminDb.update(
     "withdrawal_requests",
-    { id: `eq.${withdrawalId}` },
+    { id: `eq.${withdrawalId}`, status: "eq.processing" },
     {
       status: "paid",
       paystack_transfer_code: paystackTransferCode ?? null,
@@ -207,19 +218,24 @@ export async function markWithdrawalPaid(
 
 /** Mark a withdrawal as failed (with optional reason). */
 export async function markWithdrawalFailed(withdrawalId: string, reason?: string): Promise<void> {
-  // Reverse the ledger deduction if it was processing
-  const { data: wd } = await adminDb.selectOne<Record<string, unknown>>("withdrawal_requests", {
-    id: `eq.${withdrawalId}`,
-  });
+  // Atomic state transition: processing -> failed
+  const { data: updatedRows } = await adminDb.update<Record<string, unknown>>(
+    "withdrawal_requests",
+    { id: `eq.${withdrawalId}`, status: "eq.processing" },
+    {
+      status: "failed",
+      failure_reason: reason ?? "Unknown error",
+      updated_at: new Date().toISOString(),
+    },
+  );
 
-  if (wd && wd.status === "processing") {
-    // Re-credit the amount back to the creator's balance
+  const wd = updatedRows?.[0];
+  if (wd) {
+    // Since we successfully transitioned from processing -> failed, reverse the ledger deduction
     const { getCreatorBalance: getBalance } = await import("./earnings");
     const balance = await getBalance(wd.creator_email as string, wd.currency as string);
-    await (
-      await import("@/lib/supabase-admin")
-    ).adminDb.insert("earnings_ledger", {
-      id: `earn_rev_${Date.now()}`,
+    await adminDb.insert("earnings_ledger", {
+      id: `earn_rev_${withdrawalId}_${Date.now()}`,
       creator_email: wd.creator_email,
       transaction_id: null,
       entry_type: "reversal",
@@ -229,17 +245,19 @@ export async function markWithdrawalFailed(withdrawalId: string, reason?: string
       description: `Withdrawal ${withdrawalId} failed — balance restored`,
       created_at: new Date().toISOString(),
     });
+  } else {
+    // If not in 'processing' state, maybe it's still in 'pending'?
+    // Transition pending -> failed (no ledger reversal needed)
+    await adminDb.update(
+      "withdrawal_requests",
+      { id: `eq.${withdrawalId}`, status: "eq.pending" },
+      {
+        status: "failed",
+        failure_reason: reason ?? "Unknown error",
+        updated_at: new Date().toISOString(),
+      },
+    );
   }
-
-  await adminDb.update(
-    "withdrawal_requests",
-    { id: `eq.${withdrawalId}` },
-    {
-      status: "failed",
-      failure_reason: reason ?? "Unknown error",
-      updated_at: new Date().toISOString(),
-    },
-  );
 }
 
 // ─── History ──────────────────────────────────────────────────────────────────
