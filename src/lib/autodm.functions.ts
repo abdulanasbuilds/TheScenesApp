@@ -182,16 +182,42 @@ export const onMemberJoin = createServerFn({ method: "POST" })
       throw new Error("Unauthorized: User email mismatch.");
     }
 
+    // 1. Securely retrieve community details using adminDb to prevent spoofing
+    const { data: community } = await adminDb.selectOne<{
+      creator_email: string;
+      title: string;
+      creator: string;
+    }>("communities", { id: `eq.${data.communityId}` });
+
+    if (!community) {
+      throw new Error("Community not found.");
+    }
+
+    // 2. Validate that the user is indeed a joined member of the target community
+    const { data: membership } = await adminDb.selectOne("joined_communities", {
+      community_id: `eq.${data.communityId}`,
+      user_email: `eq.${data.userEmail}`,
+    });
+
+    if (!membership) {
+      throw new Error("Unauthorized: User has not joined this community.");
+    }
+
     const now = new Date().toISOString();
+    // Overwrite metadata with verified database values to prevent injection / spoofing
+    const creatorEmail = community.creator_email || data.creatorEmail;
+    const creatorName = community.creator || data.creatorName || "Creator";
+    const communityTitle = community.title || data.communityTitle;
+
     const welcome =
       data.welcomeMessage ??
-      `Hey ${data.userName}! 👋 Welcome to **${data.communityTitle}**. Explore the community, introduce yourself in the feed, and check out our courses. We're glad you're here!`;
+      `Hey ${data.userName}! 👋 Welcome to **${communityTitle}**. Explore the community, introduce yourself in the feed, and check out our courses. We're glad you're here!`;
 
     const results = await Promise.allSettled([
       // 1. Welcome DM from creator to new member
       dbInsert("direct_messages", {
         id: nowId(),
-        from_email: data.creatorEmail,
+        from_email: creatorEmail,
         to_email: data.userEmail,
         body: welcome,
         read: false,
@@ -201,10 +227,10 @@ export const onMemberJoin = createServerFn({ method: "POST" })
       dbInsert("notifications", {
         id: nowId() + 1,
         user_email: data.userEmail,
-        text: `${data.creatorName} sent you a welcome message`,
+        text: `${creatorName} sent you a welcome message`,
         type: "new_message",
         link: "/app/messages",
-        actor_name: data.creatorName,
+        actor_name: creatorName,
         read: false,
         created_at: now,
         dedup_key: `join-${data.communityId}-${data.userEmail}`,
@@ -212,8 +238,8 @@ export const onMemberJoin = createServerFn({ method: "POST" })
       // 3. "new_member" notification for the creator
       dbInsert("notifications", {
         id: nowId() + 2,
-        user_email: data.creatorEmail,
-        text: `${data.userName} joined ${data.communityTitle}`,
+        user_email: creatorEmail,
+        text: `${data.userName} joined ${communityTitle}`,
         type: "new_member",
         link: "/app/members",
         actor_name: data.userName,
