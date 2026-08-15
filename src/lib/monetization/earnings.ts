@@ -163,6 +163,16 @@ export async function recordPaymentEarnings(opts: {
   const feeCents = calcPlatformFee(opts.grossAmountCents, opts.platformFeeBps);
   const netCents = opts.grossAmountCents - feeCents;
 
+  // Idempotency check: verify if earnings for this transaction were already recorded
+  const { data: existing } = await adminDb.select<{ id: string }>("earnings_ledger", {
+    transaction_id: `eq.${opts.transactionId}`,
+    entry_type: `eq.revenue`,
+  });
+
+  if (existing && existing.length > 0) {
+    return { ok: true, netAmountCents: netCents };
+  }
+
   // Get current balance to compute running balance
   const currentBalance = await getCreatorBalance(opts.creatorEmail, currency);
 
