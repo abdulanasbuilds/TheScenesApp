@@ -147,3 +147,8 @@ export async function checkFileAccessRate(userEmail: string): Promise<RateLimitR
 export async function checkAuthRate(ip: string): Promise<RateLimitResult> {
   return rateLimit(`auth:${ip}`, 10, 60);
 }
+
+/** Prevent feedback submission spam: max 5 submissions per identifier per 5 minutes. */
+export async function checkFeedbackRate(identifier: string): Promise<RateLimitResult> {
+  return rateLimit(`feedback:${identifier}`, 5, 300);
+}

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { checkFeedbackRate } from "@/lib/rate-limit";
 
 /**
  * Feedback pipeline:
@@ -50,6 +51,16 @@ function formatTelegramMessage(data: FeedbackInput) {
 export const submitFeedback = createServerFn({ method: "POST" })
   .validator(feedbackSchema)
   .handler(async ({ data }) => {
+    // Rate limit: prevent feedback submission spam (max 5 per 5 mins per userLabel/name identifier)
+    const rateKey = (data.userLabel?.trim() || data.name?.trim() || "guest").toLowerCase();
+    const rate = await checkFeedbackRate(rateKey);
+    if (!rate.allowed) {
+      return {
+        success: false,
+        error: "Too many feedback submissions. Please try again later.",
+      } as const;
+    }
+
     // Use non-VITE server-side names — VITE_* are build-time client vars only.
     // Set SUPABASE_URL and SUPABASE_ANON_KEY as runtime bindings in Cloudflare dashboard.
     const supabaseUrl = process.env.SUPABASE_URL;
