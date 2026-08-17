@@ -86,12 +86,13 @@ export async function getEarningsSummary(
     };
   }
 
-  // Get pending withdrawal total
-  const { data: pending } = await adminDb.select<{ net_amount_cents: number }>(
-    "withdrawal_requests",
-    { creator_email: `eq.${creatorEmail}`, status: `eq.pending`, currency: `eq.${currency}` },
-  );
-  const pendingCents = (pending ?? []).reduce((sum, w) => sum + w.net_amount_cents, 0);
+  // Get pending withdrawal total (use gross amount_cents to match ledger deduction)
+  const { data: pending } = await adminDb.select<{ amount_cents: number }>("withdrawal_requests", {
+    creator_email: `eq.${creatorEmail}`,
+    status: `eq.pending`,
+    currency: `eq.${currency}`,
+  });
+  const pendingCents = (pending ?? []).reduce((sum, w) => sum + w.amount_cents, 0);
 
   return {
     creatorEmail,
