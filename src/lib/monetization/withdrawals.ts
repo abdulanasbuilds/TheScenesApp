@@ -102,12 +102,20 @@ export async function createWithdrawalRequest(
     };
   }
 
-  // Check available balance
-  const balance = await getCreatorBalance(input.creatorEmail, currency);
-  if (balance < input.amountCents) {
+  // Check available balance (subtract gross pending withdrawal amounts)
+  const totalBalance = await getCreatorBalance(input.creatorEmail, currency);
+  const { data: pending } = await adminDb.select<{ amount_cents: number }>("withdrawal_requests", {
+    creator_email: `eq.${input.creatorEmail}`,
+    status: `eq.pending`,
+    currency: `eq.${currency}`,
+  });
+  const pendingCents = (pending ?? []).reduce((sum, w) => sum + w.amount_cents, 0);
+  const availableBalance = Math.max(0, totalBalance - pendingCents);
+
+  if (availableBalance < input.amountCents) {
     return {
       ok: false,
-      error: `Insufficient balance. Available: ${(balance / 100).toLocaleString()} ${currency}.`,
+      error: `Insufficient balance. Available: ${(availableBalance / 100).toLocaleString()} ${currency}.`,
     };
   }
 
