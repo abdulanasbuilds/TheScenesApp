@@ -216,6 +216,20 @@ export async function recordWithdrawalDeduction(opts: {
   currency?: string;
 }): Promise<{ ok: boolean }> {
   const currency = opts.currency ?? "NGN";
+
+  // Check if a ledger entry already exists for this withdrawal (idempotency)
+  const desc = `Withdrawal ${opts.withdrawalId}`;
+  const { data: existing } = await adminDb.select<{ id: string }>("earnings_ledger", {
+    creator_email: `eq.${opts.creatorEmail}`,
+    entry_type: `eq.withdrawal`,
+    description: `eq.${desc}`,
+  });
+
+  if (existing && existing.length > 0) {
+    // Already deducted from ledger
+    return { ok: true };
+  }
+
   const currentBalance = await getCreatorBalance(opts.creatorEmail, currency);
 
   if (currentBalance < opts.amountCents) {
@@ -230,7 +244,7 @@ export async function recordWithdrawalDeduction(opts: {
     amount_cents: -opts.amountCents,
     currency,
     balance_after_cents: currentBalance - opts.amountCents,
-    description: `Withdrawal ${opts.withdrawalId}`,
+    description: desc,
     created_at: new Date().toISOString(),
   });
 
