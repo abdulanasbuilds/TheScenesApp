@@ -163,6 +163,18 @@ export async function recordPaymentEarnings(opts: {
   const feeCents = calcPlatformFee(opts.grossAmountCents, opts.platformFeeBps);
   const netCents = opts.grossAmountCents - feeCents;
 
+  // Idempotency: Check if revenue for this transaction_id has already been recorded
+  if (opts.transactionId) {
+    const { data: existing } = await adminDb.select<{ id: string }>("earnings_ledger", {
+      transaction_id: `eq.${opts.transactionId}`,
+      entry_type: "eq.revenue",
+    });
+    if (existing && existing.length > 0) {
+      console.warn(`[earnings] Duplicate revenue entry ignored for transaction: ${opts.transactionId}`);
+      return { ok: true, netAmountCents: netCents };
+    }
+  }
+
   // Get current balance to compute running balance
   const currentBalance = await getCreatorBalance(opts.creatorEmail, currency);
 
