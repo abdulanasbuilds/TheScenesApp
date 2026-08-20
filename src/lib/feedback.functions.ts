@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { checkFeedbackRate } from "@/lib/rate-limit";
 
 /**
  * Feedback pipeline:
@@ -50,6 +52,30 @@ function formatTelegramMessage(data: FeedbackInput) {
 export const submitFeedback = createServerFn({ method: "POST" })
   .validator(feedbackSchema)
   .handler(async ({ data }) => {
+    // ── 0. Rate limit check via client IP or fallback identifier ─────────────
+    let clientIp = "unknown";
+    try {
+      const request = getRequest();
+      if (request?.headers) {
+        clientIp =
+          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          request.headers.get("cf-connecting-ip") ||
+          request.headers.get("x-real-ip") ||
+          "unknown";
+      }
+    } catch {
+      clientIp = "unknown";
+    }
+
+    const rateKey =
+      clientIp !== "unknown" ? clientIp : `anon:${data.userLabel || data.name || "guest"}`;
+    const rate = await checkFeedbackRate(rateKey);
+    if (!rate.allowed) {
+      throw new Error(
+        `Too many feedback submissions. Please wait ${rate.retryAfterSeconds} seconds.`,
+      );
+    }
+
     // Use non-VITE server-side names — VITE_* are build-time client vars only.
     // Set SUPABASE_URL and SUPABASE_ANON_KEY as runtime bindings in Cloudflare dashboard.
     const supabaseUrl = process.env.SUPABASE_URL;
