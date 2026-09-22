@@ -6,12 +6,12 @@ import { useAppStore } from "@/lib/app-store";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing · SukaSpace" },
+      { title: "Pricing · The Scenes" },
       {
         name: "description",
-        content: "Simple early-access pricing for SukaSpace communities and course workspaces.",
+        content: "Simple early-access pricing for The Scenes communities and course workspaces.",
       },
-      { property: "og:title", content: "Pricing · SukaSpace" },
+      { property: "og:title", content: "Pricing · The Scenes" },
       {
         property: "og:description",
         content:

@@ -69,7 +69,7 @@ export const DEFAULT_LEVELS: CommunityLevel[] = [
   },
 ];
 
-const STORAGE_KEY = "sukaspace_levels_v1";
+const STORAGE_KEY = "the-scenes_levels_v1";
 
 export function loadLevels(): CommunityLevel[] {
   if (typeof window === "undefined") return DEFAULT_LEVELS;

@@ -445,7 +445,7 @@ export function AppShell() {
             <div className="flex items-center gap-2 text-xs text-foreground">
               <Download size={13} className="shrink-0 text-primary" />
               <span className="font-medium">
-                Add SukaSpace to your home screen for the fastest experience
+                Add The Scenes to your home screen for the fastest experience
               </span>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">

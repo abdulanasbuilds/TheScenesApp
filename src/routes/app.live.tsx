@@ -5,10 +5,10 @@ import { ComingSoon } from "@/components/ComingSoon";
 export const Route = createFileRoute("/app/live")({
   head: () => ({
     meta: [
-      { title: "Live Streaming · SukaSpace" },
+      { title: "Live Streaming · The Scenes" },
       {
         name: "description",
-        content: "Host webinars, Q&A sessions, and interactive rooms — coming soon to SukaSpace.",
+        content: "Host webinars, Q&A sessions, and interactive rooms — coming soon to The Scenes.",
       },
     ],
   }),
@@ -20,7 +20,7 @@ function LivePage() {
     <ComingSoon
       icon={Radio}
       title="Live Streaming & Events"
-      subtitle="Host webinars, workshops, and interactive rooms — all inside SukaSpace."
+      subtitle="Host webinars, workshops, and interactive rooms — all inside The Scenes."
       description="We're building a native live streaming experience that integrates directly with your communities and courses. Host webinars of up to 500 participants, run intimate Q&A rooms, and have recordings automatically posted back to your community — no third-party tools required."
       badge="Coming Soon"
       backTo="/app/feed"

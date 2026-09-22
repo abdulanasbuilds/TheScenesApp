@@ -33,7 +33,7 @@ import { initiatePaystackPayment, generateReference } from "@/lib/paystack";
 import { getPayoutSetup } from "@/lib/payouts.functions";
 
 export const Route = createFileRoute("/app/billing")({
-  head: () => ({ meta: [{ title: "Billing & Payouts · SukaSpace" }] }),
+  head: () => ({ meta: [{ title: "Billing & Payouts · The Scenes" }] }),
   component: BillingPage,
 });
 

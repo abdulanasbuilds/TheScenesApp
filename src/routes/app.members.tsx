@@ -19,7 +19,7 @@ import { useAppStore } from "@/lib/app-store";
 export const Route = createFileRoute("/app/members")({
   head: () => ({
     meta: [
-      { title: "Members · SukaSpace" },
+      { title: "Members · The Scenes" },
       { name: "description", content: "Manage classroom participants, roles, and progress." },
     ],
   }),

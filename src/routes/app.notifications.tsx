@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 import { SPRING_FAST } from "@/lib/pwa";
 
 export const Route = createFileRoute("/app/notifications")({
-  head: () => ({ meta: [{ title: "Notifications · SukaSpace" }] }),
+  head: () => ({ meta: [{ title: "Notifications · The Scenes" }] }),
   component: NotificationsPage,
 });
 

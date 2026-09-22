@@ -7,13 +7,13 @@ import { useAppStore } from "@/lib/app-store";
 export const Route = createFileRoute("/creators")({
   head: () => ({
     meta: [
-      { title: "Creators Hub · SukaSpace" },
+      { title: "Creators Hub · The Scenes" },
       {
         name: "description",
         content:
-          "Launch, manage, and grow a premium community and course workspace with SukaSpace creator tools.",
+          "Launch, manage, and grow a premium community and course workspace with The Scenes creator tools.",
       },
-      { property: "og:title", content: "Creators Hub · SukaSpace" },
+      { property: "og:title", content: "Creators Hub · The Scenes" },
       {
         property: "og:description",
         content:
@@ -45,7 +45,7 @@ function CreatorsPage() {
                 Launch the community, course, and access model in one flow.
               </h1>
               <p className="mt-4 text-lg font-medium text-muted-foreground">
-                SukaSpace gives experts a premium command center for setup, members, lessons,
+                The Scenes gives experts a premium command center for setup, members, lessons,
                 revenue signals, and discoverability.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -66,22 +66,22 @@ function CreatorsPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <img
                 src={UPLOADED_MOCKUPS.createCommunityStep1}
-                alt="Create a SukaSpace community setup modal"
+                alt="Create a The Scenes community setup modal"
                 className="rounded-xl border border-border bg-card shadow-sm"
               />
               <img
                 src={UPLOADED_MOCKUPS.createCommunityStep2}
-                alt="Select a SukaSpace community niche mockup"
+                alt="Select a The Scenes community niche mockup"
                 className="rounded-xl border border-border bg-card shadow-sm"
               />
               <img
                 src={UPLOADED_MOCKUPS.inviteMembers}
-                alt="Invite members to a SukaSpace community mockup"
+                alt="Invite members to a The Scenes community mockup"
                 className="rounded-xl border border-border bg-card shadow-sm"
               />
               <img
                 src={UPLOADED_MOCKUPS.manageAccess}
-                alt="Manage SukaSpace member access settings mockup"
+                alt="Manage The Scenes member access settings mockup"
                 className="rounded-xl border border-border bg-card shadow-sm"
               />
             </div>

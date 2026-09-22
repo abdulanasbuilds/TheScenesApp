@@ -17,7 +17,7 @@ import { useAppStore } from "@/lib/app-store";
 export const Route = createFileRoute("/app/calendar")({
   head: () => ({
     meta: [
-      { title: "Community Calendar · SukaSpace" },
+      { title: "Community Calendar · The Scenes" },
       {
         name: "description",
         content: "Live sessions, course deadlines, and community meetups in a single monthly grid.",
@@ -44,7 +44,7 @@ type ViewMode = "month" | "week" | "day";
 type CalKey = "session" | "deadline" | "meetup" | "personal";
 
 const HOST_OPTIONS: { key: HostPlatform; label: string; placeholder?: string; cta: string }[] = [
-  { key: "native", label: "Sukaspace Call (Native)", cta: "Join Sukaspace Call" },
+  { key: "native", label: "The Scenes Call (Native)", cta: "Join The Scenes Call" },
   {
     key: "zoom",
     label: "Zoom",
@@ -604,7 +604,7 @@ function CalendarPage() {
         </h2>
         {upcoming.length === 0 ? (
           <p className="mt-3 rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
-            No upcoming events yet. Use “Add Event” to schedule your first Sukaspace session.
+            No upcoming events yet. Use “Add Event” to schedule your first The Scenes session.
           </p>
         ) : (
           <ul className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -627,7 +627,7 @@ function CalendarPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-base font-semibold text-foreground">Add event</h2>
-                <p className="text-xs text-muted-foreground">Sukaspace · times are stored in UTC</p>
+                <p className="text-xs text-muted-foreground">The Scenes · times are stored in UTC</p>
               </div>
               <button
                 onClick={() => setOpen(false)}
@@ -707,7 +707,7 @@ function CalendarPage() {
                 </select>
                 {hostPlatform === "native" ? (
                   <div className="mt-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700">
-                    Sukaspace Call feature is coming soon! 🚀
+                    The Scenes Call feature is coming soon! 🚀
                   </div>
                 ) : (
                   <input

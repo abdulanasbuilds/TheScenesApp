@@ -22,14 +22,14 @@ import { useAppStore, type Community } from "@/lib/app-store";
 export const Route = createFileRoute("/discover")({
   head: () => ({
     meta: [
-      { title: "Discover tech & expert-led communities · SukaSpace" },
+      { title: "Discover tech & expert-led communities · The Scenes" },
       {
         name: "description",
         content:
           "Browse AI, engineering, no-code, and digital business communities. Or launch your own.",
       },
-      { property: "og:title", content: "Discover · SukaSpace" },
-      { property: "og:description", content: "Find your niche or claim a new one on SukaSpace." },
+      { property: "og:title", content: "Discover · The Scenes" },
+      { property: "og:description", content: "Find your niche or claim a new one on The Scenes." },
     ],
   }),
   component: Discovery,
@@ -228,7 +228,7 @@ function Discovery() {
               className="w-full max-w-md rounded-t-2xl border border-slate-200 bg-white p-6 shadow-lg sm:rounded-2xl"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900">Join SukaSpace</span>
+                <span className="text-sm font-semibold text-slate-900">Join The Scenes</span>
                 <button
                   onClick={() => setModal(false)}
                   className="rounded-md p-1 text-slate-400 hover:bg-slate-100"

@@ -34,7 +34,7 @@ import {
 } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/feed")({
-  head: () => ({ meta: [{ title: "Community · SukaSpace" }] }),
+  head: () => ({ meta: [{ title: "Community · The Scenes" }] }),
   component: CommunityHub,
 });
 

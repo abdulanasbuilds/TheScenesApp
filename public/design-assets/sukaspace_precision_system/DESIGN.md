@@ -1,5 +1,5 @@
 ---
-name: Sukaspace Precision System
+name: The Scenes Precision System
 colors:
   surface: "#faf8ff"
   surface-dim: "#d2d9f4"

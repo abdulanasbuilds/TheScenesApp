@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { SPRING_FAST } from "@/lib/pwa";
 
 export const Route = createFileRoute("/app/messages")({
-  head: () => ({ meta: [{ title: "Messages · SukaSpace" }] }),
+  head: () => ({ meta: [{ title: "Messages · The Scenes" }] }),
   component: Messages,
 });
 

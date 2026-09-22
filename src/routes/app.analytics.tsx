@@ -12,13 +12,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/app/analytics")({
   head: () => ({
     meta: [
-      { title: "Community Analytics · SukaSpace" },
+      { title: "Community Analytics · The Scenes" },
       {
         name: "description",
         content:
-          "Track member growth, revenue, engagement, and course enrolments for your SukaSpace community.",
+          "Track member growth, revenue, engagement, and course enrolments for your The Scenes community.",
       },
-      { property: "og:title", content: "Community Analytics · SukaSpace" },
+      { property: "og:title", content: "Community Analytics · The Scenes" },
       {
         property: "og:description",
         content: "Member count, revenue, engagement, and enrolment tracking in one dashboard.",

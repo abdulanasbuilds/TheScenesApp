@@ -47,7 +47,7 @@ import { toast } from "sonner";
 import { isPaystackConfigured } from "@/lib/paystack";
 
 export const Route = createFileRoute("/app/creator")({
-  head: () => ({ meta: [{ title: "Creator Hub · SukaSpace" }] }),
+  head: () => ({ meta: [{ title: "Creator Hub · The Scenes" }] }),
   component: CreatorDashboard,
 });
 
@@ -72,7 +72,7 @@ const AFF_DEFAULTS: AffiliateSettings = {
 function loadAff(communityId: number): AffiliateSettings {
   if (typeof window === "undefined") return AFF_DEFAULTS;
   try {
-    const raw = localStorage.getItem(`sukaspace_aff_${communityId}`);
+    const raw = localStorage.getItem(`the-scenes_aff_${communityId}`);
     return raw ? { ...AFF_DEFAULTS, ...JSON.parse(raw) } : AFF_DEFAULTS;
   } catch {
     return AFF_DEFAULTS;
@@ -80,7 +80,7 @@ function loadAff(communityId: number): AffiliateSettings {
 }
 
 function saveAff(communityId: number, s: AffiliateSettings) {
-  localStorage.setItem(`sukaspace_aff_${communityId}`, JSON.stringify(s));
+  localStorage.setItem(`the-scenes_aff_${communityId}`, JSON.stringify(s));
 }
 
 function makeCode(title: string) {
@@ -461,7 +461,7 @@ function OverviewTab({
             {
               icon: Globe,
               label: "Native Video",
-              desc: "Host course videos directly on SukaSpace.",
+              desc: "Host course videos directly on The Scenes.",
               tab: null,
             },
           ].map((f) => {
@@ -1003,7 +1003,7 @@ function AffiliateTab({ community }: { community: Community }) {
   const [saved, setSaved] = useState(false);
 
   const referralLink = aff.referralCode
-    ? `${typeof window !== "undefined" ? window.location.origin : "https://sukaspace.com"}/ref/${aff.referralCode}`
+    ? `${typeof window !== "undefined" ? window.location.origin : "https://the-scenes.com"}/ref/${aff.referralCode}`
     : "";
 
   const toggle = () => {
@@ -1317,7 +1317,7 @@ function LiveTab() {
             </div>
             <p className="mt-1 text-sm text-amber-800 leading-relaxed">
               Host webinars, workshops, and interactive Q&A rooms — all directly inside your
-              SukaSpace community. No Zoom, no third-party links.
+              The Scenes community. No Zoom, no third-party links.
             </p>
             <button
               onClick={notify}

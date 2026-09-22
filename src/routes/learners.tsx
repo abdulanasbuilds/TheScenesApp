@@ -7,13 +7,13 @@ import { UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 export const Route = createFileRoute("/learners")({
   head: () => ({
     meta: [
-      { title: "Learners Hub · SukaSpace" },
+      { title: "Learners Hub · The Scenes" },
       {
         name: "description",
         content:
-          "Track tech skills, XP, streaks, lessons, and community progress inside SukaSpace.",
+          "Track tech skills, XP, streaks, lessons, and community progress inside The Scenes.",
       },
-      { property: "og:title", content: "Learners Hub · SukaSpace" },
+      { property: "og:title", content: "Learners Hub · The Scenes" },
       {
         property: "og:description",
         content:
@@ -66,7 +66,7 @@ function LearnersPage() {
             >
               <img
                 src={UPLOADED_MOCKUPS.onboardingJourney}
-                alt="SukaSpace learner onboarding role selection mockup"
+                alt="The Scenes learner onboarding role selection mockup"
                 className="aspect-[5/4] w-full object-cover"
               />
             </motion.div>

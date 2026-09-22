@@ -38,7 +38,7 @@ interface LeaderMember {
 export const Route = createFileRoute("/app/leaderboard")({
   head: () => ({
     meta: [
-      { title: "Leaderboard · SukaSpace" },
+      { title: "Leaderboard · The Scenes" },
       { name: "description", content: "Community rankings, XP tiers, and achievement badges." },
     ],
   }),

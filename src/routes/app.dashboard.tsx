@@ -21,7 +21,7 @@ import {
 import { useAppStore, type CommunityEvent } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard · SukaSpace" }] }),
+  head: () => ({ meta: [{ title: "Dashboard · The Scenes" }] }),
   component: LearnerDashboard,
 });
 
@@ -296,7 +296,7 @@ function OverviewTab({
         <EmptyState
           variant="empty"
           icon={<Rocket size={20} />}
-          title="Welcome to SukaSpace"
+          title="Welcome to The Scenes"
           description="Your workspace is ready and completely clean. Two steps get you to a working day-one setup."
           checklist={[
             { label: "Join or create a community" },
