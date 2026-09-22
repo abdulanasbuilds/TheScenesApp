@@ -63,7 +63,7 @@ import { hasInstallPrompt, triggerInstallPrompt, hapticTap, SPRING_FAST } from "
 export const Route = createFileRoute("/app/settings")({
   head: () => ({
     meta: [
-      { title: "Settings · SukaSpace" },
+      { title: "Settings · The Scenes" },
       {
         name: "description",
         content: "Manage your profile, payout account, billing, and notification preferences.",
@@ -374,7 +374,7 @@ function NotificationsTab() {
   return (
     <Panel
       title="Notifications"
-      description="SukaSpace uses in-app notifications — email is reserved for critical account alerts."
+      description="The Scenes uses in-app notifications — email is reserved for critical account alerts."
     >
       <div className="divide-y divide-slate-100">
         {NOTIF_KEYS.map((n) => (
@@ -426,7 +426,7 @@ function MessagesTab() {
         <div>
           <h3 className="text-sm font-semibold text-foreground">Community Welcomer (Auto-DM)</h3>
           <p className="text-xs text-muted-foreground mt-1">
-            When a learner joins your community, SukaSpace will automatically send them a welcome DM
+            When a learner joins your community, The Scenes will automatically send them a welcome DM
             on your behalf.
           </p>
         </div>
@@ -983,7 +983,7 @@ function PayoutsTab({ email }: { email: string }) {
                   savePrefs({ payoutNotifications: v });
                 }}
                 label="In-App Money alerts"
-                hint="Notify me inside SukaSpace whenever a payment settles or payouts process."
+                hint="Notify me inside The Scenes whenever a payment settles or payouts process."
               />
             </div>
 
@@ -1259,7 +1259,7 @@ function PayoutsTab({ email }: { email: string }) {
                 <div>
                   <h3 className="text-sm font-semibold text-foreground mb-1">Public Display &amp; Branding</h3>
                   <p className="text-xs text-muted-foreground">
-                    Enter the display or business name displayed to learners on SukaSpace.
+                    Enter the display or business name displayed to learners on The Scenes.
                   </p>
                 </div>
 
@@ -1655,7 +1655,7 @@ function DeviceTab() {
     hapticTap();
     const accepted = await triggerInstallPrompt();
     if (accepted) {
-      toast.success("Welcome aboard SukaSpace! App added.");
+      toast.success("Welcome aboard The Scenes! App added.");
     }
   };
 
@@ -1682,7 +1682,7 @@ function DeviceTab() {
         <div>
           <h3 className="text-sm font-semibold text-foreground">Offline Caching</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            SukaSpace runs a service worker cache. Static assets, logos, and course structures cache
+            The Scenes runs a service worker cache. Static assets, logos, and course structures cache
             locally so the interface remains fast and browseable offline.
           </p>
         </div>
@@ -1690,9 +1690,9 @@ function DeviceTab() {
         {!standalone && promptAvailable && (
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold text-foreground">SukaSpace is Installable</p>
+              <p className="text-xs font-bold text-foreground">The Scenes is Installable</p>
               <p className="text-[11px] text-muted-foreground">
-                Add SukaSpace to your dock or home screen for offline access.
+                Add The Scenes to your dock or home screen for offline access.
               </p>
             </div>
             <button

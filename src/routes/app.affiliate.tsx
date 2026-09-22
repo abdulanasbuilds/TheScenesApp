@@ -23,7 +23,7 @@ import { EmptyState } from "@/components/EmptyState";
 export const Route = createFileRoute("/app/affiliate")({
   head: () => ({
     meta: [
-      { title: "Affiliate Program · SukaSpace" },
+      { title: "Affiliate Program · The Scenes" },
       {
         name: "description",
         content:
@@ -55,7 +55,7 @@ const DEFAULTS: AffiliateSettings = {
 function load(communityId: number): AffiliateSettings {
   if (typeof window === "undefined") return DEFAULTS;
   try {
-    const raw = localStorage.getItem(`sukaspace_aff_${communityId}`);
+    const raw = localStorage.getItem(`the-scenes_aff_${communityId}`);
     return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : DEFAULTS;
   } catch {
     return DEFAULTS;
@@ -63,7 +63,7 @@ function load(communityId: number): AffiliateSettings {
 }
 
 function persist(communityId: number, s: AffiliateSettings) {
-  localStorage.setItem(`sukaspace_aff_${communityId}`, JSON.stringify(s));
+  localStorage.setItem(`the-scenes_aff_${communityId}`, JSON.stringify(s));
 }
 
 function makeCode(title: string) {
@@ -106,7 +106,7 @@ function AffiliatePage() {
   const [expandFaq, setExpandFaq] = useState<number | null>(null);
 
   const referralLink = aff.referralCode
-    ? `${typeof window !== "undefined" ? window.location.origin : "https://sukaspace.com"}/ref/${aff.referralCode}`
+    ? `${typeof window !== "undefined" ? window.location.origin : "https://the-scenes.com"}/ref/${aff.referralCode}`
     : "";
 
   const stats = useMemo(

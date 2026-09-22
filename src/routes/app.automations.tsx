@@ -14,7 +14,7 @@ import { ComingSoon } from "@/components/ComingSoon";
 export const Route = createFileRoute("/app/automations")({
   head: () => ({
     meta: [
-      { title: "Automations · SukaSpace" },
+      { title: "Automations · The Scenes" },
       {
         name: "description",
         content: "Automate member onboarding, CRM sync, and community workflows — coming soon.",
@@ -29,8 +29,8 @@ function AutomationsPage() {
     <ComingSoon
       icon={Zap}
       title="Workflow Automations"
-      subtitle="Connect SukaSpace to your entire business stack — no code required."
-      description="Stop doing manually what a workflow can do for you. SukaSpace Automations will let you build trigger-action pipelines that welcome new members, sync your CRM, gate content on behaviour, and fire webhooks to any external system — all configured from a simple visual editor inside your Creator Hub."
+      subtitle="Connect The Scenes to your entire business stack — no code required."
+      description="Stop doing manually what a workflow can do for you. The Scenes Automations will let you build trigger-action pipelines that welcome new members, sync your CRM, gate content on behaviour, and fire webhooks to any external system — all configured from a simple visual editor inside your Creator Hub."
       badge="Coming Soon"
       backTo="/app/creator"
       backLabel="Back to Creator Hub"

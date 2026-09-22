@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import { SPRING_FAST } from "@/lib/pwa";
 
 export const Route = createFileRoute("/create-community")({
-  head: () => ({ meta: [{ title: "Create Community · SukaSpace" }] }),
+  head: () => ({ meta: [{ title: "Create Community · The Scenes" }] }),
   component: CreateCommunity,
 });
 
@@ -579,7 +579,7 @@ function CreateCommunity() {
               Public
             </p>
             <p className="text-xs text-slate-500">
-              Discoverable on SukaSpace and searchable on the web
+              Discoverable on The Scenes and searchable on the web
             </p>
           </div>
           {!isPrivate && <Check className="w-4 h-4 text-emerald-500" />}

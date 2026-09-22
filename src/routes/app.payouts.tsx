@@ -65,7 +65,7 @@ function fmtDate(iso: string) {
 export const Route = createFileRoute("/app/payouts")({
   head: () => ({
     meta: [
-      { title: "Payouts & Financials · SukaSpace" },
+      { title: "Payouts & Financials · The Scenes" },
       {
         name: "description",
         content: "Manage your earnings, view transaction history, and configure withdrawals.",

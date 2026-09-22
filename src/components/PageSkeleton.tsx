@@ -23,7 +23,7 @@ function Shimmer({ className }: { className?: string }) {
 
 // Inject keyframe once — Tailwind doesn't ship "shimmer" by default
 if (typeof document !== "undefined") {
-  const id = "sukaspace-shimmer-keyframe";
+  const id = "the-scenes-shimmer-keyframe";
   if (!document.getElementById(id)) {
     const style = document.createElement("style");
     style.id = id;

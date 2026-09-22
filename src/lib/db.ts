@@ -1,5 +1,5 @@
 /**
- * Database schema for SukaSpace
+ * Database schema for The Scenes
  *
  * The canonical schema lives in src/supabase/schema.sql — paste that into
  * your Supabase SQL Editor (Dashboard → SQL Editor → New Query) to create

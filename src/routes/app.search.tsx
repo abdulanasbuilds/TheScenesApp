@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/EmptyState";
 export const Route = createFileRoute("/app/search")({
   head: () => ({
     meta: [
-      { title: "Search · SukaSpace" },
+      { title: "Search · The Scenes" },
       {
         name: "description",
         content: "Search across communities, courses, members, messages, and resources.",

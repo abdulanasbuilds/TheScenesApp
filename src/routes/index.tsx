@@ -22,16 +22,16 @@ import { MOCKUP_GALLERY, UPLOADED_MOCKUPS } from "@/lib/mockup-assets";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SukaSpace — Community + Courses for the AI Era" },
+      { title: "The Scenes — Community + Courses for the AI Era" },
       {
         name: "description",
         content:
           "Launch a premium learning community with linear course tracking and rich multi-channel discussions. Built for AI, engineering, and tech creators.",
       },
-      { property: "og:title", content: "SukaSpace — Community + Courses for the AI Era" },
+      { property: "og:title", content: "The Scenes — Community + Courses for the AI Era" },
       {
         property: "og:description",
-        content: "Community meets courses. Ship your knowledge empire with SukaSpace.",
+        content: "Community meets courses. Ship your knowledge empire with The Scenes.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -63,7 +63,7 @@ function UploadedMockupGallery() {
             Live workspace previews
           </div>
           <h2 className="mt-1.5 text-3xl font-extrabold tracking-tighter text-[#151515] sm:text-4xl">
-            Every SukaSpace screen, shipped as a production asset.
+            Every The Scenes screen, shipped as a production asset.
           </h2>
           <p className="mt-2 text-base font-medium text-muted-foreground">
             All {MOCKUP_GALLERY.length} uploaded human-designed mockups are permanently hosted and
@@ -82,7 +82,7 @@ function UploadedMockupGallery() {
             >
               <img
                 src={card.src}
-                alt={`SukaSpace ${card.label} mockup`}
+                alt={`The Scenes ${card.label} mockup`}
                 loading="lazy"
                 className="aspect-[5/4] w-full border-b border-border object-cover"
               />
@@ -128,7 +128,7 @@ function UploadedMockupGallery() {
               <div className="max-h-[78vh] overflow-auto bg-background p-2">
                 <img
                   src={zoomed.src}
-                  alt={`SukaSpace ${zoomed.label} mockup zoomed`}
+                  alt={`The Scenes ${zoomed.label} mockup zoomed`}
                   className="mx-auto w-full max-w-[1600px] rounded-lg border border-border bg-card"
                 />
               </div>
@@ -161,7 +161,7 @@ function Hero() {
             <br className="hidden sm:block" /> engineered for the AI era.
           </h1>
           <p className="mt-3 text-base font-medium text-muted-foreground">
-            SukaSpace fuses linear course tracking with rich multi-channel spaces so experts can
+            The Scenes fuses linear course tracking with rich multi-channel spaces so experts can
             teach, monetize, and build a real community — without the tech friction.
           </p>
           <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
@@ -305,7 +305,7 @@ function Footer() {
           <span className="grid h-6 w-6 place-items-center rounded-md bg-slate-900 text-[10px] font-bold text-white">
             S
           </span>
-          <span>© 2026 SukaSpace — Community + Courses for the AI era.</span>
+          <span>© 2026 The Scenes — Community + Courses for the AI era.</span>
         </div>
         <div className="flex gap-5 text-xs font-medium text-muted-foreground">
           <Link to="/about" className="hover:text-foreground">

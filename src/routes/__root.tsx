@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       // Full-viewport, no zoom — critical for PWA standalone feel
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "SukaSpace — Community + Courses for the AI Era" },
+      { title: "The Scenes — Community + Courses for the AI Era" },
       {
         name: "description",
         content:
@@ -92,14 +92,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { name: "apple-mobile-web-app-title", content: "SukaSpace" },
-      { name: "application-name", content: "SukaSpace" },
+      { name: "apple-mobile-web-app-title", content: "The Scenes" },
+      { name: "application-name", content: "The Scenes" },
       { name: "theme-color", content: "#1D4ED8" },
       // OG / Twitter
-      { property: "og:title", content: "SukaSpace — Community + Courses for the AI Era" },
+      { property: "og:title", content: "The Scenes — Community + Courses for the AI Era" },
       {
         property: "og:description",
-        content: "Community meets courses. Ship your knowledge empire with SukaSpace.",
+        content: "Community meets courses. Ship your knowledge empire with The Scenes.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

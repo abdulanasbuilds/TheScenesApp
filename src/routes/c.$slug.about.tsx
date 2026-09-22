@@ -8,12 +8,12 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/c/$slug/about")({
   head: ({ params }) => ({
     meta: [
-      { title: `${decodeURIComponent(params.slug)} · SukaSpace` },
+      { title: `${decodeURIComponent(params.slug)} · The Scenes` },
       {
         name: "description",
-        content: `Preview and join the ${decodeURIComponent(params.slug)} community on SukaSpace.`,
+        content: `Preview and join the ${decodeURIComponent(params.slug)} community on The Scenes.`,
       },
-      { property: "og:title", content: `${decodeURIComponent(params.slug)} · SukaSpace` },
+      { property: "og:title", content: `${decodeURIComponent(params.slug)} · The Scenes` },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

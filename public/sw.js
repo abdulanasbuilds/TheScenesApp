@@ -1,7 +1,7 @@
-// SukaSpace Service Worker — v1
+// The Scenes Service Worker — v1
 // Strategy: Cache-first for static assets, network-first for navigation/API.
 
-const CACHE_VERSION = "sukaspace-v1";
+const CACHE_VERSION = "the-scenes-v1";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 
@@ -22,7 +22,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => k.startsWith("sukaspace-") && k !== STATIC_CACHE && k !== IMAGE_CACHE)
+            .filter((k) => k.startsWith("the-scenes-") && k !== STATIC_CACHE && k !== IMAGE_CACHE)
             .map((k) => caches.delete(k)),
         ),
       ),
@@ -89,7 +89,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>You're Offline · SukaSpace</title>
+  <title>You're Offline · The Scenes</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -149,7 +149,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
   <div class="card">
     <div class="icon">📶</div>
     <h1>You are currently offline</h1>
-    <p>SukaSpace is cached on your device, but the requested page requires a live connection. Check your internet connection and try again.</p>
+    <p>The Scenes is cached on your device, but the requested page requires a live connection. Check your internet connection and try again.</p>
     <button onclick="window.location.reload()">Retry Connection</button>
   </div>
 </body>
@@ -181,9 +181,9 @@ async function networkFirst(request, cacheName) {
 
 // ─── Push notifications (future) ─────────────────────────────────────────────
 self.addEventListener("push", (event) => {
-  const data = event.data?.json?.() ?? { title: "SukaSpace", body: "You have a new notification" };
+  const data = event.data?.json?.() ?? { title: "The Scenes", body: "You have a new notification" };
   event.waitUntil(
-    self.registration.showNotification(data.title ?? "SukaSpace", {
+    self.registration.showNotification(data.title ?? "The Scenes", {
       body: data.body,
       icon: "/favicon-256.png",
       badge: "/favicon-32.png",

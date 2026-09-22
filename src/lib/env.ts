@@ -98,7 +98,7 @@ export const env = {
 
   // ── App
   get APP_URL() {
-    return getEnvOptional("APP_URL", "https://sukaspace.com");
+    return getEnvOptional("APP_URL", "https://the-scenes.com");
   },
 
   // ── Monetization config (configurable, not hardcoded)

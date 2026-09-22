@@ -15,7 +15,7 @@ import {
 import { useAppStore, type Course, type Lesson, getVideoEmbed } from "@/lib/app-store";
 
 export const Route = createFileRoute("/app/classroom")({
-  head: () => ({ meta: [{ title: "Classroom · SukaSpace" }] }),
+  head: () => ({ meta: [{ title: "Classroom · The Scenes" }] }),
   component: Classroom,
 });
 

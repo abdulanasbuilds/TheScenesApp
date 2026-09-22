@@ -271,7 +271,7 @@ async function handlePaymentSuccess(event: WebhookEvent): Promise<void> {
 
     await createInAppNotification(
       customerEmail,
-      `🎉 Welcome to SukaSpace Pro! 3% platform commission rates and 100GB hosted storage limits are now live.`,
+      `🎉 Welcome to The Scenes Pro! 3% platform commission rates and 100GB hosted storage limits are now live.`,
       "payment_success",
       "/app/settings"
     );
@@ -363,7 +363,7 @@ async function handleSubscriptionCreated(event: WebhookEvent): Promise<void> {
 
   await createInAppNotification(
     email,
-    `🎉 SukaSpace Pro Creator Subscription is active! Lower platform fees (3%) and media storage metrics are enabled.`,
+    `🎉 The Scenes Pro Creator Subscription is active! Lower platform fees (3%) and media storage metrics are enabled.`,
     "payment_success",
     "/app/settings"
   );

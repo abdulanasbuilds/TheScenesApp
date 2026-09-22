@@ -35,7 +35,7 @@ function formatTelegramMessage(data: FeedbackInput) {
   }).format(new Date());
 
   return [
-    "📢 New SukaSpace Feedback",
+    "📢 New The Scenes Feedback",
     "",
     `Name: ${data.name || "Anonymous"}`,
     `Category: ${data.category}`,

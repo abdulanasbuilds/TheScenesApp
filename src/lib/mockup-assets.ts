@@ -1,21 +1,21 @@
-// All uploaded SukaSpace mockups - production-ready assets served from public folder
+// All uploaded The Scenes mockups - production-ready assets served from public folder
 // Only using the 7 mockups that have actual real image files
 
 export const UPLOADED_MOCKUPS = {
   createCommunityStep1:
-    "/design-reference/stitch_sukaspace_learning_platform/sukaspace_create_community_step_1/screen.png",
+    "/design-reference/stitch_the-scenes_learning_platform/the-scenes_create_community_step_1/screen.png",
   createCommunityStep2:
-    "/design-reference/stitch_sukaspace_learning_platform/sukaspace_create_community_step_2/screen.png",
+    "/design-reference/stitch_the-scenes_learning_platform/the-scenes_create_community_step_2/screen.png",
   inviteMembers:
-    "/design-reference/stitch_sukaspace_learning_platform/sukaspace_invite_members/screen.png",
+    "/design-reference/stitch_the-scenes_learning_platform/the-scenes_invite_members/screen.png",
   launchSuccess:
-    "/design-reference/stitch_sukaspace_learning_platform/sukaspace_launch_success/screen.png",
+    "/design-reference/stitch_the-scenes_learning_platform/the-scenes_launch_success/screen.png",
   manageAccess:
-    "/design-reference/stitch_sukaspace_learning_platform/sukaspace_manage_access/screen.png",
+    "/design-reference/stitch_the-scenes_learning_platform/the-scenes_manage_access/screen.png",
   onboardingJourney:
-    "/design-reference/stitch_sukaspace_learning_platform/sukaspace_onboarding_journey/screen.png",
+    "/design-reference/stitch_the-scenes_learning_platform/the-scenes_onboarding_journey/screen.png",
   searchZeroState:
-    "/design-reference/stitch_sukaspace_learning_platform/sukaspace_search_zero_state/screen.png",
+    "/design-reference/stitch_the-scenes_learning_platform/the-scenes_search_zero_state/screen.png",
   discoverZeroState: "/uploads/discover-zero-state.png",
   creatorGrowthAnalytics: "/uploads/creator-growth-analytics.png",
   communityCalendar: "/uploads/community-calendar.png",

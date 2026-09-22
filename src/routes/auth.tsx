@@ -13,10 +13,10 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in or sign up · SukaSpace" },
+      { title: "Sign in or sign up · The Scenes" },
       {
         name: "description",
-        content: "Join SukaSpace to launch or join a premium learning community.",
+        content: "Join The Scenes to launch or join a premium learning community.",
       },
     ],
   }),
@@ -374,7 +374,7 @@ function Footer() {
   return (
     <div className="absolute bottom-0 left-0 right-0 border-t border-border bg-slate-100/50 px-4 py-4">
       <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-semibold text-foreground">SUKASPACE</span>
+        <span className="text-xs font-semibold text-foreground">THE SCENES</span>
         <div className="flex gap-4 text-xs text-muted-foreground">
           <Link to="/about" className="hover:text-foreground">
             Privacy
@@ -387,7 +387,7 @@ function Footer() {
           </Link>
         </div>
         <span className="text-xs text-muted-foreground">
-          © 2026 SUKASPACE. Intellectual Clarity.
+          © 2026 THE SCENES. Intellectual Clarity.
         </span>
       </div>
     </div>

@@ -27,13 +27,13 @@ function GoCreateBtn({ label, className = "" }: { label: string; className?: str
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About · SukaSpace" },
+      { title: "About · The Scenes" },
       {
         name: "description",
         content:
-          "SukaSpace combines Circle-style community discussion with Skool-style structured courses so experts can teach, monetize, and build an audience in one place.",
+          "The Scenes combines Circle-style community discussion with Skool-style structured courses so experts can teach, monetize, and build an audience in one place.",
       },
-      { property: "og:title", content: "About · SukaSpace" },
+      { property: "og:title", content: "About · The Scenes" },
       {
         property: "og:description",
         content:
@@ -65,7 +65,7 @@ const PILLARS = [
 const FOR_WHO = [
   {
     title: "For creators & experts",
-    body: "If you teach automation, code, design, marketing, or any other skill, SukaSpace gives you one workspace to run your paid community and your curriculum — instead of stitching together a Discord, a course host, and a spreadsheet.",
+    body: "If you teach automation, code, design, marketing, or any other skill, The Scenes gives you one workspace to run your paid community and your curriculum — instead of stitching together a Discord, a course host, and a spreadsheet.",
   },
   {
     title: "For learners & members",
@@ -87,7 +87,7 @@ function AboutPage() {
               The first community and course platform built for the AI era.
             </h1>
             <p className="mt-5 text-lg font-medium text-muted-foreground">
-              SukaSpace takes what works from community platforms like Circle and course-driven
+              The Scenes takes what works from community platforms like Circle and course-driven
               platforms like Skool, and fuses them into one workspace — so experts can teach, build
               an audience, and get paid for it without juggling five separate tools.
             </p>
@@ -106,7 +106,7 @@ function AboutPage() {
         <section className="border-b border-border bg-card">
           <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
             <div className="text-xs font-semibold uppercase tracking-wider text-primary">
-              What SukaSpace is
+              What The Scenes is
             </div>
             <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Three things, working as one system
@@ -168,7 +168,7 @@ function AboutPage() {
                   <h3 className="text-sm font-semibold text-foreground">Creator-first economics</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Set your own pricing, free or paid, and keep full ownership of your audience and
-                    content — SukaSpace is the workspace, not the middleman.
+                    content — The Scenes is the workspace, not the middleman.
                   </p>
                 </div>
               </div>

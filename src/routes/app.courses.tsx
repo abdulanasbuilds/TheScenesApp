@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { notifyCoursePublished } from "@/lib/autodm.functions";
 
 export const Route = createFileRoute("/app/courses")({
-  head: () => ({ meta: [{ title: "Courses · SukaSpace" }] }),
+  head: () => ({ meta: [{ title: "Courses · The Scenes" }] }),
   component: CoursesPage,
 });
 

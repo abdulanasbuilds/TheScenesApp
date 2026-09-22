@@ -15,7 +15,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
     console.warn("[email] RESEND_API_KEY not configured — skipping email to", to);
     return;
   }
-  const from = process.env.RESEND_FROM_EMAIL || "SukaSpace <noreply@sukaspace.com>";
+  const from = process.env.RESEND_FROM_EMAIL || "The Scenes <noreply@the-scenes.com>";
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -53,9 +53,9 @@ function base(content: string): string {
 </style></head>
 <body>
 <div class="wrap">
-  <div class="header"><div class="logo">SukaSpace</div></div>
+  <div class="header"><div class="logo">The Scenes</div></div>
   <div class="body">${content}</div>
-  <div class="footer">You're receiving this because you have an account on SukaSpace. &copy; 2025 SukaSpace.</div>
+  <div class="footer">You're receiving this because you have an account on The Scenes. &copy; 2025 The Scenes.</div>
 </div>
 </body>
 </html>`;
@@ -73,17 +73,17 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
     }
     await sendEmail(
       data.email,
-      "Welcome to SukaSpace 🎉",
+      "Welcome to The Scenes 🎉",
       base(`
         <h1>Hey ${data.name}, welcome aboard!</h1>
-        <p>You're now part of SukaSpace — the platform where tech creators build communities, publish courses, and grow their audience.</p>
+        <p>You're now part of The Scenes — the platform where tech creators build communities, publish courses, and grow their audience.</p>
         <p>Here's what you can do right now:</p>
         <ul style="padding-left:20px;color:#475569;line-height:2">
           <li>Discover and join communities in your niche</li>
           <li>Enroll in courses from expert creators</li>
           <li>Launch your own community and start earning</li>
         </ul>
-        <a href="${process.env.APP_URL || "https://sukaspace.com"}/discover" class="btn">Explore communities →</a>
+        <a href="${process.env.APP_URL || "https://the-scenes.com"}/discover" class="btn">Explore communities →</a>
         <p style="font-size:13px;color:#94a3b8">Questions? Reply to this email — we're always around.</p>
       `),
     );
@@ -115,7 +115,7 @@ export const sendWithdrawalFailedEmail = createServerFn({ method: "POST" })
           <strong>Reason reported:</strong> ${data.reason}
         </div>
         <p>Your withdrawal amount has been fully restored to your available earnings balance. Please verify your banking details in settings and try again.</p>
-        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/settings" class="btn">Update payout settings →</a>
+        <a href="${process.env.APP_URL || "https://the-scenes.com"}/app/settings" class="btn">Update payout settings →</a>
       `),
     );
     return { sent: true } as const;
@@ -136,12 +136,12 @@ export const sendSubscriptionPastDueEmail = createServerFn({ method: "POST" })
     }
     await sendEmail(
       data.email,
-      `⚠️ Payment Past Due — SukaSpace Pro Subscription`,
+      `⚠️ Payment Past Due — The Scenes Pro Subscription`,
       base(`
         <h1>Your subscription payment failed</h1>
-        <p>Our payment system was unable to process your renewal payment for your <strong>SukaSpace ${data.planName}</strong> plan.</p>
+        <p>Our payment system was unable to process your renewal payment for your <strong>The Scenes ${data.planName}</strong> plan.</p>
         <p>Please update your billing card details as soon as possible to avoid losing access to high-speed R2 hosted file downloads, video streaming features, and 3% lower platform commission fees.</p>
-        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/settings" class="btn">Update Billing Details →</a>
+        <a href="${process.env.APP_URL || "https://the-scenes.com"}/app/settings" class="btn">Update Billing Details →</a>
       `),
     );
     return { sent: true } as const;
@@ -164,7 +164,7 @@ export const sendStorageQuotaWarningEmail = createServerFn({ method: "POST" })
     }
     await sendEmail(
       data.email,
-      `⚠️ Storage Quota Warning — SukaSpace`,
+      `⚠️ Storage Quota Warning — The Scenes`,
       base(`
         <h1>You are running out of storage space</h1>
         <p>This is an automated warning that your hosted creator storage is currently at <strong>${data.usedPercent}% capacity</strong>.</p>
@@ -173,7 +173,7 @@ export const sendStorageQuotaWarningEmail = createServerFn({ method: "POST" })
           <tr><td style="padding:8px 0;color:#64748b">Total Quota</td><td style="padding:8px 0;text-align:right;font-weight:600">${data.quotaDisplay}</td></tr>
         </table>
         <p>If you reach 100% capacity, learners will still be able to access existing files, but you will not be able to upload any new resource PDFs or stream videos until you free up space or contact us to expand your custom quota.</p>
-        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/settings" class="btn">Manage Storage settings →</a>
+        <a href="${process.env.APP_URL || "https://the-scenes.com"}/app/settings" class="btn">Manage Storage settings →</a>
       `),
     );
     return { sent: true } as const;
@@ -195,7 +195,7 @@ export const sendEnrollmentEmail = createServerFn({ method: "POST" })
         <p>Hey ${data.name}, you're now enrolled in:</p>
         <p><span class="badge">${data.courseTitle}</span></p>
         <p>Head to your Classroom to start learning at your own pace. Your progress is saved automatically.</p>
-        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/classroom" class="btn">Open Classroom →</a>
+        <a href="${process.env.APP_URL || "https://the-scenes.com"}/app/classroom" class="btn">Open Classroom →</a>
         <p style="font-size:13px;color:#94a3b8">You'll receive a summary when you complete the course.</p>
       `),
     );
@@ -223,13 +223,13 @@ export const sendCommunityJoinEmail = createServerFn({ method: "POST" })
         : "Access is free — you're all set.";
     await sendEmail(
       data.email,
-      `You joined "${data.communityTitle}" on SukaSpace`,
+      `You joined "${data.communityTitle}" on The Scenes`,
       base(`
         <h1>You're in! 🚀</h1>
         <p>Hey ${data.name}, you've just joined <strong>${data.communityTitle}</strong>.</p>
         <p>${tagLine}</p>
         <p>Check out the community feed, introduce yourself, and connect with other members.</p>
-        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/feed" class="btn">Go to community →</a>
+        <a href="${process.env.APP_URL || "https://the-scenes.com"}/app/feed" class="btn">Go to community →</a>
       `),
     );
     return { sent: true } as const;
@@ -262,7 +262,7 @@ export const sendPaymentReceiptEmail = createServerFn({ method: "POST" })
           <tr><td style="padding:8px 0;color:#64748b">Amount</td><td style="padding:8px 0;text-align:right;font-weight:600">${data.amountDisplay}</td></tr>
           <tr><td style="padding:8px 0;color:#64748b">Reference</td><td style="padding:8px 0;text-align:right;font-family:monospace;font-size:12px">${data.reference}</td></tr>
         </table>
-        <a href="${process.env.APP_URL || "https://sukaspace.com"}/app/feed" class="btn">Go to community →</a>
+        <a href="${process.env.APP_URL || "https://the-scenes.com"}/app/feed" class="btn">Go to community →</a>
       `),
     );
     return { sent: true } as const;

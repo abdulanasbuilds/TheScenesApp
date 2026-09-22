@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Download, Share, X, Smartphone } from "lucide-react";
 import { captureInstallPrompt, hasInstallPrompt, triggerInstallPrompt } from "@/lib/pwa";
 
-const DISMISSED_KEY = "sukaspace_pwa_prompt_dismissed";
+const DISMISSED_KEY = "the-scenes_pwa_prompt_dismissed";
 const SHOW_DELAY_MS = 4000;
 
 type Platform = "ios" | "android" | "desktop" | "unknown";
@@ -143,7 +143,7 @@ export function PWAInstallPrompt() {
                   <Smartphone size={22} className="text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">Get the SukaSpace app</p>
+                  <p className="text-sm font-bold text-slate-900">Get the The Scenes app</p>
                   <p className="text-xs text-slate-500">Fast, offline-ready, no app store needed</p>
                 </div>
               </div>

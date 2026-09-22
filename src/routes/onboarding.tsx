@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 import { onOnboardingComplete } from "@/lib/autodm.functions";
 
 export const Route = createFileRoute("/onboarding")({
-  head: () => ({ meta: [{ title: "Welcome to SukaSpace · Get Started" }] }),
+  head: () => ({ meta: [{ title: "Welcome to The Scenes · Get Started" }] }),
   component: Onboarding,
 });
 
@@ -166,7 +166,7 @@ function Onboarding() {
 
       // In-app welcome notification via store
       store.pushNotification(
-        `Welcome to SukaSpace! 🎉 ${role === "creator" ? "Create your first community to get started." : "Discover communities that match your interests."}`,
+        `Welcome to The Scenes! 🎉 ${role === "creator" ? "Create your first community to get started." : "Discover communities that match your interests."}`,
         "onboarding",
         role === "creator" ? "/app/creator" : "/discover",
       );
@@ -189,7 +189,7 @@ function Onboarding() {
       </motion.div>
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          Welcome to SukaSpace
+          Welcome to The Scenes
         </h1>
         <p className="mt-2 text-slate-500 text-base max-w-xs mx-auto leading-relaxed">
           The platform where creators build communities and learners grow together. Let's set up
