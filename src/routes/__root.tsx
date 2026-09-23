@@ -120,30 +120,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
-  // Extract Supabase configuration from process.env at server-side runtime to inject dynamically to the browser.
-  const supabaseUrl =
-    typeof process !== "undefined"
-      ? process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-      : undefined;
-  const supabaseAnonKey =
-    typeof process !== "undefined"
-      ? process.env.SUPABASE_PUBLISHABLE_KEY ||
-        process.env.SUPABASE_ANON_KEY ||
-        process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-        process.env.VITE_SUPABASE_ANON_KEY
-      : undefined;
-
   return (
     <html lang="en">
       <head>
         <HeadContent />
-        {supabaseUrl && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `window.__SUPABASE_URL__ = ${JSON.stringify(supabaseUrl)}; window.__SUPABASE_ANON_KEY__ = ${JSON.stringify(supabaseAnonKey)};`,
-            }}
-          />
-        )}
       </head>
       <body>
         {children}
