@@ -38,7 +38,6 @@ import {
 } from "@/lib/app-store";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { cn } from "@/lib/utils";
-import { notifyCoursePublished } from "@/lib/autodm.functions";
 
 export const Route = createFileRoute("/app/courses")({
   head: () => ({ meta: [{ title: "Courses · The Scenes" }] }),
@@ -894,18 +893,6 @@ function CoursesPage() {
     if (willPublish) {
       // Notify members
       const community = (store.userCommunities ?? []).find((c) => c.id === course.communityId);
-      const memberEmails = store.getJoinedEmails?.(course.communityId ?? 0) ?? [];
-      if (memberEmails.length > 0 && community) {
-        await notifyCoursePublished({
-          data: {
-            memberEmails,
-            courseTitle: course.title,
-            courseId: course.id,
-            communityId: course.communityId ?? 0,
-            creatorName: session?.name ?? "Creator",
-          },
-        }).catch(() => null);
-      }
       store.pushNotification(
         `✅ "${course.title}" is now published and visible to learners.`,
         "course_published",

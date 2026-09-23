@@ -28,7 +28,6 @@ import {
 import { useAppStore } from "@/lib/app-store";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
-import { onOnboardingComplete } from "@/lib/autodm.functions";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Welcome to The Scenes · Get Started" }] }),
@@ -154,15 +153,6 @@ function Onboarding() {
         goals,
         skillLevel: skill ?? undefined,
       });
-
-      // Push welcome notification (server fn — degrades if Supabase not configured)
-      await onOnboardingComplete({
-        data: {
-          userEmail: store.session.email,
-          userName: name.trim() || store.session.name,
-          role: role ?? store.session.role,
-        },
-      }).catch(() => null);
 
       // In-app welcome notification via store
       store.pushNotification(

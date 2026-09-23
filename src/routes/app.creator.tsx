@@ -44,7 +44,6 @@ import { useAppStore, type Community, type Course } from "@/lib/app-store";
 import { Avatar } from "@/components/BrowserFrame";
 // No mock data — real member growth will appear as community grows
 import { toast } from "sonner";
-import { isPaystackConfigured } from "@/lib/paystack";
 
 export const Route = createFileRoute("/app/creator")({
   head: () => ({ meta: [{ title: "Creator Hub · The Scenes" }] }),
@@ -262,7 +261,7 @@ function OverviewTab({
 }) {
   const store = useAppStore();
   const nav = useNavigate();
-  const paystackOk = isPaystackConfigured();
+  const paystackOk = false;
 
   const METRICS = [
     {
@@ -780,7 +779,7 @@ function MembersTab({ communities }: { communities: Community[] }) {
 
 function PaymentsTab({ communities }: { communities: Community[] }) {
   const hasPaid = communities.some((c) => c.tag === "PAID");
-  const paystackOk = isPaystackConfigured();
+  const paystackOk = false;
 
   return (
     <div className="space-y-5">
