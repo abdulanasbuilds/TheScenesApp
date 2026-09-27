@@ -39,8 +39,7 @@ self.addEventListener("fetch", (event) => {
   if (
     request.method !== "GET" ||
     !url.origin.startsWith(self.location.origin) ||
-    url.pathname.startsWith("/api/") ||
-    url.hostname.includes("supabase.co")
+    url.pathname.startsWith("/api/")
   ) {
     return;
   }
