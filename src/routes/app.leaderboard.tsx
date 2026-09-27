@@ -158,7 +158,7 @@ function LeaderboardPage() {
   };
   const youTier = xpToTier(userXp);
 
-  // Real members list — only the current user until the Supabase profiles table is populated.
+  // Real members list — only the current user until more members join.
   // As more users sign up and earn XP, they appear here via real data.
   const members: LeaderMember[] = [you];
 

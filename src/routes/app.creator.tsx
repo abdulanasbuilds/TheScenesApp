@@ -268,7 +268,7 @@ function OverviewTab({
       icon: DollarSign,
       label: "Revenue",
       value: "$0.00",
-      sub: paystackOk ? "No transactions yet" : "Connect Paystack to earn",
+      sub: paystackOk ? "No transactions yet" : "Payments not connected",
       color: "text-primary bg-sky-50",
     },
     {
@@ -795,7 +795,7 @@ function PaymentsTab({ communities }: { communities: Community[] }) {
           )}
           {!paystackOk && (
             <div className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/30 px-3 py-2 text-xs font-semibold text-white">
-              <AlertCircle size={12} /> Paystack not connected
+              <AlertCircle size={12} /> Payments not connected
             </div>
           )}
         </div>
@@ -1469,7 +1469,7 @@ function SettingsTab() {
     {
       icon: DollarSign,
       label: "Payments & payouts",
-      desc: "Connect Paystack, set up withdrawals, view earnings",
+      desc: "Set up withdrawals and view earnings",
       action: () => nav({ to: "/app/payouts" }),
     },
     {
