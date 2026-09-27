@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LearnersRouteImport } from './routes/learners'
@@ -39,14 +38,8 @@ import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAutomationsRouteImport } from './routes/app.automations'
 import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 import { Route as AppAffiliateRouteImport } from './routes/app.affiliate'
-import { Route as ApiWebhookRouteImport } from './routes/api/webhook'
 import { Route as CSlugAboutRouteImport } from './routes/c.$slug.about'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -192,11 +185,6 @@ const AppAffiliateRoute = AppAffiliateRouteImport.update({
   path: '/affiliate',
   getParentRoute: () => AppRoute,
 } as any)
-const ApiWebhookRoute = ApiWebhookRouteImport.update({
-  id: '/api/webhook',
-  path: '/api/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CSlugAboutRoute = CSlugAboutRouteImport.update({
   id: '/c/$slug/about',
   path: '/c/$slug/about',
@@ -214,8 +202,6 @@ export interface FileRoutesByFullPath {
   '/learners': typeof LearnersRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/automations': typeof AppAutomationsRoute
@@ -247,8 +233,6 @@ export interface FileRoutesByTo {
   '/learners': typeof LearnersRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/automations': typeof AppAutomationsRoute
@@ -282,8 +266,6 @@ export interface FileRoutesById {
   '/learners': typeof LearnersRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/api/webhook': typeof ApiWebhookRoute
   '/app/affiliate': typeof AppAffiliateRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/automations': typeof AppAutomationsRoute
@@ -318,8 +300,6 @@ export interface FileRouteTypes {
     | '/learners'
     | '/onboarding'
     | '/pricing'
-    | '/sitemap.xml'
-    | '/api/webhook'
     | '/app/affiliate'
     | '/app/analytics'
     | '/app/automations'
@@ -351,8 +331,6 @@ export interface FileRouteTypes {
     | '/learners'
     | '/onboarding'
     | '/pricing'
-    | '/sitemap.xml'
-    | '/api/webhook'
     | '/app/affiliate'
     | '/app/analytics'
     | '/app/automations'
@@ -385,8 +363,6 @@ export interface FileRouteTypes {
     | '/learners'
     | '/onboarding'
     | '/pricing'
-    | '/sitemap.xml'
-    | '/api/webhook'
     | '/app/affiliate'
     | '/app/analytics'
     | '/app/automations'
@@ -420,20 +396,11 @@ export interface RootRouteChildren {
   LearnersRoute: typeof LearnersRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  ApiWebhookRoute: typeof ApiWebhookRoute
   CSlugAboutRoute: typeof CSlugAboutRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -637,13 +604,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAffiliateRouteImport
       parentRoute: typeof AppRoute
     }
-    '/api/webhook': {
-      id: '/api/webhook'
-      path: '/api/webhook'
-      fullPath: '/api/webhook'
-      preLoaderRoute: typeof ApiWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/c/$slug/about': {
       id: '/c/$slug/about'
       path: '/c/$slug/about'
@@ -711,8 +671,6 @@ const rootRouteChildren: RootRouteChildren = {
   LearnersRoute: LearnersRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
-  ApiWebhookRoute: ApiWebhookRoute,
   CSlugAboutRoute: CSlugAboutRoute,
 }
 export const routeTree = rootRouteImport

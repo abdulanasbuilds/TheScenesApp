@@ -542,7 +542,7 @@ function CreateCommunity() {
           />
           <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
             <Info className="w-3 h-3" />
-            Payment is processed via Paystack. You keep 93–100% depending on your plan.
+            Payments are not connected in this preview. You keep 93–100% depending on your plan.
           </p>
         </div>
       )}
