@@ -104,7 +104,7 @@ function Auth() {
           return;
         }
 
-        // Handle case where email confirmation is required by your Supabase settings
+        // Handle case where email confirmation is required
         if (!store.session) {
           setError("Account created! Please check your email inbox to confirm your account before logging in.");
           setSubmitting(false);
