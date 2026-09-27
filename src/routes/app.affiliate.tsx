@@ -168,7 +168,7 @@ function AffiliatePage() {
   const FAQS = [
     {
       q: "When do affiliates get paid?",
-      a: "Payouts are processed automatically at the end of each billing cycle via Paystack. Affiliates need a Paystack or bank account set up.",
+      a: "Payouts are processed automatically at the end of each billing cycle. Affiliates need a payout account set up.",
     },
     {
       q: "Can I set different rates per plan?",

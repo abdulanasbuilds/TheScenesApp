@@ -309,15 +309,8 @@ function OverviewTab({
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
           <AlertCircle size={16} className="shrink-0 text-amber-600" />
           <div className="flex-1 text-xs text-amber-700">
-            <span className="font-semibold">Paystack not connected.</span> Set{" "}
-            <code className="rounded bg-amber-100 px-1 font-mono text-[10px]">
-              VITE_PAYSTACK_PUBLIC_KEY
-            </code>{" "}
-            and{" "}
-            <code className="rounded bg-amber-100 px-1 font-mono text-[10px]">
-              PAYSTACK_SECRET_KEY
-            </code>{" "}
-            to start collecting payments.
+            <span className="font-semibold">Payments not connected.</span> This is a design
+            preview — no payments are collected.
           </div>
           <Link
             to="/app/payouts"
