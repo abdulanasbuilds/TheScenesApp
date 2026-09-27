@@ -90,7 +90,7 @@ function makeCode(title: string) {
   return `${slug}${Math.random().toString(36).slice(2, 6)}`;
 }
 
-// Affiliates are loaded from real data when the affiliate system is backed by Supabase
+// Affiliates are loaded from real data when the affiliate system is connected to a backend
 
 // ─── Tab types ────────────────────────────────────────────────────────────────
 
@@ -261,14 +261,14 @@ function OverviewTab({
 }) {
   const store = useAppStore();
   const nav = useNavigate();
-  const paystackOk = false;
+  const paymentsOk = false;
 
   const METRICS = [
     {
       icon: DollarSign,
       label: "Revenue",
       value: "$0.00",
-      sub: paystackOk ? "No transactions yet" : "Payments not connected",
+      sub: paymentsOk ? "No transactions yet" : "Payments not connected",
       color: "text-primary bg-sky-50",
     },
     {
@@ -304,8 +304,8 @@ function OverviewTab({
 
   return (
     <div className="space-y-5">
-      {/* Paystack banner */}
-      {!paystackOk && (
+      {/* Payments banner */}
+      {!paymentsOk && (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
           <AlertCircle size={16} className="shrink-0 text-amber-600" />
           <div className="flex-1 text-xs text-amber-700">
@@ -772,7 +772,7 @@ function MembersTab({ communities }: { communities: Community[] }) {
 
 function PaymentsTab({ communities }: { communities: Community[] }) {
   const hasPaid = communities.some((c) => c.tag === "PAID");
-  const paystackOk = false;
+  const paymentsOk = false;
 
   return (
     <div className="space-y-5">
@@ -793,7 +793,7 @@ function PaymentsTab({ communities }: { communities: Community[] }) {
               <AlertCircle size={12} /> No paid communities yet
             </div>
           )}
-          {!paystackOk && (
+          {!paymentsOk && (
             <div className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/30 px-3 py-2 text-xs font-semibold text-white">
               <AlertCircle size={12} /> Payments not connected
             </div>
