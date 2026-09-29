@@ -4,11 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 
-// Plain Vite + TanStack Start config (no third-party sandbox wrapper).
-// Mirrors what this app actually needs to run in the Replit container:
-// dev server bound to 0.0.0.0:5000 with the proxy's host allowed, the "@" path
-// alias, TanStack Start's server entry, Tailwind, and tsconfig path resolution.
-async function config({ mode, command }: ConfigEnv): Promise<UserConfig> {
+function config({ mode, command }: ConfigEnv): Promise<UserConfig> {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const envDefine: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {
