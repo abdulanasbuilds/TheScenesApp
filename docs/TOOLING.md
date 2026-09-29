@@ -1,62 +1,129 @@
-# The Scenes — Tooling Contract
+# The Scenes — Tooling and Capability Contract
 
-## Tools are capabilities, not authority
+## Principle
 
-An MCP, CLI, browser, GitHub connector, or provider SDK can perform actions. It does not decide whether those actions are permitted in the current phase.
+Tools are capabilities, not authority.
 
-## Repository/Git
+An MCP server, CLI, browser automation tool, provider SDK, or model can perform an action; it does not decide whether the action belongs in the current phase.
 
+## Required capability groups
+
+### Repository / Git
 Agents should be able to:
-- inspect status/history/diff;
+- inspect status/diff/history;
 - create branches;
 - read/write files;
-- run verification;
 - review changes.
 
-## CLI
-
+### CLI
 Use CLI for:
-- dependency inspection;
-- lint;
-- format;
+- package inspection;
+- formatting;
+- linting;
+- typechecking;
 - build;
 - tests;
-- local dev.
+- local dev server;
+- approved migrations.
 
-Never use destructive commands without authority.
+Do not use destructive shell commands without explicit authorization.
 
-## Browser/UI verification
-
+### Browser/UI verification
 Use browser-capable tooling for:
-- route checks;
+- route verification;
 - responsive checks;
-- form/error states;
-- visual comparisons;
-- key user journeys.
+- critical user flows;
+- visual comparison;
+- form/error-state checks.
 
-## MCP
+### Documentation
+Before provider-specific implementation:
+- read current official docs;
+- record material assumptions;
+- keep volatile provider behavior out of long-lived prompts where possible.
 
-Use only approved integrations with known provenance and acceptable permissions/data handling.
+### MCP
+Use only approved MCPs whose permissions and data handling are understood.
 
-## Documentation
+### Skills
+Use the relevant project skill(s) for:
+- product/business analysis;
+- research/evidence;
+- frontend/design variants;
+- accessibility;
+- implementation;
+- security;
+- testing/QA;
+- release/CI.
 
-Provider-specific behavior must be checked against current official documentation before implementation.
+If the environment does not expose a named skill, do not pretend it exists. Use the closest verified capability or report the gap.
 
-## Model hierarchy
+## Provider capability matrix
 
-Higher-capability models should strengthen the canonical docs.
+| Capability | Intended provider | Stage |
+|---|---|---|
+| Hosting / edge | Cloudflare | Direction |
+| Auth | Supabase | Direction |
+| Database | Supabase Postgres | Direction |
+| Realtime | Supabase Realtime | Direction |
+| File storage | Cloudflare R2 | Direction |
+| Transactional email | Resend | Direction |
+| Rate limiting | Redis-compatible | Direction |
+| Video / live | Bunny.net / LiveKit / Daily / Agora | Evaluate by use case |
+| Internal feedback | Telegram | Direction |
+| Payments | TBD | HOLD |
+| Search | Postgres first; dedicated/AI later | Deferred |
+| Notifications | PWA / Web Push | Direction |
 
-Lower-capability models should consume those docs.
+## Referral-specific tooling
 
-No model is allowed to weaken:
+Referral/quota work needs:
+- database transaction/idempotency capability;
+- rate limiting;
+- audit logging;
+- provider usage reconciliation;
+- secure secret handling;
+- browser verification of quota/entitlement UI.
+
+## CI
+
+The repository CI contract is in `docs/CI-CONTRACT.md`.
+
+At minimum, CI should prove:
+- lockfile install;
+- lint;
+- typecheck;
+- build;
+- agent-contract integrity.
+
+## Model hierarchy rule
+
+High-capability models should strengthen durable project docs.
+
+Lower-capability models should consume those docs rather than reconstruct architecture from code.
+
+No model may weaken:
 - security;
 - phase gates;
 - product scope;
 - provider boundaries;
 - design-first rules.
 
-## Capability rule
+## Environment rule
 
-Never claim a capability exists merely because a document names it.
+Never claim a tool/CLI/MCP exists because it is named in documentation.
 
 Detect actual capability first.
+
+If missing:
+- use an approved fallback;
+- or stop and report the blocker.
+
+## Verification
+
+Prefer evidence:
+- command output;
+- browser evidence;
+- test result;
+- diff inspection;
+- official documentation.
