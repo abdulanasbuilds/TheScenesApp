@@ -1,13 +1,11 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "the-scenes",
   "private": true,
   "sideEffects": false,
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build && node scripts/sync-dist.mjs",
-    "build:dev": "vite build --mode development && node scripts/sync-dist.mjs",
-    "sync:dist": "node scripts/sync-dist.mjs",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."
@@ -84,5 +82,6 @@
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.0.0",
     "vite": "^8.1.4"
-  }
+  },
+  "description": "The Scenes — learning, teaching, community, discovery, and creator platform"
 }
