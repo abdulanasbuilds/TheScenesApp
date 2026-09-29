@@ -1,7 +1,0 @@
-- [SukaSpace monetization engine](sukaspace-monetization.md) — payment adapter, earnings ledger, withdrawal state machine, R2 storage, access control, idempotent webhook. Run supabase/monetization.sql to activate.
-- [SukaSpace client-only data layer](sukaspace-mock-backend.md) — localStorage store (key: sukaspace_app_state_v3); Community now has color/coverImageUrl/isPrivate; Course has coverImageUrl/thumbnail; schema in supabase/schema.sql. AppShell auth guard uses window.location.replace("/auth") not nav().
-- [Realtime, DMs, Drip, Payments, Email](sukaspace-realtime-dms-drip.md) — joinPaidCommunity, Supabase Realtime subscriptions, Resend email server fns, DM inbox, drip lock UI.
-- [SukaSpace dashboards + auth + rich text](sukaspace-dashboards.md) — Creator Hub (10 tabs inc. Affiliate/Live/Automations), RichTextEditor component, creator-managed affiliate system, public pages must not be changed without explicit request.
-- [SukaSpace PWA + motion](sukaspace-pwa-motion.md) — manifest+SW in public/; spring presets + haptics in src/lib/pwa.ts; AppShell uses vaul Drawer for mobile notifs; skeleton in src/components/PageSkeleton.tsx.
-- [SukaSpace auth instant provisioning](sukaspace-auth-onboarding.md) — signup routes directly to feed (skips /onboarding); background prefetch on valid email; hapticTap/hapticError on all form events.
-- [SukaSpace payout accounts & settings](sukaspace-payouts-settings.md) — payout_accounts table, payouts.functions.ts, 7-tab settings UI, withdrawals resolve destination server-side.
