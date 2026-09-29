@@ -1,83 +1,153 @@
 # The Scenes — Build Phases
 
-## Phase 0 — Governance
+## Phase 0 — Governance + project foundation
 
-Complete:
-- project contract;
-- agent instructions;
-- tool boundaries;
+Current stage.
+
+Deliver:
+- universal agent contract;
+- product context;
+- design system brief;
 - integration boundaries;
-- security baseline;
-- design-first gate.
+- architecture decisions;
+- phase gates;
+- fixture strategy;
+- CI contract;
+- referral/quota architecture;
+- legacy isolation.
 
-## Phase 1 — Full design exploration
+No production integrations.
 
-Produce and compare multiple coherent frontend directions for:
-- landing;
-- discovery;
-- authenticated Home;
-- communities;
+## Phase 1 — Design exploration
+
+Deliver:
+- full information architecture;
+- landing page variants;
+- authenticated home variants;
+- explore/discovery;
+- category pages;
+- community;
 - learning/classroom;
-- teacher/creator;
-- admin concepts;
+- workflow/resource library;
+- events/live;
+- creator workspace;
+- referral dashboard and referral milestone states;
+- admin/provider-usage concepts;
+- mobile/PWA interaction patterns.
+
+Exit gate:
+- design direction selected;
+- core flows documented;
+- no unresolved navigation contradictions.
+
+## Phase 2 — Frontend application build with fixtures
+
+Build a fully navigable frontend using deterministic mock data.
+
+Required:
+- routes;
+- app shell;
+- mobile navigation;
+- cards/lists/detail views;
+- course/classroom flows;
+- community flows;
+- teacher flows;
+- referral UI flows with fixture entitlements;
+- empty/loading/error states;
 - onboarding;
-- mobile/PWA patterns.
+- public landing page.
 
-Exit:
-- one direction selected;
-- information architecture coherent;
-- flows documented.
-
-## Phase 2 — Frontend implementation with fixtures
-
-Build a complete navigable frontend using deterministic mock data.
-
-Exit:
-- critical flows work without a backend;
-- mobile baseline works;
-- no critical dead routes;
-- loading/error/empty states exist.
+Exit gate:
+- internally usable end-to-end without a backend;
+- no dead critical routes;
+- responsive and accessible baseline passes.
 
 ## Phase 3 — Backend foundation
 
-Only after Phase 2:
-- auth;
-- database;
-- policies/RLS;
-- realtime;
-- learning progress persistence.
+Only after Phase 2 is accepted.
 
-## Phase 4 — Files, email, rate limits, notifications
+Introduce:
+- Supabase Auth;
+- PostgreSQL;
+- core schema;
+- RLS/policies;
+- progress persistence;
+- realtime where justified;
+- controlled object storage;
+- server-side authorization.
 
+## Phase 4 — Email, files, notifications
+
+Introduce:
 - R2;
 - Resend;
-- Redis;
-- PWA/Web Push.
+- PWA/web push where appropriate;
+- Redis rate limiting.
 
 ## Phase 5 — Teacher/creator operations
 
-- applications;
-- approvals;
-- publishing;
-- courses;
-- events;
-- workflows;
-- creator analytics.
+Introduce:
+- teacher applications;
+- approval;
+- course publishing;
+- workflow publishing;
+- live events;
+- teacher analytics;
+- referral qualification and entitlement ledger.
 
-## Phase 6 — Payments
+Referral implementation must be provider-agnostic. Provider capacity is a separate system.
 
-Only after payment operating rules are defined and verified.
+## Phase 6 — Provider-powered live/media and storage
 
-## Phase 7 — Marketplace
+Introduce provider adapters only after current provider documentation and account terms are reviewed.
 
-Digital products, workflow/template sales, creator earnings, orders, downloads, refunds/disputes.
+Potential providers:
+- LiveKit;
+- Daily;
+- Agora;
+- Bunny.net;
+- Cloudflare R2.
 
-## Phase 8 — Intelligent search + AI capabilities
+The platform must enforce provider/global quotas, not assume referrals create provider capacity.
 
-Recommendations, course assistance, semantic retrieval, workflow generation.
+## Phase 7 — Payments
 
-## Phase 9 — Scale
+Payment architecture is enabled only after:
+- Ghana/international payment model is documented;
+- provider capabilities are current;
+- refunds/chargebacks are modeled;
+- creator payout rules are defined.
 
-Organizations, private academies, richer creator economy, enterprise controls, APIs/integrations, broader categories.
+## Phase 8 — Marketplace and creator economy
 
-Never implement a later phase just because a placeholder exists.
+Introduce:
+- digital products;
+- workflow/template sales;
+- creator revenue share;
+- orders/downloads;
+- reviews;
+- disputes.
+
+## Phase 9 — Search + AI layer
+
+Introduce progressively:
+- better search;
+- recommendations;
+- course assistant;
+- workflow generation;
+- semantic retrieval.
+
+## Phase 10 — Scale
+
+Later:
+- organizations;
+- private academies;
+- enterprise controls;
+- advanced analytics;
+- additional categories/industries;
+- richer creator economy;
+- formal API/integrations.
+
+## Phase gate rule
+
+Never implement a later phase merely because placeholder routes, legacy code, or competitor references already exist.
