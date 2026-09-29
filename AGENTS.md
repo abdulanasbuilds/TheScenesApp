@@ -1,6 +1,20 @@
-# The Scenes — Agent Operating Contract
+# The Scenes — Universal Agent Operating Contract
 
-This file is the first project instruction every coding agent must read.
+**This is the ONE canonical agent-instruction file for The Scenes.**
+
+Every coding/research/design/orchestration agent, regardless of model, harness, CLI, IDE, vendor, or provider, must follow this file.
+
+Do not create separate root instruction files for Claude, Codex, Gemini, Jules, OpenCode, Lovable, or any other agent. Harness-specific behavior is implementation detail; the project contract is universal.
+
+## Authority order
+
+1. The user's current explicit request.
+2. This `AGENTS.md`.
+3. Relevant project/reference documentation under `docs/`.
+4. Current implementation evidence.
+5. Current official provider documentation for provider-specific facts.
+
+Project documentation under `docs/` provides context and reference. It must not silently override this contract.
 
 ## Mission
 
@@ -9,16 +23,6 @@ Build **The Scenes**, an African-first, globally expandable platform for learnin
 The product is broader than AI. AI is an important flagship category and capability, but the architecture must support digital skills, creative skills, professional and soft skills, business skills, career education, specialist knowledge, and other legitimate online learning.
 
 The platform may use Skool, Circle, Kajabi, and other products as references for proven interaction patterns. It is not a one-to-one clone.
-
-## Authority order
-
-1. User's current explicit request.
-2. `AGENTS.md`.
-3. Current files in `docs/`.
-4. Current implementation evidence.
-5. External provider documentation for provider-specific behavior.
-
-Chat history is context, not an implementation contract.
 
 ## Non-negotiable principles
 
@@ -57,7 +61,7 @@ Mocked or deterministic fixture data is permitted for frontend work.
 
 Before backend integration, design the whole application.
 
-Use the project's design/frontend-design skills.
+Use the project's design/frontend-design skills available to the active environment.
 
 Where meaningful alternatives exist:
 1. create multiple isolated variants;
@@ -68,6 +72,23 @@ Where meaningful alternatives exist:
 6. promote it into the canonical UI system.
 
 Do not accept the first generated interface by default.
+
+The frontend design must cover:
+- public landing page;
+- public discovery/explore;
+- categories/academies;
+- communities;
+- courses/classrooms;
+- workflows/resources;
+- events/live;
+- learner home and learning;
+- profiles/settings/notifications;
+- teacher/creator workspace;
+- admin workspace;
+- onboarding;
+- loading/empty/error states;
+- mobile/PWA behavior;
+- important conversion and learning flows.
 
 ## Product surfaces
 
@@ -145,11 +166,19 @@ The long-term platform helps people:
 
 ## Category philosophy
 
-Broad outside, structured inside.
+**Broad outside, structured inside.**
 
-The taxonomy must be data-driven and expandable rather than hard-coded into the navigation.
+The taxonomy must be data-driven and expandable rather than hard-coded into navigation.
 
-Initial categories can be AI, Design, Web + Product, Business + Freelancing, Content, and other launch-approved categories. The product architecture must not make these permanent limits.
+Initial categories can include:
+- AI;
+- Design;
+- Web + Product;
+- Business + Freelancing;
+- Content;
+- and other launch-approved categories.
+
+These are not permanent limits. AI is a flagship category, not the definition of the company.
 
 ## African-first requirements
 
@@ -180,9 +209,42 @@ Current direction:
 - search: Postgres first, intelligent search later;
 - PWA/Web Push: installability and notifications with consent.
 
-See `docs/INTEGRATIONS.md`.
+See `docs/INTEGRATIONS.md` for reference boundaries.
 
-## Forbidden shortcuts
+## Agent/tooling rules
+
+Agents must inspect the actual available environment before claiming a capability exists.
+
+Use available:
+- repository/Git tooling;
+- CLI/runtime tooling;
+- browser/UI verification;
+- approved MCPs;
+- project skills;
+- current official provider documentation.
+
+Tool availability does not grant authority. The current phase and this contract decide what may be changed.
+
+Use Agent OS principles:
+- capability before claim;
+- evidence before confidence;
+- bounded autonomy;
+- smallest correct change;
+- verify before claiming success.
+
+## Required phase discipline
+
+The current phase is recorded in `docs/PHASES.md`.
+
+Do not implement later phases because placeholder routes, legacy code, old plans, or competitor references already exist.
+
+When a task crosses a phase boundary:
+- stop;
+- identify the boundary;
+- update/confirm the phase decision;
+- proceed only when authorized.
+
+## Security baseline
 
 - no hardcoded secrets;
 - no client-only authorization;
@@ -195,6 +257,33 @@ See `docs/INTEGRATIONS.md`.
 - no unverified external asset copying;
 - no claiming tests, browser checks, builds, deployments, or integrations were run when they were not.
 
+When backend work begins, enforce:
+- server-side authorization;
+- database policies/RLS where appropriate;
+- input validation;
+- object-level authorization;
+- webhook verification and idempotency;
+- rate limiting;
+- private-file access control;
+- audit logging.
+
+## Legacy warning
+
+The repository began as SukaSpace and contains historical implementation files, agent memory, schemas, and old Skool-parity plans.
+
+Legacy material is **reference only**.
+
+Do not infer current The Scenes requirements from:
+- SukaSpace names;
+- old localStorage state;
+- old database schemas;
+- old payment logic;
+- old route assumptions;
+- old public UI constraints;
+- old agent plans.
+
+Promote legacy patterns only when they are deliberately compatible with the current The Scenes architecture.
+
 ## Definition of done
 
 A phase is complete only when:
@@ -205,3 +294,10 @@ A phase is complete only when:
 - relevant verification passes;
 - changed files are reviewed;
 - durable documentation is updated where decisions changed.
+
+## Critical rule
+
+**When in doubt, do not invent.**
+
+Inspect the repository, read the relevant project docs, identify the current phase, and either make the smallest safe change or surface the uncertainty.
+
