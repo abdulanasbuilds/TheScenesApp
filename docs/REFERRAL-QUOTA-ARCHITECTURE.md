@@ -32,23 +32,23 @@ The system must always enforce:
 
 ### LiveKit
 
-LiveKit's current documentation lists the Build/free WebRTC allowance at 5,000 participant minutes, plus other project limits. Critically, LiveKit states that free projects share allowances and limits across a user's free projects, so creating additional free projects does not multiply the free quota. Therefore the architecture must not depend on LiveKit project multiplication as a scaling strategy. citeturn393759search9
+LiveKit's current documentation lists the Build/free WebRTC allowance at 5,000 participant minutes, plus other project limits. Critically, LiveKit states that free projects share allowances and limits across a user's free projects, so creating additional free projects does not multiply the free quota. Therefore the architecture must not depend on LiveKit project multiplication as a scaling strategy.
 
 ### Daily
 
-Daily currently advertises 10,000 free video/audio minutes per month for Video SDK. This is infrastructure capacity, not a referral credit balance. citeturn694520search3
+Daily currently advertises 10,000 free video/audio minutes per month for Video SDK. This is infrastructure capacity, not a referral credit balance.
 
 ### Agora
 
-Agora currently lists 10,000 combined RTC minutes free each month for RTC. Again, this is a provider allowance, not per-creator referral capacity. citeturn694520search1
+Agora currently lists 10,000 combined RTC minutes free each month for RTC. Again, this is a provider allowance, not per-creator referral capacity.
 
 ### Cloudflare R2
 
-R2 currently provides 10 GB-month of Standard storage free each month, plus 1 million Class A requests and 10 million Class B requests; egress is free. Storage is measured as GB-month, so it must not be modelled as an unlimited permanent 10 GB bucket. citeturn694520search0
+R2 currently provides 10 GB-month of Standard storage free each month, plus 1 million Class A requests and 10 million Class B requests; egress is free. Storage is measured as GB-month, so it must not be modelled as an unlimited permanent 10 GB bucket.
 
 ### Supabase Storage
 
-Supabase currently provides 1 GB storage on the Free plan. The Free plan also has a 500 MB database-size quota before read-only enforcement. Do not treat a Supabase Free project as an unlimited backup pool. citeturn694520search2turn694520search5
+Supabase currently provides 1 GB storage on the Free plan. The Free plan also has a 500 MB database-size quota before read-only enforcement. Do not treat a Supabase Free project as an unlimited backup pool.
 
 ## No account-farm architecture
 
