@@ -84,6 +84,7 @@ The frontend design must cover:
 - learner home and learning;
 - profiles/settings/notifications;
 - teacher/creator workspace;
+- referral dashboard and referral-related creator states;
 - admin workspace;
 - onboarding;
 - loading/empty/error states;
@@ -128,6 +129,7 @@ The frontend design must cover:
 - Community
 - Students / Audience
 - Reviews
+- Referrals
 - Earnings
 - Analytics
 - Settings
@@ -143,6 +145,8 @@ The frontend design must cover:
 - Payouts
 - Moderation
 - Policies
+- Referrals / Entitlements
+- Provider Usage
 - Analytics
 - System Settings
 
@@ -209,7 +213,47 @@ Current direction:
 - search: Postgres first, intelligent search later;
 - PWA/Web Push: installability and notifications with consent.
 
-See `docs/INTEGRATIONS.md` for reference boundaries.
+See `docs/INTEGRATIONS.md`.
+
+## Referral and quota rule
+
+Referrals grant **platform entitlements**, not guaranteed provider capacity.
+
+A reward may unlock:
+- additional logical storage allowance;
+- additional live-session allowance;
+- creator feature access;
+- additional publishing slots.
+
+The quota controller must separately enforce:
+- creator entitlement;
+- provider availability;
+- current usage;
+- provider hard limits;
+- global safety caps;
+- abuse controls.
+
+Never design around automatic creation/rotation of free accounts to evade provider limits or plan restrictions.
+
+Never store raw API keys/secrets inside an `api_credentials JSONB` table field.
+
+See `docs/REFERRAL-QUOTA-ARCHITECTURE.md`.
+
+## Agent bootstrap
+
+For a cold session, read:
+1. this file;
+2. `docs/README.md`;
+3. `docs/AGENT-CONTEXT.md`;
+4. the task-relevant document(s);
+5. the current phase in `docs/PHASES.md`.
+
+Then inspect the implementation.
+
+Every task prompt should contain:
+CONTEXT → OBJECTIVE → CURRENT PHASE → IN-SCOPE → OUT-OF-SCOPE → EXISTING FILES → DESIGN → DATA → SECURITY → INTEGRATIONS → TOOLS/SKILLS → IMPLEMENTATION → ACCEPTANCE → VERIFICATION → HANDOFF.
+
+An agent must not require chat history to reconstruct the product.
 
 ## Agent/tooling rules
 
