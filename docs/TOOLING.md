@@ -42,28 +42,6 @@ Before provider-specific implementation:
 - record material assumptions;
 - keep volatile provider behavior out of long-lived prompts where possible.
 
-### Optional launch-video workflow (/brag)
-
-Use the open-source [latent-spaces/brag skill](https://github.com/latent-spaces/brag) to create a short launch video and share copy from The Scenes project code.
-
-This is a developer workflow only. It is **not** a The Scenes runtime feature, app dependency, or reason to change the product architecture.
-
-Install from the TheScenesApp repository root when running in a local coding-agent environment:
-
-```bash
-npx skills add https://github.com/latent-spaces/brag --skill brag
-```
-
-When the frontend is ready and the design direction has been approved, invoke:
-
-```text
-/brag --tone polished --format vertical
-```
-
-Run it only when the project contains real UI/product states worth showing. The repository is currently in Phase 0, so do not present an unfinished or text-only workspace as a completed product demo. Prefer real screens from approved design/frontend work, and keep the story grounded in The Scenes: an African-first, globally expandable platform for learning, teaching, focused communities, discovery, and creator-led education. AI is a flagship category, not the entire product. The visual tone should be editorial, practical, human, and credible—not a generic AI-SaaS promo.
-
-The skill's documented requirements are Node.js 22+, FFmpeg on PATH, and the Hyperframes CLI (`npx hyperframes doctor`). Verify the local environment before claiming a render succeeded. Review the generated video and share copy before distribution; verify music/SFX usage rights for the intended channel. Do not add Hyperframes or other video tooling to the app's runtime dependencies, do not fabricate capabilities or results, and do not commit generated video output unless explicitly requested.
-
 ### MCP
 Use only approved MCPs whose permissions and data handling are understood.
 
