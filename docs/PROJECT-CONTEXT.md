@@ -5,6 +5,7 @@
 The Scenes is an African-first, globally expandable learning, teaching, community, discovery, and creator platform.
 
 It combines:
+
 - learning;
 - teaching;
 - focused communities;
@@ -23,6 +24,7 @@ It combines:
 AI is a flagship category and major capability, not the company boundary.
 
 The architecture must support:
+
 - AI and automation;
 - technology and coding;
 - web/product;
@@ -41,6 +43,7 @@ The architecture must support:
 The product should feel global in quality but not globally generic.
 
 Design for:
+
 - mobile-first use;
 - bandwidth sensitivity;
 - local trust;
@@ -56,6 +59,7 @@ Use proven patterns from Skool, Circle, Kajabi, and related products where usefu
 Do not build a one-to-one clone.
 
 The Scenes should differentiate through:
+
 - structured discovery;
 - multiple learning/teaching modes;
 - creator tooling;
@@ -73,10 +77,18 @@ Authenticated:
 Home, Explore, My Learning, Community, Workflows, Resources, Events, Marketplace later, Notifications, Profile.
 
 Teacher/Creator:
-Overview, Content, Courses, Lessons, Live Sessions, Products, Community, Students, Reviews, Earnings, Analytics, Settings.
+Overview, Content, Courses, Lessons, Live Sessions, Products, Community, Students/Audience, Reviews, Referrals, Earnings, Analytics, Settings.
 
 Admin:
-Overview, Users, Teachers/Creators, Categories, Content, Reports, Payments, Payouts, Moderation, Policies, Analytics, System Settings.
+Overview, Users, Teachers/Creators, Categories, Content, Reports, Payments, Payouts, Moderation, Policies, Referrals/Entitlements, Provider Usage, Analytics, System Settings.
+
+## Canonical references
+
+- All requirements: `docs/PRODUCT-REQUIREMENTS.md`
+- Feature tracking: `docs/FEATURE-MATRIX.md`
+- Open decisions: `docs/OPEN-PRODUCT-DECISIONS.md`
+- Plain-English overview: `docs/PLAIN-ENGLISH-PRODUCT-EXPLANATION.md`
+- Legacy context: `docs/LEGACY-CONTEXT.md`
 
 ## Landing vs discovery
 
@@ -91,6 +103,7 @@ Never merge these concepts accidentally.
 Mobile is a primary design target.
 
 The system should feel:
+
 - credible;
 - editorial;
 - calm;

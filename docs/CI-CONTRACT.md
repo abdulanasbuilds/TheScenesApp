@@ -17,6 +17,7 @@ Every pull request and push to protected branches should run:
 ## Contract integrity checks
 
 CI should fail if:
+
 - `AGENTS.md` is missing;
 - any duplicate root agent-contract files are introduced;
 - provider-specific instruction folders such as `.lovable/` are introduced;
@@ -33,6 +34,7 @@ Provider integrations must be represented by interfaces/mocks until the relevant
 ## Security-stage rule
 
 Once backend integrations begin, CI should additionally include:
+
 - dependency audit;
 - secret scanning;
 - migration checks;
@@ -45,6 +47,7 @@ Once backend integrations begin, CI should additionally include:
 Do not call a phase complete solely because CI is green.
 
 A phase also requires:
+
 - scope review;
 - visual/mobile QA;
 - security review where relevant;

@@ -1,6 +1,6 @@
 # Fable — The Scenes Orchestration Guide
 
-Fable is the project conductor concept.
+Fable or any highly capable model/agent is the project conductor concept.
 
 ## Loop
 
@@ -9,6 +9,7 @@ CONTEXT → CAPABILITY CHECK → CURRENT PHASE → TASK CONTRACT → SPECIALIST 
 ## Every delegated task
 
 Define:
+
 - objective;
 - in-scope;
 - out-of-scope;
@@ -28,6 +29,7 @@ Do not run multiple agents against the same mutable files without coordination.
 ## Stop conditions
 
 Stop when:
+
 - a required capability is missing;
 - a task crosses phase boundaries;
 - a destructive action appears;
@@ -38,6 +40,7 @@ Stop when:
 ## Handoff
 
 Every phase handoff states:
+
 - what changed;
 - what was verified;
 - known risks/gaps;

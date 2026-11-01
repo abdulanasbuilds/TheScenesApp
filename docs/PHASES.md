@@ -5,6 +5,7 @@
 Current stage.
 
 Deliver:
+
 - universal agent contract;
 - product context;
 - design system brief;
@@ -21,6 +22,7 @@ No production integrations.
 ## Phase 1 — Design exploration
 
 Deliver:
+
 - full information architecture;
 - landing page variants;
 - authenticated home variants;
@@ -36,6 +38,7 @@ Deliver:
 - mobile/PWA interaction patterns.
 
 Exit gate:
+
 - design direction selected;
 - core flows documented;
 - no unresolved navigation contradictions.
@@ -45,6 +48,7 @@ Exit gate:
 Build a fully navigable frontend using deterministic mock data.
 
 Required:
+
 - routes;
 - app shell;
 - mobile navigation;
@@ -58,6 +62,7 @@ Required:
 - public landing page.
 
 Exit gate:
+
 - internally usable end-to-end without a backend;
 - no dead critical routes;
 - responsive and accessible baseline passes.
@@ -67,6 +72,7 @@ Exit gate:
 Only after Phase 2 is accepted.
 
 Introduce:
+
 - Supabase Auth;
 - PostgreSQL;
 - core schema;
@@ -79,6 +85,7 @@ Introduce:
 ## Phase 4 — Email, files, notifications
 
 Introduce:
+
 - R2;
 - Resend;
 - PWA/web push where appropriate;
@@ -87,13 +94,20 @@ Introduce:
 ## Phase 5 — Teacher/creator operations
 
 Introduce:
+
 - teacher applications;
 - approval;
 - course publishing;
 - workflow publishing;
 - live events;
 - teacher analytics;
-- referral qualification and entitlement ledger.
+- referral qualification and entitlement ledger;
+- private messaging (TS-DM);
+- guest access links (TS-GUEST);
+- community moderation and content reporting (TS-COMM-008, TS-COMM-009);
+- practical assignments/projects (TS-CLASS-009);
+- reviews management (TS-TEACH-008);
+- creator community management (TS-TEACH-006).
 
 Referral implementation must be provider-agnostic. Provider capacity is a separate system.
 
@@ -102,6 +116,7 @@ Referral implementation must be provider-agnostic. Provider capacity is a separa
 Introduce provider adapters only after current provider documentation and account terms are reviewed.
 
 Potential providers:
+
 - LiveKit;
 - Daily;
 - Agora;
@@ -113,6 +128,7 @@ The platform must enforce provider/global quotas, not assume referrals create pr
 ## Phase 7 — Payments
 
 Payment architecture is enabled only after:
+
 - Ghana/international payment model is documented;
 - provider capabilities are current;
 - refunds/chargebacks are modeled;
@@ -121,6 +137,7 @@ Payment architecture is enabled only after:
 ## Phase 8 — Marketplace and creator economy
 
 Introduce:
+
 - digital products;
 - workflow/template sales;
 - creator revenue share;
@@ -131,6 +148,7 @@ Introduce:
 ## Phase 9 — Search + AI layer
 
 Introduce progressively:
+
 - better search;
 - recommendations;
 - course assistant;
@@ -140,6 +158,7 @@ Introduce progressively:
 ## Phase 10 — Scale
 
 Later:
+
 - organizations;
 - private academies;
 - enterprise controls;

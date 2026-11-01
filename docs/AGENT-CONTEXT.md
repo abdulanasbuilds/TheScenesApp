@@ -33,16 +33,21 @@ The platform is broad outside and structured inside.
 ## Core product loops
 
 ### Learner loop
+
 Discover → Join → Learn → Apply → Showcase → Get feedback → Improve → Return
 
 ### Community loop
+
 Publish → Discover → Discuss → Apply → Showcase → Feedback → Save/Share
 
 ### Creator loop
+
 Teach → Build audience → Publish useful knowledge/products → Earn → Retain audience
 
 ### Referral loop
+
 Invite → Qualify → Verify → Credit → Unlock entitlement → Measure usage → Re-evaluate monthly
+the platform is responsible for only the creators rewards not normal users/learners,the is responsible for any rewards/affiliate for learners
 
 ## Design rule
 
@@ -55,6 +60,7 @@ When a meaningful UI choice exists, create multiple variants with the same funct
 External providers sit behind internal adapters.
 
 Current direction:
+
 - Cloudflare: hosting/edge/security.
 - Supabase: Auth/Postgres/Realtime and learning persistence.
 - Cloudflare R2: file/object storage.
@@ -73,6 +79,7 @@ Provider quotas are not business entitlements. Never promise an individual more 
 Referrals reward the user with a **platform entitlement**, not with guaranteed provider capacity.
 
 Examples:
+
 - extra storage allowance;
 - extra live-session allowance;
 - access to a creator feature;
@@ -90,6 +97,7 @@ Use a state machine:
 PENDING → QUALIFIED → CREDITED
 
 A qualification rule must be defined before implementation, for example:
+
 - unique account;
 - verified email/identity as appropriate;
 - no self-referral;
@@ -108,6 +116,7 @@ Additional provider accounts may only be used when the provider permits the arra
 Never put raw API secrets in a database `api_credentials JSONB` column.
 
 Store only:
+
 - non-secret account metadata;
 - a provider account identifier;
 - an environment-secret reference;
@@ -120,6 +129,7 @@ Actual credentials belong in approved secret storage/environment configuration.
 Provider failover is a session-level capability.
 
 Do not promise seamless mid-session switching between incompatible realtime SDKs. A provider outage/quota transition may require:
+
 - retry;
 - reconnect;
 - starting a replacement session;
@@ -132,6 +142,7 @@ The internal live interface should hide provider-specific details from UI code.
 A file gets a durable storage location at upload time.
 
 Persist:
+
 - storage provider;
 - account/bucket identifier;
 - object key;
@@ -162,3 +173,11 @@ VERIFICATION
 HANDOFF NOTES
 
 The agent must never need the chat history to reconstruct the product.
+
+## Canonical document references
+
+- All requirements with stable IDs: `docs/PRODUCT-REQUIREMENTS.md`
+- Feature traceability: `docs/FEATURE-MATRIX.md`
+- Unresolved business questions: `docs/OPEN-PRODUCT-DECISIONS.md`
+- Non-technical product overview: `docs/PLAIN-ENGLISH-PRODUCT-EXPLANATION.md`
+- Legacy SukaSpace context: `docs/LEGACY-CONTEXT.md`

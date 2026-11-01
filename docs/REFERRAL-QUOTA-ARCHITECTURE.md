@@ -15,6 +15,7 @@ They are not the same thing.
 Example:
 
 A creator may earn:
+
 - +2 GB logical storage entitlement;
 - +5,000 live participant-minute entitlement;
 - access to an advanced creator feature.
@@ -22,6 +23,7 @@ A creator may earn:
 That does not mean The Scenes has magically received another 2 GB or 5,000 minutes from a provider.
 
 The system must always enforce:
+
 1. creator entitlement;
 2. global provider availability;
 3. current usage;
@@ -55,6 +57,7 @@ Supabase currently provides 1 GB storage on the Free plan. The Free plan also ha
 The Scenes must not automate creation or rotation of large numbers of free accounts to evade provider limits, pricing, or plan restrictions.
 
 A provider pool may contain multiple accounts only when:
+
 - the accounts are legitimately controlled by the business;
 - the provider permits the arrangement;
 - credentials are securely managed;
@@ -69,6 +72,7 @@ The system must never assume that creating another free account creates another 
 ### referrals
 
 Fields:
+
 - id
 - referrer_id
 - referred_user_id
@@ -81,6 +85,7 @@ Fields:
 - updated_at
 
 Constraints:
+
 - unique referred user per reward program;
 - no self-referral;
 - idempotent qualification/crediting.
@@ -88,6 +93,7 @@ Constraints:
 ### referral_events
 
 Fields:
+
 - id
 - referral_id
 - event_type
@@ -100,6 +106,7 @@ Use event_key for idempotency.
 ### creator_entitlements
 
 Fields:
+
 - creator_id
 - storage_bytes_granted
 - live_minutes_granted
@@ -112,6 +119,7 @@ Fields:
 ### creator_usage
 
 Fields:
+
 - creator_id
 - period_key
 - storage_bytes_used
@@ -123,6 +131,7 @@ Fields:
 ### provider_accounts
 
 Fields:
+
 - id
 - provider
 - label
@@ -140,6 +149,7 @@ No raw secret keys.
 ### provider_usage
 
 Fields:
+
 - provider_account_id
 - period_key
 - resource_type
@@ -186,11 +196,13 @@ getUsage()
 selectProvider()
 
 Provider adapters:
+
 - LiveKitAdapter
 - DailyAdapter
 - AgoraAdapter
 
 Selection should consider:
+
 - creator entitlement;
 - global provider remaining quota;
 - concurrency;
@@ -220,6 +232,7 @@ The system should reject new uploads rather than unexpectedly incur charges when
 ## Referral abuse controls
 
 At minimum consider:
+
 - verified account;
 - unique referral relationship;
 - self-referral rejection;
@@ -238,6 +251,7 @@ Do not make the reward system depend on any single client-side signal.
 Creators should see:
 
 Referral dashboard:
+
 - current referral count;
 - pending referrals;
 - qualified referrals;
@@ -257,6 +271,7 @@ Avoid:
 ## Failure behavior
 
 When infrastructure is exhausted:
+
 - do not fail silently;
 - do not oversubscribe;
 - do not auto-enable paid usage without explicit user authorization;
@@ -266,6 +281,7 @@ When infrastructure is exhausted:
 ## Agent requirements
 
 Any agent implementing referral/quota logic must read:
+
 - `AGENTS.md`
 - `docs/INTEGRATIONS.md`
 - `docs/SECURITY-RULES.md`

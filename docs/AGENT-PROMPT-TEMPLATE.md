@@ -5,6 +5,7 @@ Paste this template into any coding agent. The agent must still read `AGENTS.md`
 ## Prompt
 
 ### CONTEXT
+
 You are working on **The Scenes**, an African-first, globally expandable platform for learning, teaching, communities, discovery, and creator-led education.
 
 AI is a flagship category, not the whole company.
@@ -12,16 +13,20 @@ AI is a flagship category, not the whole company.
 The product may use Skool/Circle/Kajabi as references for proven patterns, but it is not a one-to-one clone.
 
 ### OBJECTIVE
+
 [Describe the exact outcome.]
 
 ### CURRENT PHASE
+
 [State the phase from `docs/PHASES.md`.]
 
 ### IN-SCOPE
+
 - [file/feature/task]
 - [file/feature/task]
 
 ### OUT-OF-SCOPE
+
 - production auth/database if frontend gate is not passed;
 - payments unless explicitly approved;
 - unrelated future phases;
@@ -29,21 +34,27 @@ The product may use Skool/Circle/Kajabi as references for proven patterns, but i
 - provider changes not required by the task.
 
 ### EXISTING FILES
+
 Inspect these before editing:
+
 - [paths]
 
 ### DESIGN REQUIREMENTS
+
 Follow `docs/DESIGN-FIRST.md`.
 
 Create variants when a meaningful visual/product choice exists. Use realistic deterministic fixtures for frontend-only work.
 
 ### DATA
+
 [Describe relevant fixture/domain data.]
 
 ### SECURITY
+
 Follow `docs/SECURITY-RULES.md`.
 
 Never:
+
 - hardcode secrets;
 - bypass authorization;
 - trust client-only permissions;
@@ -51,6 +62,7 @@ Never:
 - weaken a security boundary to make a demo work.
 
 ### INTEGRATIONS
+
 Follow `docs/INTEGRATIONS.md`.
 
 Use provider adapters.
@@ -58,7 +70,9 @@ Use provider adapters.
 Provider behavior must be verified against current official documentation before implementation.
 
 ### TOOLS / SKILLS
+
 Use the actually available:
+
 - product/research skills;
 - design/frontend skills;
 - implementation skills;
@@ -71,6 +85,7 @@ Use the actually available:
 Do not claim a capability exists without detecting it.
 
 ### IMPLEMENTATION
+
 1. Inspect current implementation.
 2. Confirm phase boundary.
 3. Implement the smallest correct slice.
@@ -79,12 +94,15 @@ Do not claim a capability exists without detecting it.
 6. Verify behavior.
 
 ### ACCEPTANCE CRITERIA
+
 - [criterion]
 - [criterion]
 - [criterion]
 
 ### VERIFICATION
+
 Run the relevant commands, such as:
+
 - `bun run lint`
 - `bunx tsc --noEmit`
 - `bun run build`
@@ -93,7 +111,9 @@ Run the relevant commands, such as:
 Do not claim a check passed unless it actually ran.
 
 ### HANDOFF
+
 Report:
+
 - what changed;
 - files changed;
 - what was verified;

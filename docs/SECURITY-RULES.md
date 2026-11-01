@@ -7,6 +7,7 @@ No production secrets, production auth, production database, production RLS, pro
 ## Backend baseline
 
 When activated:
+
 - server-side authorization;
 - database/RLS controls;
 - input validation;
@@ -20,6 +21,7 @@ When activated:
 ## Files
 
 For private uploads:
+
 - validate type and size;
 - validate ownership;
 - control access URLs;
@@ -29,6 +31,7 @@ For private uploads:
 ## Secrets
 
 Never commit or hardcode:
+
 - service keys;
 - webhook secrets;
 - bot tokens;
@@ -47,6 +50,7 @@ Consequential automated decisions require human review.
 ## Abuse
 
 The platform will need:
+
 - reports;
 - blocking;
 - moderation;

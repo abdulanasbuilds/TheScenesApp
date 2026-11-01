@@ -7,6 +7,7 @@ Owns phase, scope, sequencing, capability checks, gates, verification, and hando
 ## Product/Research
 
 Owns:
+
 - business problem;
 - users;
 - jobs-to-be-done;
@@ -17,6 +18,7 @@ Owns:
 ## Design
 
 Owns:
+
 - information architecture;
 - visual variants;
 - interaction model;
@@ -27,6 +29,7 @@ Owns:
 ## Frontend
 
 Owns:
+
 - routes;
 - components;
 - fixtures;
@@ -38,6 +41,7 @@ Owns:
 Activated only after the backend phase gate.
 
 Owns:
+
 - schema;
 - migrations;
 - persistence;
@@ -48,6 +52,7 @@ Owns:
 ## Integration
 
 Owns:
+
 - provider adapters;
 - provider documentation verification;
 - env/config;
@@ -57,6 +62,7 @@ Owns:
 ## Security
 
 Owns:
+
 - threat review;
 - authorization;
 - object-level access;
@@ -66,6 +72,7 @@ Owns:
 ## QA/Review
 
 Owns:
+
 - acceptance criteria;
 - build/test/lint;
 - browser flows;

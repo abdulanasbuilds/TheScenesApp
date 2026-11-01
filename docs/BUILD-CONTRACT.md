@@ -33,6 +33,7 @@ Do not spread vendor SDK calls throughout UI files.
 Frontend visibility is never the real authorization boundary.
 
 When backend work begins, enforce authorization on the server/data layer and consider:
+
 - RLS/database policies;
 - object-level authorization;
 - rate limiting;
@@ -45,6 +46,7 @@ When backend work begins, enforce authorization on the server/data layer and con
 Use relational constraints, explicit statuses, server-side checks, and idempotent provider events.
 
 Never trust client-provided:
+
 - role;
 - owner;
 - price;
@@ -56,6 +58,7 @@ Never trust client-provided:
 Every screen must have a deliberate mobile composition.
 
 Minimize:
+
 - huge assets;
 - unnecessary third-party scripts;
 - blocking network work;
@@ -65,6 +68,7 @@ Minimize:
 ## Accessibility
 
 At minimum:
+
 - keyboard/focus;
 - semantic headings;
 - labels;
@@ -76,6 +80,7 @@ At minimum:
 ## Verification
 
 For every meaningful change:
+
 - run the relevant build/test/lint;
 - inspect the diff;
 - verify the critical user flow;
@@ -84,6 +89,7 @@ For every meaningful change:
 ## Stop conditions
 
 Stop and surface the issue when:
+
 - required capability is unavailable;
 - a decision is destructive;
 - a secret is required but unauthorized;

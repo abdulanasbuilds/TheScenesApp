@@ -9,6 +9,7 @@ Use for hosting, edge delivery, security/perimeter controls, and domain/DNS wher
 ## Supabase
 
 Use for:
+
 - authentication;
 - PostgreSQL;
 - realtime;
@@ -20,6 +21,7 @@ Do not expose service-role credentials to the client.
 ## Cloudflare R2
 
 Use for:
+
 - course resources;
 - creator files;
 - media/object storage;
@@ -36,6 +38,7 @@ Do not make client-side pages responsible for privileged mail sending.
 ## Redis-compatible service
 
 Use for:
+
 - rate limiting;
 - short-lived counters/locks;
 - carefully scoped cache.
@@ -61,6 +64,7 @@ Never expose bot tokens to the client.
 No payment processor is selected or implemented in the frontend-first stage.
 
 When activated, define:
+
 - Ghana payment model;
 - international payment model;
 - provider adapter;

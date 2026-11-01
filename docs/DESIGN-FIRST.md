@@ -26,32 +26,39 @@ The application must be designed as a coherent system before production backend 
 The first major design task must produce multiple credible directions for the complete product, not just the landing page.
 
 At minimum compare:
+
 - public landing;
 - discovery/explore;
 - authenticated Home;
 - community;
 - course/classroom;
-- teacher/creator workspace.
+- teacher/creator workspace;
+- dashboards etc.
 
 All variants must preserve the same product requirements so the comparison is meaningful.
 
 ## Required surfaces
 
 ### Marketing
+
 Landing, pricing, become-a-teacher, about, public discovery, category pages.
 
 ### Learner
+
 Onboarding, Home, Explore, category, course, lesson/classroom, project, community, events, workflow/resource, profile, settings, notifications.
 
 ### Teacher/Creator
+
 Application, onboarding, dashboard, course builder, lesson builder, events/live, workflow/product publishing, audience/students, reviews, earnings, analytics, settings.
 
 ### Admin
+
 Overview, moderation, reports, categories, creator approval, users, content, policy, system settings.
 
 ## Design language
 
 Aim for:
+
 - calm;
 - editorial;
 - practical;
@@ -59,7 +66,8 @@ Aim for:
 - distinctive.
 
 Avoid:
-- generic neon AI branding;
+
+- generic neon,purple and trending AI branding;
 - gratuitous glassmorphism;
 - cloned competitor layouts;
 - decoration without functional purpose;

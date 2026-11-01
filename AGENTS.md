@@ -45,6 +45,7 @@ The platform may use Skool, Circle, Kajabi, and other products as references for
 **Design-first / frontend-first foundation.**
 
 Before the frontend design gate is passed, agents MUST NOT:
+
 - connect production authentication;
 - create the production database schema;
 - create production RLS policies;
@@ -64,6 +65,7 @@ Before backend integration, design the whole application.
 Use the project's available design/frontend-design skills.
 
 Where meaningful alternatives exist:
+
 1. create multiple isolated variants;
 2. keep the same functional requirements;
 3. preview them;
@@ -74,6 +76,7 @@ Where meaningful alternatives exist:
 Do not accept the first generated interface by default.
 
 The frontend design must cover:
+
 - public landing page;
 - public discovery/explore;
 - categories/academies;
@@ -94,6 +97,7 @@ The frontend design must cover:
 ## Product surfaces
 
 ### Public website
+
 - Landing
 - Explore / Discovery
 - Categories
@@ -108,6 +112,7 @@ The frontend design must cover:
 - Legal
 
 ### Authenticated product
+
 - Home
 - Explore
 - My Learning
@@ -120,6 +125,7 @@ The frontend design must cover:
 - Profile
 
 ### Teacher / creator workspace
+
 - Overview
 - Content
 - Courses
@@ -135,6 +141,7 @@ The frontend design must cover:
 - Settings
 
 ### Admin workspace
+
 - Overview
 - Users
 - Teachers / Creators
@@ -159,6 +166,7 @@ The public landing page is not the same thing as the authenticated discovery/hom
 ## Product positioning
 
 The long-term platform helps people:
+
 - discover useful knowledge;
 - learn practical skills;
 - apply what they learn;
@@ -175,6 +183,7 @@ The long-term platform helps people:
 The taxonomy must be data-driven and expandable rather than hard-coded into navigation.
 
 Initial categories can include:
+
 - AI;
 - Design;
 - Web + Product;
@@ -187,6 +196,7 @@ These are not permanent limits. AI is a flagship category, not the definition of
 ## African-first requirements
 
 Design for:
+
 - mobile-first usage;
 - variable bandwidth;
 - local trust;
@@ -202,6 +212,7 @@ Do not make the core architecture Ghana-only.
 All external services use internal adapters.
 
 Current direction:
+
 - Cloudflare: hosting and edge/security;
 - Supabase: auth, database, realtime, learning persistence;
 - Cloudflare R2: object/file storage;
@@ -220,12 +231,14 @@ See `docs/INTEGRATIONS.md`.
 Referrals grant **platform entitlements**, not guaranteed provider capacity.
 
 A reward may unlock:
+
 - additional logical storage allowance;
 - additional live-session allowance;
 - creator feature access;
 - additional publishing slots.
 
 The quota controller must separately enforce:
+
 - creator entitlement;
 - provider availability;
 - current usage;
@@ -242,6 +255,7 @@ See `docs/REFERRAL-QUOTA-ARCHITECTURE.md`.
 ## Agent bootstrap
 
 For a cold session, read:
+
 1. this file;
 2. `docs/README.md`;
 3. `docs/AGENT-CONTEXT.md`;
@@ -260,6 +274,7 @@ An agent must not require chat history to reconstruct the product.
 Agents must inspect the actual available environment before claiming a capability exists.
 
 Use available:
+
 - repository/Git tooling;
 - CLI/runtime tooling;
 - browser/UI verification;
@@ -270,6 +285,7 @@ Use available:
 Tool availability does not grant authority. The current phase and this contract decide what may be changed.
 
 Use Agent OS principles:
+
 - capability before claim;
 - evidence before confidence;
 - bounded autonomy;
@@ -283,6 +299,7 @@ The current phase is recorded in `docs/PHASES.md`.
 Do not implement later phases because placeholder routes, legacy code, old plans, or competitor references already exist.
 
 When a task crosses a phase boundary:
+
 - stop;
 - identify the boundary;
 - update/confirm the phase decision;
@@ -302,6 +319,7 @@ When a task crosses a phase boundary:
 - no claiming tests, browser checks, builds, deployments, or integrations were run when they were not.
 
 When backend work begins, enforce:
+
 - server-side authorization;
 - database policies/RLS where appropriate;
 - input validation;
@@ -318,6 +336,7 @@ The repository began as SukaSpace and contains historical implementation files, 
 Legacy material is **reference only**.
 
 Do not infer current The Scenes requirements from:
+
 - SukaSpace names;
 - old localStorage state;
 - old database schemas;
@@ -331,6 +350,7 @@ Promote legacy patterns only when they are deliberately compatible with the curr
 ## Definition of done
 
 A phase is complete only when:
+
 - scope is implemented;
 - out-of-scope work remains untouched;
 - mobile behavior is checked;

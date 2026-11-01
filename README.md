@@ -7,6 +7,7 @@ The Scenes is an African-first, globally expandable platform for learning, teach
 Read `AGENTS.md` before doing any work.
 
 Then read:
+
 - `docs/README.md`
 - `docs/PROJECT-CONTEXT.md`
 - `docs/BUILD-CONTRACT.md`
