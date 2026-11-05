@@ -1,0 +1,10 @@
+version: 1
+project:
+  name: The Scenes
+  slug: the-scenes-app
+  category: THE SCENCES
+  root: C:\Users\DELL\Desktop\THE SCENCES\TheScenesApp
+git:
+  boundary: C:\Users\DELL\Desktop\THE SCENCES\TheScenesApp
+writes:
+  policy: project-root-only

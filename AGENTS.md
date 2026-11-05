@@ -37,6 +37,9 @@ The platform may use Skool, Circle, Kajabi, and other products as references for
 - Least privilege.
 - Verify before claiming success.
 - Review is a gate.
+- Every phase is documented, reviewed and approved before implementation.
+- Design for a path to millions of registered accounts, then verify staged capacity with evidence;
+  never promise issue-free scale without measurements.
 - Durable decisions live in repository files.
 - Destructive, secret, deployment, payment, and production actions require explicit authority.
 
@@ -214,11 +217,13 @@ All external services use internal adapters.
 Current direction:
 
 - Cloudflare: hosting and edge/security;
-- Supabase: auth, database, realtime, learning persistence;
-- Cloudflare R2: object/file storage;
+- Supabase: approved for a bounded, local-only Phase 3 proof-of-fit for auth, database, realtime and
+  learning persistence after the remaining Gate A safety work; not connected or production-approved;
+- Cloudflare R2: conditional later use for separately approved platform-managed objects; launch
+  creator resources use external links under ADR-029;
 - Resend: important transactional email;
 - Redis-compatible service: rate limiting and short-lived coordination;
-- Bunny.net: video delivery/live capabilities;
+- Bunny.net: conditional only if a later native video/live decision supersedes ADR-029;
 - Telegram: internal feedback/alerts;
 - payments: HOLD;
 - search: Postgres first, intelligent search later;
@@ -230,12 +235,14 @@ See `docs/INTEGRATIONS.md`.
 
 Referrals grant **platform entitlements**, not guaranteed provider capacity.
 
-A reward may unlock:
+A launch reward may unlock:
 
-- additional logical storage allowance;
-- additional live-session allowance;
 - creator feature access;
-- additional publishing slots.
+- additional publishing slots;
+- creator analytics or customization access.
+
+Storage and live-session rewards are not launch-approved under ADR-029. They require a later native
+hosting/provider, cost and quota decision.
 
 The quota controller must separately enforce:
 
@@ -295,6 +302,16 @@ Use Agent OS principles:
 ## Required phase discipline
 
 The current phase is recorded in `docs/PHASES.md`.
+
+`docs/PHASE-PLANNING-GATE.md` is mandatory before every phase implementation. Each phase needs an
+approved specification covering product workflows, scope/non-goals, data and tenant boundaries,
+API contracts, authorization, privacy, failure behavior, measurable scale/performance envelopes,
+provider limits/costs, migrations, observability, backup/recovery, rollout/rollback and verification.
+
+The long-term design direction is millions of registered accounts over time, not millions of
+simultaneous users. Do not claim that scale is supported until representative load, failure and
+recovery evidence exists for the stated conditions. Avoid both architectural dead ends and
+premature distributed-system complexity.
 
 Do not implement later phases because placeholder routes, legacy code, old plans, or competitor references already exist.
 
