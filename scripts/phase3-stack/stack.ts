@@ -36,6 +36,8 @@ export interface StackRuntime {
   readConfig(): string;
   cliVersion(): string;
   lockedVersion(): string;
+  /** Waits before retrying a transient CLI status failure. */
+  sleep(ms: number): void;
   out(text: string): void;
   err(text: string): void;
 }
@@ -66,6 +68,26 @@ function secretLiterals(status: StackStatus, pairs: Record<string, string>): str
   return status.secretFieldsPresent
     .map((key) => pairs[key])
     .filter((value): value is string => typeof value === "string" && value.length > 0);
+}
+
+const STATUS_ATTEMPTS = 6;
+const STATUS_RETRY_DELAY_MS = 2_000;
+const TRANSIENT_STATUS_FAILURE =
+  /(?:is not ready|still starting|health check|not healthy|container is starting)/i;
+
+/**
+ * `supabase status` can race a container health check immediately after a cold
+ * start. Retry only recognised readiness failures; real errors fail at once.
+ */
+function runStatusCommand(runtime: StackRuntime, env: NodeJS.ProcessEnv): CliResult {
+  const args = ["status", "-o", "json", "--workdir", runtime.cwd];
+  let result = runtime.runSupabase(args, env);
+  for (let attempt = 1; attempt < STATUS_ATTEMPTS && result.code !== 0; attempt += 1) {
+    if (!TRANSIENT_STATUS_FAILURE.test(`${result.stderr}\n${result.stdout}`)) return result;
+    runtime.sleep(STATUS_RETRY_DELAY_MS);
+    result = runtime.runSupabase(args, env);
+  }
+  return result;
 }
 
 interface Collected {
@@ -232,7 +254,7 @@ export function runStart(runtime: StackRuntime, options: Options): number {
     return 1;
   }
 
-  const statusResult = runtime.runSupabase(["status", "-o", "json", "--workdir", runtime.cwd], env);
+  const statusResult = runStatusCommand(runtime, env);
   if (statusResult.code !== 0) {
     reportCliFailure(runtime, "status", statusResult, redact);
     safeStop(runtime, env, redact);
@@ -289,7 +311,7 @@ export function runStart(runtime: StackRuntime, options: Options): number {
 
 export function runStatus(runtime: StackRuntime, options: Options): number {
   const { env } = runtime.buildChildEnv();
-  const statusResult = runtime.runSupabase(["status", "-o", "json", "--workdir", runtime.cwd], env);
+  const statusResult = runStatusCommand(runtime, env);
   let redact = createRedactor();
   if (statusResult.code !== 0) {
     reportCliFailure(runtime, "status", statusResult, redact);

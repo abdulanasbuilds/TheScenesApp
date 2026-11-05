@@ -38,6 +38,8 @@ interface FakeOptions {
   statusCode?: number;
   stopCode?: number;
   statusJson?: string;
+  transientStatusFailures?: number;
+  statusFailureStderr?: string;
   containers?: { name: string; ports: string }[];
   hostListeners?: { service: string; host: string; port: number; source: "host" }[];
   config?: string;
@@ -51,22 +53,34 @@ function makeRuntime(options: FakeOptions = {}): {
   calls: string[][];
   out: string[];
   err: string[];
+  sleeps: number[];
 } {
   const calls: string[][] = [];
   const out: string[] = [];
   const err: string[] = [];
+  const sleeps: number[] = [];
+  let statusCalls = 0;
   const runtime: StackRuntime = {
     cwd: "C:/root",
     runSupabase: (args) => {
       calls.push([...args]);
       const command = args[0];
       if (command === "start") return { code: options.startCode ?? 0, stdout: "", stderr: "" };
-      if (command === "status")
+      if (command === "status") {
+        statusCalls += 1;
+        if (statusCalls <= (options.transientStatusFailures ?? 0)) {
+          return {
+            code: 1,
+            stdout: "",
+            stderr: options.statusFailureStderr ?? "container is not ready: starting",
+          };
+        }
         return {
           code: options.statusCode ?? 0,
           stdout: options.statusJson ?? OK_STATUS,
           stderr: "",
         };
+      }
       if (command === "stop") return { code: options.stopCode ?? 0, stdout: "", stderr: "" };
       return { code: 0, stdout: "", stderr: "" };
     },
@@ -89,14 +103,19 @@ function makeRuntime(options: FakeOptions = {}): {
     readConfig: () => options.config ?? DISABLED_TOML,
     cliVersion: () => "3.0.0",
     lockedVersion: () => "3.0.0",
+    sleep: (ms) => sleeps.push(ms),
     out: (text) => out.push(text),
     err: (text) => err.push(text),
   };
-  return { runtime, calls, out, err };
+  return { runtime, calls, out, err, sleeps };
 }
 
 function stopCalls(calls: string[][]): string[][] {
   return calls.filter((c) => c[0] === "stop");
+}
+
+function statusCalls(calls: string[][]): string[][] {
+  return calls.filter((c) => c[0] === "status");
 }
 
 describe("start", () => {
@@ -206,6 +225,39 @@ describe("start", () => {
     expect(payload.childEnv.VITE_SUPABASE_PUBLISHABLE_KEY).toBe("sb_publishable_local_only");
     expect(payload.childEnv.PHASE3_LOCAL_DB_URL).toContain("127.0.0.1:54322");
     expect(payload.secretFieldsPresent).toContain("JWT_SECRET");
+  });
+});
+
+describe("status readiness retry", () => {
+  test("retries a transient cold-start readiness failure and then succeeds", () => {
+    const { runtime, calls, sleeps } = makeRuntime({ transientStatusFailures: 2 });
+    expect(execute(["status"], runtime)).toBe(0);
+    expect(statusCalls(calls)).toHaveLength(3);
+    expect(sleeps).toEqual([2000, 2000]);
+  });
+
+  test("does not retry a non-transient status failure", () => {
+    const { runtime, calls, sleeps } = makeRuntime({
+      transientStatusFailures: 1,
+      statusFailureStderr: "permission denied",
+    });
+    expect(execute(["status"], runtime)).toBe(1);
+    expect(statusCalls(calls)).toHaveLength(1);
+    expect(sleeps).toHaveLength(0);
+  });
+
+  test("gives up after the bounded number of attempts", () => {
+    const { runtime, calls, sleeps } = makeRuntime({ transientStatusFailures: 10 });
+    expect(execute(["status"], runtime)).toBe(1);
+    expect(statusCalls(calls)).toHaveLength(6);
+    expect(sleeps).toHaveLength(5);
+  });
+
+  test("start also retries a transient status failure before passing the gate", () => {
+    const { runtime, calls } = makeRuntime({ transientStatusFailures: 1 });
+    expect(execute(["start"], runtime)).toBe(0);
+    expect(statusCalls(calls)).toHaveLength(2);
+    expect(stopCalls(calls)).toHaveLength(0);
   });
 });
 

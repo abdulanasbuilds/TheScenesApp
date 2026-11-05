@@ -58,6 +58,9 @@ const runtime: StackRuntime = {
     };
     return pkg.devDependencies?.supabase ?? "unknown";
   },
+  sleep: (ms) => {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+  },
   out: (text) => process.stdout.write(text),
   err: (text) => process.stderr.write(text),
 };
