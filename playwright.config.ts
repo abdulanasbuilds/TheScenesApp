@@ -16,6 +16,8 @@ const isExternalServer = Boolean(process.env.PLAYWRIGHT_BASE_URL);
 export default defineConfig({
   testDir: "./e2e",
   outputDir: "./.playwright/test-results",
+  timeout: 60_000,
+  expect: { timeout: 20_000 },
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -29,14 +31,22 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "desktop",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      name: "tablet",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 768, height: 1024 },
+        hasTouch: true,
+      },
     },
     {
       // Mobile-first is a product requirement; keep a device profile in the
       // default run so mobile regressions are caught, not discovered later.
-      name: "mobile-chromium",
-      use: { ...devices["Pixel 7"] },
+      name: "mobile",
+      use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } },
     },
   ],
   webServer: isExternalServer

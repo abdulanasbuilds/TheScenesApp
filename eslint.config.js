@@ -36,5 +36,18 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    // TanStack route modules intentionally export route metadata alongside components.
+    // The shared UI/store modules also intentionally export hooks and helper functions.
+    files: [
+      "src/routes/**/*.{ts,tsx}",
+      "src/components/ui/index.tsx",
+      "src/components/domain/cards.tsx",
+      "src/store/app-store.tsx",
+    ],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
   eslintPluginPrettier,
 );

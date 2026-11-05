@@ -1,11 +1,13 @@
 {
   "name": "the-scenes",
   "private": true,
+  "packageManager": "bun@1.4.4",
   "sideEffects": false,
   "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",

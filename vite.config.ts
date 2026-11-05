@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 
-function config({ mode, command }: ConfigEnv): Promise<UserConfig> {
+async function config({ mode, command }: ConfigEnv): Promise<UserConfig> {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const envDefine: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {
