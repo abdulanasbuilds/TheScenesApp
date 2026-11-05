@@ -2,12 +2,12 @@
   "runId": "2026-11-05-phase3a-wave0-closure",
   "phase": "Phase 3A (Revision 3) — Wave 0",
   "date": "2026-11-05",
-  "result": "checks-1-5-7-9-pass; check-6-waived; local-stack-ci-deferred; wave-1-not-started",
+  "result": "checks-1-9-pass; check-6-remediated-on-wsl2; local-stack-ci-deferred; wave-1-not-started",
   "tree": {
     "branch": "main",
-    "codeHead": "a538a2931dcdd7acdbe45817f4140ee2f00a17bf",
+    "codeHead": "d434d9b6058fa87242186f07931d2d502bb7250c",
     "committed": true,
-    "note": "Code tree under test is a538a29. The evidence commit that adds this manifest is docs-only."
+    "note": "Code tree under test is d434d9b. The evidence commit that adds this manifest is docs-only."
   },
   "environment": {
     "os": "win32",
@@ -22,7 +22,7 @@
     "3-local-config-telemetry": "pass",
     "4-env-parser-tests": "pass",
     "5-vite-loopback": "pass",
-    "6-docker-listener-isolation": "waived-by-founder",
+    "6-docker-listener-isolation": "pass",
     "7-fixture-suite": "pass",
     "8-current-tree-secret-scan": "pass",
     "9-tracked-evidence-diff-check": "pass"
@@ -54,12 +54,16 @@
     }
   },
   "isolation": {
-    "gate": "waived-by-founder",
+    "gate": "pass",
+    "remediatedBy": "2026-11-05-phase3a-wsl-isolation",
+    "path": "WSL2 Linux Docker Engine (Ubuntu 24.04), dedicated loopback bridge network",
+    "isolated": true,
+    "listeners": ["127.0.0.1:54321", "127.0.0.1:54322"],
+    "windowsUnreachableAddresses": ["172.25.56.61", "172.25.48.1", "192.168.100.35"],
     "wrapperRemainsFailClosed": true,
     "hostMutationAttempted": false,
     "containersLeftRunning": 0,
-    "windowsLimitation": "Docker Desktop (Windows) does not honour com.docker.network.bridge.host_binding_ipv4 for published ports.",
-    "wave1Consequence": "The wrapper cannot start the local stack on this machine until a Linux engine, an approved firewall/gate amendment, or an explicit non-loopback override is chosen."
+    "windowsNote": "Docker Desktop (Windows) still does not honour com.docker.network.bridge.host_binding_ipv4 for published ports and fails the gate closed; WSL2 Linux Docker is the supported local-stack path."
   },
   "images": [
     {
@@ -107,20 +111,21 @@
     "installFrozenLockfile": 0,
     "typecheck": 0,
     "lint": 0,
-    "unit": { "passed": 106, "failed": 0, "files": 11 },
+    "unit": { "passed": 110, "failed": 0, "files": 11 },
     "envTests": { "passed": 27, "failed": 0 },
     "audit": 0,
     "build": 0,
-    "fixtureE2e": { "passed": 26, "skipped": 4, "failed": 0, "durationMinutes": 2.7 },
+    "fixtureE2e": { "passed": 26, "skipped": 4, "failed": 0, "durationMinutes": 2.6 },
+    "wsl2Stack": { "start": "isolated:true", "status": "pass", "stop": "pass" },
     "diffCheck": 0,
     "statusClean": true
   },
   "remainingDeviations": [
-    "Isolation check 6 waived; residual risk and Wave 1 start options unresolved.",
     "Phase 3 local-stack CI job deferred until Wave 1.",
     "Later-wave command surface from runbook section 2 is not present yet; recommend amending the runbook or adding scripts per wave.",
     "Import-protection negative build fixture deferred to Wave 2.",
-    "Optional deterministic fixture fingerprint test not added."
+    "Optional deterministic fixture fingerprint test not added.",
+    "WSL2 guest engine must be running for the local stack; it is not a Windows service."
   ],
   "secretsExposed": false
 }

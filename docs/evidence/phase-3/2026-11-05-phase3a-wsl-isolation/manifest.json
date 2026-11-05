@@ -1,0 +1,122 @@
+{
+  "runId": "2026-11-05-phase3a-wsl-isolation",
+  "phase": "Phase 3A (Revision 3) — Wave 0 (check 6 remediation)",
+  "date": "2026-11-05",
+  "result": "check-6-pass-on-wsl2; all-enabled-listeners-loopback-only; unreachable-from-windows; clean-stop",
+  "supersedes": "2026-11-05-phase3a-wave0-closure (check-6 waiver)",
+  "tree": {
+    "branch": "main",
+    "codeHead": "d434d9b6058fa87242186f07931d2d502bb7250c",
+    "committed": true,
+    "note": "Code tree under test adds the transient-status readiness retry. The evidence commit that adds this manifest is docs-only."
+  },
+  "environment": {
+    "runLocation": "WSL2 Ubuntu-24.04 (root)",
+    "guestOs": "Ubuntu 24.04.5 LTS (x86_64)",
+    "wslVersion": "3.0.3.0",
+    "wslKernel": "6.18.54.1-1",
+    "dockerEngine": "29.1.3 (linux/apt docker.io)",
+    "storageDriver": "overlayfs",
+    "cgroupDriver": "systemd",
+    "bun": "1.4.4",
+    "supabaseCli": "3.0.0",
+    "supabaseCliPlatform": "linux-x64",
+    "postgresMajor": 17,
+    "cliIntegrity": {
+      "algorithm": "sha512",
+      "expected": "cR4S5e3nygMaBShbbt6FOiMumtrFJjwdKMXMimC1y7FpxITlwLv36BveaifQZ8aY+v1u+w8oYANU2H72Y4ibWA==",
+      "result": "match"
+    }
+  },
+  "isolation": {
+    "gate": "pass",
+    "isolated": true,
+    "network": "the-scenes-phase3-loopback",
+    "bridgeHostBindingIpv4": "127.0.0.1",
+    "listeners": [
+      {
+        "service": "supabase_kong_the-scenes-app",
+        "host": "127.0.0.1",
+        "port": 54321,
+        "source": "docker"
+      },
+      {
+        "service": "supabase_db_the-scenes-app",
+        "host": "127.0.0.1",
+        "port": 54322,
+        "source": "docker"
+      },
+      { "service": "host", "host": "127.0.0.1", "port": 54322, "source": "host" },
+      { "service": "host", "host": "127.0.0.1", "port": 54321, "source": "host" }
+    ],
+    "containersPublishingPorts": [
+      "supabase_kong_the-scenes-app 127.0.0.1:54321->8000/tcp",
+      "supabase_db_the-scenes-app 127.0.0.1:54322->5432/tcp"
+    ],
+    "hostMutationAttempted": false,
+    "containersLeftRunning": 0,
+    "listenersLeftRunning": 0
+  },
+  "windowsReachability": {
+    "wslIp": "172.25.56.61",
+    "nonLoopbackIpv4": ["172.25.48.1", "192.168.100.35"],
+    "loopback54321": "connected",
+    "loopback54322": "connected",
+    "remoteReachability": {
+      "172.25.56.61:54321": "refused",
+      "172.25.56.61:54322": "refused",
+      "172.25.48.1:54321": "refused",
+      "172.25.48.1:54322": "refused",
+      "192.168.100.35:54321": "refused",
+      "192.168.100.35:54322": "refused"
+    },
+    "windowsListeners": ["127.0.0.1:54321", "127.0.0.1:54322"]
+  },
+  "readinessRetry": {
+    "commit": "d434d9b",
+    "attempts": 6,
+    "delayMs": 2000,
+    "scope": "recognised transient 'not ready'/'starting' failures only; real errors fail immediately",
+    "newUnitTests": 4
+  },
+  "images": [
+    {
+      "image": "public.ecr.aws/supabase/postgres:17.11.0.011",
+      "digest": "sha256:7bd84e6a1d5322c7b864b9751873a0ac50f48df3f20a776e88114eadb2948fc0"
+    },
+    {
+      "image": "public.ecr.aws/supabase/gotrue:v2.197.0",
+      "digest": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b"
+    },
+    {
+      "image": "public.ecr.aws/supabase/postgrest:v16.5",
+      "digest": "sha256:1347d7552b88f17832912c06afbf7c43209af6eeeb60834b04aae12c9bd9d5cc"
+    },
+    {
+      "image": "public.ecr.aws/supabase/kong:2.8.1",
+      "digest": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d"
+    }
+  ],
+  "verification": {
+    "startGate": "isolated: true",
+    "status": "pass",
+    "stop": "pass (project-targeted; never --all)",
+    "dbHealth": "running health=healthy",
+    "installFrozenLockfile": 0,
+    "typecheck": 0,
+    "lint": 0,
+    "unit": { "passed": 110, "failed": 0, "files": 11 },
+    "audit": { "exitCode": 0, "packagesChecked": 505, "ignored": 1 },
+    "build": 0,
+    "fixtureE2e": { "passed": 26, "skipped": 4, "failed": 0, "durationMinutes": 2.6 },
+    "diffCheck": 0,
+    "statusClean": true
+  },
+  "rawArtifacts": [
+    ".phase3-artifacts/wave-0-wsl/start.log",
+    ".phase3-artifacts/wave-0-wsl/stack-inspect.log",
+    ".phase3-artifacts/wave-0-wsl/windows-isolation.txt",
+    ".phase3-artifacts/wave-0-wsl/stop.log"
+  ],
+  "secretsExposed": false
+}

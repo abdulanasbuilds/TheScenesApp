@@ -136,9 +136,36 @@ loopback-only local proof. Guarantees:
   published port is not loopback-only.
 
 On Windows with Docker Desktop, `com.docker.network.bridge.host_binding_ipv4` is not honoured for
-published ports, so the gate fails closed. See
-`docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md` for the runtime finding and
-`docs/evidence/phase-3/2026-11-05-phase3a-wave0-closure/summary.md` for the waiver and current status.
+published ports, so the gate fails closed. The supported local-stack path on this machine is a Linux
+Docker Engine inside WSL2. See `docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md` for the
+original runtime finding and `docs/evidence/phase-3/2026-11-05-phase3a-wsl-isolation/summary.md` for
+the passing WSL2 proof.
+
+### Running the stack under WSL2 (supported path)
+
+Prerequisites (installed inside the WSL2 distro `Ubuntu-24.04`, not on Windows): Linux Docker Engine
+(apt `docker.io`) started per session, Bun `1.4.4` at `/root/.bun/bin/bun`, and the pinned Linux
+Supabase CLI `3.0.0` at `/opt/supabase-cli/package/bin/supabase` (SHA-512 verified against
+`bun.lock`).
+
+```bash
+# In WSL2 Ubuntu-24.04 as root:
+export PATH="/root/.bun/bin:$PATH"
+export SUPABASE_CLI_BINARY_OVERRIDE=/opt/supabase-cli/package/bin/supabase
+cd '/mnt/c/Users/DELL/Desktop/THE SCENCES/TheScenesApp'
+bun scripts/phase3-stack.ts start   # gate must print "isolated: true"
+bun scripts/phase3-stack.ts status
+bun scripts/phase3-stack.ts stop
+```
+
+Notes:
+
+- The Docker engine and CLI live entirely inside the WSL2 guest; no Windows host or firewall change
+  is made.
+- `supabase status` can race a cold-start health check; the wrapper retries recognised transient
+  readiness failures (up to 6 attempts, 2s apart) and fails immediately on real errors.
+- WSL2 must be running for the stack to be reachable from Windows; the guest engine is not a Windows
+  service.
 
 ## Model hierarchy rule
 

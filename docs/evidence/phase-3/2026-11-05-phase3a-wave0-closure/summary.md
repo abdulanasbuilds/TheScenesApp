@@ -3,8 +3,8 @@
 **Run ID:** `2026-11-05-phase3a-wave0-closure`
 **Date:** 5 November 2026
 **Phase:** Phase 3A (Revision 3) — Wave 0
-**Code tree under test:** `a538a2931dcdd7acdbe45817f4140ee2f00a17bf` (`main`)
-**Result:** **Checks 1–5 and 7–9 pass. Check 6 (live Docker isolation) is waived by founder direction. The local-stack CI job is deferred until Wave 1 supplies migrations and database tests. Wave 1 has not started.**
+**Code tree under test:** `d434d9b6058fa87242186f07931d2d502bb7250c` (`main`)
+**Result:** **Checks 1–9 pass. Check 6 (live Docker isolation) was first recorded as waived, then remediated on the WSL2 Linux Docker path and now PASSES — see the superseding run `2026-11-05-phase3a-wsl-isolation`. The local-stack CI job is deferred until Wave 1 supplies migrations and database tests. Wave 1 has not started.**
 
 Remote/production authorization: none. No hosted Supabase project, credential, deployment, or
 provider-side mutation was performed.
@@ -12,30 +12,35 @@ provider-side mutation was performed.
 ## 1. Tree and environment
 
 - Branch: `main`
-- Code commit: `a538a29` (clean tree at gate time)
-- The evidence commit that adds this file is docs-only; the code under test is `a538a29`.
+- Code commit: `d434d9b` (adds the transient-status readiness retry; clean tree at gate time)
+- The evidence commit that adds this file is docs-only; the code under test is `d434d9b`.
+- Check 6 was subsequently proven on WSL2; see
+  `docs/evidence/phase-3/2026-11-05-phase3a-wsl-isolation/`.
 
-| Component                              | Version         |
-| -------------------------------------- | --------------- |
-| OS                                     | Windows (win32) |
-| Bun                                    | 1.4.4           |
-| Node                                   | 26.12.1         |
-| Supabase CLI (locked `supabase@3.0.0`) | 3.0.0           |
-| Docker Engine (Docker Desktop)         | 29.9.2          |
+| Component                                  | Version          |
+| ------------------------------------------ | ---------------- |
+| OS (static gate)                           | Windows (win32)  |
+| Bun                                        | 1.4.4            |
+| Node                                       | 26.12.1          |
+| Supabase CLI (locked `supabase@3.0.0`)     | 3.0.0            |
+| Docker Engine (Docker Desktop, Windows)    | 29.9.2           |
+| Docker Engine (Linux, WSL2 `Ubuntu-24.04`) | 29.1.3 (check 6) |
+
+Check 6 runs inside WSL2 with a Linux Docker Engine; the static checks run on the Windows toolchain.
 
 ## 2. Wave 0 check results
 
-|   # | Check                                                | Status     | Evidence                                                                                                                                       |
-| --: | ---------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-|   1 | Exact versions + frozen clean install                | **PASS**   | `bun install --frozen-lockfile` exit 0, 436 installs / 532 packages, no changes                                                                |
-|   2 | `bunx supabase --version` equals locked CLI          | **PASS**   | CLI `3.0.0`; `bun.lock` pins `supabase@3.0.0` and all platform binaries `3.0.0`                                                                |
-|   3 | Local-only config, telemetry disabled per process    | **PASS**   | `supabase/config.toml` has no active hosted target; `[analytics] enabled = false`; wrapper sets `SUPABASE_TELEMETRY_DISABLED=1` on every child |
-|   4 | Local-only env parser + tests, no network            | **PASS**   | `src/lib/env.ts`, `tests/unit/env.test.ts`: 27 tests, 0 fail                                                                                   |
-|   5 | Vite binds loopback only, no arbitrary host override | **PASS**   | `vite.config.ts`: `server.host = "127.0.0.1"`, `port = 5000`, `strictPort: true`; no `allowedHosts` override                                   |
-|   6 | Live Docker/Windows listener isolation               | **WAIVED** | Founder direction: live Docker isolation proof is not necessary. Wrapper remains fail-closed; see §4                                           |
-|   7 | Fixture suite with `VITE_DATA_MODE=fixtures`         | **PASS**   | `bun run test:fixture`: 26 passed, 4 skipped, 0 failed (2.7m)                                                                                  |
-|   8 | Current-tree secret scanning                         | **PASS**   | `docs/SECURITY-SCAN-RESULTS.md`: current tree 0 findings (Gitleaks 8.30.1); no secret material added by this run                               |
-|   9 | Plans/evidence tracked; `git diff --check` clean     | **PASS**   | plans and evidence tracked; `git diff --check` exit 0                                                                                          |
+|   # | Check                                                | Status   | Evidence                                                                                                                                                                               |
+| --: | ---------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   1 | Exact versions + frozen clean install                | **PASS** | `bun install --frozen-lockfile` exit 0, 436 installs / 532 packages, no changes                                                                                                        |
+|   2 | `bunx supabase --version` equals locked CLI          | **PASS** | CLI `3.0.0`; `bun.lock` pins `supabase@3.0.0` and all platform binaries `3.0.0`                                                                                                        |
+|   3 | Local-only config, telemetry disabled per process    | **PASS** | `supabase/config.toml` has no active hosted target; `[analytics] enabled = false`; wrapper sets `SUPABASE_TELEMETRY_DISABLED=1` on every child                                         |
+|   4 | Local-only env parser + tests, no network            | **PASS** | `src/lib/env.ts`, `tests/unit/env.test.ts`: 27 tests, 0 fail                                                                                                                           |
+|   5 | Vite binds loopback only, no arbitrary host override | **PASS** | `vite.config.ts`: `server.host = "127.0.0.1"`, `port = 5000`, `strictPort: true`; no `allowedHosts` override                                                                           |
+|   6 | Live Docker/Windows listener isolation               | **PASS** | WSL2 Linux Docker: gate `isolated: true`; listeners `127.0.0.1:54321/54322`; Windows cannot reach WSL/virtual-switch/LAN addresses; superseding run `2026-11-05-phase3a-wsl-isolation` |
+|   7 | Fixture suite with `VITE_DATA_MODE=fixtures`         | **PASS** | `bun run test:fixture`: 26 passed, 4 skipped, 0 failed (2.6m)                                                                                                                          |
+|   8 | Current-tree secret scanning                         | **PASS** | `docs/SECURITY-SCAN-RESULTS.md`: current tree 0 findings (Gitleaks 8.30.1); no secret material added by this run                                                                       |
+|   9 | Plans/evidence tracked; `git diff --check` clean     | **PASS** | plans and evidence tracked; `git diff --check` exit 0                                                                                                                                  |
 
 ### Environment parser coverage
 
@@ -67,30 +72,28 @@ Vite build/start path remains Wave 2 work.
 command. Result: `No vulnerabilities found (checked 505 packages, 1 ignored)`, exit 0. Remove the
 exception when the dependents move to `minimatch >= 11.0.1`.
 
-## 4. Isolation status and waiver
+## 4. Isolation status (remediated on WSL2)
 
-Founder direction on 5 November 2026: the live Docker isolation proof is not necessary for this local
-proof. The historical attempt and runtime finding remain recorded in
-`docs/evidence/phase-3/2026-11-05-phase3a-wave0a/`.
+The original closure recorded check 6 as waived because Docker Desktop on Windows does not honour
+`com.docker.network.bridge.host_binding_ipv4` for published ports. The founder selected the Linux
+Docker Engine path (WSL2), and check 6 now passes on that path. The full proof lives in the
+superseding run `docs/evidence/phase-3/2026-11-05-phase3a-wsl-isolation/`:
+
+- `start` gate reports `isolated: true`; all enabled listeners are `127.0.0.1:54321` (Kong) and
+  `127.0.0.1:54322` (Postgres);
+- Windows can reach loopback but cannot reach the stack over the WSL address (`172.25.56.61`), the
+  Windows virtual-switch address (`172.25.48.1`), or the machine LAN address (`192.168.100.35`);
+- `stop` is project-targeted and leaves no containers or listeners.
 
 What remains true:
 
 - the stack wrapper still refuses to start when any published port is not loopback-only;
 - no firewall, host-network, or machine mutation was performed;
-- no containers or listeners were left running;
-- the Windows/Docker Desktop limitation is unchanged:
-  `com.docker.network.bridge.host_binding_ipv4` is not honoured for published ports, so the gate fails
-  closed on this machine.
+- Docker Desktop on Windows still fails the gate closed; WSL2 Linux Docker is the supported
+  local-stack path for Wave 1 and onward on this machine.
 
-**Residual risk:** a Supabase stack started outside the wrapper would publish ports on all interfaces
-on this machine. **Wave 1 consequence:** the wrapper cannot start the local stack here, so Wave 1
-cannot run its migration/pgTAP gate on this machine unless one of these is chosen:
-
-1. run Docker Engine under Linux (including WSL2) so the loopback network option applies;
-2. approve a documented firewall/isolation policy and amend the gate;
-3. explicitly authorize a non-loopback local start for development only (not recommended).
-
-No option was chosen or implemented in this run.
+The historical Windows/Docker Desktop finding remains recorded in
+`docs/evidence/phase-3/2026-11-05-phase3a-wave0a/`.
 
 ## 5. Supabase image/Postgres evidence
 
@@ -137,31 +140,39 @@ not required by the current checks.
 | `bunx supabase --version`         | `3.0.0`                                 |
 | `bun run typecheck`               | exit 0 (app + `tsconfig.scripts.json`)  |
 | `bun run lint`                    | exit 0                                  |
-| `bun run test:unit`               | 106 passed / 0 failed, 11 files         |
+| `bun run test:unit`               | 110 passed / 0 failed, 11 files         |
 | `bun test tests/unit/env.test.ts` | 27 passed / 0 failed                    |
 | `bun run audit`                   | exit 0, 1 documented exception          |
 | `bun run build`                   | exit 0                                  |
-| `bun run test:fixture`            | 26 passed / 4 skipped / 0 failed (2.7m) |
+| `bun run test:fixture`            | 26 passed / 4 skipped / 0 failed (2.6m) |
+| WSL2 `phase3:stack:start`         | gate `isolated: true` (all loopback)    |
+| WSL2 `phase3:stack:status`        | pass                                    |
+| WSL2 `phase3:stack:stop`          | pass, no leftovers                      |
 | `git diff --check`                | exit 0                                  |
 | `git status --short`              | clean at code commit                    |
 
+The WSL2 rows are the check-6 remediation; full detail is in
+`docs/evidence/phase-3/2026-11-05-phase3a-wsl-isolation/`.
+
 ## 9. Remaining deviations / decisions
 
-1. **Isolation waiver** — recorded in §4; residual risk and Wave 1 consequences are unresolved.
-2. **Local-stack CI job** — deferred until Wave 1; the runbook must either accept this sequencing or
+1. **Local-stack CI job** — deferred until Wave 1; the runbook must either accept this sequencing or
    supply the job in Wave 1.
-3. **Later-wave command surface** — the runbook §2 lists `test:db`, `test:integration`, `test:phase3`,
+2. **Later-wave command surface** — the runbook §2 lists `test:db`, `test:integration`, `test:phase3`,
    `verify:db-types`, `verify:client-boundary`, `phase3:serve`, `phase3:generate-data`,
    `phase3:query-plans`, `phase3:load`, and `phase3:recover` as "Wave 0 adds". These depend on later
    wave artifacts. Recommendation: amend §2 to say the surface is added across Waves 0–3, or add each
    script when its wave lands. Only `test:unit`, `test:fixture`, `test:e2e`, and `phase3:stack:*` exist
    today.
-4. **Import-protection negative fixture** — the Vite and ESLint protections are configured. The
+3. **Import-protection negative fixture** — the Vite and ESLint protections are configured. The
    negative build fixture and produced-client bundle scan are Wave 2 checks because protected server
    modules do not exist yet.
-5. **Optional hardening** — commit a deterministic fixture fingerprint test.
+4. **Optional hardening** — commit a deterministic fixture fingerprint test.
+5. **WSL2 runtime dependency** — the local stack requires the WSL2 guest engine to be running; it is
+   not a Windows service. Docker Desktop on Windows continues to fail the gate closed.
 
 ## 10. Artifacts and secrets
 
-Raw logs remain under ignored `.phase3-artifacts/wave-0a/`. This summary and its manifest contain no
-token, cookie, password, key, or unredacted Auth trace. No historical credential was reused or tested.
+Raw logs remain under ignored `.phase3-artifacts/wave-0a/` and `.phase3-artifacts/wave-0-wsl/`.
+These summaries and their manifests contain no token, cookie, password, key, or unredacted Auth
+trace. No historical credential was reused or tested.
