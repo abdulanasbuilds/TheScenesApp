@@ -118,7 +118,10 @@ At minimum, CI should prove:
 - build;
 - agent-contract integrity.
 
-The current workflow also runs `bun run test:unit` (Bun unit tests for `scripts/`).
+The current workflow also runs `bun run test:unit` (Bun unit tests for `scripts/` and `tests/unit/`),
+`bun run audit` with the documented dev-only advisory exception, and the fixture Playwright suite
+after installing Chromium. The local-stack CI job is deferred until Wave 1 supplies migrations and
+database tests.
 
 ## Local Supabase stack tooling (Phase 3A Wave 0)
 

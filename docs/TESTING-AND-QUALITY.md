@@ -55,6 +55,7 @@ Already configured:
 
 ```bash
 bun run test:e2e          # Run all E2E tests
+bun run test:fixture      # Accepted Phase 2 fixture suite (explicit alias)
 bun run test:e2e:ui       # Interactive mode
 bun run test:e2e:report   # View last test report
 ```
@@ -62,8 +63,9 @@ bun run test:e2e:report   # View last test report
 ### Unit and local-stack commands (Phase 3A Wave 0)
 
 ```bash
-bun run test:unit          # Bun unit tests for scripts/ (no local stack required)
+bun run test:unit          # Bun unit tests for scripts/ and tests/unit/ (no stack or Docker)
 bun run typecheck          # App config + tsconfig.scripts.json
+bun run audit              # Dependency audit with the documented dev-only advisory exception
 bun run phase3:stack:start # Start the local Supabase stack (loopback gate enforced)
 bun run phase3:stack:status
 bun run phase3:stack:stop
@@ -73,6 +75,11 @@ bun run phase3:stack:stop
 commands are credential-safe wrappers over the pinned `supabase@3.0.0` CLI; see
 `docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md` for the current loopback-isolation
 status on Windows/Docker Desktop.
+
+`bun run audit` ignores exactly one documented dev-only advisory,
+`GHSA-g3hv-75wg-m249` (`minimatch@10.2.5`, unreachable at runtime). Any other advisory fails the
+command. Re-check and remove the exception when `@eslint/config-array` / `typescript-eslint` move to
+`minimatch >= 11.0.1`.
 
 ### Test organization
 
@@ -86,6 +93,9 @@ e2e/
 +-- security-contract.spec.ts    CSRF/cookie/cache/direct-call checks
 +-- auth-route-contract.spec.ts  local private-route behavior
 +-- helpers.ts                   mode-aware hydration/auth helpers
+
+tests/unit/
++-- env.test.ts                  local-only mode/URL/key contract (no network)
 
 tests/integration/
 +-- auth.integration.test.ts
@@ -120,10 +130,12 @@ Desktop-only failures are acceptable for admin/creator tools in Phase 2 if mobil
 
 ### CI integration
 
-The current workflow runs frozen install, contract checks, lint, typecheck and build. Browser tests are
-not yet in CI. Phase 3A Wave 0 must add the fixture/static and local-stack jobs defined in
-`PHASE-3-VERIFICATION-RUNBOOK.md`, including
-`bunx playwright install --with-deps chromium` and credential-safe failure-artifact handling.
+The current `validate` job is the fixture/static job: frozen install, contract checks, dependency
+audit with the documented exception, lint, typecheck, unit tests, build, Playwright Chromium install,
+and the fixture suite. A failing fixture run uploads its Playwright report with three-day retention;
+the fixture suite contains no session material. The Phase 3A local-stack job (reset, pgTAP, DB lint,
+generated-type drift, integration tests, local-mode smoke, unconditional stop) is added when Wave 1
+supplies migrations and database tests; it cannot run meaningfully against an empty schema.
 
 ## Integration testing (Phase 3+)
 
@@ -239,7 +251,7 @@ Optional but recommended:
 ### Phase 2 (Fixtures)
 
 - All test data is deterministic
-- Fixtures in `src/fixtures/`
+- Fixtures live in `src/data/seed.ts` (fixed IDs and a fixed base date; no randomness or clock reads)
 - No database cleanup needed
 
 ### Phase 3 local proof
