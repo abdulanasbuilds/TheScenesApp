@@ -1,454 +1,294 @@
-# The Scenes � Folder Structure
+# The Scenes — Canonical Folder Structure
 
-This document defines the canonical folder structure for The Scenes repository.
+**Updated:** 5 November 2026
+**Status:** accepted Phase 2 layout plus proposed Phase 3A revision-3 additions; re-review pending
 
-## Principle
+The Scenes is a single-package repository with internal module boundaries. This document describes
+the tree that exists now and the proposed Phase 3A additions. No addition is implementation-authorized
+until revision 3 passes re-review, founder approval and Gate A. If an older example conflicts with
+`PHASE-3-IMPLEMENTATION-PLAN-R3.md`, revision 3 controls.
 
-The application is a **monorepo with internal module boundaries**, not a multi-package workspace.
+## Root
 
-All code lives under `src/`, organized by responsibility rather than technical layer.
-
-## Root structure
-
-```
+```text
 TheScenesApp/
-+-- src/                    # All application code
-+-- public/                 # Static assets (fonts, images, icons)
-+-- e2e/                    # Playwright end-to-end tests
-+-- docs/                   # Project documentation
-+-- .github/workflows/      # CI configuration
-+-- node_modules/           # Dependencies (gitignored)
-+-- .playwright/            # Test artifacts (gitignored)
-+-- package.json            # Dependencies and scripts
-+-- tsconfig.json           # TypeScript configuration
-+-- vite.config.ts          # Vite/TanStack Start configuration
-+-- playwright.config.ts    # Playwright configuration
-+-- eslint.config.js        # ESLint configuration
-+-- .prettierrc             # Prettier configuration
-+-- components.json         # shadcn/ui configuration
-+-- AGENTS.md               # Universal agent contract
-+-- README.md               # Project overview
+├── .agent-os/                 project scope boundary
+├── .github/workflows/         CI configuration
+├── docs/                      durable product/architecture/security evidence
+├── e2e/                       Playwright browser tests
+├── scripts/                   bounded local verification/load scripts (Phase 3+)
+├── src/                       application code
+├── supabase/                  local config, migrations, tests and seed (Phase 3+)
+├── tests/integration/         real local-stack application/security tests (Phase 3A)
+├── .phase3-artifacts/         ignored raw local evidence; never committed
+├── .env.example               non-secret local variable names/placeholders
+├── AGENTS.md                  canonical agent contract
+├── package.json               single package and scripts
+├── bun.lock                   sole dependency lockfile
+├── playwright.config.ts
+├── tsconfig.json
+└── vite.config.ts
 ```
 
-## src/ structure
+Generated/local directories such as `node_modules/`, `.output/`, `.tanstack/`, `.wrangler/`,
+`.playwright/`, local dumps and `.env.local` remain ignored.
 
-```
+Bun `1.4.4` remains the sole package manager. Node is the deliberate execution runtime for the pinned
+Vite, TypeScript and Playwright CLIs; CI pins Node `26.12.1`, and `package.json` requires `>=22.12.0`.
+
+## Current `src/` tree
+
+```text
 src/
-+-- app/                    # TanStack Start app directory (routes + SSR)
-+-- components/             # Shared React components
-+-- features/               # Feature modules (domain logic)
-+-- services/               # External service adapters
-+-- lib/                    # Shared utilities and hooks
-+-- types/                  # Shared TypeScript types
-+-- fixtures/               # Mock data for Phase 2
-+-- styles/                 # Global styles
-+-- server/                 # Server-side code (Phase 3+)
-+-- client.tsx              # Client entry point
+├── components/
+│   ├── domain/                reusable product cards/compositions
+│   ├── layout/                public/member/community/creator/auth shells
+│   └── ui/                    shared primitives
+├── data/
+│   ├── seed.ts                deterministic Phase 2 fixtures
+│   └── types.ts               current fixture/domain shapes
+├── lib/                       small client-safe utilities/hooks
+├── routes/                    TanStack Start file routes (canonical route root)
+├── store/
+│   └── app-store.tsx          explicit fixture adapter/UI state; never local-mode authority
+├── router.tsx
+├── routeTree.gen.ts           generated; do not edit manually
+├── server.ts                  TanStack Start handler entry
+└── styles.css                 canonical global stylesheet
 ```
 
-## app/ � TanStack Start routes
+There is no `src/app/routes`, `src/styles/globals.css`, separate `client.tsx`, or second route tree.
+The accepted implementation—not historical examples—decides these paths.
 
-```
-src/app/
-+-- routes/                 # File-based routing
-�   +-- __root.tsx          # Root layout with error boundary
-�   +-- index.tsx           # Marketing landing page
-�   +-- explore.tsx         # Public discovery
-�   +-- categories/         # Category pages
-�   +-- communities/        # Community routes
-�   +-- courses/            # Course routes
-�   +-- events/             # Event routes
-�   +-- workflows/          # Workflow/resource routes
-�   +-- teachers/           # Teacher profile routes
-�   +-- auth/               # Auth routes (signup, login, etc.)
-�   +-- home.tsx            # Authenticated home (separate from landing)
-�   +-- my-learning.tsx     # Learner dashboard
-�   +-- workspace/          # Creator workspace routes
-�   +-- admin/              # Admin workspace routes
-�   +-- settings/           # Settings routes
-�   +-- legal/              # Legal pages (terms, privacy)
-+-- ssr.tsx                 # SSR entry point
-```
+## Routes
 
-**Routing rules:**
+`src/routes/` uses TanStack Start file routing:
 
-- `/` ? marketing landing page (public)
-- `/explore` ? public discovery
-- `/home` ? authenticated home (distinct from landing)
-- `/workspace/*` ? creator workspace
-- `/admin/*` ? admin workspace
-- `/my-learning` ? learner dashboard
-
-## components/ � Shared UI components
-
-```
-src/components/
-+-- ui/                     # shadcn/Radix primitives (button, dialog, etc.)
-+-- layout/                 # Shells, navigation, headers, footers
-�   +-- app-shell.tsx       # Main authenticated app shell
-�   +-- marketing-shell.tsx # Public marketing shell
-�   +-- navigation.tsx      # Main navigation
-�   +-- mobile-nav.tsx      # Mobile navigation
-+-- community/              # Community-specific components
-�   +-- community-card.tsx
-�   +-- post-card.tsx
-�   +-- comment-thread.tsx
-�   +-- ...
-+-- learning/               # Course/lesson components
-�   +-- course-card.tsx
-�   +-- lesson-player.tsx
-�   +-- progress-bar.tsx
-�   +-- ...
-+-- creator/                # Creator workspace components
-�   +-- course-builder.tsx
-�   +-- analytics-chart.tsx
-�   +-- earnings-summary.tsx
-�   +-- ...
-+-- admin/                  # Admin components
-�   +-- user-table.tsx
-�   +-- moderation-queue.tsx
-�   +-- ...
-+-- shared/                 # Cross-cutting components
-    +-- avatar.tsx
-    +-- badge.tsx
-    +-- empty-state.tsx
-    +-- loading-state.tsx
-    +-- error-state.tsx
-    +-- ...
+```text
+src/routes/
+├── __root.tsx
+├── index.tsx                  marketing landing page
+├── explore.tsx
+├── login.tsx
+├── register.tsx
+├── onboarding.tsx
+├── home.tsx
+├── my-learning.tsx
+├── settings.tsx
+├── communities/$communityId.tsx
+├── c/$communityId/...         community/classroom/member/event/post routes
+├── dashboard/...              creator workspace routes
+├── creators/$handle.tsx
+└── marketplace/...            fixture-only until its approved phase
 ```
 
-**Component rules:**
+Rules:
 
-- `ui/` contains only primitive/unstyled components from shadcn/Radix
-- Domain components (`community/`, `learning/`, etc.) compose primitives
-- Shared layout components go in `layout/`
-- Keep components focused and composable
+- `/` is the public marketing page; `/home` is the member experience.
+- Route components may import client-safe schemas, DTOs and `*.functions.ts` server-function wrappers.
+- Route guards improve UX; private server functions still authenticate and authorize independently.
+- Dynamic IDs/slugs are untrusted selectors and receive runtime validation.
 
-## features/ � Feature modules (business logic)
+## Phase 3 contract/function modules
 
-```
+Route-importable contracts and server-function wrappers live outside the protected server directory:
+
+```text
 src/features/
-+-- auth/                   # Authentication (Phase 3+)
-�   +-- hooks/
-�   +-- context/
-�   +-- utils.ts
-�   +-- types.ts
-+-- community/              # Community domain logic
-�   +-- hooks/
-�   +-- utils.ts
-�   +-- types.ts
-+-- learning/               # Learning/courses logic
-�   +-- hooks/
-�   +-- progress-tracker.ts
-�   +-- completion.ts
-�   +-- types.ts
-+-- events/                 # Events/live logic
-�   +-- hooks/
-�   +-- scheduling.ts
-�   +-- types.ts
-+-- referrals/              # Referral system logic
-�   +-- hooks/
-�   +-- qualification.ts
-�   +-- entitlements.ts
-�   +-- types.ts
-+-- gamification/           # Points, progress, badges
-�   +-- hooks/
-�   +-- points.ts
-�   +-- types.ts
-+-- marketplace/            # Marketplace logic (Phase 8)
-    +-- hooks/
-    +-- types.ts
+├── shared/
+│   └── safe-handler.ts
+├── auth/
+│   ├── auth.schemas.ts
+│   ├── auth.contracts.ts
+│   ├── auth.functions.ts
+│   ├── profile.schemas.ts
+│   ├── profile.contracts.ts
+│   └── profile.functions.ts
+├── community/
+│   ├── community.schemas.ts
+│   ├── community.contracts.ts
+│   └── community.functions.ts
+└── learning/
+    ├── course.schemas.ts
+    ├── course.contracts.ts
+    ├── course.functions.ts
+    ├── learning.schemas.ts
+    ├── learning.contracts.ts
+    └── learning.functions.ts
 ```
 
-**Feature rules:**
+- `*.schemas.ts` contains client-safe Zod schemas and serializable DTOs only.
+- `*.functions.ts` contains `createServerFn` wrappers. Static imports are safe because TanStack Start
+  replaces their implementations with client RPC stubs.
+- Feature modules do not import React components.
+- Provider/database types never escape as public route contracts.
 
-- Features contain **domain logic**, not UI components
-- Each feature is independently testable
-- Features may import from `services/` but not vice versa
-- Keep feature boundaries clean (no cross-feature imports)
+## Phase 3 middleware wrappers and server-only modules
 
-## services/ � External service adapters
+```text
+src/middleware/
+├── auth.ts                     client-reachable wrapper; server callback only
+├── request-id.ts               client-reachable wrapper; server callback only
+└── safe-errors.ts              client-reachable defense-in-depth wrapper
 
-```
-src/services/
-+-- auth/                   # Auth adapter (Supabase, Phase 3+)
-�   +-- index.ts            # Public interface
-�   +-- supabase-adapter.ts # Implementation
-�   +-- mock-adapter.ts     # Mock for Phase 2
-�   +-- types.ts
-+-- storage/                # Storage adapter (R2, Phase 4+)
-�   +-- index.ts
-�   +-- r2-adapter.ts
-�   +-- mock-adapter.ts
-�   +-- types.ts
-+-- email/                  # Email adapter (Resend, Phase 4+)
-�   +-- index.ts
-�   +-- resend-adapter.ts
-�   +-- mock-adapter.ts
-�   +-- types.ts
-+-- video/                  # Video adapter (Bunny/LiveKit, Phase 6+)
-�   +-- index.ts
-�   +-- bunny-adapter.ts
-�   +-- livekit-adapter.ts
-�   +-- mock-adapter.ts
-�   +-- types.ts
-+-- payments/               # Payment adapter (Phase 7+)
-    +-- index.ts
-    +-- paystack-adapter.ts
-    +-- mock-adapter.ts
-    +-- types.ts
-```
-
-**Adapter rules:**
-
-- Each service has a **provider-agnostic interface** in `index.ts`
-- Implementation files (e.g., `supabase-adapter.ts`) are private to the module
-- Mock adapters return deterministic fixture data in Phase 2
-- Real adapters are only activated in the appropriate phase
-- Never expose provider-specific types outside the adapter
-
-## lib/ � Shared utilities
-
-```
-src/lib/
-+-- utils.ts                # General utilities
-+-- cn.ts                   # Tailwind merge (classname utility)
-+-- constants.ts            # App-wide constants
-+-- hooks/                  # React hooks
-�   +-- use-media-query.ts
-�   +-- use-debounce.ts
-�   +-- ...
-+-- validation/             # Validation schemas
-    +-- schemas.ts
-```
-
-**Utility rules:**
-
-- Keep utilities pure and side-effect free
-- No domain logic here (use `features/` instead)
-- Hooks are reusable UI hooks, not domain hooks (those go in `features/`)
-
-## types/ � Shared TypeScript types
-
-```
-src/types/
-+-- domain.ts               # Core domain models (User, Course, Community, etc.)
-+-- api.ts                  # API request/response contracts
-+-- fixtures.ts             # Fixture data types (Phase 2)
-+-- index.ts                # Re-exports
-```
-
-**Type rules:**
-
-- Domain types are the canonical data structures
-- API types may differ from domain types (transformation happens in adapters)
-- Never import provider-specific types here
-
-## fixtures/ � Mock data for Phase 2
-
-```
-src/fixtures/
-+-- users.ts                # Mock users
-+-- courses.ts              # Mock courses
-+-- communities.ts          # Mock communities
-+-- events.ts               # Mock events
-+-- referrals.ts            # Mock referral data
-+-- analytics.ts            # Mock analytics
-+-- index.ts                # Re-exports
-```
-
-**Fixture rules:**
-
-- All fixture data is **deterministic** (same output every time)
-- Fixtures match the shape of real data from domain types
-- Phase 2 uses fixtures exclusively; Phase 3+ replaces with real data
-- Fixtures should represent realistic product states (empty, loading, populated, error)
-
-## styles/ � Global styles
-
-```
-src/styles/
-+-- globals.css             # Tailwind imports + global overrides
-```
-
-**Style rules:**
-
-- Use Tailwind utility classes for component styling
-- Keep global CSS minimal
-- Component-specific styles should use inline Tailwind classes
-
-## server/ � Server-side code (Phase 3+)
-
-```
 src/server/
-+-- api/                    # API route handlers
-�   +-- auth.ts
-�   +-- courses.ts
-�   +-- communities.ts
-�   +-- ...
-+-- db/                     # Database client
-�   +-- client.ts
-�   +-- schema.ts
-�   +-- migrations/
-+-- middleware/             # Server middleware
-�   +-- auth.ts
-�   +-- rate-limit.ts
-+-- utils/                  # Server-only utilities
-    +-- validation.ts
+├── db/
+│   └── database.types.ts       generated from local migrations; committed
+├── http/
+│   ├── errors.server.ts
+│   ├── logger.server.ts
+│   └── request-context.server.ts
+├── repositories/
+│   ├── profiles.server.ts
+│   ├── communities.server.ts
+│   ├── courses.server.ts
+│   └── learning.server.ts
+├── services/
+│   ├── profile-service.server.ts
+│   ├── community-service.server.ts
+│   ├── course-service.server.ts
+│   └── learning-service.server.ts
+├── supabase/
+│   ├── auth.server.ts
+│   └── server-client.server.ts
+└── env.server.ts
 ```
 
-**Server rules:**
+`src/start.ts` is client-loaded by TanStack and may import only the client-reachable middleware wrappers.
+Those wrappers contain no protected top-level import; sensitive logic stays inside compiler-recognized
+server callbacks/helpers. `src/start.ts` explicitly installs CSRF, request ID and defense-in-depth error
+handling. `src/server.ts` remains the handler entry and is not a middleware registry.
 
-- Server code MUST NOT be imported in client code
-- Use TanStack Start's `server-only` import protection
-- All server routes require authorization checks
-- Never expose secrets to the client
+Server rules:
 
-## public/ � Static assets
+- `src/server/**` is protected by Vite/TanStack import protection.
+- UI/routes never import repositories, services, environment code or provider clients directly.
+- Repositories are the only modules that issue Supabase table/RPC queries.
+- Services enforce use-case authorization and map provider rows/errors into internal DTOs.
+- Every request gets a request-scoped Supabase client; there is no shared mutable user client.
+- No application service/secret-role client exists in the Phase 3 proof.
 
+## Supabase local proof
+
+```text
+supabase/
+├── config.toml
+├── migrations/
+│   └── <timestamp>_<purpose>.sql
+├── tests/
+│   └── database/
+│       └── *_test.sql
+└── seed.sql
 ```
-public/
-+-- fonts/                  # Web fonts
-+-- images/                 # Images (logo, hero, etc.)
-+-- icons/                  # Favicons, PWA icons
-```
 
-**Asset rules:**
+- SQL migrations are the sole schema history.
+- Every exposed table migration includes constraints, indexes, RLS and grants together.
+- Tests cover grants, constraints, RLS and direct database-command calls.
+- `seed.sql` contains fictional platform catalogue data plus the minimum fixed, non-login-capable Auth
+  catalogue actors required by referential integrity. Browser learner users always use real signup.
+- Migrations are forward-only after application; destructive changes require expand/migrate/contract
+  and separate approval.
 
-- Static files are served from `/` root
-- Optimize images before committing
-- Use SVG for icons where possible
-- Font files should be subsetted
+## Components, data and state
 
-## e2e/ � Playwright tests
+- `components/ui/`: primitives and reusable accessibility behavior.
+- `components/layout/`: application/public/workspace shells.
+- `components/domain/`: reusable domain presentation; no provider SDK calls.
+- `data/`: deterministic fixture records and their current types. Fixtures remain for explicitly
+  unresolved Phase 2 surfaces.
+- `store/app-store.tsx`: may retain durable preview mutations only behind the explicit fixture adapter.
+  In `supabase-local`, auth, membership, enrolment and progress always come from server contracts and
+  fixture values are never authority or fallback.
 
-```
+There is no silent backend-to-fixture fallback. `VITE_DATA_MODE=fixtures|supabase-local` chooses the
+mode explicitly; backend failures render error/retry states.
+
+## Tests and scripts
+
+```text
 e2e/
-+-- landing.spec.ts         # Landing page tests
-+-- auth.spec.ts            # Authentication flows
-+-- courses.spec.ts         # Course navigation/learning
-+-- community.spec.ts       # Community interactions
-+-- workspace.spec.ts       # Creator workspace
-+-- helpers/                # Test utilities
-    +-- fixtures.ts
+├── helpers.ts
+├── auth-flow.spec.ts            Phase 3
+├── learning-flow.spec.ts        Phase 3
+├── security-contract.spec.ts    Phase 3
+├── auth-route-contract.spec.ts  Phase 3
+├── critical-flows.spec.ts
+├── route-contract.spec.ts
+└── visual-contract.spec.ts
+
+tests/integration/
+├── auth.integration.test.ts
+├── authorization.integration.test.ts
+├── cache-session.integration.test.ts
+└── commands-concurrency.integration.test.ts
+
+scripts/
+├── check-client-boundary.ts
+├── phase3-generate-data.ts
+├── phase3-query-plans.ts
+├── phase3-load.ts
+└── phase3-recover.ts
+
+src/routes/
+├── phase3-load.tsx        local-only load driver (no leading underscore)
+└── ...
 ```
 
-**Test rules:**
+`*.functions.ts` files import `createServerFn` directly from `@tanstack/react-start` and wrap only the
+handler with `withSafeHandler`. A project factory that wraps or re-exports `createServerFn` is not
+compiler-recognized and is rejected by the boundary/build test. Files beginning with `_` are pathless in
+the router generator and must not be used for the load driver, which needs a real `/phase3-load` URL.
 
-- Test critical user flows, not every component
-- Use Page Object Model for complex flows
-- Tests run against localhost:5000 in CI
-- Mobile tests are included (Pixel 7 viewport)
+- Co-located `*.test.ts` files use Bun for pure schemas/codecs/error mapping.
+- Database tests use pgTAP through `bunx supabase test db`.
+- E2E tests create users through the real local signup flow; they never use a service key.
+- Raw dumps, credentials and test-user artifacts are not committed.
 
-## docs/ � Project documentation
+## Import boundaries
 
-```
-docs/
-+-- README.md                           # Documentation index
-+-- AGENT-CONTEXT.md                    # Bootstrap context for agents
-+-- AGENT-PROMPT-TEMPLATE.md            # Task prompt template
-+-- AGENT-ROLES.md                      # Agent role definitions
-+-- BUILD-CONTRACT.md                   # Build requirements
-+-- CI-CONTRACT.md                      # CI requirements
-+-- DECISIONS.md                        # Architecture Decision Register
-+-- DESIGN-FIRST.md                     # Design-first workflow
-+-- ENVIRONMENT-AND-COST-GUARDRAILS.md  # Cost/env safety rules
-+-- FEATURE-MATRIX.md                   # Feature traceability
-+-- FOLDER-STRUCTURE.md                 # This file
-+-- INTEGRATIONS.md                     # Provider boundaries
-+-- LEGACY-CONTEXT.md                   # SukaSpace history
-+-- LEGACY-SOURCE-INVENTORY.md          # Legacy file inventory
-+-- OPEN-PRODUCT-DECISIONS.md           # Unresolved questions
-+-- PHASES.md                           # 10-phase roadmap
-+-- PLAIN-ENGLISH-PRODUCT-EXPLANATION.md # Non-technical overview
-+-- PRODUCT-REQUIREMENTS.md             # Canonical requirements
-+-- PROJECT-CONTEXT.md                  # Product context
-+-- REFERRAL-QUOTA-ARCHITECTURE.md      # Referral system design
-+-- REWARD-INFRASTRUCTURE.md            # Reward system details
-+-- SECURITY-RULES.md                   # Security baseline
-+-- TESTING-AND-QUALITY.md              # Testing strategy
-+-- TOOLING.md                          # Tools and capabilities
-+-- AGENT-GUIDES/                       # Agent-specific guides
-    +-- FABLE.md
+Allowed direction:
+
+```text
+routes/components
+    ↓
+client-safe schemas + *.functions.ts RPC wrappers
+    ↓
+server services
+    ↓
+repositories
+    ↓
+request-scoped Supabase adapter
 ```
 
-## Import rules
+Forbidden:
 
-### Allowed imports
+- client/route/component → `src/server/**`;
+- component → repository/provider SDK;
+- repository → React/UI;
+- service → route/component;
+- public DTO → Supabase/provider-specific type;
+- one feature mutating another feature's private state directly;
+- importing secrets or server environment modules into shared/client code.
 
-- `app/` ? `components/`, `features/`, `services/`, `lib/`, `types/`, `fixtures/`, `styles/`
-- `components/` ? `lib/`, `types/`, `ui/` (within components/)
-- `features/` ? `services/`, `lib/`, `types/`
-- `services/` ? `lib/`, `types/`
-- `lib/` ? nothing (pure utilities)
-- `types/` ? nothing (pure types)
-- `fixtures/` ? `types/`
-- `server/` ? `services/`, `lib/`, `types/` (but NEVER vice versa)
+## Naming
 
-### Forbidden imports
+- Route and utility files: kebab-case unless a framework convention requires another shape.
+- React component exports: PascalCase.
+- Server-function wrappers: `*.functions.ts`.
+- Shared input/DTO contracts: `*.schemas.ts`.
+- Pure unit tests: `*.test.ts`; browser tests: `*.spec.ts`; database tests: `*_test.sql`.
+- Migration names: CLI-generated timestamp plus descriptive snake_case purpose.
 
-- `services/` ? `features/` (adapters don't know about domain logic)
-- `services/` ? `components/` (adapters don't know about UI)
-- `lib/` ? anything (utilities are isolated)
-- Client code ? `server/` (import protection enforced by TanStack Start)
-- Cross-feature imports (features are independent)
+## Phase boundaries
 
-## File naming conventions
+- **Phase 2 accepted:** deterministic frontend fixtures under `src/data`/`src/store`.
+- **Phase 3 local proof:** only auth/profile/community membership/course enrolment/lesson progress.
+- **Phase 4+:** email, approved platform files, push and distributed rate limiting.
+- **Later phases:** creator operations, referrals, payments, marketplace, AI and production scale.
 
-- React components: PascalCase (`CourseCard.tsx`)
-- Utilities/functions: kebab-case (`format-date.ts`)
-- Types: kebab-case (`domain-types.ts`)
-- Test files: `*.spec.ts` (E2E), `*.test.ts` (unit, when added)
-- Route files: kebab-case (`my-learning.tsx`)
-
-## Phase-specific rules
-
-### Phase 0 (Current � Documentation)
-
-- No `src/` directory yet
-- All documentation in `docs/`
-- CI checks documentation integrity
-
-### Phase 1 (Design Exploration)
-
-- Create design artifacts (mockups, prototypes)
-- No production code yet
-- Document design decisions
-
-### Phase 2 (Frontend with Fixtures)
-
-- Create full `src/` structure
-- All service adapters return fixture data
-- No real backend connections
-- Focus: navigable UI with realistic states
-
-### Phase 3 (Backend Foundation)
-
-- Activate real auth adapter (Supabase)
-- Create `server/` directory
-- Add database client
-- Replace fixture adapters with real implementations
-
-### Phase 4+ (Progressive Integration)
-
-- Activate adapters progressively by phase
-- Each phase unlocks specific `services/` implementations
-- Old fixture code remains for reference/testing
-
-## Monorepo vs multi-package
-
-The Scenes uses a **monorepo-style structure** (single package.json, internal modules) rather than a multi-package workspace (multiple package.json files).
-
-**Rationale:**
-
-- Simpler dependency management
-- No version coordination between packages
-- Easier refactoring across boundaries
-- Standard TypeScript path aliases (`@/components`, `@/lib`, etc.)
-- Sufficient for current scale
-
-If the application grows to need separate deployable units (e.g., separate marketing site, API server, admin dashboard), the architecture can be revisited in Phase 10.
+The presence of a route or fixture does not authorize its backend implementation.
 
 ## Update rule
 
-When new architectural boundaries are introduced, update this document in the same commit.
+When a real architectural boundary changes, update this document and the applicable phase plan in the
+same change. Do not keep a second aspirational tree that contradicts the working repository.

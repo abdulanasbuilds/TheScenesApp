@@ -17,7 +17,10 @@ async function config({ mode, command }: ConfigEnv): Promise<UserConfig> {
     tanstackStart({
       importProtection: {
         behavior: "error",
-        client: { files: ["**/server/**"], specifiers: ["server-only"] },
+        client: {
+          files: ["**/*.server.*", "**/server/**"],
+          specifiers: ["@tanstack/react-start/server-only"],
+        },
       },
       server: { entry: "src/server" },
     }),
@@ -54,10 +57,9 @@ async function config({ mode, command }: ConfigEnv): Promise<UserConfig> {
       ignoreOutdatedRequests: true,
     },
     server: {
-      host: "0.0.0.0",
+      host: "127.0.0.1",
       port: 5000,
       strictPort: true,
-      allowedHosts: true,
     },
     ssr: {
       noExternal: ["@tanstack/react-start"],

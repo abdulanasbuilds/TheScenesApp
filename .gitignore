@@ -30,6 +30,9 @@ dist-ssr
 /test-results/
 /blob-report/
 
+# Phase 3 local proof raw artifacts (dumps, traces, headers, load/query output)
+/.phase3-artifacts/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

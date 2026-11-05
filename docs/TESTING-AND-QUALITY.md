@@ -48,7 +48,8 @@ Already configured:
 - **Config:** `playwright.config.ts`
 - **Test directory:** `e2e/`
 - **Artifacts:** `.playwright/` (gitignored)
-- **Projects:** `chromium` (desktop), `mobile-chromium` (Pixel 7)
+- **Projects:** `desktop` (1440×900), `tablet` (768×1024), `mobile` (Pixel 7 at 390×844)
+- **Local workers:** 3 (bounded after four workers produced dev-server/UI timing flakes)
 
 ### Commands
 
@@ -58,25 +59,39 @@ bun run test:e2e:ui       # Interactive mode
 bun run test:e2e:report   # View last test report
 ```
 
+### Unit and local-stack commands (Phase 3A Wave 0)
+
+```bash
+bun run test:unit          # Bun unit tests for scripts/ (no local stack required)
+bun run typecheck          # App config + tsconfig.scripts.json
+bun run phase3:stack:start # Start the local Supabase stack (loopback gate enforced)
+bun run phase3:stack:status
+bun run phase3:stack:stop
+```
+
+`bun run test:unit` must not require a running Supabase stack or Docker. The `phase3:stack:*`
+commands are credential-safe wrappers over the pinned `supabase@3.0.0` CLI; see
+`docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md` for the current loopback-isolation
+status on Windows/Docker Desktop.
+
 ### Test organization
 
-```
+```text
 e2e/
-+-- landing.spec.ts         # Marketing landing page
-+-- explore.spec.ts         # Public discovery
-+-- auth.spec.ts            # Signup, login, logout flows (Phase 3+)
-+-- courses.spec.ts         # Course browsing, enrollment, learning
-+-- community.spec.ts       # Community feed, posts, comments
-+-- events.spec.ts          # Event discovery, registration
-+-- workspace.spec.ts       # Creator workspace flows
-+-- admin.spec.ts           # Admin workspace flows
-+-- referrals.spec.ts       # Referral dashboard (Phase 5+)
-+-- responsive.spec.ts      # Mobile/tablet/desktop checks
-+-- accessibility.spec.ts   # Basic a11y checks
-+-- helpers/                # Shared test utilities
-    +-- fixtures.ts
-    +-- selectors.ts
-    +-- auth-helpers.ts
++-- critical-flows.spec.ts       accepted fixture flows
++-- route-contract.spec.ts       fixture route/link graph
++-- visual-contract.spec.ts      responsive/runtime sweep
++-- auth-flow.spec.ts            Phase 3A local Auth/profile
++-- learning-flow.spec.ts        Phase 3A persisted learner journey
++-- security-contract.spec.ts    CSRF/cookie/cache/direct-call checks
++-- auth-route-contract.spec.ts  local private-route behavior
++-- helpers.ts                   mode-aware hydration/auth helpers
+
+tests/integration/
++-- auth.integration.test.ts
++-- authorization.integration.test.ts
++-- cache-session.integration.test.ts
++-- commands-concurrency.integration.test.ts
 ```
 
 ### What to test
@@ -98,34 +113,37 @@ e2e/
 
 ### Mobile-first rule
 
-Every critical flow must pass on `mobile-chromium` (Pixel 7 viewport).
+Every critical flow must pass on the `mobile` project (Pixel 7 viewport). Phase 3A browser coverage is
+Chromium-only; cross-engine testing is deferred and must not be claimed.
 
 Desktop-only failures are acceptable for admin/creator tools in Phase 2 if mobile support is documented as Phase 3 work.
 
 ### CI integration
 
-E2E tests run in GitHub Actions on every PR and push to `main`:
-
-- Install Playwright browsers (`bunx playwright install chromium`)
-- Start dev server on port 5000
-- Run full test suite
-- Upload failure artifacts
+The current workflow runs frozen install, contract checks, lint, typecheck and build. Browser tests are
+not yet in CI. Phase 3A Wave 0 must add the fixture/static and local-stack jobs defined in
+`PHASE-3-VERIFICATION-RUNBOOK.md`, including
+`bunx playwright install --with-deps chromium` and credential-safe failure-artifact handling.
 
 ## Integration testing (Phase 3+)
 
-Once backend services are activated:
+For the founder-approved Phase 3A revision-3 local proof (final technical re-review pending):
 
-- Test service adapter contracts
-- Test API routes with real database
-- Test authorization/RLS policies
-- Test webhook handling
-- Test quota enforcement
-- Test referral qualification logic
-- Test payment webhook idempotency
+- pgTAP tests cover grants, constraints, RLS and caller-bound database commands;
+- Bun tests cover Zod contracts, cursor/URL policy and safe error mapping;
+- server-function integration tests use the real local Supabase stack and user-scoped sessions;
+- Playwright covers signup/login/logout and the approved persisted learning journey;
+- direct-call tests attempt horizontal/vertical access bypass, CSRF, forged/expired sessions and
+  private-resource existence leaks.
 
-**Location:** `src/services/*/tests/`, `src/server/api/tests/`
+Later webhook, quota, referral and payment tests remain in their approved phases; they are not Phase 3
+scope.
 
-**Framework:** Vitest (to be added in Phase 3)
+**Locations:** `supabase/tests/database/`, co-located `src/**/*.test.ts`,
+`tests/integration/**/*.test.ts`, and `e2e/`
+
+**Runners:** pgTAP via Supabase CLI, Bun test runner, Playwright. Vitest is not added without a proven
+gap.
 
 ## Unit testing (Phase 3+)
 
@@ -138,7 +156,8 @@ When domain logic complexity justifies it:
 
 **Location:** Co-located `*.test.ts` files
 
-**Framework:** Vitest (to be added in Phase 3)
+**Framework:** Bun's built-in test runner for Phase 3; reconsider only if a concrete unsupported need
+appears.
 
 ## Accessibility testing
 
@@ -152,6 +171,10 @@ Use Playwright + axe-core for baseline checks:
 - Alt text
 - ARIA attributes
 - Keyboard navigation
+
+Phase 3A explicitly verifies keyboard order, visible focus, label/error association and focus movement
+after validation for registration, login, profile update, join, enrol, completion, retry and
+expired-session states on desktop and mobile.
 
 ### Manual checks (Phase 2)
 
@@ -219,12 +242,15 @@ Optional but recommended:
 - Fixtures in `src/fixtures/`
 - No database cleanup needed
 
-### Phase 3+ (Real Database)
+### Phase 3 local proof
 
-- Use separate test database
-- Transaction rollback after each test
-- Seed known test data
-- Factory pattern for test objects
+- use only the disposable local Supabase database;
+- rebuild deterministic catalogue state with `bunx supabase db reset`;
+- keep pgTAP tests transactional and rolled back;
+- create E2E users through the real signup flow with unique fictional addresses;
+- do not seed or manipulate Supabase Auth internals for browser tests;
+- never use a hosted project, real personal data or an app service-role key;
+- delete ignored dumps/synthetic load data after recovery/performance evidence is captured.
 
 ## Quality gates
 

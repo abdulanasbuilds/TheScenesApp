@@ -19,22 +19,23 @@
 
 ### 4.1 Old Code History Security Scan ⚠️ CRITICAL
 
-**Status:** NOT STARTED  
+**Status:** SCAN COMPLETE — historical credential revocation/rotation confirmation required
 **Risk Level:** CRITICAL — Repository is public with old history
 
 **Actions Required:**
-1. Install gitleaks: `winget install gitleaks` or download from https://github.com/gitleaks/gitleaks
-2. Run full history scan: `gitleaks detect --source . --verbose`
-3. Scan all branches: `gitleaks detect --source . --no-git`
-4. Document findings in SECURITY-SCAN-RESULTS.md
+1. Use checksum-verified official Gitleaks v8.30.1 from https://github.com/gitleaks/gitleaks
+2. Run full history scan with 100% secret redaction
+3. Scan the current working tree separately
+4. Document only redacted findings in `SECURITY-SCAN-RESULTS.md`
 5. Rotate ANY found secrets immediately
 6. Enable GitHub secret scanning (Settings → Code security)
 7. Enable push protection (Settings → Code security)
 8. Review and close 16 open pull requests
 
 **Completion Criteria:**
-- [ ] Gitleaks scan shows zero findings
-- [ ] All historical secrets rotated
+- [x] Working-tree Gitleaks scan shows zero findings
+- [x] Full-history scan completed (13 redacted legacy findings)
+- [ ] All historical hosted Supabase credentials revoked/rotated by the account owner
 - [ ] GitHub secret scanning enabled
 - [ ] Push protection enabled
 - [ ] PR review complete
@@ -43,7 +44,7 @@
 
 ### 4.2 Pricing Documentation Conflicts ⚠️ CRITICAL
 
-**Status:** NOT STARTED  
+**Status:** COMPLETED 5 November 2026 for the Phase 3/local-proof boundary
 **Risk Level:** CRITICAL — Agents will build wrong thing
 
 **Found Conflicts:**
@@ -352,12 +353,12 @@
 7. **LEGAL REVIEW REQUIRED:** Money-handling licenses for Ghana/Nigeria before Phase 7
 
 **Completion Criteria:**
-- [ ] SECURITY-RULES.md expanded (50+ numbered rules)
-- [ ] Permission table complete
-- [ ] Embed policy documented
-- [ ] XSS rules defined
-- [ ] Privacy requirements listed
-- [ ] Legal review scheduled for Phase 7
+- [x] SECURITY-RULES.md expanded (numbered, testable rules)
+- [x] Permission table complete for Phase 3
+- [x] Embed/external-link policy documented
+- [x] XSS/structured-content rules defined
+- [x] Privacy/retention requirements and production blockers listed
+- [x] Money-handling legal/security review required before Phase 7
 
 ---
 
@@ -393,7 +394,7 @@
 ## Progress Tracking
 
 ### Completion Status
-- [ ] 4.1 Security scan
+- [ ] 4.1 Scan complete; historical credential revocation/rotation confirmation pending
 - [ ] 4.2 Pricing conflicts (BLOCKED: founder decisions)
 - [ ] 4.3 Lost decisions
 - [ ] 4.4 Setup mismatch — IN PROGRESS; local Bun cleanup complete, clean-clone/CI proof pending
@@ -402,11 +403,15 @@
 - [ ] 4.7 Referral rewards
 - [ ] 4.8 Folder structure
 - [ ] 4.9 Documentation cleanup
-- [ ] 4.10 Security rules
+- [x] 4.10 Security rules
 
 ### Blocker Summary
-- 🔴 **Blocking All Work:** 4.2 pricing decisions (founder must decide)
-- 🔴 **Blocking Implementation:** 4.1 security scan, 4.4 setup, 4.10 security
+- ✅ **Pricing direction resolved for current planning:** ADR-029–030; later payment implementation
+  still requires a current cost-model check
+- 🔴 **Blocking Phase 3A implementation:** final revision-3 technical review and local-isolation Wave 0
+- 🟡 **Parallel incident / blocks hosted production:** revoke/delete and review any still-existing
+  legacy hosted project; old accounts/credentials are permanently forbidden
+- 🟡 **Gate evidence:** 4.4 fresh-install/CI verification
 - 🟡 **Should Fix Soon:** 4.3, 4.7, 4.8, 4.9
 
 ---

@@ -45,9 +45,10 @@ The platform may use Skool, Circle, Kajabi, and other products as references for
 
 ## Current stage
 
-**Design-first / frontend-first foundation.**
+**Phase 2 fixture frontend accepted; Phase 3A local proof founder-approved and in final technical re-review.**
 
-Before the frontend design gate is passed, agents MUST NOT:
+The frontend design gate has passed. Until Phase 3A revision 3 passes final technical review and its
+local-isolation Gate A evidence, agents MUST NOT:
 
 - connect production authentication;
 - create the production database schema;
@@ -217,8 +218,9 @@ All external services use internal adapters.
 Current direction:
 
 - Cloudflare: hosting and edge/security;
-- Supabase: approved for a bounded, local-only Phase 3 proof-of-fit for auth, database, realtime and
-  learning persistence after the remaining Gate A safety work; not connected or production-approved;
+- Supabase: selected and founder-approved for a bounded, credential-free local Phase 3A proof-of-fit;
+  revision 2 was rejected, revision 3 is in final technical re-review, and old accounts/credentials are
+  permanently forbidden; no hosted or production integration is approved;
 - Cloudflare R2: conditional later use for separately approved platform-managed objects; launch
   creator resources use external links under ADR-029;
 - Resend: important transactional email;

@@ -48,7 +48,7 @@ Installed baseline: Playwright (`@playwright/test`, `playwright.config.ts`, `e2e
 - `bun run test:e2e` — suite against the dev server, auto-started on port 5000 (`npm run test:e2e` also works).
 - `bun run test:e2e:ui` — interactive mode while designing.
 - `PLAYWRIGHT_BASE_URL=…` — target an already-running server instead of starting one.
-- Projects: `chromium` (desktop) and `mobile-chromium` (Pixel 7), so mobile-first is checked by default.
+- Projects: `desktop`, `tablet`, and `mobile` (Pixel 7), so mobile-first is checked by default.
 - Artifacts go to `.playwright/`: gitignored and excluded from lint. Tests live in `e2e/`.
 
 ### Documentation
@@ -117,6 +117,24 @@ At minimum, CI should prove:
 - typecheck;
 - build;
 - agent-contract integrity.
+
+The current workflow also runs `bun run test:unit` (Bun unit tests for `scripts/`).
+
+## Local Supabase stack tooling (Phase 3A Wave 0)
+
+`scripts/phase3-stack.ts` + `scripts/phase3-stack/*` wrap the pinned `supabase@3.0.0` CLI for the
+loopback-only local proof. Guarantees:
+
+- `SUPABASE_TELEMETRY_DISABLED=1` on every child; hosted credential/target env variables stripped;
+- CLI output captured in memory and printed redacted only;
+- hosted commands, hosted project refs, and `stop --all` refused;
+- `stop` is project-targeted only;
+- a loopback Docker bridge network is used at start, and the isolation gate stops the stack when any
+  published port is not loopback-only.
+
+On Windows with Docker Desktop, `com.docker.network.bridge.host_binding_ipv4` is not honoured for
+published ports, so the gate fails closed. See
+`docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md`.
 
 ## Model hierarchy rule
 

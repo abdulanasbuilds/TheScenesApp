@@ -20,8 +20,12 @@ export default defineConfig({
   expect: { timeout: 20_000 },
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
+  failOnFlakyTests: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Keep local route sweeps below the dev server's saturation point. Four fully
+  // parallel workers caused intermittent missed UI updates/timeouts; three still
+  // exercises all target viewports concurrently without turning load into flake.
+  workers: process.env.CI ? 1 : 3,
   reporter: [["list"], ["html", { outputFolder: "./.playwright/report", open: "never" }]],
   use: {
     baseURL,
@@ -54,7 +58,11 @@ export default defineConfig({
     : {
         command: "bun run dev",
         url: baseURL,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === "1",
+        env: {
+          ...process.env,
+          VITE_DATA_MODE: process.env.VITE_DATA_MODE ?? "fixtures",
+        },
         timeout: 120_000,
       },
 });

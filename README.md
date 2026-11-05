@@ -18,11 +18,12 @@ Then read:
 
 ## Current state
 
-This repository is intentionally starting from a clean application workspace.
+Phase 2's complete fixture-backed frontend is accepted.
 
-The product is currently in the governance + design-first stage.
-
-The next product implementation stage is to generate and compare multiple complete frontend directions before production backend integration.
+The next slice is a bounded, credential-free local Phase 3A Supabase proof. Revision 2 was rejected
+after independent review; the founder approved revision 3's product rules and isolated local direction,
+and final technical review/local-isolation gates remain. Old accounts/credentials are forbidden. No
+hosted or production backend is approved.
 
 ## Core stack direction
 

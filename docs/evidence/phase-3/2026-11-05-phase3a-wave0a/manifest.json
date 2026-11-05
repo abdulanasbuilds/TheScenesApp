@@ -1,0 +1,93 @@
+{
+  "runId": "2026-11-05-phase3a-wave0a",
+  "phase": "Phase 3A (Revision 3) — Wave 0A",
+  "date": "2026-11-05",
+  "result": "part-a-complete; part-b-tooling-complete; live-isolation-blocked",
+  "tree": {
+    "branch": "main",
+    "head": "ed890b5169b0453518d7e7c3e77115f8591608ae",
+    "committed": false,
+    "note": "Intentionally uncommitted working tree; pre-existing Wave 0 work preserved. No reset/revert performed."
+  },
+  "environment": {
+    "os": "win32",
+    "bun": "1.4.4",
+    "node": "26.12.1",
+    "dockerEngine": "29.9.2",
+    "supabaseCli": "3.0.0"
+  },
+  "partA": {
+    "auditBefore": { "critical": 3, "high": 0, "moderate": 0, "low": 0, "total": 30 },
+    "auditAfter": { "critical": 0, "high": 0, "moderate": 1, "low": 0, "total": 1 },
+    "remainingAdvisory": {
+      "package": "minimatch@10.2.5",
+      "severity": "moderate",
+      "scope": "dev-only",
+      "reachableAtRuntime": false,
+      "advisory": "https://github.com/advisories/GHSA-g3hv-75wg-m249",
+      "reasonDeferred": "No in-range fix; dependents require ^10.x and the patched release is >=11.0.1."
+    },
+    "verification": {
+      "installFrozenLockfile": 0,
+      "typecheck": 0,
+      "lint": 0,
+      "build": 0,
+      "e2e": { "passed": 26, "skipped": 4, "failed": 0 },
+      "diffCheck": 0
+    }
+  },
+  "partB": {
+    "unitTests": { "passed": 79, "failed": 0, "files": 10 },
+    "commands": ["phase3:stack:start", "phase3:stack:status", "phase3:stack:stop"],
+    "guarantees": [
+      "SUPABASE_TELEMETRY_DISABLED=1 on every child",
+      "hosted credential/target env variables stripped",
+      "CLI output captured and printed redacted only",
+      "hosted commands, hosted project refs, and stop --all refused",
+      "stop is project-targeted only",
+      "disabled services verified in config and as containers",
+      "loopback Docker network used at start"
+    ]
+  },
+  "isolation": {
+    "gate": "failed-closed",
+    "isolated": false,
+    "offenders": [
+      "supabase_kong_the-scenes-app 0.0.0.0:54321",
+      "supabase_kong_the-scenes-app :::54321",
+      "supabase_db_the-scenes-app 0.0.0.0:54322",
+      "supabase_db_the-scenes-app :::54322",
+      "host 0.0.0.0:54321",
+      "host 0.0.0.0:54322",
+      "host :::54321",
+      "host :::54322"
+    ],
+    "loopbackListeners": ["host ::1:54321", "host ::1:54322"],
+    "stackStoppedAfterFailure": true,
+    "containersLeftRunning": 0,
+    "hostMutationAttempted": false,
+    "rootCause": "Docker Desktop (Windows) does not honour com.docker.network.bridge.host_binding_ipv4 for published ports; confirmed with a control container on the same loopback network binding 0.0.0.0."
+  },
+  "remediationOptions": [
+    "Run the stack under a Linux Docker Engine that honours the bridge option (e.g. Docker Engine in WSL2 or a Linux host/CI runner).",
+    "Approve a scoped host-level inbound block (requires a documented gate amendment; does not make the bind loopback).",
+    "Defer the live isolation proof to a credential-free Linux environment; keep the gate fail-closed here."
+  ],
+  "artifacts": {
+    "rawGitignored": [
+      ".phase3-artifacts/wave-0a/audit-before.txt",
+      ".phase3-artifacts/wave-0a/audit-after.txt",
+      ".phase3-artifacts/wave-0a/stack-start.log",
+      ".phase3-artifacts/wave-0a/stack-start-loopback.log",
+      ".phase3-artifacts/wave-0a/diag-ps.txt",
+      ".phase3-artifacts/wave-0a/diag-kong-portbindings.txt",
+      ".phase3-artifacts/wave-0a/diag-kong-networks.txt",
+      ".phase3-artifacts/wave-0a/diag-network-options.txt"
+    ],
+    "committedRedacted": [
+      "docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md",
+      "docs/evidence/phase-3/2026-11-05-phase3a-wave0a/manifest.json"
+    ]
+  },
+  "secretsExposed": false
+}

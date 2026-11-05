@@ -9,105 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as SearchRouteImport } from './routes/search'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as NotificationsRouteImport } from './routes/notifications'
-import { Route as MyLearningRouteImport } from './routes/my-learning'
-import { Route as MarketplaceRouteImport } from './routes/marketplace'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as HomeRouteImport } from './routes/home'
-import { Route as HelpRouteImport } from './routes/help'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as ExploreRouteImport } from './routes/explore'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as MarketplaceProductIdRouteImport } from './routes/marketplace/$productId'
-import { Route as DashboardMembersRouteImport } from './routes/dashboard/members'
-import { Route as DashboardEventsRouteImport } from './routes/dashboard/events'
-import { Route as DashboardCreatorRouteImport } from './routes/dashboard/creator'
-import { Route as DashboardCoursesRouteImport } from './routes/dashboard/courses'
-import { Route as DashboardCommunityRouteImport } from './routes/dashboard/community'
-import { Route as DashboardCommerceRouteImport } from './routes/dashboard/commerce'
-import { Route as CreatorsHandleRouteImport } from './routes/creators/$handle'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as HelpRouteImport } from './routes/help'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as MyLearningRouteImport } from './routes/my-learning'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as CommunitiesCommunityIdRouteImport } from './routes/communities/$communityId'
+import { Route as CreatorsHandleRouteImport } from './routes/creators/$handle'
+import { Route as DashboardCommerceRouteImport } from './routes/dashboard/commerce'
+import { Route as DashboardCommunityRouteImport } from './routes/dashboard/community'
+import { Route as DashboardCoursesRouteImport } from './routes/dashboard/courses'
+import { Route as DashboardCreatorRouteImport } from './routes/dashboard/creator'
+import { Route as DashboardEventsRouteImport } from './routes/dashboard/events'
+import { Route as DashboardMembersRouteImport } from './routes/dashboard/members'
+import { Route as MarketplaceProductIdRouteImport } from './routes/marketplace/$productId'
 import { Route as CCommunityIdIndexRouteImport } from './routes/c/$communityId/index'
-import { Route as CCommunityIdMembersRouteImport } from './routes/c/$communityId/members'
-import { Route as CCommunityIdLeaderboardRouteImport } from './routes/c/$communityId/leaderboard'
-import { Route as CCommunityIdClassroomRouteImport } from './routes/c/$communityId/classroom'
 import { Route as CCommunityIdCalendarRouteImport } from './routes/c/$communityId/calendar'
-import { Route as CCommunityIdPostsNewRouteImport } from './routes/c/$communityId/posts/new'
-import { Route as CCommunityIdPostsPostIdRouteImport } from './routes/c/$communityId/posts/$postId'
-import { Route as CCommunityIdMembersMemberIdRouteImport } from './routes/c/$communityId/members/$memberId'
-import { Route as CCommunityIdEventsEventIdRouteImport } from './routes/c/$communityId/events/$eventId'
+import { Route as CCommunityIdClassroomRouteImport } from './routes/c/$communityId/classroom'
+import { Route as CCommunityIdLeaderboardRouteImport } from './routes/c/$communityId/leaderboard'
+import { Route as CCommunityIdMembersRouteImport } from './routes/c/$communityId/members'
 import { Route as CCommunityIdClassroomCourseIdRouteImport } from './routes/c/$communityId/classroom/$courseId'
+import { Route as CCommunityIdEventsEventIdRouteImport } from './routes/c/$communityId/events/$eventId'
+import { Route as CCommunityIdMembersMemberIdRouteImport } from './routes/c/$communityId/members/$memberId'
+import { Route as CCommunityIdPostsPostIdRouteImport } from './routes/c/$communityId/posts/$postId'
+import { Route as CCommunityIdPostsNewRouteImport } from './routes/c/$communityId/posts/new'
 import { Route as CCommunityIdClassroomCourseIdLessonIdRouteImport } from './routes/c/$communityId/classroom/$courseId/$lessonId'
 
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SearchRoute = SearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NotificationsRoute = NotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MyLearningRoute = MyLearningRouteImport.update({
-  id: '/my-learning',
-  path: '/my-learning',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MarketplaceRoute = MarketplaceRouteImport.update({
-  id: '/marketplace',
-  path: '/marketplace',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HelpRoute = HelpRouteImport.update({
-  id: '/help',
-  path: '/help',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExploreRoute = ExploreRouteImport.update({
-  id: '/explore',
-  path: '/explore',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -115,49 +55,69 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MarketplaceProductIdRoute = MarketplaceProductIdRouteImport.update({
-  id: '/$productId',
-  path: '/$productId',
-  getParentRoute: () => MarketplaceRoute,
-} as any)
-const DashboardMembersRoute = DashboardMembersRouteImport.update({
-  id: '/dashboard/members',
-  path: '/dashboard/members',
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardEventsRoute = DashboardEventsRouteImport.update({
-  id: '/dashboard/events',
-  path: '/dashboard/events',
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardCreatorRoute = DashboardCreatorRouteImport.update({
-  id: '/dashboard/creator',
-  path: '/dashboard/creator',
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardCoursesRoute = DashboardCoursesRouteImport.update({
-  id: '/dashboard/courses',
-  path: '/dashboard/courses',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardCommunityRoute = DashboardCommunityRouteImport.update({
-  id: '/dashboard/community',
-  path: '/dashboard/community',
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardCommerceRoute = DashboardCommerceRouteImport.update({
-  id: '/dashboard/commerce',
-  path: '/dashboard/commerce',
+const MyLearningRoute = MyLearningRouteImport.update({
+  id: '/my-learning',
+  path: '/my-learning',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CreatorsHandleRoute = CreatorsHandleRouteImport.update({
-  id: '/creators/$handle',
-  path: '/creators/$handle',
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommunitiesCommunityIdRoute = CommunitiesCommunityIdRouteImport.update({
@@ -165,24 +125,49 @@ const CommunitiesCommunityIdRoute = CommunitiesCommunityIdRouteImport.update({
   path: '/communities/$communityId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreatorsHandleRoute = CreatorsHandleRouteImport.update({
+  id: '/creators/$handle',
+  path: '/creators/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardCommerceRoute = DashboardCommerceRouteImport.update({
+  id: '/dashboard/commerce',
+  path: '/dashboard/commerce',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardCommunityRoute = DashboardCommunityRouteImport.update({
+  id: '/dashboard/community',
+  path: '/dashboard/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardCoursesRoute = DashboardCoursesRouteImport.update({
+  id: '/dashboard/courses',
+  path: '/dashboard/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardCreatorRoute = DashboardCreatorRouteImport.update({
+  id: '/dashboard/creator',
+  path: '/dashboard/creator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardEventsRoute = DashboardEventsRouteImport.update({
+  id: '/dashboard/events',
+  path: '/dashboard/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardMembersRoute = DashboardMembersRouteImport.update({
+  id: '/dashboard/members',
+  path: '/dashboard/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceProductIdRoute = MarketplaceProductIdRouteImport.update({
+  id: '/$productId',
+  path: '/$productId',
+  getParentRoute: () => MarketplaceRoute,
+} as any)
 const CCommunityIdIndexRoute = CCommunityIdIndexRouteImport.update({
   id: '/c/$communityId/',
   path: '/c/$communityId/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CCommunityIdMembersRoute = CCommunityIdMembersRouteImport.update({
-  id: '/c/$communityId/members',
-  path: '/c/$communityId/members',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CCommunityIdLeaderboardRoute = CCommunityIdLeaderboardRouteImport.update({
-  id: '/c/$communityId/leaderboard',
-  path: '/c/$communityId/leaderboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CCommunityIdClassroomRoute = CCommunityIdClassroomRouteImport.update({
-  id: '/c/$communityId/classroom',
-  path: '/c/$communityId/classroom',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CCommunityIdCalendarRoute = CCommunityIdCalendarRouteImport.update({
@@ -190,21 +175,26 @@ const CCommunityIdCalendarRoute = CCommunityIdCalendarRouteImport.update({
   path: '/c/$communityId/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CCommunityIdPostsNewRoute = CCommunityIdPostsNewRouteImport.update({
-  id: '/c/$communityId/posts/new',
-  path: '/c/$communityId/posts/new',
+const CCommunityIdClassroomRoute = CCommunityIdClassroomRouteImport.update({
+  id: '/c/$communityId/classroom',
+  path: '/c/$communityId/classroom',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CCommunityIdPostsPostIdRoute = CCommunityIdPostsPostIdRouteImport.update({
-  id: '/c/$communityId/posts/$postId',
-  path: '/c/$communityId/posts/$postId',
+const CCommunityIdLeaderboardRoute = CCommunityIdLeaderboardRouteImport.update({
+  id: '/c/$communityId/leaderboard',
+  path: '/c/$communityId/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CCommunityIdMembersMemberIdRoute =
-  CCommunityIdMembersMemberIdRouteImport.update({
-    id: '/$memberId',
-    path: '/$memberId',
-    getParentRoute: () => CCommunityIdMembersRoute,
+const CCommunityIdMembersRoute = CCommunityIdMembersRouteImport.update({
+  id: '/c/$communityId/members',
+  path: '/c/$communityId/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CCommunityIdClassroomCourseIdRoute =
+  CCommunityIdClassroomCourseIdRouteImport.update({
+    id: '/$courseId',
+    path: '/$courseId',
+    getParentRoute: () => CCommunityIdClassroomRoute,
   } as any)
 const CCommunityIdEventsEventIdRoute =
   CCommunityIdEventsEventIdRouteImport.update({
@@ -212,12 +202,22 @@ const CCommunityIdEventsEventIdRoute =
     path: '/c/$communityId/events/$eventId',
     getParentRoute: () => rootRouteImport,
   } as any)
-const CCommunityIdClassroomCourseIdRoute =
-  CCommunityIdClassroomCourseIdRouteImport.update({
-    id: '/$courseId',
-    path: '/$courseId',
-    getParentRoute: () => CCommunityIdClassroomRoute,
+const CCommunityIdMembersMemberIdRoute =
+  CCommunityIdMembersMemberIdRouteImport.update({
+    id: '/$memberId',
+    path: '/$memberId',
+    getParentRoute: () => CCommunityIdMembersRoute,
   } as any)
+const CCommunityIdPostsPostIdRoute = CCommunityIdPostsPostIdRouteImport.update({
+  id: '/c/$communityId/posts/$postId',
+  path: '/c/$communityId/posts/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CCommunityIdPostsNewRoute = CCommunityIdPostsNewRouteImport.update({
+  id: '/c/$communityId/posts/new',
+  path: '/c/$communityId/posts/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CCommunityIdClassroomCourseIdLessonIdRoute =
   CCommunityIdClassroomCourseIdLessonIdRouteImport.update({
     id: '/$lessonId',
@@ -487,95 +487,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search': {
-      id: '/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notifications': {
-      id: '/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof NotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/my-learning': {
-      id: '/my-learning'
-      path: '/my-learning'
-      fullPath: '/my-learning'
-      preLoaderRoute: typeof MyLearningRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/marketplace': {
-      id: '/marketplace'
-      path: '/marketplace'
-      fullPath: '/marketplace'
-      preLoaderRoute: typeof MarketplaceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/help': {
-      id: '/help'
-      path: '/help'
-      fullPath: '/help'
-      preLoaderRoute: typeof HelpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/explore': {
-      id: '/explore'
-      path: '/explore'
-      fullPath: '/explore'
-      preLoaderRoute: typeof ExploreRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -585,67 +501,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/marketplace/$productId': {
-      id: '/marketplace/$productId'
-      path: '/$productId'
-      fullPath: '/marketplace/$productId'
-      preLoaderRoute: typeof MarketplaceProductIdRouteImport
-      parentRoute: typeof MarketplaceRoute
-    }
-    '/dashboard/members': {
-      id: '/dashboard/members'
-      path: '/dashboard/members'
-      fullPath: '/dashboard/members'
-      preLoaderRoute: typeof DashboardMembersRouteImport
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/events': {
-      id: '/dashboard/events'
-      path: '/dashboard/events'
-      fullPath: '/dashboard/events'
-      preLoaderRoute: typeof DashboardEventsRouteImport
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/creator': {
-      id: '/dashboard/creator'
-      path: '/dashboard/creator'
-      fullPath: '/dashboard/creator'
-      preLoaderRoute: typeof DashboardCreatorRouteImport
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/courses': {
-      id: '/dashboard/courses'
-      path: '/dashboard/courses'
-      fullPath: '/dashboard/courses'
-      preLoaderRoute: typeof DashboardCoursesRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/community': {
-      id: '/dashboard/community'
-      path: '/dashboard/community'
-      fullPath: '/dashboard/community'
-      preLoaderRoute: typeof DashboardCommunityRouteImport
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/commerce': {
-      id: '/dashboard/commerce'
-      path: '/dashboard/commerce'
-      fullPath: '/dashboard/commerce'
-      preLoaderRoute: typeof DashboardCommerceRouteImport
+    '/my-learning': {
+      id: '/my-learning'
+      path: '/my-learning'
+      fullPath: '/my-learning'
+      preLoaderRoute: typeof MyLearningRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/creators/$handle': {
-      id: '/creators/$handle'
-      path: '/creators/$handle'
-      fullPath: '/creators/$handle'
-      preLoaderRoute: typeof CreatorsHandleRouteImport
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/communities/$communityId': {
@@ -655,32 +599,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunitiesCommunityIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/creators/$handle': {
+      id: '/creators/$handle'
+      path: '/creators/$handle'
+      fullPath: '/creators/$handle'
+      preLoaderRoute: typeof CreatorsHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/commerce': {
+      id: '/dashboard/commerce'
+      path: '/dashboard/commerce'
+      fullPath: '/dashboard/commerce'
+      preLoaderRoute: typeof DashboardCommerceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/community': {
+      id: '/dashboard/community'
+      path: '/dashboard/community'
+      fullPath: '/dashboard/community'
+      preLoaderRoute: typeof DashboardCommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/courses': {
+      id: '/dashboard/courses'
+      path: '/dashboard/courses'
+      fullPath: '/dashboard/courses'
+      preLoaderRoute: typeof DashboardCoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/creator': {
+      id: '/dashboard/creator'
+      path: '/dashboard/creator'
+      fullPath: '/dashboard/creator'
+      preLoaderRoute: typeof DashboardCreatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/events': {
+      id: '/dashboard/events'
+      path: '/dashboard/events'
+      fullPath: '/dashboard/events'
+      preLoaderRoute: typeof DashboardEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/members': {
+      id: '/dashboard/members'
+      path: '/dashboard/members'
+      fullPath: '/dashboard/members'
+      preLoaderRoute: typeof DashboardMembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/$productId': {
+      id: '/marketplace/$productId'
+      path: '/$productId'
+      fullPath: '/marketplace/$productId'
+      preLoaderRoute: typeof MarketplaceProductIdRouteImport
+      parentRoute: typeof MarketplaceRoute
+    }
     '/c/$communityId/': {
       id: '/c/$communityId/'
       path: '/c/$communityId'
       fullPath: '/c/$communityId/'
       preLoaderRoute: typeof CCommunityIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/c/$communityId/members': {
-      id: '/c/$communityId/members'
-      path: '/c/$communityId/members'
-      fullPath: '/c/$communityId/members'
-      preLoaderRoute: typeof CCommunityIdMembersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/c/$communityId/leaderboard': {
-      id: '/c/$communityId/leaderboard'
-      path: '/c/$communityId/leaderboard'
-      fullPath: '/c/$communityId/leaderboard'
-      preLoaderRoute: typeof CCommunityIdLeaderboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/c/$communityId/classroom': {
-      id: '/c/$communityId/classroom'
-      path: '/c/$communityId/classroom'
-      fullPath: '/c/$communityId/classroom'
-      preLoaderRoute: typeof CCommunityIdClassroomRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$communityId/calendar': {
@@ -690,18 +669,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CCommunityIdCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/c/$communityId/posts/new': {
-      id: '/c/$communityId/posts/new'
-      path: '/c/$communityId/posts/new'
-      fullPath: '/c/$communityId/posts/new'
-      preLoaderRoute: typeof CCommunityIdPostsNewRouteImport
+    '/c/$communityId/classroom': {
+      id: '/c/$communityId/classroom'
+      path: '/c/$communityId/classroom'
+      fullPath: '/c/$communityId/classroom'
+      preLoaderRoute: typeof CCommunityIdClassroomRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/c/$communityId/posts/$postId': {
-      id: '/c/$communityId/posts/$postId'
-      path: '/c/$communityId/posts/$postId'
-      fullPath: '/c/$communityId/posts/$postId'
-      preLoaderRoute: typeof CCommunityIdPostsPostIdRouteImport
+    '/c/$communityId/leaderboard': {
+      id: '/c/$communityId/leaderboard'
+      path: '/c/$communityId/leaderboard'
+      fullPath: '/c/$communityId/leaderboard'
+      preLoaderRoute: typeof CCommunityIdLeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/c/$communityId/members': {
+      id: '/c/$communityId/members'
+      path: '/c/$communityId/members'
+      fullPath: '/c/$communityId/members'
+      preLoaderRoute: typeof CCommunityIdMembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/c/$communityId/classroom/$courseId': {
+      id: '/c/$communityId/classroom/$courseId'
+      path: '/$courseId'
+      fullPath: '/c/$communityId/classroom/$courseId'
+      preLoaderRoute: typeof CCommunityIdClassroomCourseIdRouteImport
+      parentRoute: typeof CCommunityIdClassroomRoute
+    }
+    '/c/$communityId/events/$eventId': {
+      id: '/c/$communityId/events/$eventId'
+      path: '/c/$communityId/events/$eventId'
+      fullPath: '/c/$communityId/events/$eventId'
+      preLoaderRoute: typeof CCommunityIdEventsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$communityId/members/$memberId': {
@@ -711,19 +711,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CCommunityIdMembersMemberIdRouteImport
       parentRoute: typeof CCommunityIdMembersRoute
     }
-    '/c/$communityId/events/$eventId': {
-      id: '/c/$communityId/events/$eventId'
-      path: '/c/$communityId/events/$eventId'
-      fullPath: '/c/$communityId/events/$eventId'
-      preLoaderRoute: typeof CCommunityIdEventsEventIdRouteImport
+    '/c/$communityId/posts/$postId': {
+      id: '/c/$communityId/posts/$postId'
+      path: '/c/$communityId/posts/$postId'
+      fullPath: '/c/$communityId/posts/$postId'
+      preLoaderRoute: typeof CCommunityIdPostsPostIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/c/$communityId/classroom/$courseId': {
-      id: '/c/$communityId/classroom/$courseId'
-      path: '/$courseId'
-      fullPath: '/c/$communityId/classroom/$courseId'
-      preLoaderRoute: typeof CCommunityIdClassroomCourseIdRouteImport
-      parentRoute: typeof CCommunityIdClassroomRoute
+    '/c/$communityId/posts/new': {
+      id: '/c/$communityId/posts/new'
+      path: '/c/$communityId/posts/new'
+      fullPath: '/c/$communityId/posts/new'
+      preLoaderRoute: typeof CCommunityIdPostsNewRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/c/$communityId/classroom/$courseId/$lessonId': {
       id: '/c/$communityId/classroom/$courseId/$lessonId'

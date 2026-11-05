@@ -274,3 +274,65 @@ The long-term architecture direction is millions of registered accounts over tim
 simultaneous users. Designs must avoid known scaling dead ends and define measurable staged capacity,
 latency, reliability, cost and recovery targets. No document or agent may guarantee issue-free scale;
 claims require representative load, failure and restore evidence under stated conditions.
+
+## ADR-037 — Phase 3 revision-2 implementation boundary
+
+Status: Superseded by ADR-038 after independent review (5 November 2026)
+
+The Phase 3 specification and file-by-file plan were reviewed against the current frontend and current
+official TanStack Start/Supabase guidance. Revision 2 corrects the session, CSRF, cache/cookie, RLS,
+grants, private-community, atomic command, audit, seed, serialization, testing and numeric proof gaps
+recorded in `docs/PHASE-3-PLAN-REVIEW.md`.
+
+The founder's 5 November instruction approves implementation only after the review fixes and Gate A
+evidence. The authorized target is a local Supabase proof with no hosted project, hosted credentials,
+production data, deployment, payment, email, file/video/live, referral, marketplace or AI action.
+
+The authorized history scan then found legacy hosted Supabase/JWT material, including a historical
+service-key variable. Therefore Wave 1 remains blocked until the account owner confirms revocation or
+rotation. The current working tree scan is clean. This credential response does not authorize a Git
+history rewrite or any remote provider/GitHub settings mutation.
+
+## ADR-038 — Phase 3A revision-3 re-planning boundary
+
+Status: Proposed; re-review and founder approval required (5 November 2026)
+
+Five independent read-only reviews found that revision 2 left material behavior to be invented during
+implementation: identity/onboarding coherence, field-level curriculum access, cross-workspace
+constraints, exact DDL/lifecycle, deterministic catalogue actors, Auth-trigger privilege, fixture/local
+mode separation, local network isolation, cookie/logout behavior, error containment, affected files,
+test/CI/load harnesses and recovery semantics.
+
+Revision 3 is now the proposed implementation contract:
+
+- `docs/PHASE-3-REVISION-3-SPEC.md`;
+- `docs/PHASE-3-DATA-AUTHORIZATION-CONTRACT.md`;
+- `docs/PHASE-3-IMPLEMENTATION-PLAN-R3.md`;
+- `docs/PHASE-3-VERIFICATION-RUNBOOK.md`;
+- `docs/PHASE-3-REVISION-3-REVIEW.md`.
+
+The founder subsequently approved the six revision-3 product rules and isolated local implementation;
+see ADR-039. Final technical re-review and local isolation evidence still gate implementation. No
+hosted action, deployment or production use is approved.
+
+## ADR-039 — Fresh-provider accounts, local-first testing, and legacy retirement
+
+Status: Accepted (5 November 2026)
+
+The founder approved these environment/provider rules:
+
+1. Old Supabase/provider accounts, projects and credentials are retired and must never be copied,
+   tested, reused or migrated into new work.
+2. Phase 3A uses a completely isolated local Supabase stack and fictional data for implementation and
+   verification. No hosted account is needed for this proof.
+3. When a later approved phase genuinely needs hosted/staging/production integration, it uses a new
+   business-controlled account and newly generated credentials for that environment.
+4. Local testing, security checks, recovery rehearsal and controlled staging evidence happen before
+   production approval. A provider direction is not permission to create a production resource.
+5. If a retired legacy hosted project still exists, its revocation/deletion and log review remain an
+   urgent parallel incident action. By explicit founder decision this does not block credential-free,
+   loopback-isolated local work, but it blocks reuse and every hosted/production promotion.
+6. The founder approved the revision-3 product rules: listed/public/open self-join; membership loss
+   locks included content while preserving progress; allowed rejoin restores access; Phase 3A courses
+   are community-scoped; creator selection is intent/preview only; later-phase surfaces remain clearly
+   fixture-labelled.

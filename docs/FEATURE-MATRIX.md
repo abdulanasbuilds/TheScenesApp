@@ -153,7 +153,7 @@ Cross-reference: All requirement IDs are defined in `docs/PRODUCT-REQUIREMENTS.m
 | 0 — Governance                   | **BUILT / ONGOING**           | Agent contract, docs, CI, architecture decisions    |
 | 1 — Design exploration           | **DESIGNED**                  | Reference-informed direction implemented in code    |
 | 2 — Frontend with fixtures       | **BUILT — ACCEPTED**          | 30 primary pages, responsive shells and local flows |
-| 3 — Backend foundation           | **PLANNING — GATE A**         | Approved local proof; spec/security gates pending   |
+| 3A — Local backend proof         | **FOUNDER APPROVED — FINAL TECHNICAL REVIEW** | Isolated local learner proof; no hosted provider    |
 | 4 — Email/files/notifications    | NOT STARTED                   | Resend, PWA, Redis; conditional narrow R2 use       |
 | 5 — Creator operations           | NOT STARTED                   | Teacher flows, referrals, messaging, moderation     |
 | 6 — Live/media/storage providers | DEFERRED (ADR-029)            | Conditional adapters; new decision required         |
@@ -164,6 +164,10 @@ Cross-reference: All requirement IDs are defined in `docs/PRODUCT-REQUIREMENTS.m
 
 > Next actionable work (the Gate A pre-Phase-3 blockers, then Phase 3) is ordered in
 > `docs/PHASES.md` → "Next work — ordered (4 November 2026)".
+
+Broad requirements historically assigned to "Phase 3" do not all belong to Phase 3A. Password-email
+delivery, global creator/admin roles, live search, administration and other provider-backed operations
+remain in their later approved phases. Only the revision-3 local learner slice may move through Gate A.
 
 ## Update rule
 

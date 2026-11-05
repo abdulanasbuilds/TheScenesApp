@@ -1,15 +1,20 @@
 # The Scenes — Build Phases
 
-## Current implementation checkpoint — 4 November 2026
+## Current implementation checkpoint — 5 November 2026
 
 The user explicitly accepted the complete fixture-backed frontend on 4 November 2026. **Phase 2 is
-accepted**, while Phase 3 implementation waits for the remaining Gate A safety work. All 30 requested
-primary route types are implemented and browser-verified; see
-`docs/FRONTEND-IMPLEMENTATION-AUDIT.md`.
+accepted.** All 30 requested primary route types are implemented; the current baseline passes 26
+Playwright checks with 4 intentional viewport skips. On 5 November, five independent read-only reviews
+found that the Phase 3 revision-2 plan was not safe to implement literally. Revision 3 is drafted and
+must pass re-review and founder approval. See `docs/FRONTEND-IMPLEMENTATION-AUDIT.md` and
+`docs/PHASE-3-REVISION-3-REVIEW.md`.
 
-This checkpoint authorizes Phase 3 planning and, after its remaining gates pass, a local-only
-Supabase proof. It does not authorize hosted/production authentication, payments, payouts, provider
-credentials or deployment.
+This checkpoint authorizes documentation and configuration-safety corrections only. It does not
+authorize a Supabase stack start, migration, hosted/production authentication, payments, payouts,
+provider credentials or deployment. The founder has now approved isolated local implementation and
+the six revision-3 product rules. A local proof may begin after final technical re-review and the
+clean-install/loopback/listener stack gates. Legacy hosted cleanup is tracked separately and every old
+account/credential is forbidden.
 
 ## Mandatory planning gate — every phase
 
@@ -21,11 +26,14 @@ measurable performance/load targets.
 The long-term architecture target is millions of registered accounts over time. This is not a claim
 of millions of simultaneous users or issue-free operation. Capacity claims require staged evidence.
 
-Phase 3's planning artifacts are `docs/PHASE-3-BACKEND-SPEC.md` (what and why) and
-`docs/PHASE-3-IMPLEMENTATION-PLAN.md` (file-by-file build order, migrations, RLS, server functions,
-per-wave gates). They remain in PLANNING until their blockers and approval records are complete.
+Phase 3A revision 3 is defined by `docs/PHASE-3-REVISION-3-SPEC.md`,
+`docs/PHASE-3-DATA-AUTHORIZATION-CONTRACT.md`, `docs/PHASE-3-IMPLEMENTATION-PLAN-R3.md`, and
+`docs/PHASE-3-VERIFICATION-RUNBOOK.md`. Revision 2 is historical evidence, not implementation
+authority. Revision 3 has founder approval for isolated local work and remains in final technical
+Review. `docs/SECURITY-SCAN-RESULTS.md` remains the separate legacy incident record; it blocks reuse and
+all hosted/production promotion, not the newly authorized credential-free local proof.
 
-## Next work — ordered (4 November 2026)
+## Next work — ordered (5 November 2026)
 
 Frontend (Phase 2) is accepted. The next actionable items are listed in order.
 Items marked **[FOUNDER]** need a business decision first; see `docs/FOUNDER-DECISIONS-REQUIRED.md`.
@@ -35,26 +43,32 @@ Items marked **[FOUNDER]** need a business decision first; see `docs/FOUNDER-DEC
 1. **BUSINESS DECISIONS RESOLVED:** external embedding, a 7% Free sales fee, Pro at $19 / GH₵300 and
    Pro Plus at $39 / GH₵620 are approved. Create one authoritative current cost model and reconcile
    the older pricing documents before Phase 7. (ADR-029–030; REVIEW-ACTION-PLAN 4.2)
-2. **AWAITING AUTHORITY:** run a local secret scan over the full Git history; separately authorize any
-   GitHub setting changes such as secret scanning and push protection. (4.1)
+2. **SCAN COMPLETED — LEGACY RETIRED:** checksum-verified Gitleaks found zero current-tree findings and
+   13 redacted historical Supabase/JWT findings. The founder permanently retired every old
+   account/credential and authorized a credential-free local proof. If a legacy project still exists,
+   revocation/deletion/log review remains a parallel incident and hosted/production blocker. GitHub
+   setting changes remain separately authorized.
 3. **COMPLETED:** Bun is the sole package manager, `packageManager` is pinned, and the redundant npm
    lockfile is removed. A fresh-install verification still belongs in the final Gate A check. (4.4)
-4. **AWAITING AUTHORITY:** expand `SECURITY-RULES.md`: permission table, embed policy,
-   XSS/sanitization, privacy/retention and admin 2FA. (4.10)
-5. **LOCAL PROOF APPROVED:** `docs/DATA-LAYER-RESEARCH.md` recommends Supabase and the founder approved
-   it for the bounded local-only Phase 3 proof, with Neon as runner-up. Production provider, region,
-   backup/recovery target and budget remain open. Keep development on free tiers and upgrade
-   Cloudflare only when measured need justifies it. (ADR-032–033; REVIEW-ACTION-PLAN 4.5, 4.6)
+4. **COMPLETED:** `SECURITY-RULES.md` now contains numbered/testable rules, the Phase 3 permission
+   matrix, session/CSRF/RLS/function controls, embed/XSS, privacy/retention and future admin MFA. (4.10)
+5. **PROVIDER DIRECTION SELECTED; SLICE IN REVIEW:** `docs/DATA-LAYER-RESEARCH.md` recommends Supabase
+   for the bounded local-only Phase 3A proof, with Neon as runner-up. Revision 3 still needs re-review
+   and founder approval. Production provider, region, backup/recovery target and budget remain open.
+   (ADR-032–033; REVIEW-ACTION-PLAN 4.5, 4.6)
 6. Redesign referral rewards as an append-only ledger with atomic crediting; depends on item 1. (4.7)
+7. **FRONTEND BASELINE COMPLETED:** runtime Google Fonts were removed and local Playwright concurrency
+   was bounded; regression is green (26 passed, 4 intentional skips). Docker/CLI discovery was
+   recorded, but the actual unlinked local stack may not start until revision 3 and Gate A pass.
 
-**Gate B — Phase 3 backend foundation (only after Gate A and explicit approval; still no payments).**
+**Gate B — Phase 3A backend proof (only after revision-3 approval and Gate A; still no payments).**
 
 Approved first slice (ADR-035): sign up/login → profile → community membership → course enrolment →
 lesson completion → reload and observe persisted progress.
 
 - Supabase Auth (signup/login/session) with server-side authorization;
 - PostgreSQL core schema with RLS/policies;
-- learning-progress persistence and realtime where justified;
+- learning-progress persistence; Realtime is explicitly deferred from this first slice;
 - validated external resource/link metadata and a server-only provider adapter boundary;
 - connect the already-built fixture routes to real data behind internal adapters.
 

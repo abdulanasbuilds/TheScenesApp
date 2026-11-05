@@ -33,8 +33,15 @@ This directory is the durable operating memory for the project.
 27. [Environment and Cost Guardrails](./ENVIRONMENT-AND-COST-GUARDRAILS.md) ï¿½ cost/security safety
 28. [Data Layer and Platform Research](./DATA-LAYER-RESEARCH.md) — current PostgreSQL/provider comparison and proposed data model
 29. [Mandatory Phase Planning Gate](./PHASE-PLANNING-GATE.md) — required planning, scale, security and verification contract before every phase
-30. [Phase 3 Backend Specification](./PHASE-3-BACKEND-SPEC.md) — local-only Supabase learning-slice plan; implementation not yet approved
-31. [Phase 3 Implementation Plan](./PHASE-3-IMPLEMENTATION-PLAN.md) — file-by-file build order, migrations, RLS, server functions and wave gates
+30. [Phase 3A Revision 3 Specification](./PHASE-3-REVISION-3-SPEC.md) — founder-approved isolated local learning slice; final technical review pending
+31. [Phase 3A Data and Authorization Contract](./PHASE-3-DATA-AUTHORIZATION-CONTRACT.md) — exact schema, lifecycle, grants and RLS decisions
+32. [Phase 3A Revision 3 Implementation Plan](./PHASE-3-IMPLEMENTATION-PLAN-R3.md) — proposed file/wave build order; not yet approved
+33. [Phase 3A Verification Runbook](./PHASE-3-VERIFICATION-RUNBOOK.md) — executable CI, security, load and recovery gates
+34. [Phase 3 Revision 3 Review](./PHASE-3-REVISION-3-REVIEW.md) — independent findings, corrections and re-review status
+35. [Phase 3 Revision 2 Specification (historical)](./PHASE-3-BACKEND-SPEC.md)
+36. [Phase 3 Revision 2 Implementation Plan (historical)](./PHASE-3-IMPLEMENTATION-PLAN.md)
+37. [Phase 3 Revision 2 Plan Review (historical)](./PHASE-3-PLAN-REVIEW.md)
+38. [Security Scan Results](./SECURITY-SCAN-RESULTS.md) — redacted scan evidence and required historical credential response
 
 ## Documentation hierarchy
 
@@ -50,8 +57,15 @@ AGENTS.md
       +-- SECURITY-RULES.md
       +-- PHASES.md
       +-- PHASE-PLANNING-GATE.md
-      +-- PHASE-3-BACKEND-SPEC.md
-      +-- PHASE-3-IMPLEMENTATION-PLAN.md
+      +-- PHASE-3-REVISION-3-SPEC.md
+      +-- PHASE-3-DATA-AUTHORIZATION-CONTRACT.md
+      +-- PHASE-3-IMPLEMENTATION-PLAN-R3.md
+      +-- PHASE-3-VERIFICATION-RUNBOOK.md
+      +-- PHASE-3-REVISION-3-REVIEW.md
+      +-- PHASE-3-BACKEND-SPEC.md              (revision 2 historical)
+      +-- PHASE-3-IMPLEMENTATION-PLAN.md        (revision 2 historical)
+      +-- PHASE-3-PLAN-REVIEW.md                (revision 2 historical)
+      +-- SECURITY-SCAN-RESULTS.md
       +-- DATA-LAYER-RESEARCH.md
       +-- TOOLING.md
       +-- CI-CONTRACT.md
@@ -115,16 +129,20 @@ AGENTS.md
    - Mandatory specification and approval gate before implementation
    - Scale, security, reliability, cost and verification requirements
 
-2. **[FOLDER-STRUCTURE.md](./FOLDER-STRUCTURE.md)**
+2. **[PHASE-3-REVISION-3-SPEC.md](./PHASE-3-REVISION-3-SPEC.md)** and child contracts
+   - Proposed Phase 3A identity, access, data-mode and local-proof contract
+   - Re-review and founder approval are still required; revision 2 is historical only
+
+3. **[FOLDER-STRUCTURE.md](./FOLDER-STRUCTURE.md)**
    - Repository organization
    - Import rules
    - File naming conventions
 
-3. **[BUILD-CONTRACT.md](./BUILD-CONTRACT.md)**
+4. **[BUILD-CONTRACT.md](./BUILD-CONTRACT.md)**
    - Build requirements
    - Verification checklist
 
-4. **[TESTING-AND-QUALITY.md](./TESTING-AND-QUALITY.md)**
+5. **[TESTING-AND-QUALITY.md](./TESTING-AND-QUALITY.md)**
    - Testing strategy
    - E2E with Playwright
    - Quality gates

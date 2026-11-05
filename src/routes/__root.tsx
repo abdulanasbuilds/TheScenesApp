@@ -16,15 +16,7 @@ export const Route = createRootRoute({
       },
       { title: "The Scenes — Learn, build and belong" },
     ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap",
-      },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
   }),
   component: RootComponent,
   notFoundComponent: NotFound,

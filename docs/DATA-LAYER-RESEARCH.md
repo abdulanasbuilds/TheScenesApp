@@ -3,7 +3,8 @@
 **Research date:** 4 November 2026  
 **Scope:** architecture and provider evaluation only  
 **Implementation status:** no database, authentication service, provider account or secret was created  
-**Decision status:** Supabase is approved for a local-only proof; implementation waits for remaining Gate A safety work
+**Decision status:** Supabase is founder-approved for the isolated local Phase 3A proof; revision 3
+must pass final technical review and local-isolation Gate A before implementation
 
 ## Executive conclusion
 

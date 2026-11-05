@@ -1,0 +1,2 @@
+-- Phase 3A Wave 0 intentionally has no database seed yet.
+-- Wave 1 adds deterministic fictional catalogue actors and content after migrations exist.

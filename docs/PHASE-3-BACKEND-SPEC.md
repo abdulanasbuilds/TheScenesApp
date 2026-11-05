@@ -1,7 +1,13 @@
-# The Scenes — Phase 3 Backend Foundation Specification
+# The Scenes — Phase 3 Backend Foundation Specification (Revision 2 — Historical)
 
-**Status:** PLANNING — implementation blocked by review and outstanding Gate A safety work  
+> **Superseded for implementation:** Five independent reviews found material identity, access,
+> schema, data-mode, verification, isolation, and recovery gaps in revision 2. The proposed canonical
+> replacement is `PHASE-3-REVISION-3-SPEC.md` and its child contracts. This file remains review history
+> and does not authorize implementation.
+
+**Status:** SUPERSEDED — NOT IMPLEMENTATION AUTHORITY
 **Created:** 4 November 2026  
+**Technical review completed:** 5 November 2026
 **Approved platform boundary:** local-only Supabase proof-of-fit  
 **Approved first slice:** full learning persistence flow  
 **Production/remote authorization:** none  
@@ -84,26 +90,30 @@ The architecture must leave a credible path to **millions of registered accounts
 not a requirement for millions of simultaneous sessions and is not a claim that the local proof has
 demonstrated production capacity.
 
-### Parameters that must be measured before a hosted/production decision
+### Local proof envelope and pass targets
 
-The proof report must define or propose values for:
+These are **engineering proof targets**, not production forecasts or promises. The evidence report must
+record the machine, Docker/CLI/database versions, dataset size, warm-up, command, duration, concurrency,
+and raw result location so the numbers are reproducible.
 
-- registered accounts and annual growth;
-- MAU/DAU and learner-to-creator ratio;
-- peak concurrent sessions;
-- peak/sustained request rate and read/write mix;
-- average communities joined per learner;
-- average posts/comments per community and retention;
-- courses/modules/lessons per workspace;
-- enrolments and progress rows per active learner;
-- geographic traffic distribution;
-- realtime connection/message needs;
-- p50/p95/p99 latency and acceptable error rate;
-- recovery-point and recovery-time objectives;
-- monthly infrastructure budget at launch and growth stages.
+| Measure | Local proof target |
+|---|---|
+| Representative data | 10,000 profiles; 500 workspaces; 1,000 communities; 2,000 courses; 20,000 lessons; 25,000 community memberships; 30,000 enrolments; 150,000 progress rows |
+| Bounded list defaults/maxima | 24 default; 50 hard maximum; keyset cursor only for growing lists |
+| Request mix | 80% reads / 20% idempotent writes across catalogue, membership, enrolment and progress paths |
+| Sustained run | 25 concurrent sessions, 25 requests/second for 5 minutes after warm-up |
+| End-to-end latency | reads p95 ≤ 500 ms and p99 ≤ 1,000 ms; writes p95 ≤ 750 ms and p99 ≤ 1,500 ms on the documented local machine |
+| Database latency | approved indexed queries p95 ≤ 75 ms after warm-up; no unexplained sequential scan over a growing membership/enrolment/progress table |
+| Error rate | < 1% unexpected 5xx/transport errors; expected validation/auth denials are reported separately |
+| Correctness under retry | zero duplicate memberships, enrolments, completions, or audit events for the tested command/retry keys |
+| Bounded overload | a short 100-concurrent-request probe may slow or reject cleanly, but must not corrupt state, leak data, exhaust the app permanently, or produce unhandled process failures |
+| Reset/recovery | clean reset + seed ≤ 10 minutes; local logical restore ≤ 15 minutes; row-count/checksum reconciliation passes |
+| Cost | $0 provider spend; local CPU, peak memory, database size, and Docker disk use are recorded |
 
-Those values are not invented in this specification. A hosted pilot/load plan requires founder review
-after local correctness is proven.
+If the available local machine cannot sustain this dataset, the report records the largest completed
+dataset and the exact resource constraint. That is a failed/unresolved capacity criterion, not a reason
+to lower the target silently. A hosted pilot still requires separate founder review and must add real
+launch assumptions for accounts, MAU/DAU, regions, production concurrency, RPO/RTO, and budget.
 
 ### Scale-safe choices required now
 
@@ -155,6 +165,14 @@ Rules:
 5. Route components depend on application interfaces, not Supabase directly.
 6. Browser-direct database writes are not the default for the proof.
 7. External lesson/resource URLs are validated; no provider access token is stored in content rows.
+8. Defining `src/start.ts` must explicitly preserve TanStack Start's CSRF middleware for server
+   functions.
+9. Server identity checks use Supabase `auth.getClaims()`; unverified `getSession()` data is never an
+   authorization source.
+10. Authenticated/session-changing responses are `no-store`, and all cookie/cache headers returned by
+    `@supabase/ssr` are propagated.
+11. User commands use narrowly granted, caller-bound database functions for atomic/idempotent writes;
+    direct table writes for membership, enrolment, progress, and audit rows remain revoked.
 
 ## 7. Initial domain model
 
@@ -164,7 +182,7 @@ Detailed rationale and later-phase boundaries are in `docs/DATA-LAYER-RESEARCH.m
 
 | Table | Purpose | Critical constraints |
 |---|---|---|
-| `profiles` | public-safe application profile linked to Auth | Auth ID primary/foreign key; unique normalized handle |
+| `profiles` | application/public profile linked to Auth | Auth ID primary/foreign key; unique normalized handle; no email/role/secret fields; status not client writable |
 | `workspaces` | stable creator/tenant root | constrained kind/status; created-by identity |
 | `workspace_memberships` | scoped creator-team authorization | unique workspace/user; controlled role/status; owner invariant |
 | `categories` | expandable taxonomy | unique normalized slug; active/sort state |
@@ -177,7 +195,7 @@ Detailed rationale and later-phase boundaries are in `docs/DATA-LAYER-RESEARCH.m
 | `lesson_resources` | validated external learning link | lesson FK; kind/order; safe URL policy |
 | `course_enrollments` | learner access/state | unique course/user; controlled status/source |
 | `lesson_progress` | learner lesson state | unique enrolment/lesson; lesson belongs to enrolled course |
-| `audit_events` | privileged/security-relevant history | append-only; actor/action/target/correlation |
+| `private.audit_events` | privileged/security-relevant history | append-only; no direct Data API grants; controlled command/trigger inserts only |
 
 ### Data conventions
 
@@ -189,15 +207,23 @@ Detailed rationale and later-phase boundaries are in `docs/DATA-LAYER-RESEARCH.m
 - durable/audit history is restricted rather than silently cascaded;
 - no money tables in Phase 3;
 - JSONB only for versioned, validated content metadata—not relationships or permissions.
+- exposed tables have RLS plus explicit grants in the same migration;
+- internal RLS helpers live in the unexposed `private` schema;
+- `SECURITY DEFINER` is exceptional, caller-bound, search-path-pinned and directly tested;
+- lesson content includes an explicit schema version and does not accept raw HTML in this phase.
 
 ## 8. Core workflows and invariants
 
 ### Authentication/session
 
 - local signup creates an Auth identity and an application profile through an idempotent, tested path;
-- server code validates/refreshes the session using the official SSR pattern;
+- server code validates/refreshes the session using `@supabase/ssr`'s current `getAll`/`setAll`
+  cookie contract and verifies identity with `auth.getClaims()`;
 - logout revokes/clears the session cookie;
 - no role/tenant authority comes from editable profile metadata;
+- signup/sign-in functions return a safe profile/result, never raw access or refresh tokens;
+- the local proof accepts only `http://127.0.0.1`/`http://localhost` Supabase URLs and a publishable
+  key; a hosted URL or app secret/service-role key fails closed;
 - local email tooling only; no claim of production email delivery.
 
 ### Community membership
@@ -207,6 +233,8 @@ Detailed rationale and later-phase boundaries are in `docs/DATA-LAYER-RESEARCH.m
 - a public join command is idempotent;
 - banned/paused membership is not treated as active;
 - a learner cannot assign their own elevated role;
+- direct membership table writes are revoked; an authenticated `join_community`/`leave_community`
+  command derives the user from `auth.uid()`, enforces state and records the mutation atomically;
 - membership role changes are outside the learner proof except deterministic seed/setup.
 
 ### Enrolment
@@ -216,6 +244,8 @@ Detailed rationale and later-phase boundaries are in `docs/DATA-LAYER-RESEARCH.m
 - the client cannot enrol another user by submitting a user ID;
 - paid-course entitlement is not implemented while payments are held; proof courses are free/included
   fixture equivalents.
+- published content inside a private community is not public merely because its course status is
+  `published`; community visibility/membership is part of every course/module/lesson/resource policy.
 
 ### Lesson completion
 
@@ -225,6 +255,9 @@ Detailed rationale and later-phase boundaries are in `docs/DATA-LAYER-RESEARCH.m
 - server/database sets authoritative timestamps;
 - progress cannot be written for another learner;
 - derived course percentage is calculated/reconciled from lesson progress, not trusted from a client.
+- the database command accepts only a lesson identifier (plus non-authoritative request correlation),
+  derives the caller/enrolment/course, sets timestamps, upserts idempotently and records audit history
+  in one transaction.
 
 ## 9. Server/API contract direction
 
@@ -233,13 +266,16 @@ set is:
 
 | Operation | Input | Output | Important failures |
 |---|---|---|---|
+| `signUpWithPassword` | bounded email, password, handle, display name | safe profile/result; cookies set server-side | duplicate/invalid identity or handle, weak password |
+| `signInWithPassword` | bounded email, password | safe profile/result; cookies set server-side | invalid credentials (one public message) |
+| `signOutCurrentSession` | session only | ok; cookies cleared | invalid/expired session remains safely signed out |
 | `getSessionProfile` | session only | public-safe profile + scoped capabilities | unauthenticated, profile missing |
-| `updateOwnProfile` | allowed profile fields | updated public-safe profile | invalid handle, duplicate handle, forbidden field |
+| `updateOwnProfile` | display name, headline, bio, location, avatar URL | updated public-safe profile | invalid field or forbidden mutation; handle/status are immutable in this slice |
 | `listCommunities` | cursor, category, visibility-safe filters | bounded page + next cursor | invalid cursor/filter |
 | `joinCommunity` | community ID/slug | membership and whether it was newly created | unauthenticated, private/invite required, blocked |
 | `getCourse` | course ID/slug | accessible course/module/lesson outline | not found or not authorized without resource leak |
 | `enrolInCourse` | course ID | existing/new enrolment | inaccessible/unpublished course |
-| `completeLesson` | enrolment ID + lesson ID | authoritative lesson/course progress | wrong learner, wrong course, no enrolment |
+| `completeLesson` | lesson ID | authoritative lesson/course progress | wrong course or no active own enrolment |
 | `getMyLearning` | cursor/status | bounded enrolment/progress projection | unauthenticated, invalid cursor |
 
 Contract rules:
@@ -251,6 +287,10 @@ Contract rules:
 - request IDs in logs and safe error responses;
 - mutations are idempotent by natural unique key or explicit idempotency key;
 - no stack traces, SQL text, tokens or sensitive row data in user-facing errors.
+- server functions use a serializable discriminated result/error envelope with a stable code, safe
+  message and request ID; provider/database errors are mapped and logged only in redacted form.
+- private results set `Cache-Control: no-store`; public anonymous catalogue reads may use a separately
+  reviewed cache policy only after they are proven identity-independent.
 
 ## 10. Authorization matrix
 
@@ -286,22 +326,18 @@ Initial indexes are hypotheses to verify with synthetic representative data:
 No endpoint may fetch an unbounded membership, course or learning list. The implementation review must
 look for N+1 access and verify important queries with `EXPLAIN (ANALYZE, BUFFERS)` using synthetic data.
 
-## 12. Realtime plan
+## 12. Realtime decision
 
-Realtime is not required to prove persistence. Add it only after normal requests and RLS pass.
-
-Potential proof use: notify the same learner session that lesson progress changed. If tested:
-
-- private channels only;
-- authorized topic naming that cannot be switched to another user/community;
-- bounded subscriptions and cleanup on navigation/logout;
-- no broadcast of full private records when a small invalidation event is enough;
-- test revoked membership/session behavior;
-- measure connection/message use rather than assuming the free tier is capacity.
+Realtime is **not implemented in this slice**. Persistence, refresh, and a new authenticated session
+prove the approved outcome without another authorization/cost boundary. A future amendment must define
+private-channel authorization, revocation, bounded subscriptions, payload minimization, cleanup, and
+measured connection/message limits before adding Realtime.
 
 ## 13. Reliability, migration and recovery
 
 - migrations and grants/policies are reviewed together and committed in order;
+- every table migration enables RLS and applies explicit grants/policies immediately; security is not
+  deferred to a final catch-all migration;
 - a clean local reset must rebuild the complete schema and deterministic seed;
 - applied migrations are never edited as a shortcut;
 - destructive migration paths require expand/migrate/contract and separate approval;
@@ -310,6 +346,8 @@ Potential proof use: notify the same learner session that lesson progress change
 - define production RPO/RTO before a hosted launch decision;
 - write commands so retries do not duplicate membership, enrolment or progress;
 - future external side effects use an outbox/job boundary rather than “database write then hope.”
+- seed data contains platform-owned catalogue rows only; end-to-end learner accounts are created
+  through the real signup flow, avoiding brittle direct writes into Supabase Auth internals.
 
 ## 14. Observability plan
 
@@ -330,6 +368,7 @@ The local proof should establish interfaces, not purchase an observability stack
 
 - format/lint/typecheck/build;
 - secret scan completed before credentials exist;
+- deterministic frontend baseline test passes without external font/network dependencies;
 - server-only import boundary test;
 - generated database types match migrations.
 
@@ -355,13 +394,12 @@ The local proof should establish interfaces, not purchase an observability stack
 
 ### Performance and scale evidence
 
-- generate synthetic users, memberships, courses, lessons, enrolments and progress at a documented
-  local-test scale;
+- generate the representative dataset in Section 5 without real identities or provider calls;
 - record machine/runtime/database settings and dataset size;
 - benchmark approved read/write paths, not artificial “hello world” queries;
 - capture throughput, p50/p95/p99 latency, error rate and query plans;
 - test overload/connection exhaustion behavior at a bounded local level;
-- compare results against phase targets set during Review;
+- compare results against the numeric targets in Section 5;
 - never extrapolate a local result into a “supports millions” production claim.
 
 ## 16. Implementation sequence after approval gates
@@ -370,9 +408,9 @@ The concrete file-by-file order, migrations, RLS policies, server functions and 
 [PHASE-3-IMPLEMENTATION-PLAN.md](./PHASE-3-IMPLEMENTATION-PLAN.md). The sequence there supersedes this
 summary; both must pass the planning gate before Wave 0 starts.
 
-1. Complete/authorize outstanding Gate A security work.
-2. Review this specification and fill the measurable proof targets.
-3. Inspect local Docker/container and Supabase CLI capability.
+1. Complete the remaining Gate A safety evidence.
+2. Run and record the full-history/working-tree secret scan with redaction.
+3. Start the local Docker engine and verify the pinned Supabase CLI capability.
 4. Add local-only Supabase configuration and lock dependency versions.
 5. Write the first schema migration, grants, RLS and tests together.
 6. Add deterministic fictional seeds.
@@ -400,24 +438,28 @@ Phase 3 proof is accepted only when:
 - all required checks pass and the final diff is reviewed;
 - production provider, budget, region and deployment remain untouched unless separately approved.
 
-## 18. Blockers and decisions before implementation
+## 18. Remaining start blockers
 
-1. Full-history local secret scan is not yet authorized/completed.
-2. Expanded security rules/permission/privacy/embed policy is not yet authorized/completed.
-3. This specification needs founder review after measurable local proof targets are filled.
-4. Local Docker/Supabase CLI capability has not yet been established.
-5. Production provider/region/backup budget is deliberately deferred and does not block local
-   planning, but it blocks hosted production.
+1. The checksum-verified scan completed: the working tree has zero findings, but Git history has 13
+   redacted legacy Supabase/JWT findings, including a historical service-key variable. The owning
+   account must confirm revocation/rotation before Wave 1. See `docs/SECURITY-SCAN-RESULTS.md`.
+2. Docker engine `29.9.2` is now running and Supabase CLI `3.0.0` executes locally. Starting the actual
+   local stack remains the final credential-free capability check after the history credential gate.
+3. Frontend baseline is now deterministic after removing Google Fonts and limiting local Playwright to
+   three workers: 26 passed, 4 intentionally skipped, 0 failed.
+4. Production provider/region/backup budget, legal/privacy retention and numeric production RPO/RTO
+   are deliberately deferred. They do not block the local proof and do block hosted production.
 
 ## 19. Approval record
 
 ```text
-Planning status: DRAFT / PLANNING
-Founder approval: NOT YET APPROVED FOR IMPLEMENTATION
-Approved platform boundary: local-only Supabase proof
-Approved first vertical slice: full learning persistence journey
+Historical planning status: REVIEWED on 5 November 2026; later superseded
+Historical founder record: prior conditional approval applied only to revision 2 and is superseded
+Historical scope version/date: Phase 3 local proof, revision 2 / 5 November 2026
+Historical platform boundary: local-only Supabase proof
+Historical first vertical slice: full learning persistence journey
 Production actions authorized: NONE
-Known blockers: secret scan; security-rule expansion; measurable proof targets; plan review
+Known blockers at supersession: revision-3 review/approval plus account-owner credential confirmation
 Required re-review triggers: provider, scope, auth model, tenant boundary, production/remote use,
 payments, native files/video/live, or material scale/cost change
 ```

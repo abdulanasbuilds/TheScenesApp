@@ -61,7 +61,8 @@ This document defines the strict rules for managing environments, costs, secrets
 - Runs on `localhost:5000`
 - Uses fixture data (Phase 2)
 - No real provider credentials (Phase 2)
-- Real provider test accounts (Phase 3+, free tiers only)
+- Phase 3A uses only the disposable local Supabase stack after its revision-3 and safety gates pass;
+  no hosted provider test account or remote credential is authorized
 
 ### Staging (Cloudflare Pages preview)
 
@@ -250,6 +251,8 @@ Use Redis for:
 - Owned by The Scenes (business entity)
 - Credentials in approved secret storage
 - Shared team access where appropriate
+- Legacy accounts/credentials are retired and never reused; each later approved hosted phase creates a
+  new business-controlled account and fresh environment-specific credentials
 
 ### Production accounts
 
@@ -338,9 +341,12 @@ For every provider integration:
 
 ### Phase 3 (Backend Foundation)
 
-- Supabase Free tier
-- Cloudflare R2 free tier
-- Zero cost if usage stays within limits
+- local Supabase CLI/Docker stack only after revision-3 review, founder approval and Gate A
+- no hosted Supabase free-tier project or credential
+- no Cloudflare R2 or other remote provider
+- zero provider spend; local CPU, memory, database size and Docker disk use are recorded
+- any future remote/staging proof requires a separate approved amendment and a new account; local
+  evidence comes first
 
 ### Phase 4 (Email/Files/Notifications)
 

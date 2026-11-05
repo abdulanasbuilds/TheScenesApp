@@ -208,7 +208,10 @@ old code, placeholder routes or provider documentation never counts as approval.
 ## Current application
 
 - Phase 2 was accepted on 4 November 2026.
-- Phase 3 Supabase local proof and first learning slice are approved in principle.
-- Phase 3 remains in **Planning / Gate A** until its specification is reviewed and the outstanding
-  security prerequisites are authorized and completed.
+- Phase 3A remains a proposed bounded local Supabase proof and first learning slice.
+- Five independent reviews rejected revision 2 as implementation authority. The founder approved
+  revision 3's six product rules and isolated local implementation on 5 November 2026. Final technical
+  re-review and clean-install/local-isolation gates remain before a wave starts. Legacy hosted
+  accounts/credentials are permanently forbidden and their revocation/deletion/log review remains a
+  separate incident action and hosted/production blocker.
 - No hosted Supabase project, credentials or production integration is currently authorized.

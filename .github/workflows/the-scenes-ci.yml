@@ -12,15 +12,22 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      VITE_DATA_MODE: fixtures
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26.12.1
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.4.4
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -47,7 +54,10 @@ jobs:
         run: bun run lint
 
       - name: Typecheck
-        run: bunx tsc --noEmit
+        run: bun run typecheck
+
+      - name: Test (unit)
+        run: bun run test:unit
 
       - name: Build
         run: bun run build

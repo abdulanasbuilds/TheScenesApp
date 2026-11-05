@@ -1,0 +1,10 @@
+{
+  "//": "Type-checks cross-platform tooling and tests that run under Bun and use node: builtins. Kept separate from the app tsconfig so Bun/Node ambient types do not leak into the browser build.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["bun", "node"],
+    "noEmit": true
+  },
+  "include": ["scripts/**/*.ts", "tests/**/*.ts"]
+}

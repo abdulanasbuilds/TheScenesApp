@@ -64,8 +64,9 @@ External providers sit behind internal adapters.
 Current direction:
 
 - Cloudflare: hosting/edge/security.
-- Supabase: approved for a bounded, local-only Phase 3 proof-of-fit for Auth/Postgres/Realtime and
-  learning persistence after the remaining Gate A safety work; not connected or production-approved.
+- Supabase: founder-approved for a bounded, credential-free local Phase 3A proof-of-fit. Revision 3 is
+  in final technical re-review and local-isolation Gate A; old accounts/credentials are permanently
+  forbidden, no service is connected, and no hosted/production use is approved.
 - Cloudflare R2: conditional later use for separately approved platform-managed objects. Launch
   creator resources use external links under ADR-029.
 - Resend: important transactional email.
