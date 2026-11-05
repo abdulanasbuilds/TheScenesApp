@@ -12,11 +12,13 @@ Before doing work:
 2. Read the relevant `docs/` file(s) for the task.
 3. Inspect the current repository implementation.
 4. Identify the current phase in `docs/PHASES.md`.
-5. Check available tools/skills/CLI/MCP/browser capabilities before claiming they exist.
-6. Build only the requested phase slice.
-7. Verify.
-8. Review the diff.
-9. Update durable documentation if an architecture decision changed.
+5. Read `docs/PHASE-PLANNING-GATE.md` and the current phase specification; do not implement an
+   unreviewed/unapproved plan.
+6. Check available tools/skills/CLI/MCP/browser capabilities before claiming they exist.
+7. Build only the requested phase slice.
+8. Verify under the plan's stated correctness, security, scale and recovery conditions.
+9. Review the diff.
+10. Update durable documentation if an architecture decision changed.
 
 ## Product context
 
@@ -62,11 +64,13 @@ External providers sit behind internal adapters.
 Current direction:
 
 - Cloudflare: hosting/edge/security.
-- Supabase: Auth/Postgres/Realtime and learning persistence.
-- Cloudflare R2: file/object storage.
+- Supabase: approved for a bounded, local-only Phase 3 proof-of-fit for Auth/Postgres/Realtime and
+  learning persistence after the remaining Gate A safety work; not connected or production-approved.
+- Cloudflare R2: conditional later use for separately approved platform-managed objects. Launch
+  creator resources use external links under ADR-029.
 - Resend: important transactional email.
 - Redis-compatible service: rate limiting/short-lived coordination.
-- Bunny.net: video delivery/live capabilities where selected.
+- Bunny.net: only if a later native video/live decision supersedes ADR-029.
 - Telegram: internal feedback/alerts.
 - Payments: deferred.
 - Search: Postgres first; smarter search later.
@@ -78,12 +82,14 @@ Provider quotas are not business entitlements. Never promise an individual more 
 
 Referrals reward the user with a **platform entitlement**, not with guaranteed provider capacity.
 
-Examples:
+Current launch-safe examples:
 
-- extra storage allowance;
-- extra live-session allowance;
 - access to a creator feature;
-- additional workflow publishing slots.
+- additional workflow/course publishing slots;
+- creator analytics or customization access.
+
+Storage or live-session allowances are not launch-approved under ADR-029. They require a later
+native-provider, cost and quota decision.
 
 The quota controller determines actual availability.
 
@@ -139,6 +145,9 @@ The internal live interface should hide provider-specific details from UI code.
 
 ## Storage routing rule
 
+This section applies only if a later phase explicitly authorizes platform-managed object storage;
+it is not part of the external-link-only launch model in ADR-029.
+
 A file gets a durable storage location at upload time.
 
 Persist:
@@ -164,12 +173,15 @@ OUT-OF-SCOPE
 EXISTING FILES
 DESIGN REQUIREMENTS
 DATA ASSUMPTIONS
+SCALE + PERFORMANCE ENVELOPE
 SECURITY REQUIREMENTS
+RELIABILITY + RECOVERY
 INTEGRATION BOUNDARIES
 TOOLS/SKILLS TO USE
 IMPLEMENTATION TASKS
 ACCEPTANCE CRITERIA
 VERIFICATION
+APPROVAL STATE
 HANDOFF NOTES
 
 The agent must never need the chat history to reconstruct the product.

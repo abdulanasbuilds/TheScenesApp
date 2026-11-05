@@ -1,5 +1,11 @@
 ﻿# The Scenes — Infrastructure Cost Research & Pricing Analysis
 
+> **Status update — 4 November 2026:** This is historical cost evidence, not the current decision
+> authority. ADR-029–030 approve external embedding, the paid-plan prices and a 7% Free-plan sales
+> fee. Provider prices and the complete cost model must be refreshed before payment implementation.
+> See `docs/DATA-LAYER-RESEARCH.md` for the
+> current data-platform comparison.
+
 **Research Date:** October 29, 2026  
 **Purpose:** Calculate per-user infrastructure costs to establish pricing achieving 70%+ profit margin  
 **Status:** ✅ Research Complete — Awaiting Founder Approval on Final Pricing

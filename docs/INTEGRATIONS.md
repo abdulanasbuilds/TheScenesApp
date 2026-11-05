@@ -8,6 +8,9 @@ Use for hosting, edge delivery, security/perimeter controls, and domain/DNS wher
 
 ## Supabase
 
+**Current status:** approved for a bounded, local-only Phase 3 proof-of-fit after the remaining Gate A
+safety work; not approved as a hosted/production commitment and not yet connected.
+
 Use for:
 
 - authentication;
@@ -18,9 +21,17 @@ Use for:
 
 Do not expose service-role credentials to the client.
 
+Start with the HTTPS Data API and user-scoped SSR sessions. Add direct SQL/Hyperdrive or an ORM only
+after measured need. Free tier is for development only; production requires an approved region,
+backup/recovery target and budget.
+
 ## Cloudflare R2
 
-Use for:
+**Conditional / later:** ADR-029 makes launch base plans external-link-only. R2 may be evaluated for
+narrow platform-managed objects (for example, approved system assets or exports) in a later phase;
+it is not launch creator hosting and not a current referral reward.
+
+If separately approved, use for:
 
 - course resources;
 - creator files;

@@ -4,6 +4,15 @@ This document tracks unresolved product and business questions that require huma
 
 Do not invent answers. Record the question, the historical context, and wait for a decision.
 
+## Decision update — 4 November 2026
+
+The founder selected external embedding for launch plans, approved Pro at $19 / GH₵300 and Pro Plus
+at $39 / GH₵620, set the Free-plan sales fee at 7%, chose a 1% + GH₵1 instant-withdrawal platform fee
+with provider transfer fees passed to the creator, approved Supabase for a local-only Phase 3 proof,
+and kept payment-provider selection on hold. Production data-platform approval remains a later gate.
+See ADR-029 through ADR-034 in `docs/DECISIONS.md`; those newer records supersede conflicting
+historical text below.
+
 ---
 
 ## RESOLVED DECISIONS
@@ -29,6 +38,10 @@ Do not invent answers. Record the question, the historical context, and wait for
 ---
 
 ### RES-002 ï¿½ Pricing Tiers ? RESOLVED (2026-10-31)
+
+> **Superseded in part on 4 November 2026:** ADR-029 removes native video/file/live hosting and the
+> 300 GB / 1 TB allowances from the launch plans. ADR-030 approves the paid-plan prices. The text
+> below is retained only as historical context.
 
 **Question:** What are the pricing tiers and feature gates?
 
@@ -126,6 +139,10 @@ Do not invent answers. Record the question, the historical context, and wait for
 
 ### OPD-015 ï¿½ Pricing Cost Research ?? CRITICAL
 
+**Update (4 November 2026):** Paid-plan prices, the external-hosting model and the exact 7% Free-plan
+fee are approved, but the cost evidence must be refreshed and consolidated before payments. See
+ADR-029–030.
+
 **Question:** What are the exact infrastructure costs, and what pricing achieves 70% margin?
 
 **Why it matters:** MANDATORY before setting final prices. Cannot implement Phase 7 without this.
@@ -191,6 +208,11 @@ Monthly Price = (Infrastructure Cost / 0.30) to achieve 70% margin
 
 ### OPD-002 ï¿½ Instant Payouts business rule
 
+**Update (4 November 2026):** The business direction is resolved as a 1% + GH₵1 platform fee, with
+the selected payment provider's transfer fee passed to the creator. Payment-provider selection and
+implementation remain on hold, and current provider terms must be revalidated before Phase 7. See
+ADR-031 and ADR-034.
+
 **Question:** What exactly does "Instant Payouts (SMS + 1%, GH 1)" mean?
 
 **Historical wording:** "Instant Payouts (SMS + 1%, GH 1)"
@@ -207,9 +229,9 @@ Monthly Price = (Infrastructure Cost / 0.30) to achieve 70% margin
 - SMS-based payout trigger + 1% fee, Ghana-specific rule
 - Instant payout via mobile money with 1% fee and GH?1 floor
 
-**Decision required:** Define the exact payout model, fee structure, minimum amounts, supported methods, and regional rules.
+**Decision required:** Before implementation, confirm supported methods and regional/provider rules.
 
-**Status:** WAITING FOR FOUNDER INPUT
+**Status:** BUSINESS FEE RULE RESOLVED; PROVIDER/IMPLEMENTATION DEFERRED
 
 ---
 

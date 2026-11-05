@@ -1,5 +1,12 @@
 # The Scenes — Feature Traceability Matrix
 
+> **Frontend checkpoint (4 November 2026):** a user-authorized Phase 2 fixture frontend now covers
+> all 30 requested primary page types and has passed route-wide desktop/tablet/mobile verification.
+> The older row-level statuses below have not all been reconciled with the new frontend evidence and
+> must not be read as proof that an implemented fixture surface is absent. The verified page and
+> integration inventory is `docs/FRONTEND-IMPLEMENTATION-AUDIT.md`. Production backend/provider
+> rows remain NOT STARTED unless explicitly changed in a later authorized phase.
+
 This document tracks every major feature from requirement through delivery.
 
 Cross-reference: All requirement IDs are defined in `docs/PRODUCT-REQUIREMENTS.md`.
@@ -71,11 +78,11 @@ Cross-reference: All requirement IDs are defined in `docs/PRODUCT-REQUIREMENTS.m
 | TS-PAY-001     | Customer checkout               | S1     | P1       | 7                       | Auth           | Payment provider  | PCI, fraud               | NOT STARTED        |
 | TS-PAY-002     | Subscriptions                   | S1     | P1       | 7                       | Auth           | Payment provider  | Recurring billing        | NOT STARTED        |
 | TS-PAY-006     | Creator payouts                 | S1     | P1       | 8                       | Creator        | TS-PAY-001        | Financial accuracy       | NOT STARTED        |
-| TS-PAY-013     | "Instant Payouts" phrase        | S1     | —        | —                       | —              | —                 | —                        | BLOCKED (OPD-002)  |
+| TS-PAY-013     | Instant payout fee rule          | S1     | P2       | 7                       | Creator payout | Payment provider  | Fee clarity, audit trail | DEFERRED (ADR-034) |
 | **TS-FILE**    | **File Hosting**                |        |          |                         |                |                   |                          |                    |
-| TS-FILE-001    | PDF hosting                     | S1     | P1       | 4                       | Auth, Creator  | R2                | Access control           | NOT STARTED        |
-| TS-FILE-007    | Private/public classification   | S2     | P1       | 4                       | All            | R2                | Link leaks               | NOT STARTED        |
-| TS-FILE-009    | Signed access URLs              | S2     | P1       | 4                       | All            | R2                | Expiry, authorization    | NOT STARTED        |
+| TS-FILE-001    | PDF hosting                     | S1     | —        | Conditional / later     | Auth, Creator  | New decision      | Access control           | DEFERRED (ADR-029) |
+| TS-FILE-007    | Private/public classification   | S2     | —        | Conditional / later     | All            | New decision      | Link leaks               | DEFERRED (ADR-029) |
+| TS-FILE-009    | Signed access URLs              | S2     | —        | Conditional / later     | All            | New decision      | Expiry, authorization    | DEFERRED (ADR-029) |
 | **TS-MKT**     | **Marketplace**                 |        |          |                         |                |                   |                          |                    |
 | TS-MKT-001     | Digital product listings        | S1     | P1       | 8                       | Public, Auth   | TS-PAY            | —                        | NOT STARTED        |
 | TS-MKT-002     | Workflow/template sales         | S1     | P1       | 8                       | Auth           | TS-MKT-001        | IP, downloads            | NOT STARTED        |
@@ -141,19 +148,22 @@ Cross-reference: All requirement IDs are defined in `docs/PRODUCT-REQUIREMENTS.m
 
 ## Phase summary
 
-| Phase                            | Status          | Key deliverables                                 |
-| -------------------------------- | --------------- | ------------------------------------------------ |
-| 0 — Governance                   | **IN PROGRESS** | Agent contract, docs, CI, architecture decisions |
-| 1 — Design exploration           | NOT STARTED     | Full information architecture, design variants   |
-| 2 — Frontend with fixtures       | NOT STARTED     | Navigable frontend, all surfaces, responsive     |
-| 3 — Backend foundation           | NOT STARTED     | Auth, DB, RLS, server-side authorization         |
-| 4 — Email/files/notifications    | NOT STARTED     | R2, Resend, PWA, Redis                           |
-| 5 — Creator operations           | NOT STARTED     | Teacher flows, referrals, messaging, moderation  |
-| 6 — Live/media/storage providers | NOT STARTED     | Video adapters, live sessions                    |
-| 7 — Payments                     | NOT STARTED     | Checkout, subscriptions, webhooks                |
-| 8 — Marketplace                  | NOT STARTED     | Digital products, splits, creator economy        |
-| 9 — Search + AI                  | NOT STARTED     | Intelligent search, AI assistant                 |
-| 10 — Scale                       | NOT STARTED     | Organizations, multi-tenancy                     |
+| Phase                            | Status                        | Key deliverables                                    |
+| -------------------------------- | ----------------------------- | --------------------------------------------------- |
+| 0 — Governance                   | **BUILT / ONGOING**           | Agent contract, docs, CI, architecture decisions    |
+| 1 — Design exploration           | **DESIGNED**                  | Reference-informed direction implemented in code    |
+| 2 — Frontend with fixtures       | **BUILT — ACCEPTED**          | 30 primary pages, responsive shells and local flows |
+| 3 — Backend foundation           | **PLANNING — GATE A**         | Approved local proof; spec/security gates pending   |
+| 4 — Email/files/notifications    | NOT STARTED                   | Resend, PWA, Redis; conditional narrow R2 use       |
+| 5 — Creator operations           | NOT STARTED                   | Teacher flows, referrals, messaging, moderation     |
+| 6 — Live/media/storage providers | DEFERRED (ADR-029)            | Conditional adapters; new decision required         |
+| 7 — Payments                     | NOT STARTED                   | Checkout, subscriptions, webhooks                   |
+| 8 — Marketplace                  | NOT STARTED                   | Digital products, splits, creator economy           |
+| 9 — Search + AI                  | NOT STARTED                   | Intelligent search, AI assistant                    |
+| 10 — Scale                       | NOT STARTED                   | Organizations, multi-tenancy                        |
+
+> Next actionable work (the Gate A pre-Phase-3 blockers, then Phase 3) is ordered in
+> `docs/PHASES.md` → "Next work — ordered (4 November 2026)".
 
 ## Update rule
 

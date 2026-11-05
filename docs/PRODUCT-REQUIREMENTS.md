@@ -129,7 +129,7 @@ Requirements originate from:
 | TS-PAY-010 | Refunds                            | S2     | CORE LATER     | 7     |                                                |
 | TS-PAY-011 | Disputes/chargebacks               | S2     | CORE LATER     | 7     |                                                |
 | TS-PAY-012 | Transaction history                | S2     | CORE LATER     | 7     |                                                |
-| TS-PAY-013 | "Instant Payouts (SMS + 1%, GH 1)" | S1     | NEEDS DECISION | —     | See OPD-002. Original wording unclear.         |
+| TS-PAY-013 | Instant payout fee and provider charge | S1  | CORE LATER     | 7     | ADR-031: 1% + GH₵1; provider transfer fee passed to creator. Provider/method still deferred. |
 | TS-PAY-014 | Unresolved payment phrase          | S1     | NEEDS DECISION | —     | See OPD-003. Partially unreadable.             |
 | TS-PAY-015 | Ghana payment model                | S2     | NEEDS DECISION | —     | See OPD-013. Must be documented before Phase 7 |
 | TS-PAY-016 | International payment model        | S2     | NEEDS DECISION | —     | See OPD-014                                    |
@@ -155,21 +155,21 @@ Requirements originate from:
 
 | ID          | Requirement                          | Source | Classification | Phase | Notes   |
 | ----------- | ------------------------------------ | ------ | -------------- | ----- | ------- |
-| TS-FILE-001 | PDF hosting                          | S1     | CORE LATER     | 4     |         |
-| TS-FILE-002 | Downloadable resources               | S1     | CORE LATER     | 4     |         |
-| TS-FILE-003 | Creator asset uploads                | S1     | CORE LATER     | 4     |         |
-| TS-FILE-004 | Course resources                     | S1     | CORE LATER     | 4     |         |
-| TS-FILE-005 | Workflow files                       | S1     | CORE LATER     | 5     |         |
-| TS-FILE-006 | Digital product files                | S1     | CORE LATER     | 8     |         |
-| TS-FILE-007 | Private/public object classification | S2     | CORE LATER     | 4     |         |
-| TS-FILE-008 | Owner/resource relationships         | S2     | CORE LATER     | 4     |         |
-| TS-FILE-009 | Signed access URLs                   | S2     | CORE LATER     | 4     |         |
-| TS-FILE-010 | Controlled uploads                   | S2     | CORE LATER     | 4     |         |
-| TS-FILE-011 | Quota tracking                       | S2     | CORE LATER     | 4     |         |
-| TS-FILE-012 | Storage usage tracking               | S2     | CORE LATER     | 4     |         |
-| TS-FILE-013 | Deletion/lifecycle management        | S2     | CORE LATER     | 4     |         |
-| TS-FILE-014 | Auditability                         | S2     | CORE LATER     | 4     |         |
-| TS-FILE-015 | R2 storage direction                 | S3     | CORE LATER     | 4     | ADR-009 |
+| TS-FILE-001 | PDF hosting                          | S1     | DEFERRED       | —     | ADR-029: launch uses external links                  |
+| TS-FILE-002 | Downloadable resources               | S1     | DEFERRED       | —     | New native-hosting decision required                 |
+| TS-FILE-003 | Creator asset uploads                | S1     | DEFERRED       | —     | New native-hosting decision required                 |
+| TS-FILE-004 | Course resources                     | S1     | DEFERRED       | —     | Store validated external resource links at launch    |
+| TS-FILE-005 | Workflow files                       | S1     | DEFERRED       | —     | New native-hosting decision required                 |
+| TS-FILE-006 | Digital product files                | S1     | DEFERRED       | —     | Revisit with Phase 8 and a new hosting decision      |
+| TS-FILE-007 | Private/public object classification | S2     | DEFERRED       | —     | Applies only if native objects are later approved    |
+| TS-FILE-008 | Owner/resource relationships         | S2     | DEFERRED       | —     | Applies only if native objects are later approved    |
+| TS-FILE-009 | Signed access URLs                   | S2     | DEFERRED       | —     | Applies only if native objects are later approved    |
+| TS-FILE-010 | Controlled uploads                   | S2     | DEFERRED       | —     | Applies only if native objects are later approved    |
+| TS-FILE-011 | Quota tracking                       | S2     | DEFERRED       | —     | No launch creator-storage quota                      |
+| TS-FILE-012 | Storage usage tracking               | S2     | DEFERRED       | —     | No launch creator-storage quota                      |
+| TS-FILE-013 | Deletion/lifecycle management        | S2     | DEFERRED       | —     | Applies only if native objects are later approved    |
+| TS-FILE-014 | Auditability                         | S2     | DEFERRED       | —     | Applies only if native objects are later approved    |
+| TS-FILE-015 | R2 storage direction                 | S3     | NEEDS DECISION | —     | ADR-009: conditional narrow platform-object use only |
 
 ## TS-MKT: Marketplace
 

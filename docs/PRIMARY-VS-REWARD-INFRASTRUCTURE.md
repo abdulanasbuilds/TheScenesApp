@@ -1,5 +1,10 @@
 # The Scenes � PRIMARY vs REWARD INFRASTRUCTURE (STRICT SEPARATION CONTRACT)
 
+> **Decision update — 4 November 2026:** ADR-029 makes launch plans external-link-only. Any storage
+> or live-minute reward below is historical/conditional, not launch-approved. Do not build reward
+> provider pools for those resources unless a later founder decision explicitly reopens native
+> hosting/live and approves its cost, security and quota model.
+
 ## CRITICAL MANDATE
 
 This document establishes an **ABSOLUTE, NON-NEGOTIABLE SEPARATION** between:

@@ -1,5 +1,10 @@
 # The Scenes � Pricing & Monetization Strategy (CORRECTED)
 
+> **Decision update — 4 November 2026:** ADR-029 confirms external embedding only for launch base
+> plans. ADR-030 approves Pro at $19 / GH₵300, Pro Plus at $39 / GH₵620 and a 7% Free-plan sales fee.
+> Where older text below conflicts,
+> `docs/DECISIONS.md` is authoritative. A refreshed single cost model is still required before Phase 7.
+
 ## CRITICAL BUSINESS RULE
 
 **Minimum Profit Margin:** 70% on all paid plans

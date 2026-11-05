@@ -20,6 +20,9 @@ The product may use Skool/Circle/Kajabi as references for proven patterns, but i
 
 [State the phase from `docs/PHASES.md`.]
 
+Read `docs/PHASE-PLANNING-GATE.md` and link the reviewed phase specification. If the specification or
+founder approval is missing, remain in planning and do not implement.
+
 ### IN-SCOPE
 
 - [file/feature/task]
@@ -49,6 +52,12 @@ Create variants when a meaningful visual/product choice exists. Use realistic de
 
 [Describe relevant fixture/domain data.]
 
+### SCALE + PERFORMANCE ENVELOPE
+
+[State registered/active/concurrent users, request/data volumes, latency/error targets, load-test
+conditions, provider limits, cost envelope and scale triggers relevant to this slice. “Supports
+millions” without stated conditions and evidence is not an acceptance criterion.]
+
 ### SECURITY
 
 Follow `docs/SECURITY-RULES.md`.
@@ -60,6 +69,11 @@ Never:
 - trust client-only permissions;
 - store raw provider credentials in normal database rows;
 - weaken a security boundary to make a demo work.
+
+### RELIABILITY + RECOVERY
+
+[State failure/degradation behavior, idempotency, migration/rollback, observability, backup scope,
+RPO/RTO and restore verification relevant to this slice.]
 
 ### INTEGRATIONS
 
@@ -87,11 +101,12 @@ Do not claim a capability exists without detecting it.
 ### IMPLEMENTATION
 
 1. Inspect current implementation.
-2. Confirm phase boundary.
-3. Implement the smallest correct slice.
-4. Preserve existing architecture unless a change is explicitly required.
-5. Keep future integrations behind interfaces.
-6. Verify behavior.
+2. Confirm the phase boundary, approved specification and approval state.
+3. If unapproved, improve the plan and stop before implementation.
+4. Implement the smallest approved vertical slice.
+5. Preserve existing architecture unless a change is explicitly required.
+6. Keep future integrations behind interfaces.
+7. Verify correctness, security, scale assumptions and recovery behavior under the plan's conditions.
 
 ### ACCEPTANCE CRITERIA
 
@@ -109,6 +124,13 @@ Run the relevant commands, such as:
 - browser/visual checks when UI changes.
 
 Do not claim a check passed unless it actually ran.
+
+### APPROVAL STATE
+
+- Planning status: [DRAFT / REVIEWED]
+- Founder approval: [APPROVED / NOT APPROVED]
+- Production/remote actions authorized: [NONE unless explicitly listed]
+- Re-review triggers: [scope/provider/data/security/scale/cost changes]
 
 ### HANDOFF
 

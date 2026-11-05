@@ -31,6 +31,10 @@ This directory is the durable operating memory for the project.
 25. [Testing and Quality](./TESTING-AND-QUALITY.md) ï¿½ testing strategy
 26. [**Pricing Cost Research** (CRITICAL)](./PRICING-COST-RESEARCH.md) — infrastructure costs & pricing analysis
 27. [Environment and Cost Guardrails](./ENVIRONMENT-AND-COST-GUARDRAILS.md) ï¿½ cost/security safety
+28. [Data Layer and Platform Research](./DATA-LAYER-RESEARCH.md) — current PostgreSQL/provider comparison and proposed data model
+29. [Mandatory Phase Planning Gate](./PHASE-PLANNING-GATE.md) — required planning, scale, security and verification contract before every phase
+30. [Phase 3 Backend Specification](./PHASE-3-BACKEND-SPEC.md) — local-only Supabase learning-slice plan; implementation not yet approved
+31. [Phase 3 Implementation Plan](./PHASE-3-IMPLEMENTATION-PLAN.md) — file-by-file build order, migrations, RLS, server functions and wave gates
 
 ## Documentation hierarchy
 
@@ -45,6 +49,10 @@ AGENTS.md
       +-- INTEGRATIONS.md
       +-- SECURITY-RULES.md
       +-- PHASES.md
+      +-- PHASE-PLANNING-GATE.md
+      +-- PHASE-3-BACKEND-SPEC.md
+      +-- PHASE-3-IMPLEMENTATION-PLAN.md
+      +-- DATA-LAYER-RESEARCH.md
       +-- TOOLING.md
       +-- CI-CONTRACT.md
       +-- REFERRAL-QUOTA-ARCHITECTURE.md
@@ -103,16 +111,20 @@ AGENTS.md
 
 ### For Implementation Agents
 
-1. **[FOLDER-STRUCTURE.md](./FOLDER-STRUCTURE.md)**
+1. **[PHASE-PLANNING-GATE.md](./PHASE-PLANNING-GATE.md)**
+   - Mandatory specification and approval gate before implementation
+   - Scale, security, reliability, cost and verification requirements
+
+2. **[FOLDER-STRUCTURE.md](./FOLDER-STRUCTURE.md)**
    - Repository organization
    - Import rules
    - File naming conventions
 
-2. **[BUILD-CONTRACT.md](./BUILD-CONTRACT.md)**
+3. **[BUILD-CONTRACT.md](./BUILD-CONTRACT.md)**
    - Build requirements
    - Verification checklist
 
-3. **[TESTING-AND-QUALITY.md](./TESTING-AND-QUALITY.md)**
+4. **[TESTING-AND-QUALITY.md](./TESTING-AND-QUALITY.md)**
    - Testing strategy
    - E2E with Playwright
    - Quality gates

@@ -6,6 +6,11 @@ Every task belongs to one current phase.
 
 Do not silently build future phases.
 
+Before implementation, the phase must satisfy `docs/PHASE-PLANNING-GATE.md` and have a reviewed,
+approved specification. “Support millions” means preserving a path to millions of registered
+accounts and proving staged, explicit capacity targets—not promising issue-free or million-user
+concurrency without evidence.
+
 ## Design-first
 
 Design and validate the full frontend system before production backend integration.

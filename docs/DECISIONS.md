@@ -52,9 +52,12 @@ Mobile is a primary design target.
 
 ## ADR-009 — Storage
 
-Status: Accepted direction
+Status: Conditional direction (updated 4 November 2026)
 
-Cloudflare R2 is the intended object/file storage layer.
+If a later approved feature requires platform-managed objects, Cloudflare R2 is the preferred
+object-storage candidate behind an internal adapter. ADR-029 excludes native creator video/file/live
+hosting from the launch base plans. R2 must not be treated as authorization for creator storage,
+storage referral rewards or early Phase 4/6 implementation.
 
 ## ADR-010 — Email
 
@@ -178,3 +181,96 @@ Private messaging (Phase 5) must be permission-aware with moderation, blocking, 
 Status: Accepted direction
 
 The architecture must not block future multi-tenancy (organizations, private academies, creator-owned spaces) even though it is Phase 10. Data models should use patterns that allow tenant isolation to be added without full restructuring.
+
+## ADR-029 — Launch media and file-hosting model
+
+Status: Accepted (4 November 2026)
+
+Free, Pro and Pro Plus use approved external video, file and live-session links at launch. Native
+video hosting, native file hosting and native live streaming are not included in the base plans.
+This supersedes the 300 GB / 1 TB native-hosting allowances recorded in RES-002.
+
+Native hosting may be reconsidered later, but only through a new cost, quota, security and provider
+decision. It must not be assumed to be a launch feature or referral reward.
+
+## ADR-030 — Launch plan prices and sales fees
+
+Status: Accepted (4 November 2026)
+
+- Free: $0 per month.
+- Pro: $19 USD / GH₵300 per month.
+- Pro Plus: $39 USD / GH₵620 per month.
+- Pro and Pro Plus platform fee: 3% on sales (existing RES-004).
+- Free-plan platform fee: 7% on sales.
+
+The paid-plan prices assume ADR-029 (external hosting) and remain subject to a current cost-model
+check against the project's minimum 70% margin rule before payment implementation.
+
+## ADR-031 — Instant-withdrawal fee direction
+
+Status: Accepted business direction; implementation deferred (4 November 2026)
+
+The platform fee for an instant withdrawal is 1% plus GH₵1. Any payment-provider transfer fee is
+passed to the creator rather than absorbed by The Scenes. Provider selection remains on hold, so
+the exact fee presentation and calculation must be revalidated against the chosen provider's
+current terms before Phase 7 implementation.
+
+## ADR-032 — Infrastructure budget posture
+
+Status: Accepted direction (4 November 2026)
+
+- Cloudflare remains on the free tier during the current stage. Upgrade only when measured runtime,
+  traffic or product requirements justify it.
+- A free data-platform tier may be used for development only. No production data-platform plan has
+  been approved.
+
+Free-tier availability is not a production architecture guarantee. Production limits, backups,
+recovery, support and cost must be reviewed before launch.
+
+## ADR-033 — Data-platform evaluation before Phase 3
+
+Status: Accepted for local proof-of-fit; production decision deferred (4 November 2026)
+
+Before selecting the production data platform, perform a current, evidence-based comparison of the
+product's data model and candidate tools, including whether Supabase is the best fit. The evaluation
+must cover relational integrity, authentication, authorization/RLS, realtime, storage boundaries,
+local development, migrations, backups/recovery, portability, regional performance, operational
+burden and total cost. Development may use a free tier, but research does not authorize a production
+account or integration.
+
+`docs/DATA-LAYER-RESEARCH.md` completed that comparison. The founder approved Supabase for a bounded,
+local-only Phase 3 proof-of-fit, with Neon retained as the runner-up. This is not permission to create
+a remote project, add hosted credentials or select a production plan. Free tiers remain development-
+only; production provider confirmation, region, backup objectives and budget remain approval gates.
+
+## ADR-034 — Payments remain on hold
+
+Status: Deferred (confirmed 4 November 2026)
+
+Payment-provider selection and implementation remain intentionally on hold. Paystack, Stripe,
+Flutterwave or any other provider must not be treated as selected. This confirms ADR-007 and the
+phase boundary in `AGENTS.md`.
+
+## ADR-035 — Phase 3 first vertical slice
+
+Status: Accepted; implementation waits for remaining Gate A safety work (4 November 2026)
+
+The first Phase 3 proof-of-fit slice is:
+
+sign up/login → profile → community membership → course enrolment → lesson completion → reload and
+observe persisted progress.
+
+It is local-only. It does not authorize a remote Supabase project, production data, payments,
+provider email, native storage/video/live, deployment or later-phase schemas.
+
+## ADR-036 — Mandatory planning and long-term scale gate
+
+Status: Accepted (4 November 2026)
+
+Every phase must have a documented, reviewed and founder-approved specification before
+implementation. The required contents and evidence are defined in `docs/PHASE-PLANNING-GATE.md`.
+
+The long-term architecture direction is millions of registered accounts over time, not millions of
+simultaneous users. Designs must avoid known scaling dead ends and define measurable staged capacity,
+latency, reliability, cost and recovery targets. No document or agent may guarantee issue-free scale;
+claims require representative load, failure and restore evidence under stated conditions.

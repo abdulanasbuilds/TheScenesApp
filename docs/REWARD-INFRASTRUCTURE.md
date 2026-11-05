@@ -1,5 +1,10 @@
 # The Scenes � Reward Infrastructure
 
+> **Decision update — 4 November 2026:** ADR-029 makes launch plans external-link-only. The storage
+> and live-minute rewards below are historical/conditional examples and must not be implemented for
+> launch. Current reward design is limited to non-provider entitlements until a new native-hosting
+> decision is approved.
+
 This document details the technical implementation of the referral reward system.
 
 **Cross-reference:** See `REFERRAL-QUOTA-ARCHITECTURE.md` for the conceptual architecture. This document focuses on implementation details.

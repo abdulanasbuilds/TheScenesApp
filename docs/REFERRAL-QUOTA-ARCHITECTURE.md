@@ -1,5 +1,11 @@
 # The Scenes — Referral & Quota Architecture
 
+> **Decision update — 4 November 2026:** ADR-029 makes launch plans external-link-only. Storage and
+> live-minute reward examples in this document are historical/conditional and must not be implemented
+> for launch. Current rewards must be non-provider entitlements such as creator feature access or
+> additional publishing slots. Reintroducing storage/live rewards requires a new hosting, cost and
+> capacity decision.
+
 ## Purpose
 
 Enable The Scenes to reward referrals with additional platform entitlements without paying cash rewards and without making provider free tiers part of the user's promise.
