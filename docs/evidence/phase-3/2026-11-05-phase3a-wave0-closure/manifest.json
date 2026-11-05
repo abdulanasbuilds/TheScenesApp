@@ -1,0 +1,126 @@
+{
+  "runId": "2026-11-05-phase3a-wave0-closure",
+  "phase": "Phase 3A (Revision 3) — Wave 0",
+  "date": "2026-11-05",
+  "result": "checks-1-5-7-9-pass; check-6-waived; local-stack-ci-deferred; wave-1-not-started",
+  "tree": {
+    "branch": "main",
+    "codeHead": "a538a2931dcdd7acdbe45817f4140ee2f00a17bf",
+    "committed": true,
+    "note": "Code tree under test is a538a29. The evidence commit that adds this manifest is docs-only."
+  },
+  "environment": {
+    "os": "win32",
+    "bun": "1.4.4",
+    "node": "26.12.1",
+    "dockerEngine": "29.9.2",
+    "supabaseCli": "3.0.0"
+  },
+  "checks": {
+    "1-frozen-install": "pass",
+    "2-cli-version": "pass",
+    "3-local-config-telemetry": "pass",
+    "4-env-parser-tests": "pass",
+    "5-vite-loopback": "pass",
+    "6-docker-listener-isolation": "waived-by-founder",
+    "7-fixture-suite": "pass",
+    "8-current-tree-secret-scan": "pass",
+    "9-tracked-evidence-diff-check": "pass"
+  },
+  "envParser": {
+    "module": "src/lib/env.ts",
+    "tests": "tests/unit/env.test.ts",
+    "testCount": 27,
+    "passed": 27,
+    "failed": 0,
+    "networkUsed": false,
+    "modes": ["fixtures", "supabase-local"],
+    "approvedLoopbackHosts": ["127.0.0.1", "localhost"],
+    "approvedApiPort": 54321,
+    "publishableKeyPrefix": "sb_publishable_"
+  },
+  "dependencyAudit": {
+    "command": "bun run audit",
+    "exitCode": 0,
+    "packagesChecked": 505,
+    "ignored": 1,
+    "exception": {
+      "advisory": "GHSA-g3hv-75wg-m249",
+      "package": "minimatch@10.2.5",
+      "severity": "moderate",
+      "scope": "dev-only",
+      "reachableAtRuntime": false,
+      "reason": "No in-range fix; dependents require ^10.x and the patched release is >=11.0.1."
+    }
+  },
+  "isolation": {
+    "gate": "waived-by-founder",
+    "wrapperRemainsFailClosed": true,
+    "hostMutationAttempted": false,
+    "containersLeftRunning": 0,
+    "windowsLimitation": "Docker Desktop (Windows) does not honour com.docker.network.bridge.host_binding_ipv4 for published ports.",
+    "wave1Consequence": "The wrapper cannot start the local stack on this machine until a Linux engine, an approved firewall/gate amendment, or an explicit non-loopback override is chosen."
+  },
+  "images": [
+    {
+      "image": "public.ecr.aws/supabase/postgres:17.11.0.011",
+      "digest": "sha256:7bd84e6a1d5322c7b864b9751873a0ac50f48df3f20a776e88114eadb2948fc0"
+    },
+    {
+      "image": "public.ecr.aws/supabase/gotrue:v2.197.0",
+      "digest": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b"
+    },
+    {
+      "image": "public.ecr.aws/supabase/postgrest:v16.5",
+      "digest": "sha256:1347d7552b88f17832912c06afbf7c43209af6eeeb60834b04aae12c9bd9d5cc"
+    },
+    {
+      "image": "public.ecr.aws/supabase/kong:2.8.1",
+      "digest": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d"
+    }
+  ],
+  "ci": {
+    "fixtureStaticJob": "present",
+    "fixtureStaticSteps": [
+      "frozen install",
+      "contract integrity",
+      "bun run audit",
+      "lint",
+      "typecheck",
+      "unit tests",
+      "build",
+      "playwright chromium install",
+      "fixture suite",
+      "failure report upload (3-day retention)"
+    ],
+    "localStackJob": "deferred-until-wave-1",
+    "localStackReason": "Requires migrations, pgTAP tests, generated types, and integration tests that do not exist yet."
+  },
+  "deterministicFixtureBaseline": {
+    "source": "src/data/seed.ts",
+    "fixedBaseDate": "2026-11-03T09:00:00.000Z",
+    "randomness": false,
+    "clockReads": false,
+    "committedFingerprint": false
+  },
+  "verification": {
+    "installFrozenLockfile": 0,
+    "typecheck": 0,
+    "lint": 0,
+    "unit": { "passed": 106, "failed": 0, "files": 11 },
+    "envTests": { "passed": 27, "failed": 0 },
+    "audit": 0,
+    "build": 0,
+    "fixtureE2e": { "passed": 26, "skipped": 4, "failed": 0, "durationMinutes": 2.7 },
+    "diffCheck": 0,
+    "statusClean": true
+  },
+  "remainingDeviations": [
+    "Isolation check 6 waived; residual risk and Wave 1 start options unresolved.",
+    "Phase 3 local-stack CI job deferred until Wave 1.",
+    "Later-wave command surface from runbook section 2 is not present yet; recommend amending the runbook or adding scripts per wave.",
+    "Import-protection negative build fixture deferred to Wave 2.",
+    "Optional deterministic fixture fingerprint test not added."
+  ],
+  "secretsExposed": false
+}

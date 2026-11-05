@@ -73,8 +73,8 @@ bun run phase3:stack:stop
 
 `bun run test:unit` must not require a running Supabase stack or Docker. The `phase3:stack:*`
 commands are credential-safe wrappers over the pinned `supabase@3.0.0` CLI; see
-`docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md` for the current loopback-isolation
-status on Windows/Docker Desktop.
+`docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md` for the runtime isolation finding and
+`docs/evidence/phase-3/2026-11-05-phase3a-wave0-closure/summary.md` for the waiver and current status.
 
 `bun run audit` ignores exactly one documented dev-only advisory,
 `GHSA-g3hv-75wg-m249` (`minimatch@10.2.5`, unreachable at runtime). Any other advisory fails the

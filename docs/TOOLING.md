@@ -137,7 +137,8 @@ loopback-only local proof. Guarantees:
 
 On Windows with Docker Desktop, `com.docker.network.bridge.host_binding_ipv4` is not honoured for
 published ports, so the gate fails closed. See
-`docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md`.
+`docs/evidence/phase-3/2026-11-05-phase3a-wave0a/summary.md` for the runtime finding and
+`docs/evidence/phase-3/2026-11-05-phase3a-wave0-closure/summary.md` for the waiver and current status.
 
 ## Model hierarchy rule
 
