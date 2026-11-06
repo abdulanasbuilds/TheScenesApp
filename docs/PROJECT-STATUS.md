@@ -136,6 +136,6 @@ migrated or tested. Retired accounts and credentials must never be reused.
 - Wave 2 implementation checkpoint: `0389591`;
 - Wave 2 completion checkpoint: `7ac5089`;
 - Wave 3 foundation checkpoint: `d023fe2`;
-- Wave 3 profile/limiter checkpoint: pending local commit;
+- Wave 3 profile/limiter checkpoint: `f5173aa`;
 - unresolved risks: database lint records one Low-severity unused local variable warning in
   `public.leave_community`; Waves 3–5 remain incomplete.
