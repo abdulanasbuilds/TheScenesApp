@@ -121,7 +121,8 @@ migrated or tested. Retired accounts and credentials must never be reused.
 ## Checkpoint state
 
 - Founder input needed: **no**;
-- working tree: contains the generated database types, repaired pgTAP files and this status update;
-- local checkpoint commit: pending at the time of this status edit; record it in the session report;
+- working tree: clean after the local checkpoint commits;
+- ADR-040 documentation checkpoint: `d335749`;
+- Wave 1 live-attempt checkpoint: `57eebfe`;
 - unresolved risk: Wave 1 database lint, type drift and real API concurrency/authorization integration
   remain unproven because pgTAP has not yet returned a successful process exit.
