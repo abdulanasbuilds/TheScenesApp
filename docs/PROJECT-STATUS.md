@@ -41,6 +41,10 @@ evidence remain incomplete. Waves 3–5 and every later production service remai
 Profile updates now preserve omitted optional fields, clear only explicit `null`, and route persistence
 through the profile repository. The local limiter now removes expired buckets and enforces a fixed
 maximum bucket count without adding a provider or dependency.
+The first live Auth integration attempt added four real user-scoped cases. Registration/profile
+bootstrap, hostile metadata, duplicate handle, safe login failure and profile isolation execute, but
+promotion is blocked by a local JWT clock/expiry mismatch during `getClaims()`. The broad command also
+selected the unrelated database integration suite, whose concurrency case hit a statement timeout.
 No hosted project, retired credential or production service was contacted.
 
 ## Latest verified checks — 6 November 2026
@@ -108,9 +112,9 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-Start the isolated local stack and add focused Auth integration tests for the new functions, beginning
-with registration/profile bootstrap, duplicate email/handle, safe login failure and logout cookies.
-After those pass, connect the accepted auth/settings UI and root viewer.
+Diagnose local host/container JWT time without printing a token, then run only
+`bun test tests/integration/auth`. Continue with logout cookies and transformed HTTP behavior after the
+verified-claims case passes; then connect the accepted auth/settings UI and root viewer.
 
 ## When staging will be requested
 
