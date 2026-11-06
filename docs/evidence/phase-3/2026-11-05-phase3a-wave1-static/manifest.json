@@ -1,0 +1,58 @@
+{
+  "runId": "2026-11-05-phase3a-wave1-static",
+  "phase": "Phase 3A (Revision 3) — Wave 1 (static review)",
+  "date": "2026-11-05",
+  "result": "static-review-pass; runtime-db-gate-not-executed; wave-1-not-complete",
+  "tree": {
+    "branch": "main",
+    "baseCommit": "350cfe2",
+    "committed": false,
+    "note": "Wave 1 source and this evidence are committed together. The base commit is the last pushed Wave 0 tip."
+  },
+  "environment": {
+    "runLocation": "Windows host",
+    "dockerStackStarted": false,
+    "reason": "Founder directed no Docker work for this run; live database validation is deferred.",
+    "bun": "1.4.4"
+  },
+  "scope": {
+    "migrations": 18,
+    "pgtapSuites": 5,
+    "integrationSuites": 1,
+    "gateWrapperTests": 16,
+    "exposedTables": 15,
+    "policies": 22,
+    "indexes": 37
+  },
+  "verification": {
+    "typecheck": 0,
+    "lint": 0,
+    "unit": { "passed": 126, "failed": 0, "files": 12 },
+    "diffCheck": 0,
+    "duplicatePolicyNamesPerTable": "none",
+    "duplicateIndexNames": "none",
+    "dbReset": "not run",
+    "fingerprintComparison": "not run",
+    "pgtap": "not run",
+    "dbLint": "not run",
+    "generatedTypes": "not generated (db/database.types.ts absent)",
+    "integration": "not run"
+  },
+  "pendingGate": [
+    "bun run phase3:stack:start",
+    "bun run db:reset",
+    "bun run db:types:write",
+    "bun run test:db",
+    "bun run test:integration",
+    "bun run phase3:stack:stop"
+  ],
+  "materialRisks": [
+    "SQL has not executed against PostgreSQL 17",
+    "pgTAP access to extensions schema while role is switched must be observed",
+    "RLS policies referencing non-granted columns must be confirmed on the pinned image",
+    "seed/Auth image compatibility must be confirmed",
+    "fingerprint requires WSL2 Docker engine reachability",
+    "db/database.types.ts is absent until db:types:write runs"
+  ],
+  "secretsExposed": false
+}

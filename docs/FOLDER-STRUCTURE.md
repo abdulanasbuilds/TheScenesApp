@@ -240,7 +240,7 @@ compiler-recognized and is rejected by the boundary/build test. Files beginning 
 the router generator and must not be used for the load driver, which needs a real `/phase3-load` URL.
 
 - Co-located `*.test.ts` files use Bun for pure schemas/codecs/error mapping.
-- Database tests use pgTAP through `bunx supabase test db`.
+- Database tests use pgTAP through `bun run db:test`.
 - E2E tests create users through the real local signup flow; they never use a service key.
 - Raw dumps, credentials and test-user artifacts are not committed.
 

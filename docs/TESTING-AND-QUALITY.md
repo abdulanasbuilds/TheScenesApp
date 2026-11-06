@@ -71,6 +71,32 @@ bun run phase3:stack:status
 bun run phase3:stack:stop
 ```
 
+### Database commands (Phase 3A Wave 1)
+
+```bash
+bun run db:reset          # apply migrations + deterministic seed to the local database
+bun run db:test           # pgTAP suites
+bun run db:lint           # plpgsql_check at warning level, fail on error
+bun run db:fingerprint    # md5 of the seeded semantic state
+bun run db:types:write    # regenerate db/database.types.ts
+bun run verify:db-types   # compare generated types without writing
+bun run test:db           # reset x2 + fingerprint + pgTAP + lint + type drift
+bun run test:integration  # real local-stack Data API/Auth/RPC tests
+```
+
+`test:db` is the Wave 1 database gate. It fails before running tests when two clean resets produce
+different seed fingerprints, and it fails when `db/database.types.ts` is missing or stale. The first
+run therefore needs `db:reset` and `db:types:write` first.
+
+`test:integration` reads `PHASE3_API_URL` and `PHASE3_PUBLISHABLE_KEY` (with `SUPABASE_URL`,
+`SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_ANON_KEY` as fallbacks) and skips cleanly when they are
+absent. It refuses any non-loopback URL, so it cannot target a hosted project. Use the approved
+`API_URL` and `PUBLISHABLE_KEY` values from `phase3:stack:status`.
+
+Database integration uses unique learner emails and leaves rows behind in the disposable local stack.
+Run `db:reset` before a fingerprint measurement or a clean evidence run; never measure the fingerprint
+after integration or pgTAP writes.
+
 `bun run test:unit` must not require a running Supabase stack or Docker. The `phase3:stack:*`
 commands are credential-safe wrappers over the pinned `supabase@3.0.0` CLI. On this machine the
 supported local-stack path is a Linux Docker Engine inside WSL2 (Docker Desktop on Windows fails the
@@ -100,10 +126,15 @@ tests/unit/
 +-- env.test.ts                  local-only mode/URL/key contract (no network)
 
 tests/integration/
-+-- auth.integration.test.ts
-+-- authorization.integration.test.ts
-+-- cache-session.integration.test.ts
-+-- commands-concurrency.integration.test.ts
++-- database/
+    +-- commands.test.ts          real Data API/Auth/RPC, direct-call and concurrency checks
+
+supabase/tests/
++-- 0001_schema_constraints_test.sql
++-- 0002_acl_grants_test.sql
++-- 0003_rls_matrix_test.sql
++-- 0004_seed_trigger_test.sql
++-- 0005_commands_test.sql
 ```
 
 ### What to test
@@ -135,9 +166,11 @@ Desktop-only failures are acceptable for admin/creator tools in Phase 2 if mobil
 The current `validate` job is the fixture/static job: frozen install, contract checks, dependency
 audit with the documented exception, lint, typecheck, unit tests, build, Playwright Chromium install,
 and the fixture suite. A failing fixture run uploads its Playwright report with three-day retention;
-the fixture suite contains no session material. The Phase 3A local-stack job (reset, pgTAP, DB lint,
-generated-type drift, integration tests, local-mode smoke, unconditional stop) is added when Wave 1
-supplies migrations and database tests; it cannot run meaningfully against an empty schema.
+the fixture suite contains no session material. Wave 1 now supplies migrations and database tests, but
+the Phase 3A local-stack CI job (reset, pgTAP, DB lint, generated-type drift, integration tests,
+local-mode smoke, unconditional stop) is not added until the gate has first passed in the supported
+WSL2 environment and the generated type file is committed. It must not be claimed as running before
+that evidence exists.
 
 ## Integration testing (Phase 3+)
 
@@ -153,7 +186,7 @@ For the founder-approved Phase 3A revision-3 local proof (final technical re-rev
 Later webhook, quota, referral and payment tests remain in their approved phases; they are not Phase 3
 scope.
 
-**Locations:** `supabase/tests/database/`, co-located `src/**/*.test.ts`,
+**Locations:** `supabase/tests/`, co-located `src/**/*.test.ts`,
 `tests/integration/**/*.test.ts`, and `e2e/`
 
 **Runners:** pgTAP via Supabase CLI, Bun test runner, Playwright. Vitest is not added without a proven
@@ -259,7 +292,7 @@ Optional but recommended:
 ### Phase 3 local proof
 
 - use only the disposable local Supabase database;
-- rebuild deterministic catalogue state with `bunx supabase db reset`;
+- rebuild deterministic catalogue state with `bun run db:reset`;
 - keep pgTAP tests transactional and rolled back;
 - create E2E users through the real signup flow with unique fictional addresses;
 - do not seed or manipulate Supabase Auth internals for browser tests;

@@ -34,9 +34,14 @@ Wave 0 adds cross-platform scripts for:
 ```text
 test:unit                 Bun unit/contract tests
 test:fixture              accepted fixture Playwright suite
-test:db                   reset + pgTAP + database lint
+test:db                   reset x2 + fingerprint + pgTAP + database lint + type drift
 test:integration          real local-stack server/Data API/RPC tests
 test:phase3               local auth/learning/security Playwright suite
+db:reset                  apply migrations + deterministic seed locally
+db:test                   pgTAP suites only
+db:lint                   database lint only
+db:fingerprint            semantic seed fingerprint only
+db:types:write            write db/database.types.ts
 verify:db-types           generate to temp and compare with committed types
 verify:client-boundary    forbidden import + client-bundle scan
 phase3:stack:start        start local stack with in-memory parse/redacted output
@@ -146,15 +151,24 @@ The five-minute load and recovery rehearsal are manual acceptance workflows, not
 
 ## 5. Wave 1 — migrations, RLS, commands, and seed
 
-```powershell
-bun run phase3:stack:start
-bunx supabase db reset --local
-bunx supabase test db --local
-bunx supabase db lint --local --level warning --fail-on error
-bun run verify:db-types
-bun run test:integration -- database
+Run inside the supported WSL2 Ubuntu-24.04 environment (see `docs/TOOLING.md`):
+
+```bash
+bun run phase3:stack:start          # gate must print "isolated: true"
+bun run db:reset                    # apply all 18 migrations + deterministic seed
+bun run db:types:write              # first capture; commit db/database.types.ts
+bun run test:db                     # reset x2 + fingerprint + pgTAP + lint + type drift
+bun run phase3:stack:status --json  # read approved API_URL and PUBLISHABLE_KEY
+
+export PHASE3_API_URL="<approved API_URL>"
+export PHASE3_PUBLISHABLE_KEY="<approved PUBLISHABLE_KEY>"
+bun run test:integration
 bun run phase3:stack:stop
 ```
+
+`test:db` and `test:integration` never target a hosted project: the database wrapper rejects hosted
+flags, and the integration suite refuses a non-loopback URL. The publishable key is the only key passed
+to the test process; secret and service-role values remain discarded by the stack wrapper.
 
 Required evidence:
 
@@ -166,6 +180,11 @@ Required evidence:
 - direct Data API/table/RPC bypass attempts fail;
 - concurrent commands use separate connections and produce one transition + one audit event;
 - generated types match the committed file exactly.
+
+Wave 1 is not complete until this gate passes. Until then, the migrations, seed, pgTAP suites, and
+integration suite are statically reviewed only; no database execution is claimed. The current static
+record is `docs/evidence/phase-3/2026-11-05-phase3a-wave1-static/`; it must be superseded by a live
+run before Wave 1 can be accepted.
 
 ## 6. Wave 2 — server boundary and middleware
 
@@ -202,7 +221,7 @@ Required evidence:
 ## 7. Wave 3 — Auth/profile and viewer propagation
 
 ```powershell
-bunx supabase db reset --local
+bun run db:reset
 bun run test:integration -- auth
 bunx playwright test e2e/auth-flow.spec.ts
 bunx playwright test e2e/security-contract.spec.ts
@@ -229,7 +248,7 @@ Required cases:
 ## 8. Wave 4 — community, learning, persistence, and degraded states
 
 ```powershell
-bunx supabase db reset --local
+bun run db:reset
 bun run test:integration -- learning
 bunx playwright test e2e/learning-flow.spec.ts
 bunx playwright test e2e/auth-route-contract.spec.ts

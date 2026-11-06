@@ -167,6 +167,29 @@ Notes:
 - WSL2 must be running for the stack to be reachable from Windows; the guest engine is not a Windows
   service.
 
+### Database gate tooling (Phase 3A Wave 1)
+
+`scripts/phase3-db.ts` reuses the stack wrapper's CLI resolution, telemetry, environment stripping and
+redaction, and adds local-only database commands:
+
+```bash
+bun run db:reset          # supabase db reset --local (migrations + seed)
+bun run db:test           # supabase test db --local (pgTAP)
+bun run db:lint           # supabase db lint --local --level warning --fail-on error
+bun run db:fingerprint    # semantic md5 fingerprint of the deterministic seed
+bun run db:types:write    # write db/database.types.ts from the local schema
+bun run verify:db-types   # generate and compare without writing
+bun run test:db           # full Wave 1 gate: reset x2 + fingerprint + pgTAP + lint + type drift
+```
+
+Every command is constructed with `--local`; hosted flags and `--linked` are rejected before the child
+runs. The fingerprint query runs through `docker exec` inside the local database container, so it is
+only available where the WSL2 Docker engine is reachable. `test:db` compares the fingerprint across two
+clean resets before running any test that writes rows.
+
+The first successful run needs `db:reset` and `db:types:write` before `test:db`, because the gate
+checks the committed `db/database.types.ts` for drift and fails when the file is missing.
+
 ## Model hierarchy rule
 
 High-capability models should strengthen durable project docs.
