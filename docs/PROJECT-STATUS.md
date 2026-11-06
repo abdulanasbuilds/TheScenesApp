@@ -125,12 +125,12 @@ migrated or tested. Retired accounts and credentials must never be reused.
 ## Checkpoint state
 
 - Founder input needed: **no**;
-- working tree: contains the Wave 3 foundation until its local checkpoint commit is created;
+- working tree: clean after the Wave 3 foundation checkpoint;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;
 - Wave 2 implementation checkpoint: `0389591`;
 - Wave 2 completion checkpoint: `7ac5089`;
-- Wave 3 foundation checkpoint: this pending local commit (identifier recorded after commit);
+- Wave 3 foundation checkpoint: `d023fe2`;
 - unresolved risks: database lint records one Low-severity unused local variable warning in
   `public.leave_community`; Waves 3–5 remain incomplete.
