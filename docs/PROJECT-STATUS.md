@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 6 November 2026
-**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 authentication/profile next
+**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 authentication/profile foundation in progress
 **Production status:** not deployed; no production provider, payment or user data is connected
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -34,7 +34,9 @@ These are milestone estimates, not percentages generated from lines of code:
 
 ## What is not complete
 
-Waves 3–5 and every later production service remain incomplete. The local database stack is stopped.
+Wave 3 now has shared registration/profile schemas and direct server-function/service foundations for
+signup, login, logout, verified viewer and profile update. UI connection and live local auth/browser
+evidence remain incomplete. Waves 3–5 and every later production service remain incomplete. The local database stack is stopped.
 No hosted project, retired credential or production service was contacted.
 
 ## Latest verified checks — 6 November 2026
@@ -102,8 +104,9 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-Implement Wave 3 shared registration/profile schemas and direct `createServerFn` wrappers for signup,
-login, logout, verified viewer and profile update; then connect the accepted auth/settings UI.
+Start the isolated local stack and add focused Auth integration tests for the new functions, beginning
+with registration/profile bootstrap, duplicate email/handle, safe login failure and logout cookies.
+After those pass, connect the accepted auth/settings UI and root viewer.
 
 ## When staging will be requested
 
@@ -122,11 +125,12 @@ migrated or tested. Retired accounts and credentials must never be reused.
 ## Checkpoint state
 
 - Founder input needed: **no**;
-- working tree: contains the Wave 2 closure until its completion commit is created;
+- working tree: contains the Wave 3 foundation until its local checkpoint commit is created;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;
 - Wave 2 implementation checkpoint: `0389591`;
-- Wave 2 completion checkpoint: this pending local commit (identifier recorded after commit);
+- Wave 2 completion checkpoint: `7ac5089`;
+- Wave 3 foundation checkpoint: this pending local commit (identifier recorded after commit);
 - unresolved risks: database lint records one Low-severity unused local variable warning in
   `public.leave_community`; Waves 3–5 remain incomplete.
