@@ -52,15 +52,13 @@ suite("Wave 3 local Auth and profile", () => {
   test("hostile metadata and duplicate handle fail atomically", async () => {
     const first = identity("duplicate");
     const owner = client();
-    expect(
-      (
-        await owner.auth.signUp({
-          email: first.email,
-          password,
-          options: { data: { handle: first.handle, display_name: "First Learner" } },
-        })
-      ).error,
-    ).toBeNull();
+    const ownerSignup = await owner.auth.signUp({
+      email: first.email,
+      password,
+      options: { data: { handle: first.handle, display_name: "First Learner" } },
+    });
+    expect(ownerSignup.error).toBeNull();
+    expect(ownerSignup.data.user?.id).toBeString();
     const hostile = identity("hostile");
     const hostileResult = await client().auth.signUp({
       email: hostile.email,
@@ -71,27 +69,48 @@ suite("Wave 3 local Auth and profile", () => {
     });
     expect(hostileResult.error).not.toBeNull();
     expect(hostileResult.data.session).toBeNull();
+    const hostileLogin = await client().auth.signInWithPassword({
+      email: hostile.email,
+      password,
+    });
+    expect(hostileLogin.error).not.toBeNull();
+    expect(hostileLogin.data.session).toBeNull();
+    const hostileProfiles = await client()
+      .from("profiles")
+      .select("id")
+      .eq("handle", hostile.handle);
+    expect(hostileProfiles.error).toBeNull();
+    expect(hostileProfiles.data).toEqual([]);
+
+    const duplicateEmail = identity("other").email;
     const duplicate = await client().auth.signUp({
-      email: identity("other").email,
+      email: duplicateEmail,
       password,
       options: { data: { handle: first.handle, display_name: "Duplicate Learner" } },
     });
     expect(duplicate.error).not.toBeNull();
     expect(duplicate.data.session).toBeNull();
+    const duplicateLogin = await client().auth.signInWithPassword({
+      email: duplicateEmail,
+      password,
+    });
+    expect(duplicateLogin.error).not.toBeNull();
+    expect(duplicateLogin.data.session).toBeNull();
+    const ownerProfiles = await owner.from("profiles").select("id").eq("handle", first.handle);
+    expect(ownerProfiles.error).toBeNull();
+    expect(ownerProfiles.data).toEqual([{ id: ownerSignup.data.user!.id }]);
   });
 
   test("unknown account and wrong password expose the same provider-safe failure class", async () => {
     const account = identity("login");
     const api = client();
-    expect(
-      (
-        await api.auth.signUp({
-          email: account.email,
-          password,
-          options: { data: { handle: account.handle, display_name: "Login Learner" } },
-        })
-      ).error,
-    ).toBeNull();
+    const signup = await api.auth.signUp({
+      email: account.email,
+      password,
+      options: { data: { handle: account.handle, display_name: "Login Learner" } },
+    });
+    expect(signup.error).toBeNull();
+    expect(signup.data.user?.id).toBeString();
     const wrong = await client().auth.signInWithPassword({
       email: account.email,
       password: "wrong-password-123",
@@ -110,28 +129,33 @@ suite("Wave 3 local Auth and profile", () => {
     const b = identity("profileb");
     const clientA = client();
     const clientB = client();
-    const userA = (
-      await clientA.auth.signUp({
-        email: a.email,
-        password,
-        options: { data: { handle: a.handle, display_name: "Profile A" } },
-      })
-    ).data.user!;
-    await clientB.auth.signUp({
+    const signupA = await clientA.auth.signUp({
+      email: a.email,
+      password,
+      options: { data: { handle: a.handle, display_name: "Profile A" } },
+    });
+    expect(signupA.error).toBeNull();
+    expect(signupA.data.user?.id).toBeString();
+    const userA = signupA.data.user!;
+    const signupB = await clientB.auth.signUp({
       email: b.email,
       password,
       options: { data: { handle: b.handle, display_name: "Profile B" } },
     });
-    await clientA
+    expect(signupB.error).toBeNull();
+    expect(signupB.data.user?.id).toBeString();
+    const initial = await clientA
       .from("profiles")
       .update({ headline: "Keep me", bio: "Clear me" })
       .eq("id", userA.id);
+    expect(initial.error).toBeNull();
     const changed = await clientA
       .from("profiles")
       .update({ display_name: "Profile A Updated", bio: null })
       .eq("id", userA.id)
       .select("display_name,headline,bio")
       .single();
+    expect(changed.error).toBeNull();
     expect(changed.data).toEqual({
       display_name: "Profile A Updated",
       headline: "Keep me",
@@ -142,6 +166,14 @@ suite("Wave 3 local Auth and profile", () => {
       .update({ display_name: "Compromised" })
       .eq("id", userA.id)
       .select("id");
+    expect(cross.error).toBeNull();
     expect(cross.data).toEqual([]);
+    const unchanged = await clientA
+      .from("profiles")
+      .select("display_name")
+      .eq("id", userA.id)
+      .single();
+    expect(unchanged.error).toBeNull();
+    expect(unchanged.data).toEqual({ display_name: "Profile A Updated" });
   });
 });

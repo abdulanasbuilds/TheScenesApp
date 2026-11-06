@@ -12,7 +12,7 @@ but their old status paragraphs do not override this page, `AGENTS.md` or accept
 These are milestone estimates, not percentages generated from lines of code:
 
 - clickable fixture application: **100%**;
-- Phase 3A real-data foundation: **about 25%**;
+- Phase 3A real-data foundation: **about 55%**;
 - complete Phase 0–10 product vision: **about 30%**;
 - ready for real public users: **no**.
 
@@ -41,10 +41,12 @@ evidence remain incomplete. Waves 3–5 and every later production service remai
 Profile updates now preserve omitted optional fields, clear only explicit `null`, and route persistence
 through the profile repository. The local limiter now removes expired buckets and enforces a fixed
 maximum bucket count without adding a provider or dependency.
-The first live Auth integration attempt added four real user-scoped cases. Registration/profile
-bootstrap, hostile metadata, duplicate handle, safe login failure and profile isolation execute, but
-promotion is blocked by a local JWT clock/expiry mismatch during `getClaims()`. The broad command also
-selected the unrelated database integration suite, whose concurrency case hit a statement timeout.
+The focused local Auth suite now passes in the supported WSL2 environment: registration/profile
+bootstrap, verified claims, hostile metadata, duplicate-handle atomicity, safe login failure, partial
+profile updates and profile isolation all execute with user-scoped clients. The earlier JWT-expired
+failure was an approximately eight-hour Windows/WSL clock mismatch; running GoTrue and the Auth test
+process together inside WSL resolved it without weakening expiry or claim verification. A dedicated
+`test:integration:auth` command prevents the unrelated database concurrency suite from being selected.
 No hosted project, retired credential or production service was contacted.
 
 ## Latest verified checks — 6 November 2026
@@ -112,9 +114,9 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-Diagnose local host/container JWT time without printing a token, then run only
-`bun test tests/integration/auth`. Continue with logout cookies and transformed HTTP behavior after the
-verified-claims case passes; then connect the accepted auth/settings UI and root viewer.
+Add transformed server-function HTTP tests for safe signup/login responses, cookie creation/clearing,
+verified viewer identity, wrong methods, CSRF and logout. Run the server process in WSL with the local
+stack so claim validation uses one clock, then connect the accepted auth/settings UI and root viewer.
 
 ## When staging will be requested
 
