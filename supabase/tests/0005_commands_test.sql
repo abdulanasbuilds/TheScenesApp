@@ -328,7 +328,7 @@ select is(
     select public.enrol_in_course(
       '50000000-0000-4000-8000-000000000001',
       '7b000000-0000-4000-8000-000000000003'
-    ) ->> 'status'
+    ) -> 'enrollment' ->> 'status'
   ),
   'cancelled',
   'a cancelled enrolment is returned unchanged'

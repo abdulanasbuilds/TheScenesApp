@@ -91,7 +91,12 @@ export function assertLocalOnly(args: readonly string[]): void {
 
 /** Normalises generated types for a stable comparison. */
 export function normaliseGeneratedTypes(input: string): string {
-  return `${input.replace(/\r\n/g, "\n").replace(/\s+$/, "")}\n`;
+  const withoutTrailingSpaces = input
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .join("\n");
+  return `${withoutTrailingSpaces.replace(/\s+$/, "")}\n`;
 }
 
 export function typesMatch(committed: string, generated: string): boolean {

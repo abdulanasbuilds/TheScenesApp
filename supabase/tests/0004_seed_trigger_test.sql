@@ -276,6 +276,7 @@ select throws_ok(
           '{"handle":"nadiaokafor","display_name":"Duplicate Handle"}'::jsonb
         ) $sql$,
   '23505',
+  null,
   'duplicate handles are rejected'
 );
 

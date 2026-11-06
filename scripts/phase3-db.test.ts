@@ -122,6 +122,7 @@ describe("local command construction", () => {
 describe("type comparison", () => {
   test("normalises CRLF and trailing whitespace", () => {
     expect(normaliseGeneratedTypes("a\r\nb\r\n\r\n")).toBe("a\nb\n");
+    expect(normaliseGeneratedTypes("a  \n  \nb\t\n")).toBe("a\n\nb\n");
   });
 
   test("matches equivalent generated output", () => {

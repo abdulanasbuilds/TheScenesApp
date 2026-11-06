@@ -203,21 +203,17 @@ select is((select count(*) from public.community_memberships), 0::bigint, 'learn
 select is((select count(*) from public.course_enrollments), 0::bigint, 'learner two cannot see learner one enrolment');
 select is((select count(*) from public.lesson_completions), 0::bigint, 'learner two cannot see learner one completion');
 select is((select count(*) from public.course_enrollments), 0::bigint, 'learner two cannot see learner one history');
-select is(
-  (
-    with changed as (
-      update public.profiles
-      set display_name = 'Compromised'
-      where id = 'f0000000-0000-4000-8000-000000000001'
-      returning 1
-    )
-    select count(*) from changed
-  ),
-  0::bigint,
-  'learner two cannot update learner one profile'
-);
+update public.profiles
+set display_name = 'Compromised'
+where id = 'f0000000-0000-4000-8000-000000000001';
 
 reset role;
+
+select is(
+  (select display_name from public.profiles where id = 'f0000000-0000-4000-8000-000000000001'),
+  'Learner One',
+  'learner two cannot update learner one profile'
+);
 
 -- ---------------------------------------------------------------------------
 -- Membership loss revokes protected content but preserves history
@@ -293,21 +289,17 @@ select is(
   'not_authenticated',
   'suspended profile cannot complete a lesson'
 );
-select is(
-  (
-    with changed as (
-      update public.profiles
-      set display_name = 'Should Not Change'
-      where id = 'f0000000-0000-4000-8000-000000000005'
-      returning 1
-    )
-    select count(*) from changed
-  ),
-  0::bigint,
-  'suspended profile cannot update itself'
-);
+update public.profiles
+set display_name = 'Should Not Change'
+where id = 'f0000000-0000-4000-8000-000000000005';
 
 reset role;
+
+select is(
+  (select display_name from public.profiles where id = 'f0000000-0000-4000-8000-000000000005'),
+  'Suspended Profile',
+  'suspended profile cannot update itself'
+);
 
 -- ---------------------------------------------------------------------------
 -- Workspace manager scope
@@ -317,7 +309,7 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"f0000000-0000-4000-8000-000000000002","role":"authenticated"}';
 
 select is(
-  (select count(*) from public.courses where status = 'draft'),
+  (select count(*) from public.courses where id = '50000000-0000-4000-8000-000000000003'),
   0::bigint,
   'a stranger does not see draft curriculum'
 );

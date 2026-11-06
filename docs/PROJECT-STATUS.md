@@ -29,12 +29,14 @@ These are milestone estimates, not percentages generated from lines of code:
 
 ## What is not complete
 
-Wave 1 has not run against the local PostgreSQL/Supabase engine. Therefore SQL execution, row-level
-security, grants, Auth behavior, generated database types and concurrency are not yet proven. Waves
-2–5 and every later production service remain incomplete.
+Wave 1 has now run against the local PostgreSQL/Supabase engine, but it has **not passed** its complete
+gate. All migrations and the deterministic seed executed, database types were generated, and
+the latest focused pgTAP run reached 234 passing assertions with no assertion failure. The pgTAP
+process still failed because two remaining RLS test queries read the deliberately non-granted internal
+`courses.status` column. The real API integration suite has therefore not run yet.
 
-The local database container is currently stopped. No hosted project or production service was
-contacted during the 6 November status check.
+Waves 2–5 and every later production service remain incomplete. The local database stack was stopped
+after the failed attempt. No hosted project, old credential or production service was contacted.
 
 ## Latest verified checks — 6 November 2026
 
@@ -48,6 +50,28 @@ contacted during the 6 November status check.
 
 These checks prove that the fixture application and static Wave 1 tooling are healthy. They do not
 prove that the database implementation works at runtime.
+
+## Wave 1 live attempt — 6 November 2026
+
+- `bun run phase3:stack:start`: **passed**; four listeners were loopback-only and the wrapper reported
+  `isolated: true`;
+- `bun run db:reset`: **passed**; all 18 migrations and the deterministic seed applied;
+- `bun run db:types:write`: **passed**; `db/database.types.ts` was generated and inspected;
+- `bun run test:db`: **failed at pgTAP** after both reset fingerprints matched
+  `3dfef29769540bdd5896bcb5ba8ec659`;
+- first focused repair check, `bun run db:test`: **failed** after exposing deeper test-shape issues;
+- second focused repair check, `bun run db:test`: **failed process exit** with **234 assertions passed,
+  0 assertion failures**; execution stopped at `supabase/tests/0003_rls_matrix_test.sql:388` because the
+  test queried a non-readable internal column;
+- `bun run test:integration`: **not run** because the database gate did not pass;
+- `bun run phase3:stack:stop`: **passed**; no project containers remain.
+- `bun test scripts/phase3-db.test.ts`: **16 passed, 0 failed** after generated-type whitespace
+  normalization was added;
+- `git diff --check`: **passed** for the checkpoint.
+
+The two permitted repair attempts are exhausted for this run. This is a test-query blocker, not proof
+that the underlying authorization boundary failed: the database correctly denied reading an ungranted
+column. Wave 1 remains unaccepted until the corrected suite and complete gate pass.
 
 ## Official working mode — lean build + staging
 
@@ -67,14 +91,14 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-Run the Wave 1 local gate in the supported WSL2 environment:
+In `supabase/tests/0003_rls_matrix_test.sql`, replace the remaining `where status = 'draft'` checks at
+the current lines 385 and 419 with checks for the known draft course ID
+`50000000-0000-4000-8000-000000000003`. This tests row visibility without requesting the intentionally
+hidden `status` column.
 
-1. start the loopback-isolated local stack;
-2. apply all migrations and deterministic seed;
-3. generate the database type file;
-4. run reset/fingerprint, pgTAP, database lint and type-drift checks;
-5. run real local Auth/Data API/RPC integration tests;
-6. stop the stack and record redacted evidence.
+Then start the isolated stack, reset it, run `bun run db:test`, and only if that focused check passes,
+run the complete `bun run test:db` gate once. After a passing database gate, obtain the approved local
+URL/publishable key in memory, run `bun run test:integration`, and stop the stack unconditionally.
 
 If that passes, accept Wave 1 and build Waves 2–4 as the approved account → profile → community →
 course → lesson completion → persisted progress slice. Do not pause for another broad planning cycle
@@ -93,3 +117,11 @@ request containing:
 
 Only after explicit approval may a fresh business-controlled staging resource be created, linked,
 migrated or tested. Retired accounts and credentials must never be reused.
+
+## Checkpoint state
+
+- Founder input needed: **no**;
+- working tree: contains the generated database types, repaired pgTAP files and this status update;
+- local checkpoint commit: pending at the time of this status edit; record it in the session report;
+- unresolved risk: Wave 1 database lint, type drift and real API concurrency/authorization integration
+  remain unproven because pgTAP has not yet returned a successful process exit.

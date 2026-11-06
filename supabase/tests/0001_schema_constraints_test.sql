@@ -75,6 +75,7 @@ select throws_ok(
   $sql$ insert into public.categories (slug, name, blurb, accent_hue)
         values ('design', 'Duplicate Design', 'duplicate', 10) $sql$,
   '23505',
+  null,
   'duplicate category slug is rejected'
 );
 
@@ -82,6 +83,7 @@ select throws_ok(
   $sql$ insert into public.categories (slug, name, blurb, accent_hue)
         values ('Bad Slug', 'Bad', 'bad', 10) $sql$,
   '23514',
+  null,
   'non-lowercase slug is rejected'
 );
 
@@ -89,6 +91,7 @@ select throws_ok(
   $sql$ insert into public.categories (slug, name, blurb, accent_hue)
         values ('bad-hue', 'Bad hue', 'bad', 400) $sql$,
   '23514',
+  null,
   'accent hue outside 0..359 is rejected'
 );
 
@@ -96,6 +99,7 @@ select throws_ok(
   $sql$ insert into public.categories (slug, name, blurb, accent_hue)
         values ('short-blurb', 'x', '', 10) $sql$,
   '23514',
+  null,
   'empty category blurb is rejected'
 );
 
@@ -109,6 +113,7 @@ select throws_ok(
           'tagline', 'description', 'private', 'open', 'draft', 10, array['en']
         ) $sql$,
   '23514',
+  null,
   'private community cannot use an open join policy'
 );
 
@@ -122,6 +127,7 @@ select throws_ok(
           'tagline', 'description', 'public', 'open', 'published', 10, array['en']
         ) $sql$,
   '23514',
+  null,
   'published community requires published_at'
 );
 
@@ -135,6 +141,7 @@ select throws_ok(
           'tagline', 'description', 'public', 'open', 'draft', 10, array['English']
         ) $sql$,
   '23514',
+  null,
   'invalid language tag is rejected'
 );
 
@@ -148,6 +155,7 @@ select throws_ok(
           'tagline', 'description', 'public', 'open', 'draft', 10, array['en', 'en']
         ) $sql$,
   '23514',
+  null,
   'duplicate language tags are rejected'
 );
 
@@ -168,6 +176,7 @@ select throws_ok(
           'description', 'beginner', 'included', 'draft'
         ) $sql$,
   '23503',
+  null,
   'a course cannot join a community owned by another workspace'
 );
 
@@ -182,6 +191,7 @@ select throws_ok(
           'cross-course-lesson', 'Cross Course Lesson', 'summary', 'reading', 5, false, 99
         ) $sql$,
   '23503',
+  null,
   'a lesson cannot reference a module from another course'
 );
 
@@ -196,6 +206,7 @@ select throws_ok(
         where e.course_id = '50000000-0000-4000-8000-000000000001'
           and e.user_id = '10000000-0000-4000-8000-000000000003' $sql$,
   '23503',
+  null,
   'a completion cannot link a lesson from another course'
 );
 
@@ -211,6 +222,7 @@ select throws_ok(
           'owner', 'active'
         ) $sql$,
   '23505',
+  null,
   'a workspace cannot have two active owners'
 );
 
@@ -222,6 +234,7 @@ select throws_ok(
           true
         ) $sql$,
   '23505',
+  null,
   'a community cannot have two primary categories'
 );
 
@@ -233,6 +246,7 @@ select throws_ok(
           'editor', 'active'
         ) $sql$,
   '23505',
+  null,
   'a workspace membership is unique per user'
 );
 
@@ -244,6 +258,7 @@ select throws_ok(
   $sql$ insert into public.lesson_contents (lesson_id, body)
         values ('80000000-0000-4000-8000-000000000002', '[]'::jsonb) $sql$,
   '23514',
+  null,
   'lesson content must contain at least one block'
 );
 
@@ -251,6 +266,7 @@ select throws_ok(
   $sql$ insert into public.lesson_contents (lesson_id, body)
         values ('80000000-0000-4000-8000-000000000002', '{"type":"paragraph"}'::jsonb) $sql$,
   '23514',
+  null,
   'lesson content body must be a JSON array'
 );
 
@@ -261,6 +277,7 @@ select throws_ok(
           'http://resources.thescenes.example/x', 99
         ) $sql$,
   '23514',
+  null,
   'lesson resource URLs must be https'
 );
 
@@ -271,6 +288,7 @@ select throws_ok(
           'https://user:pass@resources.thescenes.example/x', 98
         ) $sql$,
   '23514',
+  null,
   'lesson resource URLs cannot embed credentials'
 );
 
@@ -281,6 +299,7 @@ select throws_ok(
           'https://resources.thescenes.example/x', 97
         ) $sql$,
   '23514',
+  null,
   'lesson resource kind is bounded'
 );
 
@@ -295,6 +314,7 @@ select throws_ok(
           '40000000-0000-4000-8000-000000000001', gen_random_uuid()
         ) $sql$,
   '23514',
+  null,
   'audit action is bounded'
 );
 
@@ -305,6 +325,7 @@ select throws_ok(
           '40000000-0000-4000-8000-000000000001', null
         ) $sql$,
   '23502',
+  null,
   'audit request id is required'
 );
 

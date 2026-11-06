@@ -15,7 +15,11 @@ select no_plan();
 -- Schema access
 -- ---------------------------------------------------------------------------
 
-select has_schema_privilege('authenticated', 'private', 'USAGE', 'authenticated may use the private schema');
+select is(
+  has_schema_privilege('authenticated', 'private', 'USAGE'),
+  true,
+  'authenticated may use the private schema'
+);
 select isnt(
   has_schema_privilege('anon', 'private', 'USAGE'),
   true,
@@ -32,6 +36,7 @@ select is(
     join pg_namespace n on n.oid = d.defaclnamespace
     cross join lateral aclexplode(d.defaclacl) a
     where n.nspname = 'public'
+      and d.defaclrole = 'postgres'::regrole
       and (
         a.grantee = 0
         or a.grantee in ('anon'::regrole, 'authenticated'::regrole, 'service_role'::regrole)
@@ -45,12 +50,12 @@ select is(
 -- profiles: column-scoped read and update
 -- ---------------------------------------------------------------------------
 
-select has_column_privilege('anon', 'public.profiles', 'id', 'SELECT', 'anon reads profiles.id');
-select has_column_privilege('anon', 'public.profiles', 'handle', 'SELECT', 'anon reads profiles.handle');
-select has_column_privilege('anon', 'public.profiles', 'display_name', 'SELECT', 'anon reads profiles.display_name');
-select has_column_privilege('anon', 'public.profiles', 'headline', 'SELECT', 'anon reads profiles.headline');
-select has_column_privilege('anon', 'public.profiles', 'bio', 'SELECT', 'anon reads profiles.bio');
-select has_column_privilege('anon', 'public.profiles', 'location', 'SELECT', 'anon reads profiles.location');
+select is(has_column_privilege('anon', 'public.profiles', 'id', 'SELECT'), true, 'anon reads profiles.id');
+select is(has_column_privilege('anon', 'public.profiles', 'handle', 'SELECT'), true, 'anon reads profiles.handle');
+select is(has_column_privilege('anon', 'public.profiles', 'display_name', 'SELECT'), true, 'anon reads profiles.display_name');
+select is(has_column_privilege('anon', 'public.profiles', 'headline', 'SELECT'), true, 'anon reads profiles.headline');
+select is(has_column_privilege('anon', 'public.profiles', 'bio', 'SELECT'), true, 'anon reads profiles.bio');
+select is(has_column_privilege('anon', 'public.profiles', 'location', 'SELECT'), true, 'anon reads profiles.location');
 
 select isnt(
   has_column_privilege('anon', 'public.profiles', 'status', 'SELECT'),
@@ -68,10 +73,10 @@ select isnt(
   'authenticated cannot read profiles.created_at'
 );
 
-select has_column_privilege('authenticated', 'public.profiles', 'display_name', 'UPDATE', 'own display name is updatable');
-select has_column_privilege('authenticated', 'public.profiles', 'headline', 'UPDATE', 'own headline is updatable');
-select has_column_privilege('authenticated', 'public.profiles', 'bio', 'UPDATE', 'own bio is updatable');
-select has_column_privilege('authenticated', 'public.profiles', 'location', 'UPDATE', 'own location is updatable');
+select is(has_column_privilege('authenticated', 'public.profiles', 'display_name', 'UPDATE'), true, 'own display name is updatable');
+select is(has_column_privilege('authenticated', 'public.profiles', 'headline', 'UPDATE'), true, 'own headline is updatable');
+select is(has_column_privilege('authenticated', 'public.profiles', 'bio', 'UPDATE'), true, 'own bio is updatable');
+select is(has_column_privilege('authenticated', 'public.profiles', 'location', 'UPDATE'), true, 'own location is updatable');
 
 select isnt(
   has_column_privilege('authenticated', 'public.profiles', 'handle', 'UPDATE'),
@@ -99,16 +104,16 @@ select isnt(has_table_privilege('authenticated', 'public.profiles', 'DELETE'), t
 -- Read-only catalogue tables: no client writes anywhere
 -- ---------------------------------------------------------------------------
 
-select has_column_privilege('anon', 'public.categories', 'slug', 'SELECT', 'anon reads categories.slug');
-select has_column_privilege('anon', 'public.categories', 'accent_hue', 'SELECT', 'anon reads categories.accent_hue');
+select is(has_column_privilege('anon', 'public.categories', 'slug', 'SELECT'), true, 'anon reads categories.slug');
+select is(has_column_privilege('anon', 'public.categories', 'accent_hue', 'SELECT'), true, 'anon reads categories.accent_hue');
 select isnt(
   has_column_privilege('anon', 'public.categories', 'status', 'SELECT'),
   true,
   'anon cannot read categories.status'
 );
 
-select has_column_privilege('authenticated', 'public.communities', 'slug', 'SELECT', 'authenticated reads communities.slug');
-select has_column_privilege('authenticated', 'public.communities', 'languages', 'SELECT', 'authenticated reads communities.languages');
+select is(has_column_privilege('authenticated', 'public.communities', 'slug', 'SELECT'), true, 'authenticated reads communities.slug');
+select is(has_column_privilege('authenticated', 'public.communities', 'languages', 'SELECT'), true, 'authenticated reads communities.languages');
 select isnt(
   has_column_privilege('authenticated', 'public.communities', 'status', 'SELECT'),
   true,
@@ -128,10 +133,10 @@ select isnt(has_table_privilege('anon', 'public.community_memberships', 'SELECT'
 select isnt(has_table_privilege('anon', 'public.course_enrollments', 'SELECT'), true, 'anon cannot read enrolments');
 select isnt(has_table_privilege('anon', 'public.lesson_completions', 'SELECT'), true, 'anon cannot read completions');
 
-select has_column_privilege('authenticated', 'public.workspace_memberships', 'role', 'SELECT', 'authenticated reads own workspace membership columns');
-select has_column_privilege('authenticated', 'public.community_memberships', 'status', 'SELECT', 'authenticated reads own membership status');
-select has_column_privilege('authenticated', 'public.course_enrollments', 'status', 'SELECT', 'authenticated reads own enrolment status');
-select has_column_privilege('authenticated', 'public.lesson_completions', 'completed_at', 'SELECT', 'authenticated reads own completions');
+select is(has_column_privilege('authenticated', 'public.workspace_memberships', 'role', 'SELECT'), true, 'authenticated reads own workspace membership columns');
+select is(has_column_privilege('authenticated', 'public.community_memberships', 'status', 'SELECT'), true, 'authenticated reads own membership status');
+select is(has_column_privilege('authenticated', 'public.course_enrollments', 'status', 'SELECT'), true, 'authenticated reads own enrolment status');
+select is(has_column_privilege('authenticated', 'public.lesson_completions', 'completed_at', 'SELECT'), true, 'authenticated reads own completions');
 
 select isnt(has_table_privilege('authenticated', 'public.community_memberships', 'INSERT'), true, 'memberships are command-only');
 select isnt(has_table_privilege('authenticated', 'public.community_memberships', 'UPDATE'), true, 'membership updates are command-only');
@@ -151,28 +156,24 @@ select isnt(has_table_privilege('authenticated', 'private.audit_events', 'INSERT
 -- Function execute privileges
 -- ---------------------------------------------------------------------------
 
-select has_function_privilege(
-  'authenticated',
-  'public.join_community(uuid, uuid)',
-  'EXECUTE',
+select is(
+  has_function_privilege('authenticated', 'public.join_community(uuid, uuid)', 'EXECUTE'),
+  true,
   'authenticated may execute join_community'
 );
-select has_function_privilege(
-  'authenticated',
-  'public.leave_community(uuid, uuid)',
-  'EXECUTE',
+select is(
+  has_function_privilege('authenticated', 'public.leave_community(uuid, uuid)', 'EXECUTE'),
+  true,
   'authenticated may execute leave_community'
 );
-select has_function_privilege(
-  'authenticated',
-  'public.enrol_in_course(uuid, uuid)',
-  'EXECUTE',
+select is(
+  has_function_privilege('authenticated', 'public.enrol_in_course(uuid, uuid)', 'EXECUTE'),
+  true,
   'authenticated may execute enrol_in_course'
 );
-select has_function_privilege(
-  'authenticated',
-  'public.complete_lesson(uuid, uuid)',
-  'EXECUTE',
+select is(
+  has_function_privilege('authenticated', 'public.complete_lesson(uuid, uuid)', 'EXECUTE'),
+  true,
   'authenticated may execute complete_lesson'
 );
 
@@ -192,16 +193,14 @@ select isnt(
   'anon cannot execute complete_lesson'
 );
 
-select has_function_privilege(
-  'authenticated',
-  'private.is_active_profile()',
-  'EXECUTE',
+select is(
+  has_function_privilege('authenticated', 'private.is_active_profile()', 'EXECUTE'),
+  true,
   'authenticated may execute is_active_profile'
 );
-select has_function_privilege(
-  'authenticated',
-  'private.can_access_course_content(uuid)',
-  'EXECUTE',
+select is(
+  has_function_privilege('authenticated', 'private.can_access_course_content(uuid)', 'EXECUTE'),
+  true,
   'authenticated may execute can_access_course_content'
 );
 
