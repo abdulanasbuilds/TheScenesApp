@@ -24,6 +24,7 @@
     "db:lint": "bun scripts/phase3-db.ts lint",
     "db:fingerprint": "bun scripts/phase3-db.ts fingerprint",
     "db:types:write": "bun scripts/phase3-db.ts types --write",
+    "verify:client-boundary": "bun scripts/check-client-boundary.ts",
     "test:fixture": "node ./node_modules/@playwright/test/cli.js test",
     "test:e2e": "node ./node_modules/@playwright/test/cli.js test",
     "test:e2e:ui": "node ./node_modules/@playwright/test/cli.js test --ui",

@@ -59,6 +59,7 @@ test("all primary routes render without runtime errors or page overflow", async 
     if (screenshotName) {
       await page.screenshot({
         path: `.playwright/qa-screenshots/${testInfo.project.name}-${screenshotName}.jpg`,
+        caret: "initial",
         fullPage: true,
         type: "jpeg",
         quality: 72,
