@@ -1,20 +1,21 @@
 # The Scenes — Build Phases
 
-## Current implementation checkpoint — 5 November 2026
+## Current implementation checkpoint — 6 November 2026
 
-The user explicitly accepted the complete fixture-backed frontend on 4 November 2026. **Phase 2 is
-accepted.** All 30 requested primary route types are implemented; the current baseline passes 26
-Playwright checks with 4 intentional viewport skips. On 5 November, five independent read-only reviews
-found that the Phase 3 revision-2 plan was not safe to implement literally. Revision 3 is drafted and
-must pass re-review and founder approval. See `docs/FRONTEND-IMPLEMENTATION-AUDIT.md` and
-`docs/PHASE-3-REVISION-3-REVIEW.md`.
+The founder accepted the complete fixture-backed frontend on 4 November 2026. **Phase 2 is accepted.**
+All 30 requested primary route types are implemented; the current baseline passes 26 Playwright checks
+with 4 intentional duplicate viewport skips.
 
-This checkpoint authorizes documentation and configuration-safety corrections only. It does not
-authorize a Supabase stack start, migration, hosted/production authentication, payments, payouts,
-provider credentials or deployment. The founder has now approved isolated local implementation and
-the six revision-3 product rules. A local proof may begin after final technical re-review and the
-clean-install/loopback/listener stack gates. Legacy hosted cleanup is tracked separately and every old
-account/credential is forbidden.
+Phase 3A Wave 0 subsequently passed its clean-install, environment and loopback-isolation gates. Wave
+1 now contains 18 migrations, deterministic seed data, database security/command tests and local gate
+tooling. Its static checks pass, but its live local database gate has not run, so **Wave 1 is not yet
+accepted**. See `docs/PROJECT-STATUS.md` and the Wave 1 evidence record.
+
+On 6 November 2026 the founder selected **lean build + staging** mode under ADR-040. The project will
+finish each essential local safety gate once, build the already-approved learning journey as a useful
+vertical slice, and ask for fresh staging capability only when the integration is ready to verify.
+This does not authorize production, payments, deployment, live customer data or reuse of any old
+account or credential.
 
 ## Mandatory planning gate — every phase
 
@@ -29,51 +30,29 @@ of millions of simultaneous users or issue-free operation. Capacity claims requi
 Phase 3A revision 3 is defined by `docs/PHASE-3-REVISION-3-SPEC.md`,
 `docs/PHASE-3-DATA-AUTHORIZATION-CONTRACT.md`, `docs/PHASE-3-IMPLEMENTATION-PLAN-R3.md`, and
 `docs/PHASE-3-VERIFICATION-RUNBOOK.md`. Revision 2 is historical evidence, not implementation
-authority. Revision 3 has founder approval for isolated local work and remains in final technical
-Review. `docs/SECURITY-SCAN-RESULTS.md` remains the separate legacy incident record; it blocks reuse and
-all hosted/production promotion, not the newly authorized credential-free local proof.
+authority. Revision 3 has founder approval. ADR-040 closes further speculative pre-build review unless
+new evidence exposes a material ambiguity; executable gates now decide promotion.
+`docs/SECURITY-SCAN-RESULTS.md` remains the separate legacy incident record. It blocks reuse and
+production promotion, not credential-free local work or a later explicitly approved fresh staging
+resource.
 
-## Next work — ordered (5 November 2026)
+## Next work — ordered (6 November 2026)
 
-Frontend (Phase 2) is accepted. The next actionable items are listed in order.
-Items marked **[FOUNDER]** need a business decision first; see `docs/FOUNDER-DECISIONS-REQUIRED.md`.
-
-**Gate A — close pre-Phase-3 blockers (documentation, setup and policy only; no production service).**
-
-1. **BUSINESS DECISIONS RESOLVED:** external embedding, a 7% Free sales fee, Pro at $19 / GH₵300 and
-   Pro Plus at $39 / GH₵620 are approved. Create one authoritative current cost model and reconcile
-   the older pricing documents before Phase 7. (ADR-029–030; REVIEW-ACTION-PLAN 4.2)
-2. **SCAN COMPLETED — LEGACY RETIRED:** checksum-verified Gitleaks found zero current-tree findings and
-   13 redacted historical Supabase/JWT findings. The founder permanently retired every old
-   account/credential and authorized a credential-free local proof. If a legacy project still exists,
-   revocation/deletion/log review remains a parallel incident and hosted/production blocker. GitHub
-   setting changes remain separately authorized.
-3. **COMPLETED:** Bun is the sole package manager, `packageManager` is pinned, and the redundant npm
-   lockfile is removed. A fresh-install verification still belongs in the final Gate A check. (4.4)
-4. **COMPLETED:** `SECURITY-RULES.md` now contains numbered/testable rules, the Phase 3 permission
-   matrix, session/CSRF/RLS/function controls, embed/XSS, privacy/retention and future admin MFA. (4.10)
-5. **PROVIDER DIRECTION SELECTED; SLICE IN REVIEW:** `docs/DATA-LAYER-RESEARCH.md` recommends Supabase
-   for the bounded local-only Phase 3A proof, with Neon as runner-up. Revision 3 still needs re-review
-   and founder approval. Production provider, region, backup/recovery target and budget remain open.
-   (ADR-032–033; REVIEW-ACTION-PLAN 4.5, 4.6)
-6. Redesign referral rewards as an append-only ledger with atomic crediting; depends on item 1. (4.7)
-7. **FRONTEND BASELINE COMPLETED:** runtime Google Fonts were removed and local Playwright concurrency
-   was bounded; regression is green (26 passed, 4 intentional skips). Docker/CLI discovery was
-   recorded, but the actual unlinked local stack may not start until revision 3 and Gate A pass.
-
-**Gate B — Phase 3A backend proof (only after revision-3 approval and Gate A; still no payments).**
-
-Approved first slice (ADR-035): sign up/login → profile → community membership → course enrolment →
-lesson completion → reload and observe persisted progress.
-
-- Supabase Auth (signup/login/session) with server-side authorization;
-- PostgreSQL core schema with RLS/policies;
-- learning-progress persistence; Realtime is explicitly deferred from this first slice;
-- validated external resource/link metadata and a server-only provider adapter boundary;
-- connect the already-built fixture routes to real data behind internal adapters.
-
-**Gate C — Phase 4 onward:** email/files/notifications → creator operations → live/media providers →
-payments → marketplace → search/AI → scale, as detailed in the phase sections below.
+1. Run the Wave 1 live local gate in supported WSL2: isolated stack start, migrations/seed, generated
+   types, two-reset fingerprint, pgTAP, database lint, type drift and real integration tests.
+2. If it fails, fix only the evidenced failure and rerun the affected check. If it passes, record
+   redacted evidence and accept Wave 1.
+3. Build Waves 2–4 as the approved sign up/login → profile → community membership → course enrolment
+   → lesson completion → reload/persisted-progress vertical slice. Use focused checks during the build
+   and one complete regression at its promotion gate.
+4. Add a plain setup checker that reports missing variable names and provider settings without reading
+   or printing secret values. Keep fixture and connected modes explicit.
+5. When the slice is locally integration-ready, present one exact request for the fresh staging
+   account/tool, variable names, secure configuration location, cost/permission impact, verification
+   and rollback. Do not ask for secrets in chat.
+6. After explicit action approval, connect only a new business-controlled staging resource, apply the
+   reviewed migrations and run the same user journey/security checks. This is not production approval.
+7. Complete capacity/recovery evidence and final Phase 3 acceptance. Phase 4 onward remains gated.
 
 > Note: parts of `docs/REVIEW-ACTION-PLAN.md` and the historical analysis retained in
 > `docs/FOUNDER-DECISIONS-REQUIRED.md` predate the 4 November frontend authorization. Their updated

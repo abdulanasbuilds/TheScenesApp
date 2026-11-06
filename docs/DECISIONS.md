@@ -336,3 +336,33 @@ The founder approved these environment/provider rules:
    locks included content while preserving progress; allowed rejoin restores access; Phase 3A courses
    are community-scoped; creator selection is intent/preview only; later-phase surfaces remain clearly
    fixture-labelled.
+
+## ADR-040 — Lean integration-ready build and staged activation
+
+Status: Accepted (6 November 2026)
+
+The founder selected a credit-efficient build mode for every remaining phase:
+
+1. Build the smallest useful end-to-end vertical slice. Reuse accepted specifications and evidence;
+   do not repeat broad planning or independent review without new material evidence or a scope change.
+2. Keep the minimum local tests needed to prove data, authorization, secret and failure boundaries.
+   Run an unchanged expensive gate once per promotion point rather than once per agent/session.
+3. Make each external integration plug-ready before requesting access: environment contract, adapter,
+   safe missing-config behavior, setup/health check, tests, verification and rollback instructions.
+4. At the point of need, inspect authorized skills, CLIs, MCPs, browser/runtime and provider tools.
+   Use available capabilities automatically. Ask once for any missing required capability, explaining
+   its purpose, cost, permissions and which work can continue without it.
+5. Never request or accept secrets in chat, source control or documentation. Name variables and direct
+   the founder to an ignored local environment file or approved secret store; verify only presence and
+   behavior, never print values.
+6. After the relevant local gate passes and the integration is ready, the agent may request explicit
+   approval to create or connect a **new business-controlled staging** resource. The request must state
+   the remote mutations, cost, verification and rollback. Retired accounts and credentials remain
+   permanently forbidden.
+7. Staging authorization never implies production, deployment, payments, live customer data or other
+   irreversible/high-impact actions. Those retain their separate phase and approval gates.
+
+This ADR changes execution sequence and credit discipline, not the security baseline. It supersedes
+older wording that required another speculative Phase 3A review before implementation. Executable
+local and staging evidence now decides promotion. It narrows ADR-039's blanket hosted hold only enough
+to permit a later explicitly approved fresh staging resource; production remains unapproved.

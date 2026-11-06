@@ -5,49 +5,51 @@ This directory is the durable operating memory for the project.
 ## Start here
 
 1. [Agent Contract](../AGENTS.md)
-2. [Agent Context](./AGENT-CONTEXT.md)
-3. [Universal Prompt Template](./AGENT-PROMPT-TEMPLATE.md)
-4. [Project Context](./PROJECT-CONTEXT.md)
-5. [Build Contract](./BUILD-CONTRACT.md)
-6. [Design First](./DESIGN-FIRST.md)
-7. [Integrations](./INTEGRATIONS.md)
-8. [Security Rules](./SECURITY-RULES.md)
-9. [Phases](./PHASES.md)
-10. [Tooling](./TOOLING.md)
-11. [CI Contract](./CI-CONTRACT.md)
-12. [Referral & Quota Architecture](./REFERRAL-QUOTA-ARCHITECTURE.md)
-13. [**PRIMARY vs REWARD Infrastructure (CRITICAL)**](./PRIMARY-VS-REWARD-INFRASTRUCTURE.md)
-14. [Reward Infrastructure](./REWARD-INFRASTRUCTURE.md)
-15. [Agent Roles](./AGENT-ROLES.md)
-16. [Decisions](./DECISIONS.md)
-17. [Legacy Context](./LEGACY-CONTEXT.md)
-18. [Legacy Source Inventory](./LEGACY-SOURCE-INVENTORY.md)
-19. [Product Requirements](./PRODUCT-REQUIREMENTS.md) ï¿½ canonical feature source of truth
-20. [Feature Matrix](./FEATURE-MATRIX.md) ï¿½ traceability from requirement to release
-21. [**Skool & Circle Analysis**](./SKOOL-CIRCLE-ANALYSIS.md) ï¿½ competitive intelligence
-22. [Open Product Decisions](./OPEN-PRODUCT-DECISIONS.md) ï¿½ unresolved business questions
-23. [Plain-English Product Explanation](./PLAIN-ENGLISH-PRODUCT-EXPLANATION.md) ï¿½ non-technical overview
-24. [Folder Structure](./FOLDER-STRUCTURE.md) ï¿½ repository organization
-25. [Testing and Quality](./TESTING-AND-QUALITY.md) ï¿½ testing strategy
-26. [**Pricing Cost Research** (CRITICAL)](./PRICING-COST-RESEARCH.md) — infrastructure costs & pricing analysis
-27. [Environment and Cost Guardrails](./ENVIRONMENT-AND-COST-GUARDRAILS.md) ï¿½ cost/security safety
-28. [Data Layer and Platform Research](./DATA-LAYER-RESEARCH.md) — current PostgreSQL/provider comparison and proposed data model
-29. [Mandatory Phase Planning Gate](./PHASE-PLANNING-GATE.md) — required planning, scale, security and verification contract before every phase
-30. [Phase 3A Revision 3 Specification](./PHASE-3-REVISION-3-SPEC.md) — founder-approved isolated local learning slice; final technical review pending
-31. [Phase 3A Data and Authorization Contract](./PHASE-3-DATA-AUTHORIZATION-CONTRACT.md) — exact schema, lifecycle, grants and RLS decisions
-32. [Phase 3A Revision 3 Implementation Plan](./PHASE-3-IMPLEMENTATION-PLAN-R3.md) — proposed file/wave build order; not yet approved
-33. [Phase 3A Verification Runbook](./PHASE-3-VERIFICATION-RUNBOOK.md) — executable CI, security, load and recovery gates
-34. [Phase 3 Revision 3 Review](./PHASE-3-REVISION-3-REVIEW.md) — independent findings, corrections and re-review status
-35. [Phase 3 Revision 2 Specification (historical)](./PHASE-3-BACKEND-SPEC.md)
-36. [Phase 3 Revision 2 Implementation Plan (historical)](./PHASE-3-IMPLEMENTATION-PLAN.md)
-37. [Phase 3 Revision 2 Plan Review (historical)](./PHASE-3-PLAN-REVIEW.md)
-38. [Security Scan Results](./SECURITY-SCAN-RESULTS.md) — redacted scan evidence and required historical credential response
+2. [Current Project Status](./PROJECT-STATUS.md)
+3. [Agent Context](./AGENT-CONTEXT.md)
+4. [Universal Prompt Template](./AGENT-PROMPT-TEMPLATE.md)
+5. [Project Context](./PROJECT-CONTEXT.md)
+6. [Build Contract](./BUILD-CONTRACT.md)
+7. [Design First](./DESIGN-FIRST.md)
+8. [Integrations](./INTEGRATIONS.md)
+9. [Security Rules](./SECURITY-RULES.md)
+10. [Phases](./PHASES.md)
+11. [Tooling](./TOOLING.md)
+12. [CI Contract](./CI-CONTRACT.md)
+13. [Referral & Quota Architecture](./REFERRAL-QUOTA-ARCHITECTURE.md)
+14. [**PRIMARY vs REWARD Infrastructure (CRITICAL)**](./PRIMARY-VS-REWARD-INFRASTRUCTURE.md)
+15. [Reward Infrastructure](./REWARD-INFRASTRUCTURE.md)
+16. [Agent Roles](./AGENT-ROLES.md)
+17. [Decisions](./DECISIONS.md)
+18. [Legacy Context](./LEGACY-CONTEXT.md)
+19. [Legacy Source Inventory](./LEGACY-SOURCE-INVENTORY.md)
+20. [Product Requirements](./PRODUCT-REQUIREMENTS.md) ï¿½ canonical feature source of truth
+21. [Feature Matrix](./FEATURE-MATRIX.md) ï¿½ traceability from requirement to release
+22. [**Skool & Circle Analysis**](./SKOOL-CIRCLE-ANALYSIS.md) ï¿½ competitive intelligence
+23. [Open Product Decisions](./OPEN-PRODUCT-DECISIONS.md) ï¿½ unresolved business questions
+24. [Plain-English Product Explanation](./PLAIN-ENGLISH-PRODUCT-EXPLANATION.md) ï¿½ non-technical overview
+25. [Folder Structure](./FOLDER-STRUCTURE.md) ï¿½ repository organization
+26. [Testing and Quality](./TESTING-AND-QUALITY.md) ï¿½ testing strategy
+27. [**Pricing Cost Research** (CRITICAL)](./PRICING-COST-RESEARCH.md) — infrastructure costs & pricing analysis
+28. [Environment and Cost Guardrails](./ENVIRONMENT-AND-COST-GUARDRAILS.md) ï¿½ cost/security safety
+29. [Data Layer and Platform Research](./DATA-LAYER-RESEARCH.md) — current PostgreSQL/provider comparison and proposed data model
+30. [Mandatory Phase Planning Gate](./PHASE-PLANNING-GATE.md) — required planning, scale, security and verification contract before every phase
+31. [Phase 3A Revision 3 Specification](./PHASE-3-REVISION-3-SPEC.md) — founder-approved learning slice; executable local gates remain
+32. [Phase 3A Data and Authorization Contract](./PHASE-3-DATA-AUTHORIZATION-CONTRACT.md) — exact schema, lifecycle, grants and RLS decisions
+33. [Phase 3A Revision 3 Implementation Plan](./PHASE-3-IMPLEMENTATION-PLAN-R3.md) — active build order under lean build + staging mode
+34. [Phase 3A Verification Runbook](./PHASE-3-VERIFICATION-RUNBOOK.md) — executable CI, security, load and recovery gates
+35. [Phase 3 Revision 3 Review](./PHASE-3-REVISION-3-REVIEW.md) — historical findings; executable gates now decide promotion
+36. [Phase 3 Revision 2 Specification (historical)](./PHASE-3-BACKEND-SPEC.md)
+37. [Phase 3 Revision 2 Implementation Plan (historical)](./PHASE-3-IMPLEMENTATION-PLAN.md)
+38. [Phase 3 Revision 2 Plan Review (historical)](./PHASE-3-PLAN-REVIEW.md)
+39. [Security Scan Results](./SECURITY-SCAN-RESULTS.md) — redacted scan evidence and required historical credential response
 
 ## Documentation hierarchy
 
 ```
 AGENTS.md
   +-- docs/
+      +-- PROJECT-STATUS.md
       +-- AGENT-CONTEXT.md
       +-- AGENT-PROMPT-TEMPLATE.md
       +-- PROJECT-CONTEXT.md
@@ -130,8 +132,8 @@ AGENTS.md
    - Scale, security, reliability, cost and verification requirements
 
 2. **[PHASE-3-REVISION-3-SPEC.md](./PHASE-3-REVISION-3-SPEC.md)** and child contracts
-   - Proposed Phase 3A identity, access, data-mode and local-proof contract
-   - Re-review and founder approval are still required; revision 2 is historical only
+   - Approved Phase 3A identity, access, data-mode and learning-slice contract
+   - Implement under ADR-040 and its executable local/staging gates; revision 2 is historical only
 
 3. **[FOLDER-STRUCTURE.md](./FOLDER-STRUCTURE.md)**
    - Repository organization

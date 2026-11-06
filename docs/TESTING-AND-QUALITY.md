@@ -174,7 +174,7 @@ that evidence exists.
 
 ## Integration testing (Phase 3+)
 
-For the founder-approved Phase 3A revision-3 local proof (final technical re-review pending):
+For the active Phase 3A revision-3 learner slice under ADR-040:
 
 - pgTAP tests cover grants, constraints, RLS and caller-bound database commands;
 - Bun tests cover Zod contracts, cursor/URL policy and safe error mapping;

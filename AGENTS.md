@@ -38,6 +38,8 @@ The platform may use Skool, Circle, Kajabi, and other products as references for
 - Verify before claiming success.
 - Review is a gate.
 - Every phase is documented, reviewed and approved before implementation.
+- Use the leanest evidence-backed path: build one useful vertical slice, run each unchanged safety
+  gate once, and do not spend credits repeating plans or reviews without new evidence or a scope change.
 - Design for a path to millions of registered accounts, then verify staged capacity with evidence;
   never promise issue-free scale without measurements.
 - Durable decisions live in repository files.
@@ -45,10 +47,19 @@ The platform may use Skool, Circle, Kajabi, and other products as references for
 
 ## Current stage
 
-**Phase 2 fixture frontend accepted; Phase 3A local proof founder-approved and in final technical re-review.**
+**Phase 2 fixture frontend accepted; Phase 3A Wave 0 is complete and Wave 1 is implemented but awaits
+its live local database gate. Lean build + staging mode is founder-approved.**
 
-The frontend design gate has passed. Until Phase 3A revision 3 passes final technical review and its
-local-isolation Gate A evidence, agents MUST NOT:
+The frontend design gate and Phase 3A local-isolation Wave 0 have passed. Wave 1 migrations, security
+rules, commands, seed and tests exist and passed static checks, but they are not accepted until the
+documented live local database and integration gate passes.
+
+On 6 November 2026 the founder selected a lean integration-ready workflow: finish the minimum local
+security proof once, build approved vertical slices without repeated speculative review, and request a
+fresh business-controlled staging capability only when the relevant integration is ready to connect.
+See ADR-040 and `docs/PROJECT-STATUS.md`.
+
+Agents MUST NOT:
 
 - connect production authentication;
 - create the production database schema;
@@ -59,6 +70,11 @@ local-isolation Gate A evidence, agents MUST NOT:
 - wire production email/storage/video/Redis/Telegram services;
 - implement the marketplace;
 - implement the production AI layer.
+
+A fresh staging service is not production authorization. Before any staging resource is created,
+linked, migrated or mutated, the agent must present the exact need, variables/tools, cost/permission
+impact and verification plan, then receive explicit approval for that action. Old accounts, projects
+and credentials remain permanently forbidden.
 
 Mocked or deterministic fixture data is permitted for frontend work.
 
@@ -218,9 +234,10 @@ All external services use internal adapters.
 Current direction:
 
 - Cloudflare: hosting and edge/security;
-- Supabase: selected and founder-approved for a bounded, credential-free local Phase 3A proof-of-fit;
-  revision 2 was rejected, revision 3 is in final technical re-review, and old accounts/credentials are
-  permanently forbidden; no hosted or production integration is approved;
+- Supabase: selected for the Phase 3A learning slice; Wave 0 is complete and Wave 1 awaits its live
+  local gate. Old accounts/credentials are permanently forbidden. Under ADR-040, the agent may request
+  a fresh business-controlled staging connection after local integration readiness; no production use
+  is approved;
 - Cloudflare R2: conditional later use for separately approved platform-managed objects; launch
   creator resources use external links under ADR-029;
 - Resend: important transactional email;
@@ -290,6 +307,40 @@ Use available:
 - approved MCPs;
 - project skills;
 - current official provider documentation.
+
+### Capability and credential escalation
+
+For every phase or vertical slice:
+
+1. inspect the skills, CLIs, MCPs, browser/runtime tools and provider tooling actually available;
+2. use the smallest capable set automatically when it is already available and authorized;
+3. if a required capability is missing, ask once at the point of need and explain in plain language
+   what it is, why it is needed, whether it costs money and what work can continue without it;
+4. do not block unrelated implementation while waiting for a later integration capability;
+5. request provider configuration only when integration-ready code, validation and a verification
+   command already exist;
+6. never ask the founder to paste a secret into chat, an issue, a document or source control;
+7. name the required variables and direct the founder to an ignored local environment file or the
+   approved platform secret store; verify presence without printing values;
+8. distinguish fixture, local, staging and production modes explicitly; never silently fall back to
+   fixtures after a configured integration fails;
+9. treat remote creation, linking, migration, deployment, payment or production mutation as a
+   separately approved action even when a CLI or MCP can perform it.
+
+Integration-ready means the slice has an environment contract, safe missing-configuration behavior,
+provider adapter, setup/health check, migrations or setup instructions, relevant tests and a clear
+staging verification command. Keys alone are never represented as proof that an integration works.
+
+### Credit-efficient execution
+
+- Prefer one primary implementation/review loop; add specialist review only for a material security,
+  data, payment or provider risk.
+- Reuse accepted decisions and evidence. Do not rewrite a plan because a new agent/session begins.
+- Run focused checks while building and one full regression at the promotion gate.
+- Do not rerun an unchanged expensive check unless the environment changed, the previous evidence is
+  stale, or the check is required for final acceptance.
+- Keep one current plain-English checkpoint in `docs/PROJECT-STATUS.md`; historical documents must
+  link to it rather than pretending to be the current status.
 
 Tool availability does not grant authority. The current phase and this contract decide what may be changed.
 

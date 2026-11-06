@@ -1,9 +1,9 @@
-# The Scenes — Phase 3A Local Backend Proof Specification (Revision 3)
+# The Scenes — Phase 3A Backend Learning Slice Specification (Revision 3)
 
-**Status:** FOUNDER-APPROVED FOR ISOLATED LOCAL PROOF; FINAL TECHNICAL RE-REVIEW PENDING
+**Status:** ACTIVE — LOCAL EVIDENCE FIRST; REQUEST-ONLY FRESH STAGING GATE UNDER ADR-040
 **Prepared:** 5 November 2026
-**Phase boundary:** Phase 3A, bounded local-only proof
-**Production/remote authorization:** none
+**Phase boundary:** Phase 3A, bounded learner slice; local proof before any staging request
+**Production/remote authorization:** no production; no staging mutation until an exact request is approved
 **Prior revision:** `PHASE-3-BACKEND-SPEC.md` revision 2 (historical review record)
 **Detailed data contract:** `PHASE-3-DATA-AUTHORIZATION-CONTRACT.md`
 **File-by-file build order:** `PHASE-3-IMPLEMENTATION-PLAN-R3.md`
@@ -11,12 +11,13 @@
 
 ## 1. Authority and purpose
 
-This document is the proposed canonical contract for the first Phase 3 backend slice. It resolves the
+This document is the canonical contract for the first Phase 3 backend slice. It resolves the
 material gaps found by five independent read-only reviews of revision 2. The founder approved the six
-product rules and isolated local implementation on 5 November 2026. Until the corrected revision 3
-passes final technical re-review and Wave 0 isolation checks, work remains limited to documentation and
-configuration safety. No hosted account, remote credential, production data, deployment, or later-phase
-feature is authorized.
+product rules and isolated local implementation on 5 November 2026, then approved ADR-040 lean build +
+staging mode on 6 November. Wave 0 is complete. Executable local gates now decide promotion; no further
+broad speculative review is required unless new evidence changes scope or exposes a material risk. A
+fresh staging request may be presented only after local integration readiness. No production data,
+deployment, payment or later-phase feature is authorized.
 
 Where revision 2 conflicts with this document or its named child contracts, revision 3 controls. The
 older files remain evidence of the review history and must not be used as implementation authority.
@@ -75,7 +76,8 @@ Success is behavior-level evidence, not the existence of files:
 
 ### 4.2 Explicit non-goals
 
-- hosted or production Supabase;
+- hosted Supabase during the local proof, and all production Supabase use; a fresh staging connection
+  is a separate ADR-040 promotion request after local integration readiness;
 - a production data-platform decision, region, budget, RPO, or RTO;
 - real email delivery, verification delivery, or password-reset email;
 - production/distributed rate limiting, CAPTCHA, or Redis;
@@ -85,7 +87,8 @@ Success is behavior-level evidence, not the existence of files:
 - native file, video, or live hosting;
 - Realtime;
 - moderation automation, private messaging, admin/service impersonation, AI, or semantic search;
-- real user data, production migration, deployment, or provider-side remote changes.
+- real user data, production migration/deployment, or any provider-side remote change that was not
+  separately presented and approved under ADR-040.
 
 ## 5. Resolved product contract
 
@@ -383,20 +386,21 @@ Phase 3A can be accepted only when:
 - reset/seed, database types, query plans, local load, overload recovery, dump/restore, and evidence
   cleanup meet the runbook;
 - all relevant checks pass from a clean checkout and the final changed paths are reviewed;
-- no hosted, payment, email, native-media, creator-role, referral, marketplace, Realtime, AI, or
-  production work entered the slice.
+- no unapproved hosted, payment, email, native-media, creator-role, referral, marketplace, Realtime,
+  AI, production or live-customer work entered the slice.
 
 ## 15. Start blockers and approval record
 
 ```text
-Planning status: REVISION 3 CORRECTIONS COMPLETE; FINAL TECHNICAL RE-REVIEW PENDING
-Founder approval: APPROVED FOR ISOLATED LOCAL IMPLEMENTATION, 5 November 2026
-Approved scope version/date: Phase 3A revision 3 / 5 November 2026
+Planning status: ACTIVE UNDER ADR-040 LEAN BUILD + STAGING MODE
+Founder approval: LOCAL IMPLEMENTATION APPROVED 5 NOVEMBER; LEAN BUILD + STAGING MODE APPROVED 6 NOVEMBER 2026
+Approved scope version/date: Phase 3A revision 3 / 6 November 2026
 Approved first vertical slice: journey in Section 2 and six product rules in Section 5
-Production/remote actions authorized: NONE
+Production actions authorized: NONE
+Remote staging actions authorized: NONE YET; present one exact request after local integration readiness
 Known blockers:
-  1. final revision-3 technical/security/operations re-review;
-  2. clean-install, local isolation, exact dependency/config, and local-stack Wave 0 evidence.
+  1. Wave 1 live local database/integration gate and generated types;
+  2. Waves 2–4 connected local vertical slice before a staging request.
 Parallel incident action (not a local blocker): revoke/delete any still-existing legacy hosted project
 and review its logs. Legacy accounts/credentials are retired and forbidden from all new work.
 Required re-review triggers:

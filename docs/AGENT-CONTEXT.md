@@ -14,11 +14,15 @@ Before doing work:
 4. Identify the current phase in `docs/PHASES.md`.
 5. Read `docs/PHASE-PLANNING-GATE.md` and the current phase specification; do not implement an
    unreviewed/unapproved plan.
-6. Check available tools/skills/CLI/MCP/browser capabilities before claiming they exist.
-7. Build only the requested phase slice.
-8. Verify under the plan's stated correctness, security, scale and recovery conditions.
-9. Review the diff.
-10. Update durable documentation if an architecture decision changed.
+6. Read `docs/PROJECT-STATUS.md` for the current checkpoint; historical status text is not authority.
+7. Check available tools/skills/CLI/MCP/browser capabilities before claiming they exist. Use available
+   authorized capabilities automatically; ask once for a missing required capability at the point of
+   need, with its purpose, cost and permission impact.
+8. Build only the requested phase slice as the smallest useful end-to-end vertical result.
+9. Verify under the plan's stated correctness, security, scale and recovery conditions without
+   repeating unchanged expensive gates.
+10. Review the diff.
+11. Update durable documentation if an architecture decision changed.
 
 ## Product context
 
@@ -64,9 +68,10 @@ External providers sit behind internal adapters.
 Current direction:
 
 - Cloudflare: hosting/edge/security.
-- Supabase: founder-approved for a bounded, credential-free local Phase 3A proof-of-fit. Revision 3 is
-  in final technical re-review and local-isolation Gate A; old accounts/credentials are permanently
-  forbidden, no service is connected, and no hosted/production use is approved.
+- Supabase: selected for the Phase 3A learning slice. Wave 0 is complete and Wave 1 awaits its live
+  local gate. Old accounts/credentials are permanently forbidden. ADR-040 permits one exact request
+  for a fresh business-controlled staging connection after local integration readiness; production
+  remains unapproved.
 - Cloudflare R2: conditional later use for separately approved platform-managed objects. Launch
   creator resources use external links under ADR-029.
 - Resend: important transactional email.
@@ -76,6 +81,12 @@ Current direction:
 - Payments: deferred.
 - Search: Postgres first; smarter search later.
 - PWA/Web Push: installability and consented notifications.
+
+The founder selected lean build + staging mode on 6 November 2026. Finish minimum local data/security
+gates once, make integrations plug-ready, and request fresh business-controlled staging access only
+when the relevant slice has an environment contract and verification command. Never request secrets
+in chat; the founder places them in an ignored environment file or approved secret store. No staging
+decision is production authorization.
 
 Provider quotas are not business entitlements. Never promise an individual more provider capacity than the system currently has.
 

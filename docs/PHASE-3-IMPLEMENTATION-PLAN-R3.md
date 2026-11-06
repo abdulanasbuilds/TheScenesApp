@@ -1,20 +1,22 @@
 # The Scenes — Phase 3A Implementation Plan (Revision 3)
 
-**Status:** FOUNDER-APPROVED FOR ISOLATED LOCAL PROOF; FINAL TECHNICAL RE-REVIEW PENDING
+**Status:** ACTIVE — WAVE 0 COMPLETE; WAVE 1 IMPLEMENTED WITH LIVE LOCAL GATE PENDING; LEAN BUILD + STAGING APPROVED
 **Parent specification:** `PHASE-3-REVISION-3-SPEC.md`
 **Data/authorization contract:** `PHASE-3-DATA-AUTHORIZATION-CONTRACT.md`
 **Verification runbook:** `PHASE-3-VERIFICATION-RUNBOOK.md`
-**Remote/production authorization:** none
+**Remote/production authorization:** no production; request-only staging gate after local integration readiness
 
 ## 1. Build rule
 
-No wave starts before the previous wave's evidence passes. Provider, hosted target, auth/cookie model,
-tenant/access boundary, or material scope/cost changes return to Review. The current tree contains
-pre-existing uncommitted work; implementation must preserve it and never use a broad reset/revert.
+No dependent wave is promoted before the previous wave's evidence passes. Work that does not depend on
+an unproven behavior may continue inside the same approved vertical slice. Provider, hosted target,
+auth/cookie model, tenant/access boundary, or material scope/cost changes return to Review. Do not
+repeat speculative review when scope and evidence are unchanged; executable gates decide promotion
+under ADR-040. Preserve unrelated work and never use a broad reset/revert.
 
-The Supabase packages are **proposed, not currently installed or locked**:
+The Phase 3A packages are **installed and locked at these approved versions**:
 
-| Package | Exact proposed version | Purpose |
+| Package | Locked version | Purpose |
 |---|---:|---|
 | `@supabase/supabase-js` | `2.119.0` | user-scoped server Data API/Auth client |
 | `@supabase/ssr` | `0.12.7` | current cookie `getAll/setAll` contract |
@@ -221,8 +223,8 @@ bundle scan verify the boundary.
 
 ### Wave 0 — approved safety/configuration foundation
 
-Precondition: founder approval, final technical re-review, and Wave 0 isolation readiness. Legacy
-hosted accounts/credentials are forbidden and their cleanup proceeds as a separate incident action.
+Status: complete. Founder approval and the recorded clean-install/loopback-isolation evidence closed
+this gate. Legacy hosted accounts/credentials remain forbidden and their cleanup proceeds separately.
 
 Deliver:
 
@@ -379,13 +381,15 @@ Wave 5 records these as fixture-only/not connected:
 ## 8. Approval record
 
 ```text
-Planning status: REVISION 3 CORRECTIONS COMPLETE; FINAL TECHNICAL RE-REVIEW PENDING
-Founder approval: APPROVED FOR ISOLATED LOCAL IMPLEMENTATION, 5 November 2026
-Approved scope/date: Phase 3A revision 3 / 5 November 2026
+Planning status: ACTIVE UNDER ADR-040 LEAN BUILD + STAGING MODE
+Founder approval: LOCAL IMPLEMENTATION APPROVED 5 NOVEMBER; LEAN BUILD + STAGING MODE APPROVED 6 NOVEMBER 2026
+Approved scope/date: Phase 3A revision 3 vertical slice / 6 November 2026
 First vertical slice: approved in PHASE-3-REVISION-3-SPEC.md
-Production/remote actions authorized: NONE
+Production actions authorized: NONE
+Remote staging actions authorized: NONE YET; agent may present one exact request after local integration readiness
 Known blockers:
-  final revision-3 technical/security/operations re-review;
-  clean install and loopback/listener/local-stack Wave 0 evidence.
+  Wave 1 live local database/integration gate;
+  generated database types;
+  Waves 2–4 connected local vertical slice before a staging request.
 Parallel incident action: revoke/delete any still-existing legacy hosted project; never reuse it.
 ```

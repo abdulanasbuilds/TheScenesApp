@@ -1,6 +1,6 @@
 # The Scenes — Phase 3 Revision 3 Review Record
 
-**Status:** FOUNDER-APPROVED LOCAL DIRECTION; FRAMEWORK CORRECTIONS APPLIED 5 NOVEMBER 2026, VERIFIED AGAINST INSTALLED SOURCE
+**Status:** HISTORICAL PLANNING REVIEW CLOSED FOR IMPLEMENTATION UNDER ADR-040; EXECUTABLE GATES REMAIN
 **Date:** 5 November 2026
 **Scope:** revision 2 plans, current source/tests/configuration, current official provider/framework guidance
 
@@ -106,3 +106,15 @@ Both are now corrected in the canonical documents:
 
 Both are implementation-shape corrections with no product or scope change. Wave 0 must add the two
 asserting tests before any Wave 1 migration.
+
+## 7. Lean execution decision — 6 November 2026
+
+The founder selected ADR-040 lean build + staging mode after Wave 0 completed and Wave 1 implementation
+was committed with static evidence. This closes another broad speculative pre-build review as a
+prerequisite. The unproven database behavior is not waived: the Wave 1 live local gate, generated types
+and integration tests still must pass before Wave 1 is accepted.
+
+If executable evidence reveals a new Critical/High ambiguity, stop the affected slice and correct it.
+Otherwise continue the approved vertical journey without convening another multi-review cycle. A fresh
+staging request may be presented only after the relevant local slice is integration-ready; no remote
+mutation or production action is authorized by this review record.

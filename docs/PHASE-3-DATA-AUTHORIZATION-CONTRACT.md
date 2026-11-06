@@ -1,7 +1,7 @@
 # The Scenes — Phase 3A Data and Authorization Contract
 
-**Status:** FOUNDER-APPROVED PRODUCT RULES; FINAL TECHNICAL RE-REVIEW PENDING
-**Applies to:** local-only learner proof
+**Status:** APPROVED IMPLEMENTATION CONTRACT; EXECUTABLE LOCAL GATES REMAIN
+**Applies to:** Phase 3A learner slice in local mode and any later explicitly approved fresh staging environment
 **Parent:** `PHASE-3-REVISION-3-SPEC.md`
 
 ## 1. Purpose

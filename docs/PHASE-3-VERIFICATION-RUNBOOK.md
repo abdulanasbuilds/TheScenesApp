@@ -1,6 +1,6 @@
 # The Scenes — Phase 3A Verification and Recovery Runbook
 
-**Status:** FOUNDER-APPROVED LOCAL DIRECTION; FINAL TECHNICAL RE-REVIEW PENDING
+**Status:** ACTIVE EXECUTABLE GATE UNDER ADR-040 LEAN BUILD + STAGING MODE
 **Parent:** `PHASE-3-REVISION-3-SPEC.md`
 
 ## 1. Evidence rules
@@ -96,10 +96,10 @@ Pass conditions:
 
 ### Preconditions
 
-- founder-approved revision 3 has passed final technical re-review;
+- founder-approved revision 3 and the recorded Wave 0 isolation decision;
 - legacy hosted accounts/credentials are blocked from every command and environment;
 - hosted legacy cleanup/audit remains a separately tracked incident action;
-- no remote/production action authorized.
+- no remote or production action occurred during Wave 0.
 
 ### Checks
 

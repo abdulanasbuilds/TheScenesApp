@@ -2,6 +2,9 @@
 
 This document explains The Scenes in simple language. It is for founders, operators, and stakeholders who need to understand the product without engineering jargon.
 
+> Product vision lives here. For the current build stage, verified checks, percentage estimate and
+> exact next step, use [`PROJECT-STATUS.md`](./PROJECT-STATUS.md).
+
 ---
 
 ## What is The Scenes?
@@ -277,11 +280,14 @@ The security approach:
 
 ## What is being built now?
 
-**Phase 0 (current):** Establishing the complete project documentation, architecture decisions, and governance framework. This ensures any future developer or AI agent can understand the product without depending on conversations or memory.
+Phases 0–2 are complete: the project rules, design direction and 30-page fixture-backed application
+are established and verified across desktop, tablet and mobile.
 
-**Phase 1 (next):** Designing the entire application — every screen, every flow, every state. Multiple design directions will be created and compared before committing to one.
-
-**Phase 2:** Building a fully navigable frontend using fake (but realistic) data. The entire product experience will be testable without a real backend.
+The current work is **Phase 3A**: turning the demonstration into a safe real-data learning slice. The
+local safety setup is complete. The first database implementation is written but still needs its live
+local execution test. After that minimum gate passes, the team will build the account → profile →
+community → course → lesson-progress journey end to end. When that integration is ready, the agent
+will ask for fresh staging access and verify it there. Production remains a separate later decision.
 
 ---
 

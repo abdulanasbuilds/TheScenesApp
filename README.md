@@ -9,6 +9,7 @@ Read `AGENTS.md` before doing any work.
 Then read:
 
 - `docs/README.md`
+- `docs/PROJECT-STATUS.md`
 - `docs/PROJECT-CONTEXT.md`
 - `docs/BUILD-CONTRACT.md`
 - `docs/DESIGN-FIRST.md`
@@ -18,12 +19,14 @@ Then read:
 
 ## Current state
 
-Phase 2's complete fixture-backed frontend is accepted.
+Phase 2's complete fixture-backed frontend is accepted. Phase 3A Wave 0 is complete. Wave 1's local
+database implementation and tests are committed and pass static checks, but the live local database
+gate has not run, so Wave 1 is not yet accepted.
 
-The next slice is a bounded, credential-free local Phase 3A Supabase proof. Revision 2 was rejected
-after independent review; the founder approved revision 3's product rules and isolated local direction,
-and final technical review/local-isolation gates remain. Old accounts/credentials are forbidden. No
-hosted or production backend is approved.
+The founder selected lean build + staging mode on 6 November 2026: complete the minimum local safety
+gate once, build approved vertical slices, and ask for fresh staging access only when an integration is
+ready. Old accounts/credentials are forbidden. No production backend, payment or deployment is
+approved. See `docs/PROJECT-STATUS.md`.
 
 ## Core stack direction
 

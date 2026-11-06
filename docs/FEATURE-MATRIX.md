@@ -153,7 +153,7 @@ Cross-reference: All requirement IDs are defined in `docs/PRODUCT-REQUIREMENTS.m
 | 0 — Governance                   | **BUILT / ONGOING**           | Agent contract, docs, CI, architecture decisions    |
 | 1 — Design exploration           | **DESIGNED**                  | Reference-informed direction implemented in code    |
 | 2 — Frontend with fixtures       | **BUILT — ACCEPTED**          | 30 primary pages, responsive shells and local flows |
-| 3A — Local backend proof         | **FOUNDER APPROVED — FINAL TECHNICAL REVIEW** | Isolated local learner proof; no hosted provider    |
+| 3A — Backend learning slice      | **WAVE 0 COMPLETE; WAVE 1 LIVE GATE PENDING** | Local proof, then explicitly approved fresh staging |
 | 4 — Email/files/notifications    | NOT STARTED                   | Resend, PWA, Redis; conditional narrow R2 use       |
 | 5 — Creator operations           | NOT STARTED                   | Teacher flows, referrals, messaging, moderation     |
 | 6 — Live/media/storage providers | DEFERRED (ADR-029)            | Conditional adapters; new decision required         |
