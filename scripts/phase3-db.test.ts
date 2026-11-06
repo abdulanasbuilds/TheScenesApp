@@ -104,6 +104,21 @@ describe("local command construction", () => {
     }
   });
 
+  test("container-based database commands use the loopback-only Docker network", () => {
+    expect(cliArgsFor("reset")).toEqual([
+      "db",
+      "reset",
+      "--local",
+      "--network-id",
+      "the-scenes-phase3-loopback",
+    ]);
+    for (const command of ["test", "lint"] as const) {
+      expect(cliArgsFor(command)).toContain("--network-id");
+      expect(cliArgsFor(command)).toContain("the-scenes-phase3-loopback");
+    }
+    expect(cliArgsFor("types")).not.toContain("--network-id");
+  });
+
   test("assertLocalOnly rejects missing --local and hosted flags", () => {
     expect(() => assertLocalOnly(["db", "reset"])).toThrow("without --local");
     expect(() => assertLocalOnly(["db", "reset", "--local", "--linked"])).toThrow(

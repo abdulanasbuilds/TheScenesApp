@@ -1,0 +1,46 @@
+{
+  "runId": "2026-11-06-phase3a-wave1-live",
+  "phase": "Phase 3A (Revision 3) — Wave 1",
+  "date": "2026-11-06",
+  "result": "pass; wave-1-accepted-locally",
+  "tree": {
+    "branch": "main",
+    "baseCommit": "e0d4653",
+    "committed": false,
+    "note": "Wave 1 repairs and this redacted evidence are committed together."
+  },
+  "environment": {
+    "runLocation": "WSL2 Ubuntu 24.04 Linux Docker Engine with Windows test coordinator",
+    "bun": "1.4.4",
+    "supabaseCli": "3.0.0",
+    "postgresMajor": 17,
+    "dataMode": "local database gate"
+  },
+  "verification": {
+    "isolatedStart": true,
+    "listeners": ["127.0.0.1:54321", "127.0.0.1:54322"],
+    "migrationsApplied": 18,
+    "seedFingerprintReset1": "3dfef29769540bdd5896bcb5ba8ec659",
+    "seedFingerprintReset2": "3dfef29769540bdd5896bcb5ba8ec659",
+    "pgtap": { "files": 5, "passed": 239, "failed": 0 },
+    "databaseLint": "pass with one non-blocking unused-variable warning",
+    "generatedTypeDrift": "pass",
+    "integration": { "passed": 7, "failed": 0, "assertions": 117 },
+    "unit": { "passed": 127, "failed": 0, "files": 12 },
+    "typecheck": 0,
+    "lint": 0,
+    "build": 0,
+    "diffCheck": 0,
+    "containersRemaining": 0
+  },
+  "security": {
+    "directTableDenial": "pass",
+    "crossUserIsolation": "pass",
+    "privateResourceConcealment": "pass",
+    "concurrentCommandSingleTransition": "pass",
+    "loopbackPreservedAcrossResetAndTest": true
+  },
+  "remoteActions": false,
+  "productionActions": false,
+  "secretsExposed": false
+}

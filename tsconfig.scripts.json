@@ -6,5 +6,5 @@
     "types": ["bun", "node"],
     "noEmit": true
   },
-  "include": ["scripts/**/*.ts", "tests/**/*.ts"]
+  "include": ["scripts/**/*.ts", "tests/**/*.ts", "db/**/*.ts"]
 }

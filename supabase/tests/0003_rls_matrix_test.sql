@@ -382,7 +382,7 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"f0000000-0000-4000-8000-000000000002","role":"authenticated"}';
 
 select is(
-  (select count(*) from public.courses where status = 'draft'),
+  (select count(*) from public.courses where id = '50000000-0000-4000-8000-000000000003'),
   1::bigint,
   'an active editor sees draft curriculum in their workspace'
 );
@@ -416,7 +416,7 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"f0000000-0000-4000-8000-000000000001","role":"authenticated"}';
 
 select is(
-  (select count(*) from public.courses where status = 'draft'),
+  (select count(*) from public.courses where id = '50000000-0000-4000-8000-000000000003'),
   0::bigint,
   'a workspace viewer does not receive draft access'
 );

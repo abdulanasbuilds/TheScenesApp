@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 6 November 2026
-**Current stage:** Phase 3A — local database gate, then lean end-to-end learning slice
+**Current stage:** Phase 3A — Wave 1 accepted locally; Wave 2 server boundary next
 **Production status:** not deployed; no production provider, payment or user data is connected
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -25,18 +25,14 @@ These are milestone estimates, not percentages generated from lines of code:
 - Phase 3A Wave 0 clean-install, environment and loopback-isolation setup;
 - Phase 3A Wave 1 implementation files: 18 migrations, deterministic seed, database security tests,
   command tests and local database gate tooling;
-- Wave 1 static review and non-database checks.
+- Phase 3A Wave 1 live local gate: migrations, deterministic resets, 239 database tests, schema lint,
+  generated-type drift and seven real API integration tests;
+- loopback isolation preserved across database resets and pgTAP helper containers.
 
 ## What is not complete
 
-Wave 1 has now run against the local PostgreSQL/Supabase engine, but it has **not passed** its complete
-gate. All migrations and the deterministic seed executed, database types were generated, and
-the latest focused pgTAP run reached 234 passing assertions with no assertion failure. The pgTAP
-process still failed because two remaining RLS test queries read the deliberately non-granted internal
-`courses.status` column. The real API integration suite has therefore not run yet.
-
-Waves 2–5 and every later production service remain incomplete. The local database stack was stopped
-after the failed attempt. No hosted project, old credential or production service was contacted.
+Waves 2–5 and every later production service remain incomplete. The local database stack is stopped.
+No hosted project, retired credential or production service was contacted.
 
 ## Latest verified checks — 6 November 2026
 
@@ -51,27 +47,19 @@ after the failed attempt. No hosted project, old credential or production servic
 These checks prove that the fixture application and static Wave 1 tooling are healthy. They do not
 prove that the database implementation works at runtime.
 
-## Wave 1 live attempt — 6 November 2026
+## Wave 1 live acceptance — 6 November 2026
 
-- `bun run phase3:stack:start`: **passed**; four listeners were loopback-only and the wrapper reported
-  `isolated: true`;
-- `bun run db:reset`: **passed**; all 18 migrations and the deterministic seed applied;
-- `bun run db:types:write`: **passed**; `db/database.types.ts` was generated and inspected;
-- `bun run test:db`: **failed at pgTAP** after both reset fingerprints matched
-  `3dfef29769540bdd5896bcb5ba8ec659`;
-- first focused repair check, `bun run db:test`: **failed** after exposing deeper test-shape issues;
-- second focused repair check, `bun run db:test`: **failed process exit** with **234 assertions passed,
-  0 assertion failures**; execution stopped at `supabase/tests/0003_rls_matrix_test.sql:388` because the
-  test queried a non-readable internal column;
-- `bun run test:integration`: **not run** because the database gate did not pass;
+- `bun run phase3:stack:start`: **passed**, `isolated: true`;
+- `bun run db:reset`: **passed**, all 18 migrations and seed applied;
+- `bun run db:test`: **239 passed, 0 failed**;
+- `bun run test:db`: **passed**; both reset fingerprints matched
+  `3dfef29769540bdd5896bcb5ba8ec659`, database lint passed and generated types matched;
+- `bun run test:integration`: **7 passed, 0 failed**, 117 assertions;
+- `bun run test:unit`: **127 passed, 0 failed**;
+- `bun run typecheck`, `bun run lint`, `bun run build`, `git diff --check`: **passed**;
 - `bun run phase3:stack:stop`: **passed**; no project containers remain.
-- `bun test scripts/phase3-db.test.ts`: **16 passed, 0 failed** after generated-type whitespace
-  normalization was added;
-- `git diff --check`: **passed** for the checkpoint.
 
-The two permitted repair attempts are exhausted for this run. This is a test-query blocker, not proof
-that the underlying authorization boundary failed: the database correctly denied reading an ungranted
-column. Wave 1 remains unaccepted until the corrected suite and complete gate pass.
+Redacted evidence is in `docs/evidence/phase-3/2026-11-06-phase3a-wave1-live/`.
 
 ## Official working mode — lean build + staging
 
@@ -91,18 +79,9 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-In `supabase/tests/0003_rls_matrix_test.sql`, replace the remaining `where status = 'draft'` checks at
-the current lines 385 and 419 with checks for the known draft course ID
-`50000000-0000-4000-8000-000000000003`. This tests row visibility without requesting the intentionally
-hidden `status` column.
-
-Then start the isolated stack, reset it, run `bun run db:test`, and only if that focused check passes,
-run the complete `bun run test:db` gate once. After a passing database gate, obtain the approved local
-URL/publishable key in memory, run `bun run test:integration`, and stop the stack unconditionally.
-
-If that passes, accept Wave 1 and build Waves 2–4 as the approved account → profile → community →
-course → lesson completion → persisted progress slice. Do not pause for another broad planning cycle
-unless the implementation exposes a new material product, security, data or provider decision.
+Implement Wave 2's request-lazy server/security boundary and stable fixture/local contracts. Begin with
+the environment, request context, safe error, request ID, CSRF and request-scoped Supabase client tests;
+then add repositories/services and the client-boundary verification before the one complete Wave 2 gate.
 
 ## When staging will be requested
 
@@ -121,8 +100,9 @@ migrated or tested. Retired accounts and credentials must never be reused.
 ## Checkpoint state
 
 - Founder input needed: **no**;
-- working tree: clean after the local checkpoint commits;
+- working tree: contains the Wave 1 acceptance update until its local completion commit is created;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
-- unresolved risk: Wave 1 database lint, type drift and real API concurrency/authorization integration
-  remain unproven because pgTAP has not yet returned a successful process exit.
+- Wave 1 completion checkpoint: this acceptance commit (exact identifier recorded in Git after commit);
+- unresolved risk: database lint records one Low-severity unused local variable warning in
+  `public.leave_community`; Waves 2–5 remain incomplete.

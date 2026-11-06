@@ -20,6 +20,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildChildEnv, runSupabase, type CliResult } from "./phase3-stack/cli.ts";
+import { LOOPBACK_NETWORK_NAME } from "./phase3-stack/network.ts";
 import { createRedactor } from "./phase3-stack/redact.ts";
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -61,13 +62,14 @@ export function parseDbArgs(argv: readonly string[]): DbInvocation {
 
 /** CLI arguments for a single local-only command. */
 export function cliArgsFor(command: Exclude<DbCommand, "fingerprint" | "gate">): string[] {
+  const localNetworkArgs = ["--local", "--network-id", LOOPBACK_NETWORK_NAME];
   switch (command) {
     case "reset":
-      return ["db", "reset", "--local"];
+      return ["db", "reset", ...localNetworkArgs];
     case "test":
-      return ["test", "db", "--local"];
+      return ["test", "db", ...localNetworkArgs];
     case "lint":
-      return ["db", "lint", "--local", "--level", "warning", "--fail-on", "error"];
+      return ["db", "lint", ...localNetworkArgs, "--level", "warning", "--fail-on", "error"];
     case "types":
       return ["gen", "types", "--lang", "typescript", "--schema", "public", "--local"];
   }
