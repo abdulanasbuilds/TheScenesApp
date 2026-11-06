@@ -122,10 +122,10 @@ migrated or tested. Retired accounts and credentials must never be reused.
 ## Checkpoint state
 
 - Founder input needed: **no**;
-- working tree: contains the Wave 2 checkpoint until its local commit is created;
+- working tree: clean after the Wave 2 local checkpoint;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;
-- Wave 2 implementation checkpoint: this pending local commit (identifier recorded in Git after commit);
+- Wave 2 implementation checkpoint: `0389591`;
 - unresolved risks: the Wave 2 fixture promotion rerun is pending; database lint records one
   Low-severity unused local variable warning in `public.leave_community`; Waves 3–5 remain incomplete.
