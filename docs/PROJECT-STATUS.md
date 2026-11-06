@@ -37,6 +37,10 @@ These are milestone estimates, not percentages generated from lines of code:
 Wave 3 now has shared registration/profile schemas and direct server-function/service foundations for
 signup, login, logout, verified viewer and profile update. UI connection and live local auth/browser
 evidence remain incomplete. Waves 3–5 and every later production service remain incomplete. The local database stack is stopped.
+
+Profile updates now preserve omitted optional fields, clear only explicit `null`, and route persistence
+through the profile repository. The local limiter now removes expired buckets and enforces a fixed
+maximum bucket count without adding a provider or dependency.
 No hosted project, retired credential or production service was contacted.
 
 ## Latest verified checks — 6 November 2026
@@ -132,5 +136,6 @@ migrated or tested. Retired accounts and credentials must never be reused.
 - Wave 2 implementation checkpoint: `0389591`;
 - Wave 2 completion checkpoint: `7ac5089`;
 - Wave 3 foundation checkpoint: `d023fe2`;
+- Wave 3 profile/limiter checkpoint: pending local commit;
 - unresolved risks: database lint records one Low-severity unused local variable warning in
   `public.leave_community`; Waves 3–5 remain incomplete.

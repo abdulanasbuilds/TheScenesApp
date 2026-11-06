@@ -12,7 +12,16 @@ type Bucket = { count: number; resetsAt: number };
 export class LocalRateLimiter {
   private readonly buckets = new Map<string, Bucket>();
 
+  constructor(private readonly maxBuckets = 10_000) {}
+
   check(key: string, rule: RateLimitRule, now = Date.now()): RateLimitResult {
+    for (const [bucketKey, bucket] of this.buckets) {
+      if (bucket.resetsAt <= now) this.buckets.delete(bucketKey);
+    }
+    if (!this.buckets.has(key) && this.buckets.size >= this.maxBuckets) {
+      const oldest = [...this.buckets.entries()].sort((a, b) => a[1].resetsAt - b[1].resetsAt)[0];
+      if (oldest) this.buckets.delete(oldest[0]);
+    }
     const current = this.buckets.get(key);
     const bucket =
       !current || current.resetsAt <= now ? { count: 0, resetsAt: now + rule.windowMs } : current;
@@ -31,6 +40,10 @@ export class LocalRateLimiter {
 
   clear(): void {
     this.buckets.clear();
+  }
+
+  get size(): number {
+    return this.buckets.size;
   }
 }
 

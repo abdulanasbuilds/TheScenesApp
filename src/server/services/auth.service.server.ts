@@ -64,27 +64,10 @@ export async function updateProfile(input: UpdateProfileInput) {
   const principal = await getVerifiedPrincipal();
   if (!principal) throw new PublicAppError("UNAUTHENTICATED", "Please sign in again.");
   const client = createRequestSupabaseClient();
-  const { data, error } = await client
-    .from("profiles")
-    .update({
-      display_name: input.displayName,
-      headline: input.headline ?? null,
-      bio: input.bio ?? null,
-      location: input.location ?? null,
-    })
-    .eq("id", principal.userId)
-    .select("id, handle, display_name, headline, bio, location")
-    .single();
-  if (error) throw new PublicAppError("CONFLICT", "We could not save that profile update.");
-  return {
-    changed: true as const,
-    profile: {
-      id: data.id,
-      handle: data.handle,
-      displayName: data.display_name,
-      headline: data.headline,
-      bio: data.bio,
-      location: data.location,
-    },
-  };
+  try {
+    const profile = await new ProfileRepository(client).updateOwnProfile(principal.userId, input);
+    return { changed: true as const, profile };
+  } catch {
+    throw new PublicAppError("CONFLICT", "We could not save that profile update.");
+  }
 }
