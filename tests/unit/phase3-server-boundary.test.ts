@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { getCsrfRequestValidationResult } from "@tanstack/start-client-core";
+import { getCsrfRequestValidationResult, isCsrfRequestAllowed } from "@tanstack/start-client-core";
 import { z } from "zod";
 import { inspectServerConfiguration } from "../../src/server/env.server";
 import { redactLogValue } from "../../src/server/http/logger.server";
@@ -90,11 +90,21 @@ describe("Wave 2 server boundary", () => {
       ),
     ).toBe(false);
     expect(await getCsrfRequestValidationResult({}, context(new Headers()))).toBeUndefined();
+    expect(await isCsrfRequestAllowed({}, context(new Headers()))).toBe(false);
+    expect(
+      await isCsrfRequestAllowed({}, context(new Headers({ "Sec-Fetch-Site": "cross-site" }))),
+    ).toBe(false);
+    expect(
+      await isCsrfRequestAllowed({}, context(new Headers({ Origin: "http://evil.test" }))),
+    ).toBe(false);
     expect(
       await getCsrfRequestValidationResult(
         {},
         context(new Headers({ "Sec-Fetch-Site": "same-origin" })),
       ),
+    ).toBe(true);
+    expect(
+      await isCsrfRequestAllowed({}, context(new Headers({ Origin: "http://127.0.0.1:5000" }))),
     ).toBe(true);
   });
 

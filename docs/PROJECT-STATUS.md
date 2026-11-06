@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 6 November 2026
-**Current stage:** Phase 3A — Wave 1 accepted; Wave 2 implementation checkpoint awaiting one promotion rerun
+**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 authentication/profile next
 **Production status:** not deployed; no production provider, payment or user data is connected
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -34,11 +34,8 @@ These are milestone estimates, not percentages generated from lines of code:
 
 ## What is not complete
 
-Wave 2 has not been promoted because its complete fixture Playwright command encountered two different
-development-server/test-harness failures. Every affected test passed when rerun on a fresh server, but
-the complete command still needs one clean pass before promotion. Waves 3–5 and every later production
-service remain incomplete. The local database stack is stopped. No hosted project, retired credential
-or production service was contacted.
+Waves 3–5 and every later production service remain incomplete. The local database stack is stopped.
+No hosted project, retired credential or production service was contacted.
 
 ## Latest verified checks — 6 November 2026
 
@@ -67,9 +64,10 @@ prove that the database implementation works at runtime.
 
 Redacted evidence is in `docs/evidence/phase-3/2026-11-06-phase3a-wave1-live/`.
 
-## Wave 2 implementation checkpoint — 6 November 2026
+## Wave 2 acceptance — 6 November 2026
 
-- focused server/boundary tests: **14 passed, 0 failed**;
+- focused server/boundary tests: **15 passed, 0 failed**;
+- local/server integration: **20 passed, 0 failed**, including a loopback-only local Auth smoke;
 - complete unit suite: **139 passed, 0 failed**;
 - `bun run typecheck`, `bun run lint`, `bun run build`, `bun run verify:client-boundary`, and
   `git diff --check`: **passed**;
@@ -79,10 +77,12 @@ Redacted evidence is in `docs/evidence/phase-3/2026-11-06-phase3a-wave1-live/`.
   serve its own dynamic client entry; the three affected checks then passed on fresh servers
   (**3 desktop route/visual + 1 tablet creator-flow test**);
 - review: no Critical or High finding remains; no provider implementation or privileged marker appears
-  in the client bundle; fixture mode refuses provider creation before network access.
+  in the client bundle; fixture mode refuses provider creation before network access;
+- final fixture promotion run: **26 passed, 4 intentional skips, 0 failed**;
+- escaped unexpected errors now log only request ID and safe error class/name before returning the
+  generic no-store 500 envelope; missing/cross-site/mismatched-origin CSRF cases are executable denials.
 
-Wave 2 is implemented but not yet promoted because retry-hidden infrastructure failures are not counted
-as a clean full gate.
+**Wave 2 is promoted.**
 
 ## Official working mode — lean build + staging
 
@@ -102,8 +102,8 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-Run `bun run test:fixture` once on a fresh server. If all 26 expected checks pass with four intentional
-viewport skips, promote Wave 2, update this status, and begin Wave 3 authentication/profile functions.
+Implement Wave 3 shared registration/profile schemas and direct `createServerFn` wrappers for signup,
+login, logout, verified viewer and profile update; then connect the accepted auth/settings UI.
 
 ## When staging will be requested
 
@@ -122,10 +122,11 @@ migrated or tested. Retired accounts and credentials must never be reused.
 ## Checkpoint state
 
 - Founder input needed: **no**;
-- working tree: clean after the Wave 2 local checkpoint;
+- working tree: contains the Wave 2 closure until its completion commit is created;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;
 - Wave 2 implementation checkpoint: `0389591`;
-- unresolved risks: the Wave 2 fixture promotion rerun is pending; database lint records one
-  Low-severity unused local variable warning in `public.leave_community`; Waves 3–5 remain incomplete.
+- Wave 2 completion checkpoint: this pending local commit (identifier recorded after commit);
+- unresolved risks: database lint records one Low-severity unused local variable warning in
+  `public.leave_community`; Waves 3–5 remain incomplete.

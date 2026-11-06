@@ -4,12 +4,17 @@ export const safeErrorMiddleware = createMiddleware({ type: "function" }).server
   async ({ context, next }) => {
     try {
       return await next();
-    } catch {
+    } catch (error) {
       const requestContext = context as { requestId?: unknown } | undefined;
       const requestId =
         typeof requestContext?.requestId === "string"
           ? requestContext.requestId
           : crypto.randomUUID();
+      const { logServerEvent } = await import("../server/http/logger.server");
+      logServerEvent("error", "server_function_failed", {
+        requestId,
+        errorName: error instanceof Error ? error.name : "UnknownError",
+      });
       throw new Response(
         JSON.stringify({
           ok: false,
