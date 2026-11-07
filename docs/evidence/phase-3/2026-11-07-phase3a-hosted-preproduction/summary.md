@@ -107,4 +107,18 @@ Performance:
 - The URL update changed only those two Auth URL properties; nine undeclared hosted properties,
   including email confirmation, remained unchanged.
 
+## Founder-reported manual email confirmation
+
+After checkpoint `82cb6dd`, the founder completed the real-inbox browser flow and reported that every
+step worked:
+
+- registration showed the honest check-email state;
+- login was blocked before confirmation;
+- the confirmation email returned to the application login page;
+- password login succeeded after confirmation;
+- the confirmed account reached onboarding.
+
+The founder did not share the email address, password, confirmation URL or token. This is manual
+founder-reported evidence; automated hosted negative/security coverage remains a separate gate.
+
 No credential, database URL, access token, password, JWT, cookie or confirmation token is recorded here.

@@ -34,5 +34,10 @@
     "highSecurityFindings": 0,
     "healthFindings": 0
   },
+  "manualEmailConfirmation": {
+    "reportedByFounder": true,
+    "passed": true,
+    "sensitiveValuesRecorded": false
+  },
   "containsSensitiveMaterial": false
 }

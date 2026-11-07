@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 7 November 2026
-**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 hosted migration complete and email-confirmation flow awaiting one manual inbox test
+**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 hosted migration and manual email-confirmation journey passed
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -42,15 +42,16 @@ These are milestone estimates, not percentages generated from lines of code:
 - hosted schema/RLS/grant/function/trigger verification and post-migration advisors;
 - hosted Auth URL configuration with Confirm Email preserved;
 - a confirm-then-password-login handoff that strips provider details and blocks onboarding/settings
-  until a verified session exists.
+  until a verified session exists;
+- founder-reported real-inbox verification: pre-confirmation login blocked, confirmation returned to
+  login, post-confirmation login succeeded, and onboarding opened.
 
 ## What is not complete
 
 Wave 3 now has shared registration/profile schemas and direct server-function/service foundations for
-signup, login, logout, verified viewer and profile update. One real-inbox confirmation click, hosted
-Auth behavior tests, complete connected browser acceptance and the complete fresh fixture regression
-remain incomplete. Waves 3–5 and every later production service remain incomplete. The local database
-stack is stopped.
+signup, login, logout, verified viewer and profile update. Hosted negative/security automation,
+complete connected browser acceptance and the complete fresh fixture regression remain incomplete.
+Waves 3–5 and every later production service remain incomplete. The local database stack is stopped.
 
 Profile updates now preserve omitted optional fields, clear only explicit `null`, and route persistence
 through the profile repository. The local limiter now removes expired buckets and enforces a fixed
@@ -80,6 +81,8 @@ customer data or payment exists, and no production deployment is claimed.
 - hosted-mode browser checks: unauthenticated onboarding/settings redirect safely, no fixture identity
   appears, confirmation parameters are stripped, unsafe return paths are normalized, and no console or
   meaningful network failure was observed;
+- founder-reported manual hosted journey: check-email state, pre-confirmation denial, confirmation
+  return, post-confirmation login and onboarding all passed;
 - the previously accepted fixture browser baseline remains **26 passed, 4 intentional duplicate
   viewport skips**, but one complete fresh fixture run has not yet passed on this changed tree and is
   therefore not claimed as a current promotion gate.
@@ -140,10 +143,8 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-Use one fictional account with the founder-controlled inbox to register through the local hosted-mode
-browser, click the confirmation email manually, then sign in with the password. Do not share the email
-password or confirmation link in chat. After that succeeds, finish hosted negative tests and connected
-browser acceptance before promoting Wave 3.
+When work resumes, finish hosted negative/security tests, connected desktop/tablet/mobile acceptance
+and one complete fresh fixture regression before promoting Wave 3.
 
 ## Remote project boundary
 
@@ -158,8 +159,8 @@ browser acceptance before promoting Wave 3.
 
 ## Checkpoint state
 
-- Founder input needed: **one manual confirmation-email click after the checkpoint commit**;
-- working tree: hosted migration evidence and confirmation flow verified locally, awaiting checkpoint;
+- Founder input needed: **no; work is paused to conserve credits**;
+- working tree: clean at the hosted Auth checkpoint before this docs-only evidence update;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;
