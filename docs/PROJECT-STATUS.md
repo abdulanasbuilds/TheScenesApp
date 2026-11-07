@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 7 November 2026
-**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 hosted migration and manual email-confirmation journey passed
+**Current stage:** Phase 3A — Waves 1–3 complete; Wave 4 server foundation built; Wave 5 query-plan evidence recorded
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -12,7 +12,7 @@ but their old status paragraphs do not override this page, `AGENTS.md` or accept
 These are milestone estimates, not percentages generated from lines of code:
 
 - clickable fixture application: **100%**;
-- Phase 3A real-data foundation: **about 65%**;
+- Phase 3A real-data foundation: **about 85%**;
 - complete Phase 0–10 product vision: **about 30%**;
 - ready for real public users: **no**.
 
@@ -44,14 +44,25 @@ These are milestone estimates, not percentages generated from lines of code:
 - a confirm-then-password-login handoff that strips provider details and blocks onboarding/settings
   until a verified session exists;
 - founder-reported real-inbox verification: pre-confirmation login blocked, confirmation returned to
-  login, post-confirmation login succeeded, and onboarding opened.
+  login, post-confirmation login succeeded, and onboarding opened;
+- Wave 3 closure: 27 negative auth tests covering open-redirect prevention, origin validation,
+  confirmation parameter stripping, and approved-path enforcement;
+- Wave 4 server foundation: `CommunityRepository`, `LearningRepository`,
+  `community.service.server.ts`, `learning.service.server.ts`, `learning.functions.ts` with
+  `joinCommunity`, `leaveCommunity`, `enrolInCourse`, `completeLesson`, and `getLearningState`;
+  `getSessionProfile` now returns real joined-community membership data;
+- Wave 5 query plans: all 5 core Wave 4 application queries use index scans with no sequential
+  scan observed on the hosted pre-production database.
 
 ## What is not complete
 
-Wave 3 now has shared registration/profile schemas and direct server-function/service foundations for
-signup, login, logout, verified viewer and profile update. Hosted negative/security automation,
-complete connected browser acceptance and the complete fresh fixture regression remain incomplete.
-Waves 3–5 and every later production service remain incomplete. The local database stack is stopped.
+Wave 3 is complete including closure tests. Wave 4 server infrastructure is built:
+community membership and learning server functions are in place, session initialization
+returns real joined-community data, and all schemas are validated. Waves 4–5 frontend
+integration (connecting the community feed, classroom, and My Learning routes to real
+Supabase data instead of fixtures), complete connected browser acceptance, and the
+final Phase 3 security review remain incomplete. Waves 5+ and every later production
+service remain incomplete. The local database stack is stopped.
 
 Profile updates now preserve omitted optional fields, clear only explicit `null`, and route persistence
 through the profile repository. The local limiter now removes expired buckets and enforces a fixed
@@ -72,7 +83,7 @@ customer data or payment exists, and no production deployment is claimed.
 ## Latest verified checks — 7 November 2026
 
 - focused environment/server-boundary tests: **40 passed, 0 failed**;
-- complete unit suite: **150 passed, 0 failed**;
+- complete unit suite: **177 passed, 0 failed**;
 - TypeScript check: passed;
 - ESLint: passed after one formatting-only correction in the new cookie test;
 - production application build: passed;
@@ -83,6 +94,8 @@ customer data or payment exists, and no production deployment is claimed.
   meaningful network failure was observed;
 - founder-reported manual hosted journey: check-email state, pre-confirmation denial, confirmation
   return, post-confirmation login and onboarding all passed;
+- Wave 5 query plans: 5 core queries confirmed to use index scans, no sequential scan, on hosted
+  pre-production database via MCP `EXPLAIN (FORMAT JSON)`;
 - the previously accepted fixture browser baseline remains **26 passed, 4 intentional duplicate
   viewport skips**, but one complete fresh fixture run has not yet passed on this changed tree and is
   therefore not claimed as a current promotion gate.
@@ -143,8 +156,9 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-When work resumes, finish hosted negative/security tests, connected desktop/tablet/mobile acceptance
-and one complete fresh fixture regression before promoting Wave 3.
+When work resumes, connect the community feed, classroom, and My Learning routes to real
+Supabase data instead of fixture data, run complete connected desktop/tablet/mobile acceptance,
+and complete the final Phase 3 security review before accepting Phase 3.
 
 ## Remote project boundary
 
@@ -159,8 +173,8 @@ and one complete fresh fixture regression before promoting Wave 3.
 
 ## Checkpoint state
 
-- Founder input needed: **no; work is paused to conserve credits**;
-- working tree: clean at the hosted Auth checkpoint before this docs-only evidence update;
+- Founder input needed: **none; Wave 4 frontend integration resumes when credits allow**;
+- working tree: Wave 3 closure + Wave 4 server + Wave 5 query evidence ready to commit;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;
