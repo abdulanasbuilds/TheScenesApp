@@ -1,0 +1,38 @@
+{
+  "runId": "2026-11-07-phase3a-hosted-preproduction",
+  "date": "2026-11-07",
+  "gitCommitAtMigration": "c5e04d5",
+  "target": {
+    "projectName": "THE SCENES",
+    "projectRef": "okdzuqgzgnmmbtjxdaci",
+    "classification": "pre-production"
+  },
+  "tooling": {
+    "supabaseCli": "3.0.0",
+    "migrationTransport": "pinned CLI",
+    "verificationTransport": "Supabase MCP"
+  },
+  "dryRun": {
+    "passed": true,
+    "migrationCount": 18,
+    "seedCount": 0,
+    "roleCount": 0
+  },
+  "deployment": {
+    "passed": true,
+    "migrationCount": 18,
+    "seedCount": 0,
+    "roleCount": 0,
+    "reset": false
+  },
+  "postMigration": {
+    "migrationHistoryCount": 18,
+    "publicTableCount": 15,
+    "privateTableCount": 1,
+    "allExpectedTablesRlsEnabled": true,
+    "criticalSecurityFindings": 0,
+    "highSecurityFindings": 0,
+    "healthFindings": 0
+  },
+  "containsSensitiveMaterial": false
+}

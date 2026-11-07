@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 7 November 2026
-**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 local Auth proven and hosted pre-production foundation ready for checkpoint
+**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 hosted migration complete and email-confirmation flow awaiting one manual inbox test
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -12,7 +12,7 @@ but their old status paragraphs do not override this page, `AGENTS.md` or accept
 These are milestone estimates, not percentages generated from lines of code:
 
 - clickable fixture application: **100%**;
-- Phase 3A real-data foundation: **about 55%**;
+- Phase 3A real-data foundation: **about 65%**;
 - complete Phase 0–10 product vision: **about 30%**;
 - ready for real public users: **no**.
 
@@ -36,15 +36,21 @@ These are milestone estimates, not percentages generated from lines of code:
   cross-account denial;
 - initial connected registration, login, root viewer, onboarding, settings and awaited-logout UI;
 - explicit `supabase-staging` environment validation using only an HTTPS project root and a modern
-  `sb_publishable_...` key, with cookie security derived from the application request protocol.
+  `sb_publishable_...` key, with cookie security derived from the application request protocol;
+- exactly 18 accepted migrations applied to the empty THE SCENES pre-production project with no seed,
+  role file, reset or history repair;
+- hosted schema/RLS/grant/function/trigger verification and post-migration advisors;
+- hosted Auth URL configuration with Confirm Email preserved;
+- a confirm-then-password-login handoff that strips provider details and blocks onboarding/settings
+  until a verified session exists.
 
 ## What is not complete
 
 Wave 3 now has shared registration/profile schemas and direct server-function/service foundations for
-signup, login, logout, verified viewer and profile update. Hosted email confirmation/callback behavior,
-hosted Auth integration, connected browser acceptance and the complete fresh fixture regression remain
-incomplete. Waves 3–5 and every later production service remain incomplete. The local database stack is
-stopped.
+signup, login, logout, verified viewer and profile update. One real-inbox confirmation click, hosted
+Auth behavior tests, complete connected browser acceptance and the complete fresh fixture regression
+remain incomplete. Waves 3–5 and every later production service remain incomplete. The local database
+stack is stopped.
 
 Profile updates now preserve omitted optional fields, clear only explicit `null`, and route persistence
 through the profile repository. The local limiter now removes expired buckets and enforces a fixed
@@ -58,25 +64,28 @@ process together inside WSL resolved it without weakening expiry or claim verifi
 The founder designated **THE SCENES** (`okdzuqgzgnmmbtjxdaci`) as the application's final long-term
 Supabase project. It is intentionally treated as **PRE-PRODUCTION** until the release gate passes; no
 separate staging project will be created. Email confirmation is enabled and must remain enabled. The
-remote project has been inspected read-only: its public schema and migration history are empty and no
-development branch exists. No remote migration or seed has run, no customer data or payment exists, and
-no production deployment is claimed.
+remote project now has exactly 18 accepted migration-history entries, 15 expected public tables and the
+private audit table. Every expected table has RLS enabled and remains empty because no seed ran. No
+customer data or payment exists, and no production deployment is claimed.
 
 ## Latest verified checks — 7 November 2026
 
 - focused environment/server-boundary tests: **40 passed, 0 failed**;
-- complete unit suite: **148 passed, 0 failed**;
+- complete unit suite: **150 passed, 0 failed**;
 - TypeScript check: passed;
 - ESLint: passed after one formatting-only correction in the new cookie test;
 - production application build: passed;
 - client/server boundary scan: passed;
 - `git diff --check`: passed;
+- hosted-mode browser checks: unauthenticated onboarding/settings redirect safely, no fixture identity
+  appears, confirmation parameters are stripped, unsafe return paths are normalized, and no console or
+  meaningful network failure was observed;
 - the previously accepted fixture browser baseline remains **26 passed, 4 intentional duplicate
   viewport skips**, but one complete fresh fixture run has not yet passed on this changed tree and is
   therefore not claimed as a current promotion gate.
 
-These checks verify the hosted-mode foundation on the current tree. They do not prove hosted Auth,
-email confirmation, remote database authorization or connected browser acceptance.
+These checks verify the hosted-mode foundation and local confirmation handoff on the current tree. They
+do not replace the pending real-inbox confirmation and hosted Auth acceptance tests.
 
 ## Wave 1 live acceptance — 6 November 2026
 
@@ -131,11 +140,10 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-Checkpoint the verified hosted-mode foundation separately, then authenticate/link the pinned CLI to
-`okdzuqgzgnmmbtjxdaci` without sharing secrets. Reconfirm the empty remote state, preview exactly the 18
-accepted migrations with a remote dry run, and apply them without seed only if that preview is exact.
-Keep email confirmation enabled and implement the pending confirmation plus callback flow before
-connected browser acceptance.
+Use one fictional account with the founder-controlled inbox to register through the local hosted-mode
+browser, click the confirmation email manually, then sign in with the password. Do not share the email
+password or confirmation link in chat. After that succeeds, finish hosted negative tests and connected
+browser acceptance before promoting Wave 3.
 
 ## Remote project boundary
 
@@ -144,14 +152,14 @@ connected browser acceptance.
 - current classification: **PRE-PRODUCTION**;
 - separate staging project: **will not be created**;
 - email confirmation: **enabled and required**;
-- current remote schema/migration state: empty before the approved dry run;
+- current remote schema/migration state: 18 accepted migrations, no seed, empty application tables;
 - forbidden: remote reset/drop, seed, real customer data, payment, service-role material in application
   code, production deployment claim and unapproved Git push.
 
 ## Checkpoint state
 
-- Founder input needed: **only if the pinned CLI still requires browser login/linking**;
-- working tree: hosted-mode foundation verified and awaiting its separate local commit;
+- Founder input needed: **one manual confirmation-email click after the checkpoint commit**;
+- working tree: hosted migration evidence and confirmation flow verified locally, awaiting checkpoint;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;

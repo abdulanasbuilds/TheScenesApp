@@ -1,7 +1,10 @@
 import "@tanstack/react-start/server-only";
+import { getRequestUrl } from "@tanstack/react-start/server";
 import { PublicAppError } from "../../features/shared/safe-handler";
 import type { z } from "zod";
+import { buildEmailConfirmationRedirect } from "../../features/auth/redirects";
 import type { signInSchema, signUpSchema, updateProfileSchema } from "../../features/auth/schemas";
+import { getServerEnv } from "../env.server";
 import { applyPrivateNoStoreResponse } from "../http/errors.server";
 import { ProfileRepository } from "../repositories/profile.repository.server";
 import { localRateLimiter } from "../security/local-rate-limit.server";
@@ -21,11 +24,17 @@ export async function signUp(input: SignUpInput) {
       "Please wait before trying again.",
       limit.retryAfterSeconds,
     );
+  const env = getServerEnv();
   const client = createRequestSupabaseClient();
   const { data, error } = await client.auth.signUp({
     email: input.email,
     password: input.password,
-    options: { data: { handle: input.handle, display_name: input.displayName } },
+    options: {
+      data: { handle: input.handle, display_name: input.displayName },
+      ...(env.dataMode === "supabase-staging"
+        ? { emailRedirectTo: buildEmailConfirmationRedirect(getRequestUrl()) }
+        : {}),
+    },
   });
   if (error || !data.user) {
     throw new PublicAppError(
@@ -34,8 +43,14 @@ export async function signUp(input: SignUpInput) {
     );
   }
   const profile = await new ProfileRepository(client).findPublicProfile(data.user.id);
+  if (data.session === null) {
+    if ((data.user.identities?.length ?? 0) > 0 && !profile) {
+      throw new Error("Profile bootstrap failed.");
+    }
+    return { changed: true as const, profile: null, confirmationRequired: true as const };
+  }
   if (!profile) throw new Error("Profile bootstrap failed.");
-  return { changed: true as const, profile, confirmationRequired: data.session === null };
+  return { changed: true as const, profile, confirmationRequired: false as const };
 }
 
 export async function signIn(input: SignInInput) {

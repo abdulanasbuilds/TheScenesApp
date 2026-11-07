@@ -4,17 +4,26 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { AuthShell } from "@/components/layout/auth-shell";
 import { Button, Checkbox, Field, Input } from "@/components/ui";
 import { signInWithPassword } from "@/features/auth/auth.functions";
+import { normalizeAuthNext } from "@/features/auth/redirects";
 import { signInSchema } from "@/features/auth/schemas";
 import { dataMode } from "@/lib/data-mode";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    confirmation:
+      search.confirmation === "complete" || search.confirmation === "error"
+        ? search.confirmation
+        : undefined,
+    next: normalizeAuthNext(search.next),
+  }),
   head: () => ({ meta: [{ title: "Log in — The Scenes" }] }),
   component: LoginPage,
 });
 
 function LoginPage() {
   const router = useRouter();
+  const { confirmation, next } = Route.useSearch();
   const { signInDemo } = useApp();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +65,7 @@ function LoginPage() {
     }
     await router.invalidate();
     toast("Signed in", "Your connected session is active.");
-    await router.navigate({ href: "/home" });
+    await router.navigate({ href: normalizeAuthNext(next) });
   };
 
   return (
@@ -82,6 +91,25 @@ function LoginPage() {
         <div className="mb-5 rounded-lg border border-indigo-100 bg-indigo-50 p-3 text-xs leading-5 text-indigo-950">
           <strong>Preview credentials are prefilled.</strong> Any syntactically valid email and
           non-empty password opens the same deterministic demo session.
+        </div>
+      ) : null}
+      {confirmation ? (
+        <div
+          role="status"
+          className={`mb-5 rounded-lg border p-3 text-xs leading-5 ${
+            confirmation === "complete"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+              : "border-amber-200 bg-amber-50 text-amber-950"
+          }`}
+        >
+          <strong>
+            {confirmation === "complete"
+              ? "Email confirmation processed."
+              : "That confirmation link could not be used."}
+          </strong>{" "}
+          {confirmation === "complete"
+            ? "Sign in with your password to continue."
+            : "Request a new confirmation email or try registering again."}
         </div>
       ) : null}
       <form onSubmit={submit} className="space-y-4" noValidate>

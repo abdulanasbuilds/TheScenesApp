@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import {
   Bell,
@@ -31,11 +31,22 @@ import {
   Toggle,
   buttonClass,
 } from "@/components/ui";
-import { updateOwnProfile } from "@/features/auth/auth.functions";
+import { getCurrentViewer, updateOwnProfile } from "@/features/auth/auth.functions";
+import { dataMode as configuredDataMode } from "@/lib/data-mode";
 import { formatCompact, formatDate } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/settings")({
+  loader: async () => {
+    if (configuredDataMode === "fixtures") return;
+    const result = await getCurrentViewer({ data: undefined });
+    if (!result.ok || !result.data) {
+      throw redirect({
+        to: "/login",
+        search: { confirmation: undefined, next: "/settings" },
+      });
+    }
+  },
   head: () => ({ meta: [{ title: "Settings — The Scenes" }] }),
   component: SettingsPage,
 });
@@ -49,21 +60,27 @@ function SettingsPage() {
   const [tab, setTab] = useState("profile");
 
   const [profile, setProfile] = useState({
-    name: currentMember?.name ?? "Ama Boateng",
-    handle: currentMember?.handle ?? "amaboateng",
+    name: currentMember?.name ?? (dataMode === "fixtures" ? "Ama Boateng" : ""),
+    handle: currentMember?.handle ?? (dataMode === "fixtures" ? "amaboateng" : ""),
     headline:
       currentMember?.headline ??
-      "Product designer learning to ship AI features without breaking the craft.",
-    location: currentMember?.location ?? "Accra, Ghana",
+      (dataMode === "fixtures"
+        ? "Product designer learning to ship AI features without breaking the craft."
+        : ""),
+    location: currentMember?.location ?? (dataMode === "fixtures" ? "Accra, Ghana" : ""),
     bio:
       currentMember?.bio ??
-      "Product designer in Accra. I joined The Scenes to learn how to ship AI features without breaking the craft.",
-    expertise: "Product design, AI prototyping, Design systems",
+      (dataMode === "fixtures"
+        ? "Product designer in Accra. I joined The Scenes to learn how to ship AI features without breaking the craft."
+        : ""),
+    expertise: dataMode === "fixtures" ? "Product design, AI prototyping, Design systems" : "",
   });
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const [profileSaved, setProfileSaved] = useState(false);
 
-  const [email, setEmail] = useState(user?.email ?? "ama@thescenes.example");
+  const [email, setEmail] = useState(
+    user?.email ?? (dataMode === "fixtures" ? "ama@thescenes.example" : ""),
+  );
   const [emailError, setEmailError] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

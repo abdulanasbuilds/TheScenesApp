@@ -24,6 +24,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as AuthConfirmRouteImport } from './routes/auth.confirm'
 import { Route as CommunitiesCommunityIdRouteImport } from './routes/communities/$communityId'
 import { Route as CreatorsHandleRouteImport } from './routes/creators/$handle'
 import { Route as DashboardCommerceRouteImport } from './routes/dashboard/commerce'
@@ -118,6 +119,11 @@ const SearchRoute = SearchRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthConfirmRoute = AuthConfirmRouteImport.update({
+  id: '/auth/confirm',
+  path: '/auth/confirm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommunitiesCommunityIdRoute = CommunitiesCommunityIdRouteImport.update({
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/auth/confirm': typeof AuthConfirmRoute
   '/communities/$communityId': typeof CommunitiesCommunityIdRoute
   '/creators/$handle': typeof CreatorsHandleRoute
   '/dashboard/commerce': typeof DashboardCommerceRoute
@@ -278,6 +285,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/auth/confirm': typeof AuthConfirmRoute
   '/communities/$communityId': typeof CommunitiesCommunityIdRoute
   '/creators/$handle': typeof CreatorsHandleRoute
   '/dashboard/commerce': typeof DashboardCommerceRoute
@@ -316,6 +324,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/auth/confirm': typeof AuthConfirmRoute
   '/communities/$communityId': typeof CommunitiesCommunityIdRoute
   '/creators/$handle': typeof CreatorsHandleRoute
   '/dashboard/commerce': typeof DashboardCommerceRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/search'
     | '/settings'
+    | '/auth/confirm'
     | '/communities/$communityId'
     | '/creators/$handle'
     | '/dashboard/commerce'
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/search'
     | '/settings'
+    | '/auth/confirm'
     | '/communities/$communityId'
     | '/creators/$handle'
     | '/dashboard/commerce'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/search'
     | '/settings'
+    | '/auth/confirm'
     | '/communities/$communityId'
     | '/creators/$handle'
     | '/dashboard/commerce'
@@ -467,6 +479,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
+  AuthConfirmRoute: typeof AuthConfirmRoute
   CommunitiesCommunityIdRoute: typeof CommunitiesCommunityIdRoute
   CreatorsHandleRoute: typeof CreatorsHandleRoute
   DashboardCommerceRoute: typeof DashboardCommerceRoute
@@ -590,6 +603,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/confirm': {
+      id: '/auth/confirm'
+      path: '/auth/confirm'
+      fullPath: '/auth/confirm'
+      preLoaderRoute: typeof AuthConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/communities/$communityId': {
@@ -803,6 +823,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
+  AuthConfirmRoute: AuthConfirmRoute,
   CommunitiesCommunityIdRoute: CommunitiesCommunityIdRoute,
   CreatorsHandleRoute: CreatorsHandleRoute,
   DashboardCommerceRoute: DashboardCommerceRoute,

@@ -1,17 +1,28 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Sparkles, UserRound } from "lucide-react";
 import { CommunityCard } from "@/components/domain/cards";
 import { Brand } from "@/components/layout/public-shell";
 import { Button, Card, Chip, Field, Input, Progress } from "@/components/ui";
 import { categories, communities } from "@/data/seed";
-import { updateOwnProfile } from "@/features/auth/auth.functions";
+import { getCurrentViewer, updateOwnProfile } from "@/features/auth/auth.functions";
+import { dataMode as configuredDataMode } from "@/lib/data-mode";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/onboarding")({
   validateSearch: (search: Record<string, unknown>) => ({
     role: search.role === "creator" ? ("creator" as const) : ("learner" as const),
   }),
+  loader: async () => {
+    if (configuredDataMode === "fixtures") return;
+    const result = await getCurrentViewer({ data: undefined });
+    if (!result.ok || !result.data) {
+      throw redirect({
+        to: "/login",
+        search: { confirmation: undefined, next: "/onboarding" },
+      });
+    }
+  },
   head: () => ({ meta: [{ title: "Set up your Scenes profile" }] }),
   component: OnboardingPage,
 });
@@ -22,8 +33,12 @@ function OnboardingPage() {
   const { signInDemo, joinCommunity, currentMember, dataMode } = useApp();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
-  const [name, setName] = useState(currentMember?.name ?? "Ama Boateng");
-  const [handle, setHandle] = useState(currentMember?.handle ?? "amaboateng");
+  const [name, setName] = useState(
+    currentMember?.name ?? (dataMode === "fixtures" ? "Ama Boateng" : ""),
+  );
+  const [handle, setHandle] = useState(
+    currentMember?.handle ?? (dataMode === "fixtures" ? "amaboateng" : ""),
+  );
   const [role, setRole] = useState<"learner" | "creator">(search.role);
   const [interests, setInterests] = useState<string[]>(["ai-automation", "design"]);
   const [error, setError] = useState("");

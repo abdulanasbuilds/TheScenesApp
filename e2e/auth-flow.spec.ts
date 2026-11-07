@@ -42,7 +42,7 @@ test("connected registration, viewer, profile and logout journey", async ({ page
     .getByLabel("About you")
     .fill("A fictional learner used only for the isolated local authentication verification flow.");
   await page.getByRole("button", { name: "Save profile" }).click();
-  await expect(page.getByText("Saved locally")).toBeVisible();
+  await expect(page.getByText("Saved", { exact: true })).toBeVisible();
 
   await page.getByRole("tab", { name: "Account" }).click();
   await expect(page.getByLabel("Email")).toHaveValue(email);
