@@ -47,6 +47,11 @@ profile updates and profile isolation all execute with user-scoped clients. The 
 failure was an approximately eight-hour Windows/WSL clock mismatch; running GoTrue and the Auth test
 process together inside WSL resolved it without weakening expiry or claim verification. A dedicated
 `test:integration:auth` command prevents the unrelated database concurrency suite from being selected.
+The founder selected a new business-controlled Supabase Free staging project on 6 November 2026, with
+email confirmation kept enabled. Registration, login, root viewer, onboarding, profile settings and
+awaited logout now have an initial connected-mode UI implementation that passes unit, type, lint,
+production-build and client-boundary checks. Hosted staging configuration, confirmation-pending/callback
+behavior and connected browser acceptance remain unverified.
 No hosted project, retired credential or production service was contacted.
 
 ## Latest verified checks — 6 November 2026
@@ -114,9 +119,10 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-Add transformed server-function HTTP tests for safe signup/login responses, cookie creation/clearing,
-verified viewer identity, wrong methods, CSRF and logout. Run the server process in WSL with the local
-stack so claim validation uses one clock, then connect the accepted auth/settings UI and root viewer.
+Create the fresh business-owned Supabase Free staging project, authenticate/link the pinned CLI without
+sharing secrets in chat, preview the 18 migrations with a remote dry run, and add an explicit
+`supabase-staging` environment contract. Keep email confirmation enabled and implement the pending
+confirmation plus callback flow before running connected browser acceptance.
 
 ## When staging will be requested
 

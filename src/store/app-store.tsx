@@ -2,11 +2,15 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useReducer,
   useState,
   type ReactNode,
 } from "react";
+import type { ViewerDTO } from "@/features/auth/contracts";
+import { signOutCurrentSession } from "@/features/auth/auth.functions";
+import type { DataMode } from "@/lib/env";
 import {
   currentUserId,
   members,
@@ -15,7 +19,15 @@ import {
 } from "@/data/seed";
 import type { NotificationItem, Post, PostComment } from "@/data/types";
 
-type SessionUser = { id: string; name: string; handle: string; email: string };
+type SessionUser = {
+  id: string;
+  name: string;
+  handle: string;
+  email: string;
+  headline?: string | null;
+  bio?: string | null;
+  location?: string | null;
+};
 
 type AppState = {
   user: SessionUser | null;
@@ -174,7 +186,8 @@ type AppContextValue = {
   state: AppState;
   user: SessionUser | null;
   signInDemo: (email?: string) => void;
-  signOut: () => void;
+  signOut: () => Promise<void>;
+  dataMode: DataMode;
   joinCommunity: (slug: string) => void;
   leaveCommunity: (slug: string) => void;
   toggleLike: (postId: string) => void;
@@ -195,8 +208,36 @@ type AppContextValue = {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+function viewerUser(viewer: ViewerDTO): SessionUser {
+  return {
+    id: viewer.id,
+    name: viewer.displayName,
+    handle: viewer.handle,
+    email: viewer.accountEmail,
+    headline: viewer.headline,
+    bio: viewer.bio,
+    location: viewer.location,
+  };
+}
+
+export function AppProvider({
+  children,
+  viewer,
+  dataMode,
+}: {
+  children: ReactNode;
+  viewer: ViewerDTO | null;
+  dataMode: DataMode;
+}) {
+  const [state, dispatch] = useReducer(reducer, {
+    ...initialState,
+    user: viewer ? viewerUser(viewer) : null,
+  });
+
+  useEffect(() => {
+    if (dataMode !== "supabase-local") return;
+    dispatch(viewer ? { type: "signIn", user: viewerUser(viewer) } : { type: "signOut" });
+  }, [dataMode, viewer]);
 
   const signInDemo = useCallback((email?: string) => {
     dispatch({
@@ -205,12 +246,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const signOut = useCallback(async () => {
+    if (dataMode === "supabase-local") {
+      const result = await signOutCurrentSession({ data: undefined });
+      if (!result.ok) throw new Error(result.error.message);
+    }
+    dispatch({ type: "signOut" });
+  }, [dataMode]);
+
+  const fixtureMember = members.find((member) => member.id === currentUserId);
+  const currentMember = useMemo(() => {
+    if (dataMode === "fixtures") return fixtureMember;
+    if (!state.user || !fixtureMember) return undefined;
+    return {
+      ...fixtureMember,
+      id: state.user.id,
+      name: state.user.name,
+      handle: state.user.handle,
+      headline: state.user.headline ?? "",
+      bio: state.user.bio ?? "",
+      location: state.user.location ?? "",
+    };
+  }, [dataMode, fixtureMember, state.user]);
+
   const value = useMemo<AppContextValue>(
     () => ({
       state,
       user: state.user,
+      dataMode,
       signInDemo,
-      signOut: () => dispatch({ type: "signOut" }),
+      signOut,
       joinCommunity: (slug) => dispatch({ type: "join", slug }),
       leaveCommunity: (slug) => dispatch({ type: "leave", slug }),
       toggleLike: (postId) => dispatch({ type: "toggleLike", postId }),
@@ -226,9 +291,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addPost: (post) => dispatch({ type: "addPost", post }),
       updatePost: (postId, changes) => dispatch({ type: "updatePost", postId, changes }),
       unreadCount: state.notifications.filter((n) => !n.read).length,
-      currentMember: members.find((m) => m.id === currentUserId),
+      currentMember,
     }),
-    [state, signInDemo],
+    [currentMember, dataMode, signInDemo, signOut, state],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

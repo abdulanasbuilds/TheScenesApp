@@ -3,6 +3,9 @@ import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { AuthShell } from "@/components/layout/auth-shell";
 import { Button, Checkbox, Field, Input } from "@/components/ui";
+import { signInWithPassword } from "@/features/auth/auth.functions";
+import { signInSchema } from "@/features/auth/schemas";
+import { dataMode } from "@/lib/data-mode";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/login")({
@@ -17,19 +20,24 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("ama@example.com");
-  const [password, setPassword] = useState("preview123");
+  const [email, setEmail] = useState(dataMode === "fixtures" ? "ama@example.com" : "");
+  const [password, setPassword] = useState(dataMode === "fixtures" ? "preview123" : "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
     const next: Record<string, string> = {};
-    if (!/^\S+@\S+\.\S+$/.test(email)) next.email = "Enter a valid email address.";
-    if (!password) next.password = "Enter your password.";
+    const parsed = signInSchema.safeParse({ email, password });
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+      if (fields.email?.[0]) next.email = fields.email[0];
+      if (fields.password?.[0]) next.password = fields.password[0];
+    }
     setErrors(next);
-    if (Object.keys(next).length) return;
+    if (Object.keys(next).length || !parsed.success) return;
     setLoading(true);
-    window.setTimeout(() => {
+    if (dataMode === "fixtures") {
+      await new Promise((resolve) => window.setTimeout(resolve, 500));
       signInDemo(email);
       toast(
         "Signed in to the preview",
@@ -38,13 +46,27 @@ function LoginPage() {
           : "No persistent session was stored.",
       );
       void router.navigate({ href: "/home" });
-    }, 500);
+      return;
+    }
+    const result = await signInWithPassword({ data: parsed.data });
+    setLoading(false);
+    if (!result.ok) {
+      setErrors({ form: result.error.message });
+      return;
+    }
+    await router.invalidate();
+    toast("Signed in", "Your local session is active.");
+    await router.navigate({ href: "/home" });
   };
 
   return (
     <AuthShell
       title="Welcome back."
-      description="Use the prefilled demo details or any valid-looking email. This form validates locally and never sends a password."
+      description={
+        dataMode === "fixtures"
+          ? "Use the prefilled demo details or any valid-looking email. This form validates locally and never sends a password."
+          : "Sign in to the isolated local learning environment. No production service is connected."
+      }
       footer={
         <>
           New to The Scenes?{" "}
@@ -54,10 +76,12 @@ function LoginPage() {
         </>
       }
     >
-      <div className="mb-5 rounded-lg border border-indigo-100 bg-indigo-50 p-3 text-xs leading-5 text-indigo-950">
-        <strong>Preview credentials are prefilled.</strong> Any syntactically valid email and
-        non-empty password opens the same deterministic demo session.
-      </div>
+      {dataMode === "fixtures" ? (
+        <div className="mb-5 rounded-lg border border-indigo-100 bg-indigo-50 p-3 text-xs leading-5 text-indigo-950">
+          <strong>Preview credentials are prefilled.</strong> Any syntactically valid email and
+          non-empty password opens the same deterministic demo session.
+        </div>
+      ) : null}
       <form onSubmit={submit} className="space-y-4" noValidate>
         <Field label="Email address" htmlFor="login-email" error={errors.email} required>
           <Input
@@ -91,12 +115,16 @@ function LoginPage() {
           </div>
         </Field>
         <div className="flex items-center justify-between gap-3">
-          <Checkbox
-            id="remember"
-            checked={remember}
-            onChange={setRemember}
-            label="Remember this preview"
-          />
+          {dataMode === "fixtures" ? (
+            <Checkbox
+              id="remember"
+              checked={remember}
+              onChange={setRemember}
+              label="Remember this preview"
+            />
+          ) : (
+            <span className="text-xs text-slate-500">Secure local session</span>
+          )}
           <a
             href="/forgot-password"
             className="shrink-0 text-xs font-bold text-indigo-700 hover:text-indigo-900"
@@ -104,13 +132,20 @@ function LoginPage() {
             Forgot password?
           </a>
         </div>
+        {errors.form ? (
+          <p role="alert" className="text-sm font-medium text-red-600">
+            {errors.form}
+          </p>
+        ) : null}
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" /> Signing in…
             </>
-          ) : (
+          ) : dataMode === "fixtures" ? (
             "Log in to preview"
+          ) : (
+            "Log in"
           )}
         </Button>
       </form>

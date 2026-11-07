@@ -31,6 +31,7 @@ import {
   Toggle,
   buttonClass,
 } from "@/components/ui";
+import { updateOwnProfile } from "@/features/auth/auth.functions";
 import { formatCompact, formatDate } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
@@ -43,7 +44,7 @@ type DangerMode = "deactivate" | "delete" | null;
 
 function SettingsPage() {
   const router = useRouter();
-  const { currentMember, user, signOut } = useApp();
+  const { currentMember, user, signOut, dataMode } = useApp();
   const { toast } = useToast();
   const [tab, setTab] = useState("profile");
 
@@ -93,11 +94,11 @@ function SettingsPage() {
     setProfileSaved(false);
   };
 
-  const saveProfile = (event: FormEvent) => {
+  const saveProfile = async (event: FormEvent) => {
     event.preventDefault();
     const next: Record<string, string> = {};
     if (profile.name.trim().length < 2) next.name = "Use at least 2 characters.";
-    if (!/^[a-z0-9_]{3,20}$/.test(profile.handle.trim()))
+    if (dataMode === "fixtures" && !/^[a-z0-9_]{3,20}$/.test(profile.handle.trim()))
       next.handle = "Use 3–20 lowercase letters, numbers or underscores.";
     if (profile.headline.trim().length < 10) next.headline = "Add at least 10 characters.";
     if (profile.bio.trim().length < 40)
@@ -105,6 +106,24 @@ function SettingsPage() {
     if (profile.location.trim().length < 2) next.location = "Add a city or region.";
     setProfileErrors(next);
     if (Object.keys(next).length) return;
+    if (dataMode === "supabase-local") {
+      const result = await updateOwnProfile({
+        data: {
+          displayName: profile.name,
+          headline: profile.headline.trim() || null,
+          bio: profile.bio.trim() || null,
+          location: profile.location.trim() || null,
+        },
+      });
+      if (!result.ok) {
+        setProfileErrors({ form: result.error.message });
+        return;
+      }
+      await router.invalidate();
+      setProfileSaved(true);
+      toast("Profile saved", "Your isolated local profile was updated.");
+      return;
+    }
     setProfileSaved(true);
     toast("Profile saved locally", "No server profile was updated in this frontend preview.");
   };
@@ -154,7 +173,9 @@ function SettingsPage() {
                 <p className="text-[11px] font-bold tracking-[0.14em] text-indigo-700 uppercase">
                   Account
                 </p>
-                <Badge tone="amber">Frontend preview</Badge>
+                <Badge tone={dataMode === "fixtures" ? "amber" : "green"}>
+                  {dataMode === "fixtures" ? "Frontend preview" : "Connected local proof"}
+                </Badge>
               </div>
               <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-950">
                 Settings
@@ -233,13 +254,18 @@ function SettingsPage() {
                     <Field
                       label="Handle"
                       htmlFor="profile-handle"
-                      hint="Lowercase letters, numbers and underscores."
+                      hint={
+                        dataMode === "fixtures"
+                          ? "Lowercase letters, numbers and underscores."
+                          : "Your registered handle cannot be changed."
+                      }
                       error={profileErrors.handle}
                       required
                     >
                       <Input
                         id="profile-handle"
                         value={profile.handle}
+                        readOnly={dataMode === "supabase-local"}
                         onChange={(event) => updateProfile("handle", event.target.value)}
                         invalid={Boolean(profileErrors.handle)}
                       />
@@ -301,6 +327,11 @@ function SettingsPage() {
                       <Save className="h-4 w-4" /> Save profile
                     </Button>
                   </div>
+                  {profileErrors.form ? (
+                    <p role="alert" className="text-sm font-medium text-red-600">
+                      {profileErrors.form}
+                    </p>
+                  ) : null}
                 </form>
               </Card>
             </TabsContent>
@@ -324,6 +355,7 @@ function SettingsPage() {
                         id="account-email"
                         type="email"
                         value={email}
+                        readOnly={dataMode === "supabase-local"}
                         onChange={(event) => {
                           setEmail(event.target.value);
                           if (emailError) setEmailError("");
@@ -331,11 +363,17 @@ function SettingsPage() {
                         invalid={Boolean(emailError)}
                       />
                     </Field>
-                    <div className="flex justify-end">
-                      <Button type="submit" variant="secondary">
-                        Update email
-                      </Button>
-                    </div>
+                    {dataMode === "fixtures" ? (
+                      <div className="flex justify-end">
+                        <Button type="submit" variant="secondary">
+                          Update email
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500">
+                        Email changes are unavailable in this local phase.
+                      </p>
+                    )}
                   </form>
                 </Card>
 
@@ -345,64 +383,67 @@ function SettingsPage() {
                     <h2 className="font-display text-lg font-extrabold text-slate-900">Password</h2>
                   </div>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
-                    Authentication is simulated. These fields validate locally and never store a
-                    credential.
+                    {dataMode === "fixtures"
+                      ? "Authentication is simulated. These fields validate locally and never store a credential."
+                      : "Password changes are unavailable until secure recovery and transactional email are connected."}
                   </p>
-                  <form onSubmit={savePassword} className="mt-4 space-y-4" noValidate>
-                    <Field
-                      label="Current password"
-                      htmlFor="current-password"
-                      error={passwordErrors.current}
-                      required
-                    >
-                      <Input
-                        id="current-password"
-                        type="password"
-                        autoComplete="current-password"
-                        value={currentPassword}
-                        onChange={(event) => setCurrentPassword(event.target.value)}
-                        invalid={Boolean(passwordErrors.current)}
-                      />
-                    </Field>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                  {dataMode === "fixtures" ? (
+                    <form onSubmit={savePassword} className="mt-4 space-y-4" noValidate>
                       <Field
-                        label="New password"
-                        htmlFor="new-password"
-                        hint="At least 8 characters."
-                        error={passwordErrors.next}
+                        label="Current password"
+                        htmlFor="current-password"
+                        error={passwordErrors.current}
                         required
                       >
                         <Input
-                          id="new-password"
+                          id="current-password"
                           type="password"
-                          autoComplete="new-password"
-                          value={newPassword}
-                          onChange={(event) => setNewPassword(event.target.value)}
-                          invalid={Boolean(passwordErrors.next)}
+                          autoComplete="current-password"
+                          value={currentPassword}
+                          onChange={(event) => setCurrentPassword(event.target.value)}
+                          invalid={Boolean(passwordErrors.current)}
                         />
                       </Field>
-                      <Field
-                        label="Confirm password"
-                        htmlFor="confirm-password"
-                        error={passwordErrors.confirm}
-                        required
-                      >
-                        <Input
-                          id="confirm-password"
-                          type="password"
-                          autoComplete="new-password"
-                          value={confirmPassword}
-                          onChange={(event) => setConfirmPassword(event.target.value)}
-                          invalid={Boolean(passwordErrors.confirm)}
-                        />
-                      </Field>
-                    </div>
-                    <div className="flex justify-end">
-                      <Button type="submit" variant="secondary">
-                        <LockKeyhole className="h-4 w-4" /> Update password
-                      </Button>
-                    </div>
-                  </form>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field
+                          label="New password"
+                          htmlFor="new-password"
+                          hint="At least 8 characters."
+                          error={passwordErrors.next}
+                          required
+                        >
+                          <Input
+                            id="new-password"
+                            type="password"
+                            autoComplete="new-password"
+                            value={newPassword}
+                            onChange={(event) => setNewPassword(event.target.value)}
+                            invalid={Boolean(passwordErrors.next)}
+                          />
+                        </Field>
+                        <Field
+                          label="Confirm password"
+                          htmlFor="confirm-password"
+                          error={passwordErrors.confirm}
+                          required
+                        >
+                          <Input
+                            id="confirm-password"
+                            type="password"
+                            autoComplete="new-password"
+                            value={confirmPassword}
+                            onChange={(event) => setConfirmPassword(event.target.value)}
+                            invalid={Boolean(passwordErrors.confirm)}
+                          />
+                        </Field>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button type="submit" variant="secondary">
+                          <LockKeyhole className="h-4 w-4" /> Update password
+                        </Button>
+                      </div>
+                    </form>
+                  ) : null}
                 </Card>
 
                 <Card className="p-5 sm:p-6">
@@ -414,19 +455,21 @@ function SettingsPage() {
                     <div>
                       <p className="text-sm font-semibold text-slate-900">This browser session</p>
                       <p className="mt-0.5 text-xs text-slate-500">
-                        Local demo session · no server token
+                        {dataMode === "fixtures"
+                          ? "Local demo session · no server token"
+                          : "Verified isolated local session"}
                       </p>
                     </div>
                     <Button
                       variant="secondary"
-                      onClick={() => {
-                        signOut();
-                        toast(
-                          "Signed out locally",
-                          "The demo session was cleared in this browser only.",
-                        );
-                        void router.navigate({ href: "/login" });
-                      }}
+                      onClick={() =>
+                        void (async () => {
+                          await signOut();
+                          await router.invalidate();
+                          toast("Signed out", "This browser session was cleared.");
+                          await router.navigate({ href: "/login" });
+                        })()
+                      }
                     >
                       <LogOut className="h-4 w-4" /> Sign out
                     </Button>

@@ -1,8 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Check, Eye, EyeOff, Loader2 } from "lucide-react";
 import { AuthShell } from "@/components/layout/auth-shell";
 import { Button, Checkbox, Field, Input } from "@/components/ui";
+import { signUpWithPassword } from "@/features/auth/auth.functions";
+import { signUpSchema } from "@/features/auth/schemas";
+import { dataMode } from "@/lib/data-mode";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/register")({
@@ -14,6 +17,7 @@ export const Route = createFileRoute("/register")({
 });
 
 function RegisterPage() {
+  const router = useRouter();
   const { role } = Route.useSearch();
   const { signInDemo } = useApp();
   const { toast } = useToast();
@@ -21,25 +25,53 @@ function RegisterPage() {
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [values, setValues] = useState({ name: "", email: "", password: "" });
+  const [values, setValues] = useState({ name: "", handle: "", email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
     const next: Record<string, string> = {};
-    if (values.name.trim().length < 2) next.name = "Enter your full name.";
-    if (!/^\S+@\S+\.\S+$/.test(values.email)) next.email = "Enter a valid email address.";
-    if (values.password.length < 8) next.password = "Use at least 8 characters.";
+    const parsed = signUpSchema.safeParse({
+      displayName: values.name,
+      handle: values.handle,
+      email: values.email,
+      password: values.password,
+    });
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+      if (fields.displayName?.[0]) next.name = fields.displayName[0];
+      if (fields.handle?.[0]) next.handle = fields.handle[0];
+      if (fields.email?.[0]) next.email = fields.email[0];
+      if (fields.password?.[0]) next.password = fields.password[0];
+    }
     if (!agreed) next.agreed = "Accept the preview terms to continue.";
     setErrors(next);
-    if (Object.keys(next).length) return;
+    if (Object.keys(next).length || !parsed.success) return;
     setLoading(true);
-    window.setTimeout(() => {
+    if (dataMode === "fixtures") {
+      await new Promise((resolve) => window.setTimeout(resolve, 500));
       signInDemo(values.email);
       setLoading(false);
       setSuccess(true);
       toast("Preview account ready", "No server account was created. Continue to onboarding.");
-    }, 500);
+      return;
+    }
+    const result = await signUpWithPassword({ data: parsed.data });
+    setLoading(false);
+    if (!result.ok) {
+      const fieldErrors = result.error.fieldErrors ?? {};
+      setErrors({
+        ...(fieldErrors.displayName?.[0] ? { name: fieldErrors.displayName[0] } : {}),
+        ...(fieldErrors.handle?.[0] ? { handle: fieldErrors.handle[0] } : {}),
+        ...(fieldErrors.email?.[0] ? { email: fieldErrors.email[0] } : {}),
+        ...(fieldErrors.password?.[0] ? { password: fieldErrors.password[0] } : {}),
+        form: result.error.message,
+      });
+      return;
+    }
+    await router.invalidate();
+    setSuccess(true);
+    toast("Account ready", "Your local account and profile were created securely.");
   };
 
   if (success) {
@@ -48,7 +80,11 @@ function RegisterPage() {
         title={
           role === "creator" ? "Your creator preview is ready." : "Your preview account is ready."
         }
-        description="The account exists only in this browser session. Continue to personalise the fixture experience."
+        description={
+          dataMode === "fixtures"
+            ? "The account exists only in this browser session. Continue to personalise the fixture experience."
+            : "Your local account is ready. Continue to review your profile and learning preferences."
+        }
         footer={
           <a href="/login" className="font-bold text-indigo-700">
             Use a different account
@@ -61,7 +97,9 @@ function RegisterPage() {
           </span>
           <p className="mt-4 text-sm font-bold text-emerald-950">Welcome, {values.name.trim()}.</p>
           <p className="mt-1 text-sm leading-6 text-emerald-900">
-            Your local demo session is active. Nothing was sent to a backend.
+            {dataMode === "fixtures"
+              ? "Your local demo session is active. Nothing was sent to a backend."
+              : "Your account and profile are saved in the isolated local learning environment."}
           </p>
           <a
             href={`/onboarding?role=${role}`}
@@ -76,11 +114,17 @@ function RegisterPage() {
 
   return (
     <AuthShell
-      title={role === "creator" ? "Create your creator preview." : "Create your account."}
+      title={
+        role === "creator" && dataMode === "fixtures"
+          ? "Create your creator preview."
+          : "Create your account."
+      }
       description={
-        role === "creator"
-          ? "Preview the teaching and community workspace. No production creator account or payout profile is created."
-          : "Start with a local preview profile. Production authentication will connect only after the frontend phase is accepted."
+        dataMode === "supabase-local"
+          ? "Create a local account for the connected learning proof. No email provider, payment method or production service is used."
+          : role === "creator"
+            ? "Preview the teaching and community workspace. No production creator account or payout profile is created."
+            : "Start with a local preview profile. Production authentication will connect only after the frontend phase is accepted."
       }
       footer={
         <>
@@ -99,6 +143,15 @@ function RegisterPage() {
             value={values.name}
             onChange={(event) => setValues({ ...values, name: event.target.value })}
             invalid={Boolean(errors.name)}
+          />
+        </Field>
+        <Field label="Profile handle" htmlFor="handle" error={errors.handle} required>
+          <Input
+            id="handle"
+            autoComplete="username"
+            value={values.handle}
+            onChange={(event) => setValues({ ...values, handle: event.target.value })}
+            invalid={Boolean(errors.handle)}
           />
         </Field>
         <Field label="Email address" htmlFor="email" error={errors.email} required>
@@ -142,21 +195,36 @@ function RegisterPage() {
           id="terms"
           checked={agreed}
           onChange={setAgreed}
-          label="I agree to the preview terms"
-          description="This is simulated auth; no production account or payment method is created."
+          label={
+            dataMode === "fixtures"
+              ? "I agree to the preview terms"
+              : "I agree to the local proof terms"
+          }
+          description={
+            dataMode === "fixtures"
+              ? "This is simulated auth; no production account or payment method is created."
+              : "This creates only an isolated local account. No email or payment provider is contacted."
+          }
         />
         {errors.agreed ? (
           <p role="alert" className="text-xs font-medium text-red-600">
             {errors.agreed}
           </p>
         ) : null}
+        {errors.form ? (
+          <p role="alert" className="text-sm font-medium text-red-600">
+            {errors.form}
+          </p>
+        ) : null}
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Creating preview…
+              <Loader2 className="h-4 w-4 animate-spin" /> Creating account…
             </>
-          ) : (
+          ) : dataMode === "fixtures" ? (
             "Create preview account"
+          ) : (
+            "Create account"
           )}
         </Button>
       </form>

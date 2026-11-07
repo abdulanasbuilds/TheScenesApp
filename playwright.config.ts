@@ -15,6 +15,10 @@ const isExternalServer = Boolean(process.env.PLAYWRIGHT_BASE_URL);
 
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore:
+    process.env.VITE_DATA_MODE === "supabase-local"
+      ? []
+      : ["**/auth-flow.spec.ts", "**/security-contract.spec.ts"],
   outputDir: "./.playwright/test-results",
   timeout: 60_000,
   expect: { timeout: 20_000 },

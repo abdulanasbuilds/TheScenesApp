@@ -54,7 +54,7 @@ export function CreatorShell({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
-  const { currentMember, unreadCount, signOut } = useApp();
+  const { currentMember, unreadCount, signOut, dataMode } = useApp();
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -126,12 +126,16 @@ export function CreatorShell({
                 </DropdownItem>
                 <DropdownSeparator />
                 <DropdownItem
-                  onSelect={() => {
-                    signOut();
-                    void router.navigate({ href: "/login" });
-                  }}
+                  onSelect={() =>
+                    void (async () => {
+                      await signOut();
+                      await router.invalidate();
+                      await router.navigate({ href: "/login" });
+                    })()
+                  }
                 >
-                  <LogOut className="h-4 w-4" /> Log out of preview
+                  <LogOut className="h-4 w-4" />
+                  {dataMode === "fixtures" ? "Log out of preview" : "Log out"}
                 </DropdownItem>
               </DropdownContent>
             </Dropdown>

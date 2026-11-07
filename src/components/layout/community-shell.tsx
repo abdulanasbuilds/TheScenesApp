@@ -53,7 +53,8 @@ export function CommunityShell({
 }) {
   useGlobalSearchShortcut();
   const router = useRouter();
-  const { currentMember, unreadCount, signOut, state, joinCommunity, leaveCommunity } = useApp();
+  const { currentMember, unreadCount, signOut, state, joinCommunity, leaveCommunity, dataMode } =
+    useApp();
   const { toast } = useToast();
   const joined = state.joined.includes(community.slug);
 
@@ -126,12 +127,15 @@ export function CommunityShell({
                 </DropdownItem>
                 <DropdownSeparator />
                 <DropdownItem
-                  onSelect={() => {
-                    signOut();
-                    void router.navigate({ href: "/login" });
-                  }}
+                  onSelect={() =>
+                    void (async () => {
+                      await signOut();
+                      await router.invalidate();
+                      await router.navigate({ href: "/login" });
+                    })()
+                  }
                 >
-                  Log out of preview
+                  {dataMode === "fixtures" ? "Log out of preview" : "Log out"}
                 </DropdownItem>
               </DropdownContent>
             </Dropdown>

@@ -1,10 +1,17 @@
 import type { ReactNode } from "react";
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { InternalNavigationBridge } from "@/components/internal-navigation-bridge";
+import { getCurrentViewer } from "@/features/auth/auth.functions";
+import { dataMode } from "@/lib/data-mode";
 import { AppProvider, ToastProvider } from "@/store/app-store";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
+  loader: async () => {
+    if (dataMode === "fixtures") return { dataMode, viewer: null } as const;
+    const result = await getCurrentViewer({ data: undefined });
+    return { dataMode, viewer: result.ok ? result.data : null } as const;
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -23,10 +30,11 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const { viewer } = Route.useLoaderData();
   return (
     <RootDocument>
       <ToastProvider>
-        <AppProvider>
+        <AppProvider viewer={viewer} dataMode={dataMode}>
           <InternalNavigationBridge />
           <a
             href="#main-content"

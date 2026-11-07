@@ -5,6 +5,7 @@ import { CommunityCard } from "@/components/domain/cards";
 import { Brand } from "@/components/layout/public-shell";
 import { Button, Card, Chip, Field, Input, Progress } from "@/components/ui";
 import { categories, communities } from "@/data/seed";
+import { updateOwnProfile } from "@/features/auth/auth.functions";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/onboarding")({
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/onboarding")({
 function OnboardingPage() {
   const router = useRouter();
   const search = Route.useSearch();
-  const { signInDemo, joinCommunity, currentMember } = useApp();
+  const { signInDemo, joinCommunity, currentMember, dataMode } = useApp();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [name, setName] = useState(currentMember?.name ?? "Ama Boateng");
@@ -47,6 +48,28 @@ function OnboardingPage() {
     .filter((community) => interests.includes(community.categorySlug))
     .slice(0, 3);
 
+  const finish = async () => {
+    if (dataMode === "fixtures") {
+      signInDemo();
+      recommendations.forEach((community) => joinCommunity(community.slug));
+      toast("Setup complete", `Your ${role} preview is ready.`);
+    } else {
+      const result = await updateOwnProfile({ data: { displayName: name } });
+      if (!result.ok) {
+        setError(result.error.message);
+        return;
+      }
+      await router.invalidate();
+      toast(
+        "Profile updated",
+        role === "creator"
+          ? "Creator intent is saved only for this preview; no creator authority was granted."
+          : "Your local profile is ready. Interests and recommendations are not connected yet.",
+      );
+    }
+    await router.navigate({ href: role === "creator" ? "/dashboard/creator" : "/home" });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
@@ -70,7 +93,9 @@ function OnboardingPage() {
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
             {step === 1
-              ? "This fixture profile is how people will recognise you in communities."
+              ? dataMode === "fixtures"
+                ? "This fixture profile is how people will recognise you in communities."
+                : "Your display name can change, but your registered handle stays fixed."
               : step === 2
                 ? "Pick a few subjects. The taxonomy stays broad outside and structured inside."
                 : "Join any recommendation now or keep exploring after setup."}
@@ -95,7 +120,11 @@ function OnboardingPage() {
                 <Field
                   label="Profile handle"
                   htmlFor="onboarding-handle"
-                  hint="Letters and numbers only"
+                  hint={
+                    dataMode === "fixtures"
+                      ? "Letters and numbers only"
+                      : "Your registered handle cannot be changed"
+                  }
                   required
                 >
                   <div className="relative">
@@ -106,6 +135,7 @@ function OnboardingPage() {
                       id="onboarding-handle"
                       className="pl-7"
                       value={handle}
+                      readOnly={dataMode === "supabase-local"}
                       onChange={(event) =>
                         setHandle(event.target.value.replace(/[^a-zA-Z0-9]/g, "").toLowerCase())
                       }
@@ -191,16 +221,7 @@ function OnboardingPage() {
                 Continue <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button
-                onClick={() => {
-                  signInDemo();
-                  recommendations.forEach((community) => joinCommunity(community.slug));
-                  toast("Setup complete", `Your ${role} preview is ready.`);
-                  void router.navigate({
-                    href: role === "creator" ? "/dashboard/creator" : "/home",
-                  });
-                }}
-              >
+              <Button onClick={() => void finish()}>
                 {role === "creator" ? "Open creator workspace" : "Enter The Scenes"}{" "}
                 <ArrowRight className="h-4 w-4" />
               </Button>
