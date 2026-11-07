@@ -1,4 +1,7 @@
 export const dataMode =
-  import.meta.env.VITE_DATA_MODE === "supabase-local" ? "supabase-local" : "fixtures";
+  import.meta.env.VITE_DATA_MODE === "supabase-local" ||
+  import.meta.env.VITE_DATA_MODE === "supabase-staging"
+    ? import.meta.env.VITE_DATA_MODE
+    : "fixtures";
 
-export const isSupabaseLocalMode = dataMode === "supabase-local";
+export const isConnectedDataMode = dataMode !== "fixtures";

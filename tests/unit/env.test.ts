@@ -247,3 +247,38 @@ describe("parseAppEnv / supabase-local mode", () => {
     }
   });
 });
+
+describe("parseAppEnv / supabase-staging mode", () => {
+  const valid = {
+    VITE_DATA_MODE: "supabase-staging",
+    VITE_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+    VITE_SUPABASE_PUBLISHABLE_KEY: PUBLISHABLE_KEY,
+  };
+
+  test("accepts only the HTTPS root of a hosted Supabase project", () => {
+    expect(parseAppEnv(valid)).toEqual({
+      dataMode: "supabase-staging",
+      supabaseUrl: valid.VITE_SUPABASE_URL,
+      supabasePublishableKey: PUBLISHABLE_KEY,
+    });
+  });
+
+  test("rejects insecure, non-Supabase and path-bearing hosted URLs", () => {
+    expect(
+      errorCode(() =>
+        parseAppEnv({ ...valid, VITE_SUPABASE_URL: "http://abcdefghijklmnopqrst.supabase.co" }),
+      ),
+    ).toBe("SUPABASE_URL_INVALID");
+    expect(
+      errorCode(() => parseAppEnv({ ...valid, VITE_SUPABASE_URL: "https://example.com" })),
+    ).toBe("SUPABASE_URL_INVALID");
+    expect(
+      errorCode(() =>
+        parseAppEnv({
+          ...valid,
+          VITE_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co/rest/v1",
+        }),
+      ),
+    ).toBe("SUPABASE_URL_INVALID");
+  });
+});

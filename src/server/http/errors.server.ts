@@ -14,9 +14,15 @@ const STATUS_BY_CODE: Readonly<Record<SafeErrorCode, number>> = {
   INTERNAL: 500,
 };
 
+export function applyPrivateNoStoreResponse(): void {
+  setResponseHeader("cache-control", "private, no-store");
+  setResponseHeader("expires", "0");
+  setResponseHeader("pragma", "no-cache");
+}
+
 export function applySafeErrorResponse(code: SafeErrorCode, retryAfterSeconds?: number): void {
   setResponseStatus(STATUS_BY_CODE[code]);
-  setResponseHeader("cache-control", "private, no-store");
+  applyPrivateNoStoreResponse();
   if (retryAfterSeconds !== undefined) {
     setResponseHeader("retry-after", String(Math.max(1, Math.min(300, retryAfterSeconds))));
   }

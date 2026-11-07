@@ -3,7 +3,7 @@ import { EnvValidationError, parseAppEnv, type AppEnv } from "../lib/env";
 
 export type ConfigurationDiagnostic = Readonly<{
   ok: boolean;
-  dataMode: "fixtures" | "supabase-local" | "missing" | "invalid";
+  dataMode: "fixtures" | "supabase-local" | "supabase-staging" | "missing" | "invalid";
   missingVariables: readonly string[];
   message: string;
 }>;
@@ -32,7 +32,9 @@ export function inspectServerConfiguration(
       message:
         env.dataMode === "fixtures"
           ? "Fixture mode is ready. No provider connection will be created."
-          : "Local Supabase configuration is valid and ready for a request.",
+          : env.dataMode === "supabase-local"
+            ? "Local Supabase configuration is valid and ready for a request."
+            : "Hosted Supabase staging configuration is valid and ready for a request.",
     };
   } catch (error) {
     const code = error instanceof EnvValidationError ? error.code : "UNKNOWN";

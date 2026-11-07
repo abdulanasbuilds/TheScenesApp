@@ -4,7 +4,10 @@ import { z } from "zod";
 import { inspectServerConfiguration } from "../../src/server/env.server";
 import { redactLogValue } from "../../src/server/http/logger.server";
 import { LocalRateLimiter } from "../../src/server/security/local-rate-limit.server";
-import { hardenCookieOptions } from "../../src/server/supabase/server-client.server";
+import {
+  hardenCookieOptions,
+  isSecureRequestProtocol,
+} from "../../src/server/supabase/server-client.server";
 import { resolveRequestId } from "../../src/middleware/request-id";
 import { PublicAppError, withSafeHandler } from "../../src/features/shared/safe-handler";
 
@@ -43,6 +46,16 @@ describe("Wave 2 server boundary", () => {
     ).toMatchObject({ ok: true, dataMode: "supabase-local" });
   });
 
+  test("accepts hosted staging settings without exposing values", () => {
+    expect(
+      inspectServerConfiguration({
+        VITE_DATA_MODE: "supabase-staging",
+        VITE_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+        VITE_SUPABASE_PUBLISHABLE_KEY: PUBLISHABLE_KEY,
+      }),
+    ).toMatchObject({ ok: true, dataMode: "supabase-staging" });
+  });
+
   test("keeps valid request IDs and replaces hostile values", () => {
     const id = "11111111-1111-4111-8111-111111111111";
     expect(resolveRequestId(id.toUpperCase())).toBe(id);
@@ -67,13 +80,33 @@ describe("Wave 2 server boundary", () => {
   });
 
   test("hardens every auth cookie for the local server boundary", () => {
-    expect(hardenCookieOptions({ domain: "example.test", secure: true })).toMatchObject({
+    expect(
+      hardenCookieOptions(
+        { domain: "example.test", secure: true },
+        isSecureRequestProtocol("http"),
+      ),
+    ).toMatchObject({
       domain: undefined,
       httpOnly: true,
       maxAge: 604_800,
       path: "/",
       sameSite: "lax",
       secure: false,
+    });
+  });
+
+  test("requires secure auth cookies for HTTPS application requests", () => {
+    expect(
+      hardenCookieOptions(
+        { domain: "example.test", secure: false },
+        isSecureRequestProtocol("https"),
+      ),
+    ).toMatchObject({
+      domain: undefined,
+      httpOnly: true,
+      path: "/",
+      sameSite: "lax",
+      secure: true,
     });
   });
 

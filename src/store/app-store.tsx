@@ -235,7 +235,7 @@ export function AppProvider({
   });
 
   useEffect(() => {
-    if (dataMode !== "supabase-local") return;
+    if (dataMode === "fixtures") return;
     dispatch(viewer ? { type: "signIn", user: viewerUser(viewer) } : { type: "signOut" });
   }, [dataMode, viewer]);
 
@@ -247,7 +247,7 @@ export function AppProvider({
   }, []);
 
   const signOut = useCallback(async () => {
-    if (dataMode === "supabase-local") {
+    if (dataMode !== "fixtures") {
       const result = await signOutCurrentSession({ data: undefined });
       if (!result.ok) throw new Error(result.error.message);
     }

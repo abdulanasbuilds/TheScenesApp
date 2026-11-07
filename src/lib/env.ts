@@ -1,20 +1,22 @@
 /**
- * Pure environment contract for the two Phase 3A data modes.
+ * Pure environment contract for the Phase 3A fixture, local and hosted staging modes.
  *
  * This module deliberately performs no I/O and contacts no provider. Wave 0
  * tests it in isolation; the request-lazy server wiring is added in Wave 2.
  *
  * Rules (from the revision-3 spec, section 10):
- * - `VITE_DATA_MODE` is exactly `fixtures` or `supabase-local`.
+ * - `VITE_DATA_MODE` is exactly `fixtures`, `supabase-local` or `supabase-staging`.
  * - In `fixtures` mode the Supabase URL/key are optional and unparsed, but
  *   secret-looking `VITE_` names or values still fail.
  * - In `supabase-local` mode the URL must be loopback HTTP on the approved API
  *   port with no userinfo, query, fragment, or extra path, and the key must be
  *   a bounded `sb_publishable_...` value.
+ * - In `supabase-staging` mode the URL must be an HTTPS Supabase project root
+ *   and the same modern publishable-key-only rule applies.
  * - Errors never echo the rejected value.
  */
 
-export const DATA_MODES = ["fixtures", "supabase-local"] as const;
+export const DATA_MODES = ["fixtures", "supabase-local", "supabase-staging"] as const;
 
 export type DataMode = (typeof DATA_MODES)[number];
 
@@ -31,7 +33,13 @@ export type SupabaseLocalEnv = Readonly<{
   supabasePublishableKey: string;
 }>;
 
-export type AppEnv = FixtureEnv | SupabaseLocalEnv;
+export type SupabaseStagingEnv = Readonly<{
+  dataMode: "supabase-staging";
+  supabaseUrl: string;
+  supabasePublishableKey: string;
+}>;
+
+export type AppEnv = FixtureEnv | SupabaseLocalEnv | SupabaseStagingEnv;
 
 export type EnvErrorCode =
   | "MODE_MISSING"
@@ -150,6 +158,33 @@ function parseLocalUrl(value: string): string {
   return `${url.protocol}//${url.host}`;
 }
 
+function parseStagingUrl(value: string): string {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new EnvValidationError("SUPABASE_URL_INVALID", "VITE_SUPABASE_URL is not a valid URL.");
+  }
+
+  if (
+    url.protocol !== "https:" ||
+    !/^[a-z]{20}\.supabase\.co$/.test(url.hostname) ||
+    url.port !== "" ||
+    url.username !== "" ||
+    url.password !== "" ||
+    url.search !== "" ||
+    url.hash !== "" ||
+    (url.pathname !== "/" && url.pathname !== "")
+  ) {
+    throw new EnvValidationError(
+      "SUPABASE_URL_INVALID",
+      "VITE_SUPABASE_URL must be the HTTPS root URL of the approved hosted Supabase project.",
+    );
+  }
+
+  return `${url.protocol}//${url.host}`;
+}
+
 function parsePublishableKey(value: string): string {
   if (!PUBLISHABLE_KEY.test(value)) {
     throw new EnvValidationError(
@@ -171,14 +206,14 @@ export function parseAppEnv(raw: Readonly<Record<string, string | undefined>>): 
   if (!mode) {
     throw new EnvValidationError(
       "MODE_MISSING",
-      "VITE_DATA_MODE is required. Use fixtures or supabase-local.",
+      "VITE_DATA_MODE is required. Use fixtures, supabase-local or supabase-staging.",
     );
   }
 
-  if (mode !== "fixtures" && mode !== "supabase-local") {
+  if (mode !== "fixtures" && mode !== "supabase-local" && mode !== "supabase-staging") {
     throw new EnvValidationError(
       "MODE_UNKNOWN",
-      "VITE_DATA_MODE must be exactly fixtures or supabase-local.",
+      "VITE_DATA_MODE must be exactly fixtures, supabase-local or supabase-staging.",
     );
   }
 
@@ -190,7 +225,7 @@ export function parseAppEnv(raw: Readonly<Record<string, string | undefined>>): 
   if (!urlValue) {
     throw new EnvValidationError(
       "SUPABASE_URL_REQUIRED",
-      "VITE_SUPABASE_URL is required in supabase-local mode.",
+      "VITE_SUPABASE_URL is required in a connected Supabase mode.",
     );
   }
 
@@ -198,13 +233,13 @@ export function parseAppEnv(raw: Readonly<Record<string, string | undefined>>): 
   if (!keyValue) {
     throw new EnvValidationError(
       "SUPABASE_KEY_REQUIRED",
-      "VITE_SUPABASE_PUBLISHABLE_KEY is required in supabase-local mode.",
+      "VITE_SUPABASE_PUBLISHABLE_KEY is required in a connected Supabase mode.",
     );
   }
 
   return Object.freeze({
-    dataMode: "supabase-local",
-    supabaseUrl: parseLocalUrl(urlValue),
+    dataMode: mode,
+    supabaseUrl: mode === "supabase-local" ? parseLocalUrl(urlValue) : parseStagingUrl(urlValue),
     supabasePublishableKey: parsePublishableKey(keyValue),
   });
 }

@@ -2,6 +2,7 @@ import "@tanstack/react-start/server-only";
 import { PublicAppError } from "../../features/shared/safe-handler";
 import type { z } from "zod";
 import type { signInSchema, signUpSchema, updateProfileSchema } from "../../features/auth/schemas";
+import { applyPrivateNoStoreResponse } from "../http/errors.server";
 import { ProfileRepository } from "../repositories/profile.repository.server";
 import { localRateLimiter } from "../security/local-rate-limit.server";
 import { getVerifiedPrincipal } from "../supabase/auth.server";
@@ -12,6 +13,7 @@ type SignInInput = z.infer<typeof signInSchema>;
 type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
 export async function signUp(input: SignUpInput) {
+  applyPrivateNoStoreResponse();
   const limit = localRateLimiter.check(`signup:${input.email}`, { limit: 10, windowMs: 900_000 });
   if (!limit.allowed)
     throw new PublicAppError(
@@ -33,10 +35,11 @@ export async function signUp(input: SignUpInput) {
   }
   const profile = await new ProfileRepository(client).findPublicProfile(data.user.id);
   if (!profile) throw new Error("Profile bootstrap failed.");
-  return { changed: true as const, profile };
+  return { changed: true as const, profile, confirmationRequired: data.session === null };
 }
 
 export async function signIn(input: SignInInput) {
+  applyPrivateNoStoreResponse();
   const limit = localRateLimiter.check(`login:${input.email}`, { limit: 20, windowMs: 900_000 });
   if (!limit.allowed)
     throw new PublicAppError(
@@ -55,12 +58,14 @@ export async function signIn(input: SignInInput) {
 }
 
 export async function signOut() {
+  applyPrivateNoStoreResponse();
   const { error } = await createRequestSupabaseClient().auth.signOut({ scope: "local" });
   if (error) throw new Error("Local sign out failed.");
   return { changed: true as const, signedOut: true as const };
 }
 
 export async function updateProfile(input: UpdateProfileInput) {
+  applyPrivateNoStoreResponse();
   const principal = await getVerifiedPrincipal();
   if (!principal) throw new PublicAppError("UNAUTHENTICATED", "Please sign in again.");
   const client = createRequestSupabaseClient();

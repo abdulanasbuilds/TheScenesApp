@@ -64,7 +64,9 @@ function OnboardingPage() {
         "Profile updated",
         role === "creator"
           ? "Creator intent is saved only for this preview; no creator authority was granted."
-          : "Your local profile is ready. Interests and recommendations are not connected yet.",
+          : dataMode === "supabase-staging"
+            ? "Your pre-production profile is ready. Interests and recommendations are not connected yet."
+            : "Your local profile is ready. Interests and recommendations are not connected yet.",
       );
     }
     await router.navigate({ href: role === "creator" ? "/dashboard/creator" : "/home" });
@@ -135,7 +137,7 @@ function OnboardingPage() {
                       id="onboarding-handle"
                       className="pl-7"
                       value={handle}
-                      readOnly={dataMode === "supabase-local"}
+                      readOnly={dataMode !== "fixtures"}
                       onChange={(event) =>
                         setHandle(event.target.value.replace(/[^a-zA-Z0-9]/g, "").toLowerCase())
                       }

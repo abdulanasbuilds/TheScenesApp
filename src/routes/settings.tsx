@@ -106,7 +106,7 @@ function SettingsPage() {
     if (profile.location.trim().length < 2) next.location = "Add a city or region.";
     setProfileErrors(next);
     if (Object.keys(next).length) return;
-    if (dataMode === "supabase-local") {
+    if (dataMode !== "fixtures") {
       const result = await updateOwnProfile({
         data: {
           displayName: profile.name,
@@ -121,7 +121,7 @@ function SettingsPage() {
       }
       await router.invalidate();
       setProfileSaved(true);
-      toast("Profile saved", "Your isolated local profile was updated.");
+      toast("Profile saved", "Your connected profile was updated.");
       return;
     }
     setProfileSaved(true);
@@ -174,7 +174,11 @@ function SettingsPage() {
                   Account
                 </p>
                 <Badge tone={dataMode === "fixtures" ? "amber" : "green"}>
-                  {dataMode === "fixtures" ? "Frontend preview" : "Connected local proof"}
+                  {dataMode === "fixtures"
+                    ? "Frontend preview"
+                    : dataMode === "supabase-staging"
+                      ? "Pre-production connected"
+                      : "Connected local proof"}
                 </Badge>
               </div>
               <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-950">
@@ -217,7 +221,7 @@ function SettingsPage() {
                   </h2>
                   {profileSaved ? (
                     <Badge tone="green">
-                      <Check className="h-3 w-3" /> Saved locally
+                      <Check className="h-3 w-3" /> Saved
                     </Badge>
                   ) : null}
                 </div>
@@ -265,7 +269,7 @@ function SettingsPage() {
                       <Input
                         id="profile-handle"
                         value={profile.handle}
-                        readOnly={dataMode === "supabase-local"}
+                        readOnly={dataMode !== "fixtures"}
                         onChange={(event) => updateProfile("handle", event.target.value)}
                         invalid={Boolean(profileErrors.handle)}
                       />
@@ -321,7 +325,9 @@ function SettingsPage() {
                   </Field>
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
                     <p className="text-xs text-slate-500">
-                      Changes reset when this preview reloads.
+                      {dataMode === "fixtures"
+                        ? "Changes reset when this preview reloads."
+                        : "Profile changes persist in the connected environment."}
                     </p>
                     <Button type="submit">
                       <Save className="h-4 w-4" /> Save profile
@@ -346,8 +352,9 @@ function SettingsPage() {
                     </h2>
                   </div>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
-                    Used for sign-in and important account messages. Verification email is not
-                    connected.
+                    {dataMode === "supabase-staging"
+                      ? "Used for sign-in and confirmation. Email changes are not available in this phase."
+                      : "Used for sign-in and important account messages. Verification email is not connected locally."}
                   </p>
                   <form onSubmit={saveEmail} className="mt-4 space-y-4" noValidate>
                     <Field label="Email" htmlFor="account-email" error={emailError} required>
@@ -355,7 +362,7 @@ function SettingsPage() {
                         id="account-email"
                         type="email"
                         value={email}
-                        readOnly={dataMode === "supabase-local"}
+                        readOnly={dataMode !== "fixtures"}
                         onChange={(event) => {
                           setEmail(event.target.value);
                           if (emailError) setEmailError("");
@@ -371,7 +378,7 @@ function SettingsPage() {
                       </div>
                     ) : (
                       <p className="text-xs text-slate-500">
-                        Email changes are unavailable in this local phase.
+                        Email changes are unavailable in this phase.
                       </p>
                     )}
                   </form>
@@ -457,7 +464,9 @@ function SettingsPage() {
                       <p className="mt-0.5 text-xs text-slate-500">
                         {dataMode === "fixtures"
                           ? "Local demo session · no server token"
-                          : "Verified isolated local session"}
+                          : dataMode === "supabase-staging"
+                            ? "Verified pre-production session"
+                            : "Verified isolated local session"}
                       </p>
                     </div>
                     <Button

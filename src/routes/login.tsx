@@ -55,7 +55,7 @@ function LoginPage() {
       return;
     }
     await router.invalidate();
-    toast("Signed in", "Your local session is active.");
+    toast("Signed in", "Your connected session is active.");
     await router.navigate({ href: "/home" });
   };
 
@@ -65,7 +65,9 @@ function LoginPage() {
       description={
         dataMode === "fixtures"
           ? "Use the prefilled demo details or any valid-looking email. This form validates locally and never sends a password."
-          : "Sign in to the isolated local learning environment. No production service is connected."
+          : dataMode === "supabase-staging"
+            ? "Sign in to the pre-production environment after confirming your email. No payment or production deployment is connected."
+            : "Sign in to the isolated local learning environment. No production service is connected."
       }
       footer={
         <>
@@ -123,7 +125,7 @@ function LoginPage() {
               label="Remember this preview"
             />
           ) : (
-            <span className="text-xs text-slate-500">Secure local session</span>
+            <span className="text-xs text-slate-500">Secure connected session</span>
           )}
           <a
             href="/forgot-password"

@@ -25,8 +25,10 @@ function RegisterPage() {
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [confirmationRequired, setConfirmationRequired] = useState(false);
   const [values, setValues] = useState({ name: "", handle: "", email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const isHostedPreProduction = dataMode === "supabase-staging";
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -70,20 +72,32 @@ function RegisterPage() {
       return;
     }
     await router.invalidate();
+    setConfirmationRequired(result.data.confirmationRequired);
     setSuccess(true);
-    toast("Account ready", "Your local account and profile were created securely.");
+    toast(
+      result.data.confirmationRequired ? "Check your email" : "Account ready",
+      result.data.confirmationRequired
+        ? "Confirm your email address before signing in."
+        : "Your account and profile were created securely.",
+    );
   };
 
   if (success) {
     return (
       <AuthShell
         title={
-          role === "creator" ? "Your creator preview is ready." : "Your preview account is ready."
+          confirmationRequired
+            ? "Check your email to continue."
+            : role === "creator"
+              ? "Your creator preview is ready."
+              : "Your preview account is ready."
         }
         description={
-          dataMode === "fixtures"
-            ? "The account exists only in this browser session. Continue to personalise the fixture experience."
-            : "Your local account is ready. Continue to review your profile and learning preferences."
+          confirmationRequired
+            ? "We sent a confirmation link to your email address. Confirm it, then return to log in."
+            : dataMode === "fixtures"
+              ? "The account exists only in this browser session. Continue to personalise the fixture experience."
+              : "Your connected account is ready. Continue to review your profile and learning preferences."
         }
         footer={
           <a href="/login" className="font-bold text-indigo-700">
@@ -97,15 +111,19 @@ function RegisterPage() {
           </span>
           <p className="mt-4 text-sm font-bold text-emerald-950">Welcome, {values.name.trim()}.</p>
           <p className="mt-1 text-sm leading-6 text-emerald-900">
-            {dataMode === "fixtures"
-              ? "Your local demo session is active. Nothing was sent to a backend."
-              : "Your account and profile are saved in the isolated local learning environment."}
+            {confirmationRequired
+              ? "Your profile is reserved, but no session will start until your email is confirmed."
+              : dataMode === "fixtures"
+                ? "Your local demo session is active. Nothing was sent to a backend."
+                : isHostedPreProduction
+                  ? "Your test account and profile are saved in the pre-production environment."
+                  : "Your account and profile are saved in the isolated local learning environment."}
           </p>
           <a
-            href={`/onboarding?role=${role}`}
+            href={confirmationRequired ? "/login" : `/onboarding?role=${role}`}
             className="mt-5 flex h-11 items-center justify-center rounded-full bg-indigo-700 px-5 text-sm font-semibold text-white hover:bg-indigo-800"
           >
-            Continue to onboarding
+            {confirmationRequired ? "Return to login" : "Continue to onboarding"}
           </a>
         </div>
       </AuthShell>
@@ -120,8 +138,10 @@ function RegisterPage() {
           : "Create your account."
       }
       description={
-        dataMode === "supabase-local"
-          ? "Create a local account for the connected learning proof. No email provider, payment method or production service is used."
+        dataMode !== "fixtures"
+          ? isHostedPreProduction
+            ? "Create a pre-production test account. Email confirmation is required; no payment or production deployment is connected."
+            : "Create a local account for the connected learning proof. No email provider, payment method or production service is used."
           : role === "creator"
             ? "Preview the teaching and community workspace. No production creator account or payout profile is created."
             : "Start with a local preview profile. Production authentication will connect only after the frontend phase is accepted."
@@ -198,12 +218,16 @@ function RegisterPage() {
           label={
             dataMode === "fixtures"
               ? "I agree to the preview terms"
-              : "I agree to the local proof terms"
+              : isHostedPreProduction
+                ? "I agree to the pre-production test terms"
+                : "I agree to the local proof terms"
           }
           description={
             dataMode === "fixtures"
               ? "This is simulated auth; no production account or payment method is created."
-              : "This creates only an isolated local account. No email or payment provider is contacted."
+              : isHostedPreProduction
+                ? "This creates a test account in the pre-production project. No payment method is collected."
+                : "This creates only an isolated local account. No email or payment provider is contacted."
           }
         />
         {errors.agreed ? (

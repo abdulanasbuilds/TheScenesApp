@@ -1,8 +1,8 @@
 # The Scenes — Current Project Status
 
-**Last updated:** 6 November 2026
-**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 authentication/profile foundation in progress
-**Production status:** not deployed; no production provider, payment or user data is connected
+**Last updated:** 7 November 2026
+**Current stage:** Phase 3A — Waves 1–2 accepted; Wave 3 local Auth proven and hosted pre-production foundation ready for checkpoint
+**Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
 but their old status paragraphs do not override this page, `AGENTS.md` or accepted ADRs.
@@ -30,13 +30,21 @@ These are milestone estimates, not percentages generated from lines of code:
 - loopback isolation preserved across database resets and pgTAP helper containers;
 - Wave 2 server/security implementation: request-lazy configuration, request-scoped Supabase client,
   hardened cookies/cache headers, verified-claims helper, request IDs, CSRF, safe errors/log redaction,
-  local rate limiting, initial repository/service boundary and client-bundle protection.
+  local rate limiting, initial repository/service boundary and client-bundle protection;
+- focused local Auth integration: 4 tests and 37 assertions covering profile bootstrap, verified claims,
+  hostile metadata, duplicate handles, provider-safe login failures, partial profile updates and
+  cross-account denial;
+- initial connected registration, login, root viewer, onboarding, settings and awaited-logout UI;
+- explicit `supabase-staging` environment validation using only an HTTPS project root and a modern
+  `sb_publishable_...` key, with cookie security derived from the application request protocol.
 
 ## What is not complete
 
 Wave 3 now has shared registration/profile schemas and direct server-function/service foundations for
-signup, login, logout, verified viewer and profile update. UI connection and live local auth/browser
-evidence remain incomplete. Waves 3–5 and every later production service remain incomplete. The local database stack is stopped.
+signup, login, logout, verified viewer and profile update. Hosted email confirmation/callback behavior,
+hosted Auth integration, connected browser acceptance and the complete fresh fixture regression remain
+incomplete. Waves 3–5 and every later production service remain incomplete. The local database stack is
+stopped.
 
 Profile updates now preserve omitted optional fields, clear only explicit `null`, and route persistence
 through the profile repository. The local limiter now removes expired buckets and enforces a fixed
@@ -47,25 +55,28 @@ profile updates and profile isolation all execute with user-scoped clients. The 
 failure was an approximately eight-hour Windows/WSL clock mismatch; running GoTrue and the Auth test
 process together inside WSL resolved it without weakening expiry or claim verification. A dedicated
 `test:integration:auth` command prevents the unrelated database concurrency suite from being selected.
-The founder selected a new business-controlled Supabase Free staging project on 6 November 2026, with
-email confirmation kept enabled. Registration, login, root viewer, onboarding, profile settings and
-awaited logout now have an initial connected-mode UI implementation that passes unit, type, lint,
-production-build and client-boundary checks. Hosted staging configuration, confirmation-pending/callback
-behavior and connected browser acceptance remain unverified.
-No hosted project, retired credential or production service was contacted.
+The founder designated **THE SCENES** (`extdmvwwvgqstoayzhhy`) as the application's final long-term
+Supabase project. It is intentionally treated as **PRE-PRODUCTION** until the release gate passes; no
+separate staging project will be created. Email confirmation is enabled and must remain enabled. The
+remote project has been inspected read-only: its public schema and migration history are empty and no
+development branch exists. No remote migration or seed has run, no customer data or payment exists, and
+no production deployment is claimed.
 
-## Latest verified checks — 6 November 2026
+## Latest verified checks — 7 November 2026
 
+- focused environment/server-boundary tests: **40 passed, 0 failed**;
+- complete unit suite: **148 passed, 0 failed**;
 - TypeScript check: passed;
-- ESLint: passed;
-- unit tests: **126 passed, 0 failed**;
-- application build: passed;
-- fixture browser suite: **26 passed, 4 intentional duplicate viewport skips**;
-- dependency audit: passed with the repository's documented ignored advisory;
-- Git working tree before this status-policy update: clean and synchronized with `origin/main`.
+- ESLint: passed after one formatting-only correction in the new cookie test;
+- production application build: passed;
+- client/server boundary scan: passed;
+- `git diff --check`: passed;
+- the previously accepted fixture browser baseline remains **26 passed, 4 intentional duplicate
+  viewport skips**, but one complete fresh fixture run has not yet passed on this changed tree and is
+  therefore not claimed as a current promotion gate.
 
-These checks prove that the fixture application and static Wave 1 tooling are healthy. They do not
-prove that the database implementation works at runtime.
+These checks verify the hosted-mode foundation on the current tree. They do not prove hosted Auth,
+email confirmation, remote database authorization or connected browser acceptance.
 
 ## Wave 1 live acceptance — 6 November 2026
 
@@ -101,7 +112,7 @@ Redacted evidence is in `docs/evidence/phase-3/2026-11-06-phase3a-wave1-live/`.
 
 **Wave 2 is promoted.**
 
-## Official working mode — lean build + staging
+## Official working mode — lean build + pre-production final project
 
 The founder approved this mode on 6 November 2026:
 
@@ -112,36 +123,35 @@ The founder approved this mode on 6 November 2026:
 5. At the point of need, inspect and use authorized skills, CLIs, MCPs and browser/runtime tools.
 6. If a required capability is missing, ask the founder once, in plain language, with purpose, cost,
    permission impact and the work that can continue without it.
-7. Ask for fresh staging configuration only when the corresponding integration is ready to verify.
+7. Use only the founder-designated THE SCENES Supabase project for remote verification; do not create a
+   separate staging project.
 8. Never request secrets in chat. The founder places them in an ignored local file or approved secret
    store, and the agent verifies their presence without printing values.
-9. Staging does not authorize production, deployment, payments or live customer data.
+9. Pre-production access does not authorize production deployment, payments or live customer data.
 
 ## Exact next step
 
-Create the fresh business-owned Supabase Free staging project, authenticate/link the pinned CLI without
-sharing secrets in chat, preview the 18 migrations with a remote dry run, and add an explicit
-`supabase-staging` environment contract. Keep email confirmation enabled and implement the pending
-confirmation plus callback flow before running connected browser acceptance.
+Checkpoint the verified hosted-mode foundation separately, then authenticate/link the pinned CLI to
+`extdmvwwvgqstoayzhhy` without sharing secrets. Reconfirm the empty remote state, preview exactly the 18
+accepted migrations with a remote dry run, and apply them without seed only if that preview is exact.
+Keep email confirmation enabled and implement the pending confirmation plus callback flow before
+connected browser acceptance.
 
-## When staging will be requested
+## Remote project boundary
 
-After the vertical slice works locally and has a setup checker, the agent will present one staging
-request containing:
-
-- the exact provider/account needed;
-- the exact non-secret identifiers and secret variable names;
-- where the founder should configure them securely;
-- any cost or remote change;
-- the verification and rollback commands.
-
-Only after explicit approval may a fresh business-controlled staging resource be created, linked,
-migrated or tested. Retired accounts and credentials must never be reused.
+- final Supabase project: **THE SCENES**;
+- project reference: `extdmvwwvgqstoayzhhy`;
+- current classification: **PRE-PRODUCTION**;
+- separate staging project: **will not be created**;
+- email confirmation: **enabled and required**;
+- current remote schema/migration state: empty before the approved dry run;
+- forbidden: remote reset/drop, seed, real customer data, payment, service-role material in application
+  code, production deployment claim and unapproved Git push.
 
 ## Checkpoint state
 
-- Founder input needed: **no**;
-- working tree: clean after the Wave 3 foundation checkpoint;
+- Founder input needed: **only if the pinned CLI still requires browser login/linking**;
+- working tree: hosted-mode foundation verified and awaiting its separate local commit;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;
@@ -150,4 +160,5 @@ migrated or tested. Retired accounts and credentials must never be reused.
 - Wave 3 foundation checkpoint: `d023fe2`;
 - Wave 3 profile/limiter checkpoint: `f5173aa`;
 - unresolved risks: database lint records one Low-severity unused local variable warning in
-  `public.leave_community`; Waves 3–5 remain incomplete.
+  `public.leave_community`; hosted confirmation/Auth and current-tree browser gates are incomplete;
+  Waves 3–5 remain incomplete.
