@@ -55,7 +55,7 @@ profile updates and profile isolation all execute with user-scoped clients. The 
 failure was an approximately eight-hour Windows/WSL clock mismatch; running GoTrue and the Auth test
 process together inside WSL resolved it without weakening expiry or claim verification. A dedicated
 `test:integration:auth` command prevents the unrelated database concurrency suite from being selected.
-The founder designated **THE SCENES** (`extdmvwwvgqstoayzhhy`) as the application's final long-term
+The founder designated **THE SCENES** (`okdzuqgzgnmmbtjxdaci`) as the application's final long-term
 Supabase project. It is intentionally treated as **PRE-PRODUCTION** until the release gate passes; no
 separate staging project will be created. Email confirmation is enabled and must remain enabled. The
 remote project has been inspected read-only: its public schema and migration history are empty and no
@@ -132,7 +132,7 @@ The founder approved this mode on 6 November 2026:
 ## Exact next step
 
 Checkpoint the verified hosted-mode foundation separately, then authenticate/link the pinned CLI to
-`extdmvwwvgqstoayzhhy` without sharing secrets. Reconfirm the empty remote state, preview exactly the 18
+`okdzuqgzgnmmbtjxdaci` without sharing secrets. Reconfirm the empty remote state, preview exactly the 18
 accepted migrations with a remote dry run, and apply them without seed only if that preview is exact.
 Keep email confirmation enabled and implement the pending confirmation plus callback flow before
 connected browser acceptance.
@@ -140,7 +140,7 @@ connected browser acceptance.
 ## Remote project boundary
 
 - final Supabase project: **THE SCENES**;
-- project reference: `extdmvwwvgqstoayzhhy`;
+- project reference: `okdzuqgzgnmmbtjxdaci`;
 - current classification: **PRE-PRODUCTION**;
 - separate staging project: **will not be created**;
 - email confirmation: **enabled and required**;
