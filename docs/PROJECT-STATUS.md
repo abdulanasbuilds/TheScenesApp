@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 7 November 2026
-**Current stage:** Phase 3A — Waves 1–3 complete; Wave 4 server foundation built; Wave 5 query-plan evidence recorded
+**Current stage:** Phase 3A — Waves 1–3 complete; Wave 4 hosted vertical slice implemented with public/RLS gates passed; authenticated browser replay and Wave 5 remain
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -12,7 +12,7 @@ but their old status paragraphs do not override this page, `AGENTS.md` or accept
 These are milestone estimates, not percentages generated from lines of code:
 
 - clickable fixture application: **100%**;
-- Phase 3A real-data foundation: **about 85%**;
+- Phase 3A real-data foundation: **about 88%**;
 - complete Phase 0–10 product vision: **about 30%**;
 - ready for real public users: **no**.
 
@@ -51,18 +51,25 @@ These are milestone estimates, not percentages generated from lines of code:
   `community.service.server.ts`, `learning.service.server.ts`, `learning.functions.ts` with
   `joinCommunity`, `leaveCommunity`, `enrolInCourse`, `completeLesson`, and `getLearningState`;
   `getSessionProfile` now returns real joined-community membership data;
+- Wave 4 connected catalogue/repository, real Explore/community/classroom/lesson/My Learning data,
+  protected-content locks, onboarding community selection, real progress hydration, and external HTTPS
+  resources;
+- hosted deterministic fictional catalogue loaded after founder authorization and exact dry run;
+- Wave 4 RLS/access/idempotency/leave-rejoin matrix passed in rolled-back hosted transactions;
+- hosted public browser acceptance: 12 checks passed across desktop, tablet, and mobile;
+- fresh fixture regression: 26 passed, 4 intentional duplicate viewport skips, 0 failed;
 - Wave 5 query plans: all 5 core Wave 4 application queries use index scans with no sequential
   scan observed on the hosted pre-production database.
 
 ## What is not complete
 
-Wave 3 is complete including closure tests. Wave 4 server infrastructure is built:
-community membership and learning server functions are in place, session initialization
-returns real joined-community data, and all schemas are validated. Waves 4–5 frontend
-integration (connecting the community feed, classroom, and My Learning routes to real
-Supabase data instead of fixtures), complete connected browser acceptance, and the
-final Phase 3 security review remain incomplete. Waves 5+ and every later production
-service remain incomplete. The local database stack is stopped.
+Wave 4 implementation and its public/RLS/fixture gates are complete. The founder-controlled account did
+not establish an active session in the shared test browser, so the final authenticated browser replay of
+join → enrol → protected lesson → complete → reload has not been captured on this tree. Phase 3 is also
+blocked by Wave 5's mandatory representative-data workload, burst/recovery measurement, disposable
+restore rehearsal, portability evidence, and final acceptance review. The local database stack is
+stopped; its normal ports are currently occupied by the unrelated `call-hola` local Supabase project,
+which this project did not stop or modify.
 
 Profile updates now preserve omitted optional fields, clear only explicit `null`, and route persistence
 through the profile repository. The local limiter now removes expired buckets and enforces a fixed
@@ -77,8 +84,9 @@ The founder designated **THE SCENES** (`okdzuqgzgnmmbtjxdaci`) as the applicatio
 Supabase project. It is intentionally treated as **PRE-PRODUCTION** until the release gate passes; no
 separate staging project will be created. Email confirmation is enabled and must remain enabled. The
 remote project now has exactly 18 accepted migration-history entries, 15 expected public tables and the
-private audit table. Every expected table has RLS enabled and remains empty because no seed ran. No
-customer data or payment exists, and no production deployment is claimed.
+private audit table. Every expected table has RLS enabled. The founder-authorized deterministic
+fictional catalogue is loaded; it contains no seeded learner, customer, payment, membership, enrolment,
+or completion. No production deployment is claimed.
 
 ## Latest verified checks — 7 November 2026
 
@@ -96,12 +104,13 @@ customer data or payment exists, and no production deployment is claimed.
   return, post-confirmation login and onboarding all passed;
 - Wave 5 query plans: 5 core queries confirmed to use index scans, no sequential scan, on hosted
   pre-production database via MCP `EXPLAIN (FORMAT JSON)`;
-- the previously accepted fixture browser baseline remains **26 passed, 4 intentional duplicate
-  viewport skips**, but one complete fresh fixture run has not yet passed on this changed tree and is
-  therefore not claimed as a current promotion gate.
+- fresh fixture browser regression: **26 passed, 4 intentional duplicate viewport skips, 0 failed**;
+- hosted public connected browser suite: **12 passed, 0 failed** across all three viewports;
+- rolled-back hosted access matrix: join/enrol/complete, cross-user isolation, private concealment,
+  idempotency, leave lock, history preservation, and rejoin restoration passed.
 
-These checks verify the hosted-mode foundation and local confirmation handoff on the current tree. They
-do not replace the pending real-inbox confirmation and hosted Auth acceptance tests.
+These checks verify Waves 1–4 on the current tree. They do not replace Wave 5's capacity, recovery,
+restore, portability, and final acceptance gates.
 
 ## Wave 1 live acceptance — 6 November 2026
 
@@ -156,9 +165,9 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-When work resumes, connect the community feed, classroom, and My Learning routes to real
-Supabase data instead of fixture data, run complete connected desktop/tablet/mobile acceptance,
-and complete the final Phase 3 security review before accepting Phase 3.
+Run Wave 5's deterministic representative dataset, 25-operation/second sustained workload, burst and
+recovery measurement, disposable restore rehearsal, portability evidence, then perform the final
+Phase 3 acceptance review.
 
 ## Remote project boundary
 
@@ -167,14 +176,16 @@ and complete the final Phase 3 security review before accepting Phase 3.
 - current classification: **PRE-PRODUCTION**;
 - separate staging project: **will not be created**;
 - email confirmation: **enabled and required**;
-- current remote schema/migration state: 18 accepted migrations, no seed, empty application tables;
-- forbidden: remote reset/drop, seed, real customer data, payment, service-role material in application
+- current remote schema/migration state: 18 accepted migrations plus the founder-authorized fictional
+  catalogue; no learner seed or customer/payment data;
+- forbidden: remote reset/drop, real customer data, payment, service-role material in application
   code, production deployment claim and unapproved Git push.
 
 ## Checkpoint state
 
-- Founder input needed: **none; Wave 4 frontend integration resumes when credits allow**;
-- working tree: Wave 3 closure + Wave 4 server + Wave 5 query evidence ready to commit;
+- Founder input needed: **a Wave 5 execution path that does not interfere with the unrelated local
+  Supabase project; hosted large-dataset/load execution remains unapproved**;
+- working tree: Wave 4 hosted integration and evidence ready to commit;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;
@@ -183,5 +194,5 @@ and complete the final Phase 3 security review before accepting Phase 3.
 - Wave 3 foundation checkpoint: `d023fe2`;
 - Wave 3 profile/limiter checkpoint: `f5173aa`;
 - unresolved risks: database lint records one Low-severity unused local variable warning in
-  `public.leave_community`; hosted confirmation/Auth and current-tree browser gates are incomplete;
-  Waves 3–5 remain incomplete.
+  `public.leave_community`; Supabase leaked-password protection requires Pro; Wave 5 capacity/recovery
+  evidence remains incomplete.

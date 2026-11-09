@@ -16,15 +16,17 @@ import {
   TabsTrigger,
   buttonClass,
 } from "@/components/ui";
-import { courses, events, getCommunity, getCreator, members, posts } from "@/data/seed";
+import { events, getCreator, members, posts } from "@/data/seed";
+import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
 import { formatCompact, formatMoney } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/communities/$communityId")({
-  loader: ({ params }) => {
-    const community = getCommunity(params.communityId);
+  loader: async ({ params }) => {
+    const catalog = await loadCatalogForRoute();
+    const community = catalog.communities.find((item) => item.slug === params.communityId);
     if (!community) throw notFound();
-    return { community };
+    return { community, courses: catalog.courses };
   },
   head: ({ loaderData }) => ({
     meta: [{ title: `${loaderData?.community.name ?? "Community"} — The Scenes` }],
@@ -33,25 +35,41 @@ export const Route = createFileRoute("/communities/$communityId")({
 });
 
 function PublicCommunityPage() {
-  const { community } = Route.useLoaderData();
+  const { community, courses } = Route.useLoaderData();
+  const { state, joinCommunity, leaveCommunity, dataMode } = useApp();
+  const connected = dataMode !== "fixtures";
   const creator = getCreator(community.creatorHandle);
   const communityCourses = courses.filter((course) => course.communitySlug === community.slug);
-  const communityEvents = events.filter(
-    (event) => event.communitySlug === community.slug && !event.replay,
-  );
-  const communityPosts = posts.filter((post) => post.communitySlug === community.slug);
-  const { state, joinCommunity, leaveCommunity } = useApp();
+  const connectedHost = communityCourses[0];
+  const communityEvents = connected
+    ? []
+    : events.filter((event) => event.communitySlug === community.slug && !event.replay);
+  const communityPosts = connected
+    ? []
+    : posts.filter((post) => post.communitySlug === community.slug);
   const { toast } = useToast();
   const [tab, setTab] = useState("about");
+  const [membershipPending, setMembershipPending] = useState(false);
   const joined = state.joined.includes(community.slug);
 
-  const toggleJoin = () => {
-    if (joined) {
-      leaveCommunity(community.slug);
-      toast("Community left", `${community.name} was removed from your home.`);
-    } else {
-      joinCommunity(community.slug);
-      toast("Welcome to the scene", "Membership is simulated in local frontend state.");
+  const toggleJoin = async () => {
+    if (membershipPending) return;
+    setMembershipPending(true);
+    try {
+      if (joined) {
+        await leaveCommunity(community.slug);
+        toast("Community left", `${community.name} was removed from your home.`);
+      } else {
+        await joinCommunity(community.slug);
+        toast("Welcome to the scene", "Membership is saved to your account.");
+      }
+    } catch (error) {
+      toast(
+        "Membership was not changed",
+        error instanceof Error ? error.message : "Please try again.",
+      );
+    } finally {
+      setMembershipPending(false);
     }
   };
 
@@ -86,14 +104,20 @@ function PublicCommunityPage() {
                 {community.tagline}
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
-                <span className="inline-flex items-center gap-1.5">
-                  <Users className="h-4 w-4" /> {formatCompact(community.members)} members
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {community.rating} ·{" "}
-                  {community.reviews} reviews
-                </span>
-                <span>{community.postsPerWeek} posts this week</span>
+                {connected ? (
+                  <span>Connected pre-production catalogue</span>
+                ) : (
+                  <>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Users className="h-4 w-4" /> {formatCompact(community.members)} members
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {community.rating}{" "}
+                      · {community.reviews} reviews
+                    </span>
+                    <span>{community.postsPerWeek} posts this week</span>
+                  </>
+                )}
               </div>
             </div>
             <Card className="p-4 lg:-mt-16 lg:relative lg:z-10 lg:shadow-lg">
@@ -106,19 +130,24 @@ function PublicCommunityPage() {
                   : `${formatMoney(community.pricing.amount)} / month`}
               </p>
               <p className="mt-2 text-xs leading-5 text-slate-500">
-                Membership actions are local preview state. No payment is collected.
+                {connected
+                  ? "Membership is recorded securely. No payment is collected."
+                  : "Membership actions are local preview state. No payment is collected."}
               </p>
               <Button
                 className="mt-4 w-full"
                 size="lg"
                 variant={joined ? "secondary" : "primary"}
                 onClick={toggleJoin}
+                disabled={membershipPending || (!joined && community.privacy === "private")}
               >
                 {joined ? <Check className="h-4 w-4" /> : null}
                 {joined
                   ? "Joined"
                   : community.pricing.type === "free"
-                    ? "Join community"
+                    ? community.privacy === "private"
+                      ? "Invite only"
+                      : "Join community"
                     : "Preview membership"}
               </Button>
               {joined ? (
@@ -163,21 +192,29 @@ function PublicCommunityPage() {
                       </div>
                     ))}
                   </div>
-                  <h3 className="mt-8 text-sm font-bold text-slate-900">
-                    A preview of the conversation
-                  </h3>
-                  <div className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200">
-                    {communityPosts.slice(0, 3).map((post) => (
-                      <div key={post.id} className="p-4">
-                        <p className="text-sm font-bold text-slate-900">
-                          {post.title ?? post.body}
-                        </p>
-                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
-                          {post.body}
-                        </p>
+                  {connected ? (
+                    <p className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+                      Posts, reactions, and member previews are not connected in Phase 3.
+                    </p>
+                  ) : (
+                    <>
+                      <h3 className="mt-8 text-sm font-bold text-slate-900">
+                        A preview of the conversation
+                      </h3>
+                      <div className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200">
+                        {communityPosts.slice(0, 3).map((post) => (
+                          <div key={post.id} className="p-4">
+                            <p className="text-sm font-bold text-slate-900">
+                              {post.title ?? post.body}
+                            </p>
+                            <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                              {post.body}
+                            </p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </>
+                  )}
                 </Card>
               </TabsContent>
               <TabsContent value="classroom">
@@ -204,7 +241,7 @@ function PublicCommunityPage() {
                     active today.
                   </p>
                   <div className="mt-5 flex flex-wrap gap-3">
-                    {members.slice(0, 10).map((member) => (
+                    {(connected ? [] : members.slice(0, 10)).map((member) => (
                       <div
                         key={member.id}
                         className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1.5 pr-3 pl-1.5"
@@ -223,18 +260,26 @@ function PublicCommunityPage() {
                   Hosted by
                 </p>
                 <div className="mt-3 flex items-center gap-3">
-                  <Avatar name={creator?.name ?? "Creator"} size={44} online />
+                  <Avatar
+                    name={connectedHost?.instructorName ?? creator?.name ?? "Creator"}
+                    size={44}
+                    online={dataMode === "fixtures"}
+                  />
                   <div>
                     <a
-                      href={`/creators/${creator?.handle}`}
+                      href={`/creators/${creator?.handle ?? community.creatorHandle}`}
                       className="text-sm font-bold text-slate-900 hover:text-indigo-700"
                     >
-                      {creator?.name}
+                      {connectedHost?.instructorName ?? creator?.name ?? community.creatorHandle}
                     </a>
-                    <p className="text-xs text-slate-500">{creator?.location}</p>
+                    <p className="text-xs text-slate-500">
+                      {connectedHost?.instructorLocation ?? creator?.location}
+                    </p>
                   </div>
                 </div>
-                <p className="mt-3 text-xs leading-5 text-slate-600">{creator?.headline}</p>
+                <p className="mt-3 text-xs leading-5 text-slate-600">
+                  {connectedHost?.instructorHeadline ?? creator?.headline}
+                </p>
               </Card>
               <Card className="p-4">
                 <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
@@ -253,14 +298,18 @@ function PublicCommunityPage() {
                       {community.languages.join(", ")}
                     </dd>
                   </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500">Active now</dt>
-                    <dd className="font-semibold text-emerald-700">● {community.online}</dd>
-                  </div>
+                  {dataMode === "fixtures" ? (
+                    <div className="flex justify-between">
+                      <dt className="text-slate-500">Active now</dt>
+                      <dd className="font-semibold text-emerald-700">● {community.online}</dd>
+                    </div>
+                  ) : null}
                 </dl>
-                <div className="mt-4">
-                  <AvatarStack names={members.slice(0, 7).map((member) => member.name)} max={5} />
-                </div>
+                {dataMode === "fixtures" ? (
+                  <div className="mt-4">
+                    <AvatarStack names={members.slice(0, 7).map((member) => member.name)} max={5} />
+                  </div>
+                ) : null}
               </Card>
             </aside>
           </div>

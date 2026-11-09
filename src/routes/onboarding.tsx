@@ -1,10 +1,8 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Sparkles, UserRound } from "lucide-react";
-import { CommunityCard } from "@/components/domain/cards";
 import { Brand } from "@/components/layout/public-shell";
 import { Button, Card, Chip, Field, Input, Progress } from "@/components/ui";
-import { categories, communities } from "@/data/seed";
 import { getCurrentViewer, updateOwnProfile } from "@/features/auth/auth.functions";
 import { dataMode as configuredDataMode } from "@/lib/data-mode";
 import { useApp, useToast } from "@/store/app-store";
@@ -30,7 +28,7 @@ export const Route = createFileRoute("/onboarding")({
 function OnboardingPage() {
   const router = useRouter();
   const search = Route.useSearch();
-  const { signInDemo, joinCommunity, currentMember, dataMode } = useApp();
+  const { signInDemo, joinCommunity, currentMember, dataMode, categories, communities } = useApp();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [name, setName] = useState(
@@ -40,7 +38,12 @@ function OnboardingPage() {
     currentMember?.handle ?? (dataMode === "fixtures" ? "amaboateng" : ""),
   );
   const [role, setRole] = useState<"learner" | "creator">(search.role);
-  const [interests, setInterests] = useState<string[]>(["ai-automation", "design"]);
+  const [interests, setInterests] = useState<string[]>(() =>
+    dataMode === "fixtures"
+      ? ["ai-automation", "design"]
+      : categories.slice(0, 2).map((item) => item.slug),
+  );
+  const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
   const [error, setError] = useState("");
 
   const next = () => {
@@ -60,7 +63,11 @@ function OnboardingPage() {
       current.includes(slug) ? current.filter((item) => item !== slug) : [...current, slug],
     );
   const recommendations = communities
-    .filter((community) => interests.includes(community.categorySlug))
+    .filter(
+      (community) =>
+        interests.includes(community.categorySlug) &&
+        (dataMode === "fixtures" || community.privacy === "public"),
+    )
     .slice(0, 3);
 
   const finish = async () => {
@@ -72,6 +79,12 @@ function OnboardingPage() {
       const result = await updateOwnProfile({ data: { displayName: name } });
       if (!result.ok) {
         setError(result.error.message);
+        return;
+      }
+      try {
+        for (const slug of selectedCommunities) await joinCommunity(slug);
+      } catch (joinError) {
+        setError(joinError instanceof Error ? joinError.message : "Could not join the community.");
         return;
       }
       await router.invalidate();
@@ -211,9 +224,31 @@ function OnboardingPage() {
           ) : null}
           {step === 3 ? (
             <div className="grid gap-5 md:grid-cols-3">
-              {recommendations.map((community) => (
-                <CommunityCard key={community.id} community={community} compact />
-              ))}
+              {recommendations.map((community) => {
+                const selected = selectedCommunities.includes(community.slug);
+                return (
+                  <Card key={community.id} className="p-5">
+                    <p className="font-display text-lg font-extrabold text-slate-900">
+                      {community.name}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{community.tagline}</p>
+                    <Button
+                      className="mt-4 w-full"
+                      variant={selected ? "secondary" : "primary"}
+                      onClick={() =>
+                        setSelectedCommunities((current) =>
+                          selected
+                            ? current.filter((slug) => slug !== community.slug)
+                            : [...current, community.slug],
+                        )
+                      }
+                    >
+                      {selected ? <Check className="h-4 w-4" /> : null}
+                      {selected ? "Selected" : "Select community"}
+                    </Button>
+                  </Card>
+                );
+              })}
               {!recommendations.length ? (
                 <Card className="col-span-full p-8 text-center">
                   <Sparkles className="mx-auto h-6 w-6 text-indigo-700" />

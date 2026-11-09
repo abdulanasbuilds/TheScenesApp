@@ -14,17 +14,20 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { Badge, Button, Card, Progress } from "@/components/ui";
-import { getCommunity, getCourse } from "@/data/seed";
+import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
 import { cn } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/c/$communityId/classroom/$courseId/$lessonId")({
-  loader: ({ params }) => {
-    const community = getCommunity(params.communityId);
-    const course = getCourse(params.courseId);
+  loader: async ({ params }) => {
+    const catalog = await loadCatalogForRoute();
+    const community = catalog.communities.find((item) => item.slug === params.communityId);
+    const course = catalog.courses.find((item) => item.slug === params.courseId);
     if (!community || !course || course.communitySlug !== community.slug) throw notFound();
     const lessons = course.modules.flatMap((module) => module.lessons);
-    const lessonIndex = lessons.findIndex((lesson) => lesson.id === params.lessonId);
+    const lessonIndex = lessons.findIndex(
+      (lesson) => lesson.id === params.lessonId || lesson.slug === params.lessonId,
+    );
     if (lessonIndex < 0) throw notFound();
     return {
       community,
@@ -53,18 +56,31 @@ function LessonViewerPage() {
   const { toast } = useToast();
   const [playing, setPlaying] = useState(false);
   const [curriculumOpen, setCurriculumOpen] = useState(false);
+  const [completionPending, setCompletionPending] = useState(false);
   const completed = state.completedLessons.includes(lesson.id);
+  const contentLocked = !lesson.free && lesson.body.length === 0;
   const totalCompleted = course.modules
     .flatMap((module) => module.lessons)
     .filter((item) => state.completedLessons.includes(item.id)).length;
   const courseProgress = Math.round((totalCompleted / lessonCount) * 100);
 
-  const markComplete = () => {
-    completeLesson(lesson.id);
-    toast(
-      "Lesson complete",
-      next ? "Your next lesson is ready." : "You reached the end of this course.",
-    );
+  const markComplete = async () => {
+    if (completionPending || contentLocked) return;
+    setCompletionPending(true);
+    try {
+      await completeLesson(lesson.id);
+      toast(
+        "Lesson complete",
+        next ? "Your next lesson is ready." : "You reached the end of this course.",
+      );
+    } catch (error) {
+      toast(
+        "Could not save progress",
+        error instanceof Error ? error.message : "Please try again.",
+      );
+    } finally {
+      setCompletionPending(false);
+    }
   };
 
   return (
@@ -189,15 +205,27 @@ function LessonViewerPage() {
               </Card>
             )}
 
-            <article className="mt-8 space-y-5 text-[15px] leading-7 text-slate-700">
-              {lesson.body.map((paragraph, index) => (
-                <p key={`${lesson.id}-${index}`}>{paragraph}</p>
-              ))}
-              <div className="rounded-xl border-l-4 border-indigo-600 bg-indigo-50 p-4 text-sm leading-6 text-indigo-950">
-                <strong className="font-bold">Working note:</strong> Do the smallest version of the
-                exercise before adding tools. Post the result to the community if you want feedback.
-              </div>
-            </article>
+            {contentLocked ? (
+              <Card className="mt-8 border-amber-200 bg-amber-50 p-6">
+                <h2 className="font-display text-xl font-extrabold text-amber-950">
+                  This lesson is protected
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-amber-900">
+                  Join the community and enrol in the course to open this lesson. Preview lesson
+                  metadata remains visible, but protected content and resources are not returned.
+                </p>
+              </Card>
+            ) : (
+              <article className="mt-8 space-y-5 text-[15px] leading-7 text-slate-700">
+                {lesson.body.map((paragraph, index) => (
+                  <p key={`${lesson.id}-${index}`}>{paragraph}</p>
+                ))}
+                <div className="rounded-xl border-l-4 border-indigo-600 bg-indigo-50 p-4 text-sm leading-6 text-indigo-950">
+                  <strong className="font-bold">Working note:</strong> Do the smallest version of
+                  the exercise before adding tools.
+                </div>
+              </article>
+            )}
 
             {lesson.resources.length ? (
               <section className="mt-10" aria-labelledby="resources-heading">
@@ -209,15 +237,11 @@ function LessonViewerPage() {
                 </h2>
                 <div className="mt-3 space-y-2">
                   {lesson.resources.map((resource) => (
-                    <button
+                    <a
                       key={resource.label}
-                      type="button"
-                      onClick={() =>
-                        toast(
-                          "Resource preview",
-                          `${resource.label} will download when file storage is connected.`,
-                        )
-                      }
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3.5 text-left hover:border-slate-300 hover:bg-slate-50"
                     >
                       <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-indigo-700">
@@ -232,7 +256,7 @@ function LessonViewerPage() {
                         </span>
                       </span>
                       <Download className="h-4 w-4 text-slate-400" />
-                    </button>
+                    </a>
                   ))}
                 </div>
               </section>
@@ -241,7 +265,7 @@ function LessonViewerPage() {
             <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-6">
               {previous ? (
                 <a
-                  href={`/c/${community.slug}/classroom/${course.slug}/${previous.id}`}
+                  href={`/c/${community.slug}/classroom/${course.slug}/${previous.slug ?? previous.id}`}
                   className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-indigo-700"
                 >
                   <ArrowLeft className="h-4 w-4" />{" "}
@@ -266,13 +290,13 @@ function LessonViewerPage() {
                     <Check className="h-4 w-4 text-emerald-600" /> Completed
                   </Button>
                 ) : (
-                  <Button onClick={markComplete}>
+                  <Button onClick={markComplete} disabled={completionPending || contentLocked}>
                     <Check className="h-4 w-4" /> Mark complete
                   </Button>
                 )}
                 {next ? (
                   <a
-                    href={`/c/${community.slug}/classroom/${course.slug}/${next.id}`}
+                    href={`/c/${community.slug}/classroom/${course.slug}/${next.slug ?? next.id}`}
                     className="inline-flex h-10 items-center gap-2 rounded-full bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800"
                   >
                     Next <ArrowRight className="h-4 w-4" />
@@ -313,7 +337,7 @@ function LessonViewerPage() {
                   return (
                     <a
                       key={item.id}
-                      href={`/c/${community.slug}/classroom/${course.slug}/${item.id}`}
+                      href={`/c/${community.slug}/classroom/${course.slug}/${item.slug ?? item.id}`}
                       aria-current={isCurrent ? "page" : undefined}
                       className={cn(
                         "flex items-center gap-3 border-t border-slate-200/70 px-4 py-3 text-xs",

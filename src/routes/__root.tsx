@@ -2,15 +2,29 @@ import type { ReactNode } from "react";
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { InternalNavigationBridge } from "@/components/internal-navigation-bridge";
 import { getCurrentViewer } from "@/features/auth/auth.functions";
+import { getConnectedCatalog, getLearningState } from "@/features/learning/learning.functions";
 import { dataMode } from "@/lib/data-mode";
 import { AppProvider, ToastProvider } from "@/store/app-store";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
   loader: async () => {
-    if (dataMode === "fixtures") return { dataMode, viewer: null } as const;
-    const result = await getCurrentViewer({ data: undefined });
-    return { dataMode, viewer: result.ok ? result.data : null } as const;
+    if (dataMode === "fixtures") {
+      return { dataMode, viewer: null, catalog: null, learningState: null } as const;
+    }
+    const [viewerResult, catalogResult, learningResult] = await Promise.all([
+      getCurrentViewer({ data: undefined }),
+      getConnectedCatalog({ data: {} }),
+      getLearningState({ data: {} }),
+    ]);
+    return {
+      dataMode,
+      viewer: viewerResult.ok ? viewerResult.data : null,
+      catalog: catalogResult.ok ? catalogResult.data : null,
+      learningState: learningResult.ok
+        ? learningResult.data
+        : { enrolledCourseIds: [], completedLessonIds: [] },
+    } as const;
   },
   head: () => ({
     meta: [
@@ -30,11 +44,16 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const { viewer } = Route.useLoaderData();
+  const { viewer, catalog, learningState } = Route.useLoaderData();
   return (
     <RootDocument>
       <ToastProvider>
-        <AppProvider viewer={viewer} dataMode={dataMode}>
+        <AppProvider
+          viewer={viewer}
+          dataMode={dataMode}
+          connectedCatalog={catalog}
+          learningState={learningState}
+        >
           <InternalNavigationBridge />
           <a
             href="#main-content"

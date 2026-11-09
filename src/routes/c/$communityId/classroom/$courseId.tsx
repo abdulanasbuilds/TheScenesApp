@@ -1,14 +1,17 @@
 import { Outlet, createFileRoute, notFound, useRouterState } from "@tanstack/react-router";
+import { useState } from "react";
 import { Check, ChevronDown, Clock3, Lock, Play, Star, Users } from "lucide-react";
 import { Avatar, Badge, Button, Card, CoverArt, Progress } from "@/components/ui";
-import { getCommunity, getCourse, getCreator } from "@/data/seed";
+import { getCreator } from "@/data/seed";
+import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
 import { cn, formatCompact, formatMoney } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/c/$communityId/classroom/$courseId")({
-  loader: ({ params }) => {
-    const community = getCommunity(params.communityId);
-    const course = getCourse(params.courseId);
+  loader: async ({ params }) => {
+    const catalog = await loadCatalogForRoute();
+    const community = catalog.communities.find((item) => item.slug === params.communityId);
+    const course = catalog.courses.find((item) => item.slug === params.courseId);
     if (!community || !course || course.communitySlug !== community.slug) throw notFound();
     return { community, course };
   },
@@ -40,10 +43,19 @@ function CourseOverview() {
   const progress = allLessons.length ? Math.round((completed / allLessons.length) * 100) : 0;
   const firstIncomplete =
     allLessons.find((lesson) => !state.completedLessons.includes(lesson.id)) ?? allLessons[0];
+  const [pending, setPending] = useState(false);
 
-  const handleEnroll = () => {
-    enroll(course.id);
-    toast("Course added to your learning", "Progress is saved locally in this frontend preview.");
+  const handleEnroll = async () => {
+    if (pending) return;
+    setPending(true);
+    try {
+      await enroll(course.id);
+      toast("Course added to your learning", "Your enrolment is saved to your account.");
+    } catch (error) {
+      toast("Could not enrol", error instanceof Error ? error.message : "Please try again.");
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
@@ -96,10 +108,18 @@ function CourseOverview() {
               </span>
             </div>
             <div className="mt-7 flex items-center gap-3">
-              <Avatar name={instructor?.name ?? "Instructor"} size={42} online />
+              <Avatar
+                name={course.instructorName ?? instructor?.name ?? "Instructor"}
+                size={42}
+                online
+              />
               <div>
-                <p className="text-sm font-semibold">Taught by {instructor?.name}</p>
-                <p className="text-xs text-slate-600">{instructor?.headline}</p>
+                <p className="text-sm font-semibold">
+                  Taught by {course.instructorName ?? instructor?.name ?? "Instructor"}
+                </p>
+                <p className="text-xs text-slate-600">
+                  {course.instructorHeadline ?? instructor?.headline}
+                </p>
               </div>
             </div>
           </div>
@@ -164,7 +184,7 @@ function CourseOverview() {
                           key={lesson.id}
                           href={
                             accessible
-                              ? `/c/${community.slug}/classroom/${course.slug}/${lesson.id}`
+                              ? `/c/${community.slug}/classroom/${course.slug}/${lesson.slug ?? lesson.id}`
                               : undefined
                           }
                           aria-disabled={!accessible}
@@ -226,7 +246,7 @@ function CourseOverview() {
                 </div>
                 <Progress value={progress} className="mt-3" tone="emerald" />
                 <a
-                  href={`/c/${community.slug}/classroom/${course.slug}/${firstIncomplete?.id}`}
+                  href={`/c/${community.slug}/classroom/${course.slug}/${firstIncomplete?.slug ?? firstIncomplete?.id}`}
                   className="mt-5 flex h-11 items-center justify-center gap-2 rounded-full bg-indigo-700 px-5 text-sm font-semibold text-white hover:bg-indigo-800"
                 >
                   <Play className="h-4 w-4 fill-white" />{" "}
@@ -246,11 +266,11 @@ function CourseOverview() {
                     ? `Included with your ${community.name} membership.`
                     : "One-time course access in this frontend preview."}
                 </p>
-                <Button className="mt-5 w-full" size="lg" onClick={handleEnroll}>
+                <Button className="mt-5 w-full" size="lg" onClick={handleEnroll} disabled={pending}>
                   Add to my learning
                 </Button>
                 <p className="mt-3 text-center text-[11px] leading-4 text-slate-500">
-                  No payment is processed. This action only changes local preview state.
+                  No payment is processed. Included access is recorded on your account.
                 </p>
               </>
             )}
@@ -258,13 +278,19 @@ function CourseOverview() {
           <Card className="mt-4 p-4">
             <h3 className="text-sm font-bold text-slate-900">About the instructor</h3>
             <div className="mt-3 flex items-center gap-3">
-              <Avatar name={instructor?.name ?? "Instructor"} size={40} />
+              <Avatar name={course.instructorName ?? instructor?.name ?? "Instructor"} size={40} />
               <div>
-                <p className="text-sm font-semibold text-slate-900">{instructor?.name}</p>
-                <p className="text-xs text-slate-500">{instructor?.location}</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {course.instructorName ?? instructor?.name ?? "Instructor"}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {course.instructorLocation ?? instructor?.location}
+                </p>
               </div>
             </div>
-            <p className="mt-3 line-clamp-4 text-xs leading-5 text-slate-600">{instructor?.bio}</p>
+            <p className="mt-3 line-clamp-4 text-xs leading-5 text-slate-600">
+              {course.instructorBio ?? instructor?.bio}
+            </p>
           </Card>
         </aside>
       </div>

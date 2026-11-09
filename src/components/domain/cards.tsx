@@ -47,9 +47,10 @@ export function CommunityCard({
   compact?: boolean;
 }) {
   const creator = getCreator(community.creatorHandle);
-  const { state, joinCommunity, leaveCommunity } = useApp();
+  const { state, joinCommunity, leaveCommunity, dataMode } = useApp();
   const { toast } = useToast();
   const joined = state.joined.includes(community.slug);
+  const [membershipPending, setMembershipPending] = useState(false);
 
   return (
     <Card className="group overflow-hidden transition-colors hover:border-slate-300">
@@ -82,37 +83,60 @@ export function CommunityCard({
             <div className="mt-4 flex items-center gap-2">
               <Avatar name={creator?.name ?? "Creator"} size={26} />
               <span className="min-w-0 truncate text-xs font-medium text-slate-600">
-                By {creator?.name}
+                By {creator?.name ?? `@${community.creatorHandle}`}
               </span>
             </div>
           ) : null}
-          <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
-            <span className="inline-flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" /> {formatCompact(community.members)}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {community.rating}
-            </span>
-            <span className="ml-auto font-semibold text-slate-900">
-              {community.pricing.type === "free"
-                ? "Free"
-                : `${formatMoney(community.pricing.amount)}/${community.pricing.interval === "month" ? "mo" : "yr"}`}
-            </span>
-          </div>
+          {dataMode === "fixtures" ? (
+            <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
+              <span className="inline-flex items-center gap-1">
+                <Users className="h-3.5 w-3.5" /> {formatCompact(community.members)}
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {community.rating}
+              </span>
+              <span className="ml-auto font-semibold text-slate-900">
+                {community.pricing.type === "free"
+                  ? "Free"
+                  : `${formatMoney(community.pricing.amount)}/${community.pricing.interval === "month" ? "mo" : "yr"}`}
+              </span>
+            </div>
+          ) : (
+            <p className="mt-4 border-t border-slate-100 pt-3 text-xs font-semibold text-slate-500">
+              Connected catalogue
+            </p>
+          )}
         </div>
       </a>
       <div className="border-t border-slate-100 px-4 py-3">
         <button
           type="button"
-          onClick={() => {
-            if (joined) {
-              leaveCommunity(community.slug);
-              toast("Left community", `${community.name} was removed from your home.`);
-            } else {
-              joinCommunity(community.slug);
-              toast("Welcome to the scene", `${community.name} now appears in your home.`);
-            }
-          }}
+          onClick={() =>
+            void (async () => {
+              if (membershipPending) return;
+              setMembershipPending(true);
+              try {
+                if (joined) {
+                  await leaveCommunity(community.slug);
+                  toast("Left community", `${community.name} was removed from your home.`);
+                } else {
+                  await joinCommunity(community.slug);
+                  toast("Welcome to the scene", `${community.name} now appears in your home.`);
+                }
+              } catch (error) {
+                toast(
+                  "Membership was not changed",
+                  error instanceof Error ? error.message : "Please try again.",
+                );
+              } finally {
+                setMembershipPending(false);
+              }
+            })()
+          }
+          disabled={
+            membershipPending ||
+            (!joined && dataMode !== "fixtures" && community.privacy === "private")
+          }
           className={cn(
             "flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition-colors",
             joined
@@ -121,7 +145,13 @@ export function CommunityCard({
           )}
         >
           {joined ? <Check className="h-3.5 w-3.5" /> : null}
-          {joined ? "Joined" : community.pricing.type === "free" ? "Join free" : "View membership"}
+          {joined
+            ? "Joined"
+            : dataMode !== "fixtures" && community.privacy === "private"
+              ? "Invite only"
+              : community.pricing.type === "free"
+                ? "Join free"
+                : "View membership"}
         </button>
       </div>
     </Card>
@@ -130,6 +160,7 @@ export function CommunityCard({
 
 export function CommunityRow({ community }: { community: Community }) {
   const creator = getCreator(community.creatorHandle);
+  const { dataMode } = useApp();
   return (
     <a
       href={`/communities/${community.slug}`}
@@ -152,14 +183,22 @@ export function CommunityRow({ community }: { community: Community }) {
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <Avatar name={creator?.name ?? "Creator"} size={24} />
-        <span className="truncate text-xs font-medium text-slate-700">{creator?.name}</span>
+        <Avatar name={creator?.name ?? community.creatorHandle} size={24} />
+        <span className="truncate text-xs font-medium text-slate-700">
+          {creator?.name ?? `@${community.creatorHandle}`}
+        </span>
       </div>
       <span className="font-semibold tabular-nums text-slate-900">
-        {formatCompact(community.members)}
+        {dataMode === "fixtures" ? formatCompact(community.members) : "—"}
       </span>
       <span className="inline-flex items-center gap-1 font-medium text-slate-700">
-        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {community.rating}
+        {dataMode === "fixtures" ? (
+          <>
+            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {community.rating}
+          </>
+        ) : (
+          "—"
+        )}
       </span>
       <span className="font-semibold text-slate-900">
         {community.pricing.type === "free" ? "Free" : `${formatMoney(community.pricing.amount)}/mo`}
@@ -192,8 +231,10 @@ export function CourseCard({ course, progress }: { course: Course; progress?: nu
             {course.subtitle}
           </p>
           <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
-            <Avatar name={instructor?.name ?? "Instructor"} size={25} />
-            <span>{instructor?.name}</span>
+            <Avatar name={course.instructorName ?? instructor?.name ?? "Instructor"} size={25} />
+            <span>
+              {course.instructorName ?? instructor?.name ?? `@${course.instructorHandle}`}
+            </span>
             <span className="ml-auto">{lessons} lessons</span>
           </div>
           {typeof progress === "number" ? (

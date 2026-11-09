@@ -184,6 +184,7 @@ export function PublicHeader({ active }: { active?: string }) {
 }
 
 export function PublicFooter() {
+  const { dataMode } = useApp();
   return (
     <footer className="border-t border-slate-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -195,7 +196,9 @@ export function PublicFooter() {
               open to the world.
             </p>
             <Badge tone="green" className="mt-4">
-              ● Frontend preview · fixture data
+              {dataMode === "fixtures"
+                ? "● Frontend preview · fixture data"
+                : "● Connected pre-production catalogue"}
             </Badge>
           </div>
           {[
@@ -242,7 +245,11 @@ export function PublicFooter() {
         </div>
         <div className="mt-10 flex flex-col gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 The Scenes. Designed for useful knowledge.</p>
-          <p>Payments, auth and live services are not connected in this frontend preview.</p>
+          <p>
+            {dataMode === "fixtures"
+              ? "Payments, auth and live services are not connected in this frontend preview."
+              : "Authentication and learning progress are connected. Payments and live services remain unavailable."}
+          </p>
         </div>
       </div>
     </footer>

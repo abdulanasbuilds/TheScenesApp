@@ -1,0 +1,33 @@
+{
+  "runId": "2026-11-07-phase3a-wave4-hosted",
+  "date": "2026-11-07",
+  "target": {
+    "projectName": "THE SCENES",
+    "projectRef": "okdzuqgzgnmmbtjxdaci",
+    "classification": "pre-production"
+  },
+  "catalogue": {
+    "fictionalNonLoginActors": 3,
+    "categories": 5,
+    "communities": 2,
+    "courses": 2,
+    "modules": 4,
+    "lessons": 7,
+    "resources": 4,
+    "seededLearners": 0
+  },
+  "verification": {
+    "unitPassed": 177,
+    "fixtureBrowserPassed": 26,
+    "hostedPublicBrowserPassed": 12,
+    "viewports": ["desktop", "tablet", "mobile"],
+    "rlsCrossUserIsolation": true,
+    "leaveRejoinAccess": true,
+    "idempotentCommands": true,
+    "productionBuild": true,
+    "criticalSecurityFindings": 0,
+    "highSecurityFindings": 0,
+    "healthFindings": 0
+  },
+  "containsSensitiveMaterial": false
+}

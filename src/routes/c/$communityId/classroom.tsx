@@ -4,14 +4,16 @@ import { BookOpen, CheckCircle2, Search } from "lucide-react";
 import { CourseCard, MiniLearningCard } from "@/components/domain/cards";
 import { CommunityShell } from "@/components/layout/community-shell";
 import { Card, Chip, EmptyState, Progress } from "@/components/ui";
-import { courses, getCommunity } from "@/data/seed";
+import type { Course } from "@/data/types";
+import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
 import { useApp } from "@/store/app-store";
 
 export const Route = createFileRoute("/c/$communityId/classroom")({
-  loader: ({ params }) => {
-    const community = getCommunity(params.communityId);
+  loader: async ({ params }) => {
+    const catalog = await loadCatalogForRoute();
+    const community = catalog.communities.find((item) => item.slug === params.communityId);
     if (!community) throw notFound();
-    return { community };
+    return { community, courses: catalog.courses };
   },
   head: ({ loaderData }) => ({
     meta: [{ title: `${loaderData?.community.name ?? "Community"} classroom — The Scenes` }],
@@ -20,7 +22,7 @@ export const Route = createFileRoute("/c/$communityId/classroom")({
 });
 
 function ClassroomRoute() {
-  const { community } = Route.useLoaderData();
+  const { community, courses } = Route.useLoaderData();
   const pathname = useRouterState({
     select: (state) => state.location.pathname.replace(/\/$/, ""),
   });
@@ -29,12 +31,12 @@ function ClassroomRoute() {
 
   return (
     <CommunityShell community={community} active="classroom">
-      {isLibrary ? <CourseLibrary communitySlug={community.slug} /> : <Outlet />}
+      {isLibrary ? <CourseLibrary communitySlug={community.slug} courses={courses} /> : <Outlet />}
     </CommunityShell>
   );
 }
 
-function CourseLibrary({ communitySlug }: { communitySlug: string }) {
+function CourseLibrary({ communitySlug, courses }: { communitySlug: string; courses: Course[] }) {
   const { state } = useApp();
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState("All");
@@ -124,7 +126,7 @@ function CourseLibrary({ communitySlug }: { communitySlug: string }) {
                   }
                   community={firstEnrolled.title}
                   progress={progress}
-                  href={`/c/${communitySlug}/classroom/${firstEnrolled.slug}/${firstEnrolled.modules[0]?.lessons[0]?.id}`}
+                  href={`/c/${communitySlug}/classroom/${firstEnrolled.slug}/${firstEnrolled.modules[0]?.lessons[0]?.slug ?? firstEnrolled.modules[0]?.lessons[0]?.id}`}
                 />
               </div>
             </div>

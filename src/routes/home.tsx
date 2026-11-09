@@ -3,7 +3,7 @@ import { ArrowRight, BookOpen, CalendarDays, Compass, MessageSquareText } from "
 import { CommunityCard, EventCard, MiniLearningCard, PostCard } from "@/components/domain/cards";
 import { MemberShell } from "@/components/layout/member-shell";
 import { Badge, Card, SectionHeading, buttonClass } from "@/components/ui";
-import { communities, courses, events } from "@/data/seed";
+import { events } from "@/data/seed";
 import { useApp, usePosts } from "@/store/app-store";
 
 export const Route = createFileRoute("/home")({
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/home")({
 });
 
 function MemberHomePage() {
-  const { state, currentMember } = useApp();
+  const { state, currentMember, communities, courses } = useApp();
   const posts = usePosts();
   const joinedCommunities = communities.filter((community) =>
     state.joined.includes(community.slug),
@@ -80,7 +80,7 @@ function MemberHomePage() {
                       title={next?.title ?? course.title}
                       community={course.title}
                       progress={progress}
-                      href={`/c/${course.communitySlug}/classroom/${course.slug}/${next?.id}`}
+                      href={`/c/${course.communitySlug}/classroom/${course.slug}/${next?.slug ?? next?.id}`}
                     />
                   );
                 })}

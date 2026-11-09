@@ -10,14 +10,38 @@ import {
 } from "react";
 import type { ViewerDTO } from "@/features/auth/contracts";
 import { signOutCurrentSession } from "@/features/auth/auth.functions";
+import { adaptConnectedCatalog } from "@/features/learning/catalog-adapter";
+import type { ConnectedCatalog } from "@/features/learning/contracts";
+import {
+  completeLesson as completeConnectedLesson,
+  enrolInCourse,
+  joinCommunity as joinConnectedCommunity,
+  leaveCommunity as leaveConnectedCommunity,
+} from "@/features/learning/learning.functions";
 import type { DataMode } from "@/lib/env";
 import {
+  communities,
+  courses,
+  categories,
   currentUserId,
   members,
   notifications as seedNotifications,
   posts as seedPosts,
 } from "@/data/seed";
-import type { NotificationItem, Post, PostComment } from "@/data/types";
+import type {
+  Category,
+  Community,
+  Course,
+  NotificationItem,
+  Post,
+  PostComment,
+} from "@/data/types";
+import { useRouter } from "@tanstack/react-router";
+
+type LearningState = Readonly<{
+  enrolledCourseIds: readonly string[];
+  completedLessonIds: readonly string[];
+}>;
 
 type SessionUser = {
   id: string;
@@ -56,6 +80,13 @@ type Action =
   | { type: "markAllRead" }
   | { type: "completeLesson"; lessonId: string }
   | { type: "enroll"; courseId: string }
+  | {
+      type: "syncConnected";
+      user: SessionUser | null;
+      joined: string[];
+      enrolledCourses: string[];
+      completedLessons: string[];
+    }
   | { type: "toggleRsvp"; eventId: string }
   | { type: "purchase"; productId: string }
   | { type: "toggleSave"; slug: string }
@@ -152,6 +183,20 @@ function reducer(state: AppState, action: Action): AppState {
       return state.enrolledCourses.includes(action.courseId)
         ? state
         : { ...state, enrolledCourses: [...state.enrolledCourses, action.courseId] };
+    case "syncConnected":
+      return {
+        ...state,
+        user: action.user,
+        joined: action.joined,
+        enrolledCourses: action.enrolledCourses,
+        completedLessons: action.completedLessons,
+        notifications: [],
+        rsvps: [],
+        purchases: [],
+        saved: [],
+        following: [],
+        localPosts: [],
+      };
     case "toggleRsvp":
       return state.rsvps.includes(action.eventId)
         ? { ...state, rsvps: state.rsvps.filter((id) => id !== action.eventId) }
@@ -188,14 +233,17 @@ type AppContextValue = {
   signInDemo: (email?: string) => void;
   signOut: () => Promise<void>;
   dataMode: DataMode;
-  joinCommunity: (slug: string) => void;
-  leaveCommunity: (slug: string) => void;
+  categories: Category[];
+  communities: Community[];
+  courses: Course[];
+  joinCommunity: (slug: string) => Promise<void>;
+  leaveCommunity: (slug: string) => Promise<void>;
   toggleLike: (postId: string) => void;
   addComment: (postId: string, body: string) => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
-  completeLesson: (lessonId: string) => void;
-  enroll: (courseId: string) => void;
+  completeLesson: (lessonId: string) => Promise<void>;
+  enroll: (courseId: string) => Promise<void>;
   toggleRsvp: (eventId: string) => void;
   purchase: (productId: string) => void;
   toggleSave: (slug: string) => void;
@@ -224,20 +272,47 @@ export function AppProvider({
   children,
   viewer,
   dataMode,
+  connectedCatalog,
+  learningState,
 }: {
   children: ReactNode;
   viewer: ViewerDTO | null;
   dataMode: DataMode;
+  connectedCatalog: ConnectedCatalog | null;
+  learningState: LearningState | null;
 }) {
+  const router = useRouter();
+  const connectedData = useMemo(
+    () => (connectedCatalog ? adaptConnectedCatalog(connectedCatalog) : null),
+    [connectedCatalog],
+  );
   const [state, dispatch] = useReducer(reducer, {
     ...initialState,
+    ...(dataMode === "fixtures"
+      ? {}
+      : {
+          joined: viewer?.joinedCommunities.map((community) => community.slug) ?? [],
+          enrolledCourses: [...(learningState?.enrolledCourseIds ?? [])],
+          completedLessons: [...(learningState?.completedLessonIds ?? [])],
+          notifications: [],
+          rsvps: [],
+          purchases: [],
+          saved: [],
+          following: [],
+        }),
     user: viewer ? viewerUser(viewer) : null,
   });
 
   useEffect(() => {
     if (dataMode === "fixtures") return;
-    dispatch(viewer ? { type: "signIn", user: viewerUser(viewer) } : { type: "signOut" });
-  }, [dataMode, viewer]);
+    dispatch({
+      type: "syncConnected",
+      user: viewer ? viewerUser(viewer) : null,
+      joined: viewer?.joinedCommunities.map((community) => community.slug) ?? [],
+      enrolledCourses: [...(learningState?.enrolledCourseIds ?? [])],
+      completedLessons: [...(learningState?.completedLessonIds ?? [])],
+    });
+  }, [dataMode, learningState, viewer]);
 
   const signInDemo = useCallback((email?: string) => {
     dispatch({
@@ -274,16 +349,51 @@ export function AppProvider({
       state,
       user: state.user,
       dataMode,
+      categories: dataMode === "fixtures" ? categories : (connectedData?.categories ?? []),
+      communities: dataMode === "fixtures" ? communities : (connectedData?.communities ?? []),
+      courses: dataMode === "fixtures" ? courses : (connectedData?.courses ?? []),
       signInDemo,
       signOut,
-      joinCommunity: (slug) => dispatch({ type: "join", slug }),
-      leaveCommunity: (slug) => dispatch({ type: "leave", slug }),
+      joinCommunity: async (slug) => {
+        if (dataMode !== "fixtures") {
+          const community = connectedCatalog?.communities.find((item) => item.slug === slug);
+          if (!community) throw new Error("Community is unavailable.");
+          const result = await joinConnectedCommunity({ data: { communityId: community.id } });
+          if (!result.ok) throw new Error(result.error.message);
+        }
+        dispatch({ type: "join", slug });
+        if (dataMode !== "fixtures") await router.invalidate();
+      },
+      leaveCommunity: async (slug) => {
+        if (dataMode !== "fixtures") {
+          const community = connectedCatalog?.communities.find((item) => item.slug === slug);
+          if (!community) throw new Error("Community is unavailable.");
+          const result = await leaveConnectedCommunity({ data: { communityId: community.id } });
+          if (!result.ok) throw new Error(result.error.message);
+        }
+        dispatch({ type: "leave", slug });
+        if (dataMode !== "fixtures") await router.invalidate();
+      },
       toggleLike: (postId) => dispatch({ type: "toggleLike", postId }),
       addComment: (postId, body) => dispatch({ type: "addComment", postId, body }),
       markRead: (id) => dispatch({ type: "markRead", id }),
       markAllRead: () => dispatch({ type: "markAllRead" }),
-      completeLesson: (lessonId) => dispatch({ type: "completeLesson", lessonId }),
-      enroll: (courseId) => dispatch({ type: "enroll", courseId }),
+      completeLesson: async (lessonId) => {
+        if (dataMode !== "fixtures") {
+          const result = await completeConnectedLesson({ data: { lessonId } });
+          if (!result.ok) throw new Error(result.error.message);
+        }
+        dispatch({ type: "completeLesson", lessonId });
+        if (dataMode !== "fixtures") await router.invalidate();
+      },
+      enroll: async (courseId) => {
+        if (dataMode !== "fixtures") {
+          const result = await enrolInCourse({ data: { courseId } });
+          if (!result.ok) throw new Error(result.error.message);
+        }
+        dispatch({ type: "enroll", courseId });
+        if (dataMode !== "fixtures") await router.invalidate();
+      },
       toggleRsvp: (eventId) => dispatch({ type: "toggleRsvp", eventId }),
       purchase: (productId) => dispatch({ type: "purchase", productId }),
       toggleSave: (slug) => dispatch({ type: "toggleSave", slug }),
@@ -293,7 +403,7 @@ export function AppProvider({
       unreadCount: state.notifications.filter((n) => !n.read).length,
       currentMember,
     }),
-    [currentMember, dataMode, signInDemo, signOut, state],
+    [connectedCatalog, connectedData, currentMember, dataMode, router, signInDemo, signOut, state],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

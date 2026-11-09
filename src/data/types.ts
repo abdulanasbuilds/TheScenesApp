@@ -54,12 +54,13 @@ export type Community = {
 
 export type Lesson = {
   id: string;
+  slug?: string;
   title: string;
   duration: string;
   type: "video" | "reading" | "exercise";
   summary: string;
   body: string[];
-  resources: { label: string; kind: string; meta: string }[];
+  resources: { label: string; kind: string; meta: string; url?: string }[];
   free?: boolean;
 };
 
@@ -79,6 +80,10 @@ export type Course = {
   level: "Beginner" | "Intermediate" | "Advanced";
   categorySlug: string;
   instructorHandle: string;
+  instructorName?: string;
+  instructorHeadline?: string | null;
+  instructorLocation?: string | null;
+  instructorBio?: string | null;
   hours: number;
   students: number;
   rating: number;

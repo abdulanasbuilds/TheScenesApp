@@ -4,8 +4,8 @@ import { Grid2X2, List, Search, SlidersHorizontal, X } from "lucide-react";
 import { CommunityCard, CommunityRow } from "@/components/domain/cards";
 import { PublicShell } from "@/components/layout/public-shell";
 import { Button, Card, Chip, EmptyState, Select } from "@/components/ui";
-import { categories, communities } from "@/data/seed";
 import { cn } from "@/lib/utils";
+import { useApp } from "@/store/app-store";
 
 type ExploreSearch = {
   q: string;
@@ -34,6 +34,7 @@ export const Route = createFileRoute("/explore")({
 });
 
 function ExplorePage() {
+  const { categories, communities, dataMode } = useApp();
   const search = Route.useSearch();
   const [query, setQuery] = useState(search.q);
   const [category, setCategory] = useState(search.category);
@@ -65,7 +66,7 @@ function ExplorePage() {
       if (sort === "newest") return new Date(b.founded).getTime() - new Date(a.founded).getTime();
       return Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || b.members - a.members;
     });
-  }, [query, category, price, sort]);
+  }, [communities, query, category, price, sort]);
 
   const clearFilters = () => {
     setQuery("");
@@ -92,7 +93,9 @@ function ExplorePage() {
               </p>
             </div>
             <span className="text-xs font-semibold text-slate-500">
-              Fixture catalogue · updated for this preview
+              {dataMode === "fixtures"
+                ? "Fixture catalogue · updated for this preview"
+                : "Connected pre-production catalogue"}
             </span>
           </div>
           <div className="mt-7 flex max-w-3xl items-center gap-2 rounded-xl border border-slate-300 bg-white p-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-2 focus-within:ring-indigo-600/15">

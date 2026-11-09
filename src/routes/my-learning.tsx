@@ -31,7 +31,7 @@ import {
   TabsTrigger,
   buttonClass,
 } from "@/components/ui";
-import { communities, courses, events, getCommunity, products } from "@/data/seed";
+import { events, products } from "@/data/seed";
 import { formatCompact } from "@/lib/utils";
 import { useApp } from "@/store/app-store";
 
@@ -51,7 +51,7 @@ export const Route = createFileRoute("/my-learning")({
 type CourseFilter = "all" | "in-progress" | "completed" | "not-started";
 
 function MyLearningPage() {
-  const { state } = useApp();
+  const { state, communities, courses, dataMode } = useApp();
   const [tab, setTab] = useState("courses");
   const [filter, setFilter] = useState<CourseFilter>("all");
   const [query, setQuery] = useState("");
@@ -79,10 +79,10 @@ function MyLearningPage() {
             progress,
             minutes,
             status,
-            community: getCommunity(course.communitySlug),
+            community: communities.find((community) => community.slug === course.communitySlug),
           };
         }),
-    [state.completedLessons, state.enrolledCourses],
+    [communities, courses, state.completedLessons, state.enrolledCourses],
   );
 
   const visibleCourses = useMemo(() => {
@@ -123,7 +123,9 @@ function MyLearningPage() {
                 <p className="text-[11px] font-bold tracking-[0.14em] text-indigo-700 uppercase">
                   Your library
                 </p>
-                <Badge tone="outline">Progress saved in this session</Badge>
+                <Badge tone="outline">
+                  {dataMode === "fixtures" ? "Preview session progress" : "Progress saved securely"}
+                </Badge>
               </div>
               <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-950">
                 My learning
@@ -160,7 +162,9 @@ function MyLearningPage() {
               <TabsTrigger value="events">Events ({rsvpEvents.length})</TabsTrigger>
             </TabsList>
             <p className="text-xs text-slate-500">
-              Progress is stored in browser memory for this preview.
+              {dataMode === "fixtures"
+                ? "Progress is stored in browser memory for this preview."
+                : "Course progress is loaded from your account."}
             </p>
           </div>
 
@@ -200,7 +204,7 @@ function MyLearningPage() {
                 {visibleCourses.map((item) => {
                   const nextLesson = item.next ?? item.lessons[0];
                   const href = nextLesson
-                    ? `/c/${item.course.communitySlug}/classroom/${item.course.slug}/${nextLesson.id}`
+                    ? `/c/${item.course.communitySlug}/classroom/${item.course.slug}/${nextLesson.slug ?? nextLesson.id}`
                     : `/c/${item.course.communitySlug}/classroom/${item.course.slug}`;
                   return (
                     <Card key={item.course.id} className="overflow-hidden">
@@ -327,7 +331,9 @@ function MyLearningPage() {
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {recommended.map((course) => {
-                    const community = getCommunity(course.communitySlug);
+                    const community = communities.find(
+                      (item) => item.slug === course.communitySlug,
+                    );
                     return (
                       <Card key={course.id} className="overflow-hidden">
                         <CoverArt

@@ -15,7 +15,6 @@ import {
   Users,
 } from "lucide-react";
 import type { Community } from "@/data/types";
-import { communities } from "@/data/seed";
 import {
   Avatar,
   Badge,
@@ -57,6 +56,52 @@ export function CommunityShell({
     useApp();
   const { toast } = useToast();
   const joined = state.joined.includes(community.slug);
+  const publicClassroom = active === "classroom" && community.privacy === "public";
+
+  if (dataMode !== "fixtures" && !joined && !publicClassroom) {
+    return (
+      <main
+        id="main-content"
+        className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-16"
+      >
+        <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
+          <span
+            className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl font-display text-sm font-extrabold text-white"
+            style={{ backgroundColor: `hsl(${community.accentHue} 48% 38%)` }}
+          >
+            {community.name
+              .split(" ")
+              .slice(0, 2)
+              .map((word) => word[0])
+              .join("")}
+          </span>
+          <h1 className="mt-5 font-display text-2xl font-extrabold text-slate-950">
+            Community access required
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Join this community before opening its feed, classroom, members, events, or leaderboard.
+            Protected child content has not been loaded.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <a
+              href={`/communities/${community.slug}`}
+              className="inline-flex h-10 items-center rounded-full bg-indigo-700 px-5 text-sm font-semibold text-white"
+            >
+              View community
+            </a>
+            {!currentMember ? (
+              <a
+                href="/login"
+                className="inline-flex h-10 items-center rounded-full border border-slate-300 px-5 text-sm font-semibold text-slate-700"
+              >
+                Log in
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -98,9 +143,9 @@ export function CommunityShell({
                 <button
                   type="button"
                   className="flex items-center gap-1 rounded-full p-0.5 pr-1 text-slate-500 hover:bg-slate-100"
-                  aria-label={`AB ${currentMember?.name ?? "Ama Boateng"} account menu`}
+                  aria-label={`${currentMember?.name ?? "Preview learner"} account menu`}
                 >
-                  <Avatar name={currentMember?.name ?? "Ama Boateng"} size={34} online />
+                  <Avatar name={currentMember?.name ?? "Preview learner"} size={34} online />
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
               </DropdownTrigger>
@@ -220,15 +265,30 @@ export function CommunityShell({
                   </DropdownItem>
                   <DropdownSeparator />
                   <DropdownItem
-                    onSelect={() => {
-                      if (joined) {
-                        leaveCommunity(community.slug);
-                        toast("Left community", `${community.name} was removed from your home.`);
-                      } else {
-                        joinCommunity(community.slug);
-                        toast("Community joined", `${community.name} now appears in your home.`);
-                      }
-                    }}
+                    onSelect={() =>
+                      void (async () => {
+                        try {
+                          if (joined) {
+                            await leaveCommunity(community.slug);
+                            toast(
+                              "Left community",
+                              `${community.name} was removed from your home.`,
+                            );
+                          } else {
+                            await joinCommunity(community.slug);
+                            toast(
+                              "Community joined",
+                              `${community.name} now appears in your home.`,
+                            );
+                          }
+                        } catch (error) {
+                          toast(
+                            "Membership was not changed",
+                            error instanceof Error ? error.message : "Please try again.",
+                          );
+                        }
+                      })()
+                    }
                   >
                     <Users className="h-4 w-4" /> {joined ? "Leave community" : "Join community"}
                   </DropdownItem>

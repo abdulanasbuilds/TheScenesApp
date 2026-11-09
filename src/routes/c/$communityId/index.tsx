@@ -4,13 +4,15 @@ import { ArrowRight, FilePlus2, Search } from "lucide-react";
 import { EventCard, PostCard } from "@/components/domain/cards";
 import { CommunityShell } from "@/components/layout/community-shell";
 import { Avatar, Badge, Button, Card, Chip } from "@/components/ui";
-import { events, getCommunity, getCreator } from "@/data/seed";
+import { events, getCreator } from "@/data/seed";
+import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
 import { formatCompact } from "@/lib/utils";
-import { usePosts } from "@/store/app-store";
+import { useApp, usePosts } from "@/store/app-store";
 
 export const Route = createFileRoute("/c/$communityId/")({
-  loader: ({ params }) => {
-    const community = getCommunity(params.communityId);
+  loader: async ({ params }) => {
+    const catalog = await loadCatalogForRoute();
+    const community = catalog.communities.find((item) => item.slug === params.communityId);
     if (!community) throw notFound();
     return { community };
   },
@@ -26,10 +28,15 @@ export const Route = createFileRoute("/c/$communityId/")({
 
 function CommunityFeedPage() {
   const { community } = Route.useLoaderData();
-  const posts = usePosts().filter((post) => post.communitySlug === community.slug);
-  const communityEvents = events.filter(
-    (event) => event.communitySlug === community.slug && !event.replay,
+  const { dataMode, currentMember } = useApp();
+  const allPosts = usePosts();
+  const posts = (dataMode === "fixtures" ? allPosts : []).filter(
+    (post) => post.communitySlug === community.slug,
   );
+  const communityEvents =
+    dataMode === "fixtures"
+      ? events.filter((event) => event.communitySlug === community.slug && !event.replay)
+      : [];
   const creator = getCreator(community.creatorHandle);
   const categories = useMemo(
     () => ["All", ...new Set(posts.map((post) => post.category))],
@@ -56,10 +63,16 @@ function CommunityFeedPage() {
                 <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
                   Community
                 </h1>
-                <Badge tone="green">● {community.online} online</Badge>
+                {dataMode === "fixtures" ? (
+                  <Badge tone="green">● {community.online} online</Badge>
+                ) : (
+                  <Badge tone="outline">Connected community</Badge>
+                )}
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                {community.name} · {formatCompact(community.members)} members
+                {dataMode === "fixtures"
+                  ? `${community.name} · ${formatCompact(community.members)} members`
+                  : community.name}
               </p>
             </div>
             <div className="relative w-full sm:w-72">
@@ -95,17 +108,21 @@ function CommunityFeedPage() {
         <div className="min-w-0 space-y-4">
           <Card className="p-4">
             <div className="flex gap-3">
-              <Avatar name="Ama Boateng" size={40} online />
+              <Avatar name={currentMember?.name ?? "Member"} size={40} online />
               <a
                 href={`/c/${community.slug}/posts/new`}
                 className="flex h-10 flex-1 items-center rounded-full border border-slate-300 bg-slate-50 px-4 text-sm text-slate-500 hover:border-slate-400 hover:bg-white"
               >
-                Share a question, build log or useful note…
+                {dataMode === "fixtures"
+                  ? "Share a question, build log or useful note…"
+                  : "Community posts are not connected in Phase 3."}
               </a>
             </div>
             <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
               <p className="text-xs text-slate-500">
-                Posts are saved locally in this frontend preview.
+                {dataMode === "fixtures"
+                  ? "Posts are saved locally in this frontend preview."
+                  : "Posts and comments remain unavailable in this connected slice."}
               </p>
               <a
                 href={`/c/${community.slug}/posts/new`}

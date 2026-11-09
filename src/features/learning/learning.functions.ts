@@ -17,6 +17,15 @@ const lessonIdSchema = z.object({
 
 const noInputSchema = z.object({});
 
+export const getConnectedCatalog = createServerFn({ method: "GET" })
+  .validator(nonThrowingTypedPassthrough)
+  .handler(
+    withSafeHandler(noInputSchema, async () => {
+      const { getVisibleCatalog } = await import("../../server/services/catalog.service.server");
+      return getVisibleCatalog();
+    }),
+  );
+
 export const getLearningState = createServerFn({ method: "GET" })
   .validator(nonThrowingTypedPassthrough)
   .handler(
