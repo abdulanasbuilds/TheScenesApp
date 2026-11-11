@@ -48,7 +48,9 @@ jobs:
           test ! -e OPENCODE.md
           test ! -e .lovable
 
-          if git grep -n -i -E 'lovable\.dev|x-lovable|\.lovable' -- ':!package-lock.json' ':!bun.lock'; then
+          if git grep -n -i -E 'lovable\.dev|x-lovable|\.lovable' -- \
+            ':!package-lock.json' ':!bun.lock' \
+            ':!.github/workflows/the-scenes-ci.yml' ':!docs/CI-CONTRACT.md'; then
             echo "Forbidden provider-specific branding/configuration detected."
             exit 1
           fi
