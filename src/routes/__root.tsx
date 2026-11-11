@@ -4,15 +4,19 @@ import { InternalNavigationBridge } from "@/components/internal-navigation-bridg
 import { getCurrentViewer } from "@/features/auth/auth.functions";
 import { getConnectedCatalog, getLearningState } from "@/features/learning/learning.functions";
 import { getNotificationUnreadCount } from "@/features/notifications/notifications.functions";
-import { dataMode } from "@/lib/data-mode";
+import { resolveRuntimeConfiguration } from "@/features/shared/runtime-mode";
 import { AppProvider, ToastProvider } from "@/store/app-store";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
   loader: async () => {
+    const configuration = await resolveRuntimeConfiguration();
+    const { dataMode } = configuration;
+
     if (dataMode === "fixtures") {
       return {
         dataMode,
+        configuration,
         viewer: null,
         catalog: null,
         learningState: null,
@@ -27,6 +31,7 @@ export const Route = createRootRoute({
     ]);
     return {
       dataMode,
+      configuration,
       viewer: viewerResult.ok ? viewerResult.data : null,
       catalog: catalogResult.ok ? catalogResult.data : null,
       learningState: learningResult.ok
@@ -53,7 +58,17 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const { viewer, catalog, learningState, notificationSummary } = Route.useLoaderData();
+  const { dataMode, configuration, viewer, catalog, learningState, notificationSummary } =
+    Route.useLoaderData();
+
+  if (configuration.requestedMode === "invalid") {
+    return (
+      <RootDocument>
+        <ConfigurationNotice configuration={configuration} />
+      </RootDocument>
+    );
+  }
+
   return (
     <RootDocument>
       <ToastProvider>
@@ -75,6 +90,36 @@ function RootComponent() {
         </AppProvider>
       </ToastProvider>
     </RootDocument>
+  );
+}
+
+function ConfigurationNotice({
+  configuration,
+}: Readonly<{ configuration: { missingVariables: readonly string[]; message: string } }>) {
+  return (
+    <main id="main-content" className="flex min-h-screen items-center justify-center px-6 py-16">
+      <div className="w-full max-w-lg rounded-2xl border border-amber-300 bg-amber-50 p-8">
+        <p className="text-xs font-semibold tracking-[0.18em] text-amber-700 uppercase">
+          Configuration required
+        </p>
+        <h1 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-slate-900">
+          This deployment is not fully configured
+        </h1>
+        <p className="mt-3 text-sm text-slate-700">{configuration.message}</p>
+        {configuration.missingVariables.length > 0 ? (
+          <ul className="mt-4 space-y-1 text-sm text-slate-800">
+            {configuration.missingVariables.map((name) => (
+              <li key={name} className="rounded-md bg-white/70 px-3 py-1.5 font-mono text-xs">
+                {name}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <p className="mt-4 text-xs text-slate-600">
+          Set the hosting environment variables and redeploy. No secret value is shown here.
+        </p>
+      </div>
+    </main>
   );
 }
 

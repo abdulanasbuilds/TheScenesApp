@@ -426,6 +426,16 @@ export function useApp() {
   return context;
 }
 
+/**
+ * The runtime data mode resolved by the server for this request.
+ *
+ * Components must read the mode from here rather than a build-time constant so a Cloudflare
+ * deployment follows the hosting dashboard variables.
+ */
+export function useDataMode(): DataMode {
+  return useApp().dataMode;
+}
+
 /** Merged post list including locally added comments, kept out of the provider for clarity. */
 export function usePosts() {
   const { state } = useApp();

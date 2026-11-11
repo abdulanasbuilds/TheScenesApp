@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
 import { PublicAppError } from "../../features/shared/safe-handler";
 import { logServerEvent } from "../http/logger.server";
+import { readRuntimeEnv } from "../runtime-env.server";
 import { LocalRateLimiter } from "./local-rate-limit.server";
 import { readRateLimitConfig, type RateLimitConfig } from "./rate-limit-config.server";
 import {
@@ -264,7 +265,7 @@ export function createRateLimitService(options: RateLimitServiceOptions = {}): R
 
   if (
     config.driver === "memory" &&
-    (options.dataMode ?? process.env.VITE_DATA_MODE) === "supabase-staging"
+    (options.dataMode ?? readRuntimeEnv().VITE_DATA_MODE) === "supabase-staging"
   ) {
     log("warn", "rate_limit_memory_driver_in_staging", {
       note: "Distributed limiting is not configured; limits are per process.",

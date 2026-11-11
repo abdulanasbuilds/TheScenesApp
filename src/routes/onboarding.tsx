@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Check, Sparkles, UserRound } from "lucide-react"
 import { Brand } from "@/components/layout/public-shell";
 import { Button, Card, Chip, Field, Input, Progress } from "@/components/ui";
 import { getCurrentViewer, updateOwnProfile } from "@/features/auth/auth.functions";
-import { dataMode as configuredDataMode } from "@/lib/data-mode";
+import { resolveRuntimeDataMode } from "@/features/shared/runtime-mode";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/onboarding")({
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/onboarding")({
     role: search.role === "creator" ? ("creator" as const) : ("learner" as const),
   }),
   loader: async () => {
-    if (configuredDataMode === "fixtures") return;
+    if ((await resolveRuntimeDataMode()) === "fixtures") return;
     const result = await getCurrentViewer({ data: undefined });
     if (!result.ok || !result.data) {
       throw redirect({

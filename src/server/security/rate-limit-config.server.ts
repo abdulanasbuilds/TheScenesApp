@@ -1,4 +1,5 @@
 import "@tanstack/react-start/server-only";
+import { readRuntimeEnv, type RuntimeEnvSource } from "../runtime-env.server";
 
 /**
  * Server-only rate-limit configuration (P4-S2).
@@ -21,10 +22,8 @@ const UPSTASH_URL = /^https:\/\/[a-z0-9-]+\.upstash\.io\/?$/i;
 const OPAQUE_TOKEN = /^\S{8,512}$/;
 const MIN_HASH_SECRET_LENGTH = 16;
 
-/** Parse the rate-limit driver settings from the process environment. */
-export function readRateLimitConfig(
-  source: Readonly<Record<string, string | undefined>> = process.env,
-): RateLimitConfig {
+/** Parse the rate-limit driver settings from the runtime environment. */
+export function readRateLimitConfig(source: RuntimeEnvSource = readRuntimeEnv()): RateLimitConfig {
   const driver = (source.RATE_LIMIT_DRIVER ?? "memory").trim().toLowerCase();
 
   if (driver === "memory") return Object.freeze({ driver: "memory" as const });

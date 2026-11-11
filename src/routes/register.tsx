@@ -5,7 +5,6 @@ import { AuthShell } from "@/components/layout/auth-shell";
 import { Button, Checkbox, Field, Input } from "@/components/ui";
 import { signUpWithPassword } from "@/features/auth/auth.functions";
 import { signUpSchema } from "@/features/auth/schemas";
-import { dataMode } from "@/lib/data-mode";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/register")({
@@ -19,7 +18,7 @@ export const Route = createFileRoute("/register")({
 function RegisterPage() {
   const router = useRouter();
   const { role } = Route.useSearch();
-  const { signInDemo } = useApp();
+  const { signInDemo, dataMode } = useApp();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);

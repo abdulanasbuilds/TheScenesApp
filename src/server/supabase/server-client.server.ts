@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-start/server";
 import type { Database } from "../../../db/database.types";
 import { getServerEnv } from "../env.server";
+import { readRuntimeEnv, type RuntimeEnvSource } from "../runtime-env.server";
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
@@ -27,7 +28,7 @@ export function hardenCookieOptions(options: CookieOptions, secure: boolean): Co
   };
 }
 
-export function createRequestSupabaseClient(source: NodeJS.ProcessEnv = process.env) {
+export function createRequestSupabaseClient(source: RuntimeEnvSource = readRuntimeEnv()) {
   const env = getServerEnv(source);
   if (env.dataMode === "fixtures") {
     throw new Error("Supabase client is unavailable in fixture mode.");

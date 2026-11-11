@@ -9,6 +9,11 @@ async function config({ mode, command }: ConfigEnv): Promise<UserConfig> {
   const envDefine: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {
     envDefine[`import.meta.env.${key}`] = JSON.stringify(value);
+    // Runtime readers (env.server, Supabase client, rate-limit config) read the process environment.
+    // Vite loads `.env*` into `import.meta.env` but not into `process.env`, so publish the loaded
+    // values here for development and preview. A real environment variable always wins, which keeps
+    // the hosting dashboard and CI authoritative over a local file.
+    if (process.env[key] === undefined) process.env[key] = value;
   }
 
   const plugins: PluginOption[] = [

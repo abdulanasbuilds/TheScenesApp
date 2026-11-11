@@ -2,6 +2,14 @@
 
 External services are implementation details behind internal adapters.
 
+## Runtime configuration (ADR-045)
+
+Deployment configuration is resolved at runtime from `process.env` overlaid by Cloudflare's
+`globalThis.__env__` bindings, so changing a hosting variable does not require a rebuild. A connected
+mode that is misconfigured fails closed with a variable-name-only notice; it never falls back to
+fixtures. Settings → Account renders a read-only integration report by name and state (never values).
+See `docs/CLOUDFLARE-DEPLOYMENT.md` for the variable contract, verification and rollback.
+
 ## Cloudflare
 
 Use for hosting, edge delivery, security/perimeter controls, and domain/DNS where appropriate.
@@ -56,7 +64,7 @@ Do not make client-side pages responsible for privileged mail sending. See
 
 ## Redis-compatible service
 
-**Code/local adapter approved (P4-S2, ADR-044); provider account NOT approved.** Revision 2 proposes
+**Code/local adapter implemented (P4-S2, ADR-044); provider account NOT approved.** Revision 2 proposes
 Upstash Redis REST for pre-production because it is fetch-compatible with the Cloudflare/workerd
 runtime.
 
@@ -77,24 +85,23 @@ Never treat it as durable source of truth.
 
 ## Telegram
 
-**Code/local adapter approved (P4-S4, ADR-044); bot/account NOT approved.** Use only behind a
+**Code/local adapter implemented (P4-S4, ADR-044); bot/account NOT approved.** Use only behind a
 replaceable server-only feedback adapter for the founder-approved `TS-FEED-001/002` channel, with a
 safe no-op/disabled implementation when configuration is absent. Minimize data, rate-limit submits,
 never send credentials/protected content and establish the operational deletion process before
 enablement. Creating a bot, holding its token or sending a real message requires a separate explicit
 approval.
 
+The implementation ships a `memory` provider (local preview, reported `disabled` in a hosted
+deployment) and a `telegram` provider selected by `FEEDBACK_PROVIDER`. An incomplete Telegram
+configuration is reported `misconfigured` and submissions fail closed with `UNAVAILABLE`; it never
+silently falls back to the memory inbox.
+
 ## Bunny.net
 
 Use for video delivery and selected interactive/live capabilities.
 
 Keep provider-specific secrets server-side.
-
-## Telegram
-
-Use for internal feedback/operational alerts.
-
-Never expose bot tokens to the client.
 
 ## Payments
 
@@ -123,10 +130,13 @@ Evaluate a dedicated search engine or AI-assisted semantic search only when the 
 
 Use for installability and consented notifications.
 
-- **P4-S5 (installability, offline shell, icons, safe runtime caching) is approved as code/local work
-  (ADR-044).**
+- **P4-S5 (installability, offline shell, icons, safe runtime caching) is implemented as code/local work
+  (ADR-044).** The manifest, owned icons, offline shell and a narrowly allowlisted service worker ship
+  with the build; the worker is registered only in a production build and caches only versioned
+  `/assets/*`, `/icons/*`, the manifest and the offline shell.
 - **P4-S6 (Web Push) is NOT approved.** Web Push requires (a) a Cloudflare/workerd compatibility proof
-  and (b) a separate approval before creating a VAPID key pair or any push subscription.
+  and (b) a separate approval before creating a VAPID key pair or any push subscription. It is reported
+  `disabled` in the integration health report.
 
 Notification preferences and abuse controls are required.
 

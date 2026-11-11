@@ -1,6 +1,6 @@
 # The Scenes — Phase 4 Plan: Email, notifications, PWA and operational services
 
-**Planning status:** APPROVED — P4-S1 implemented; P4-S2 ... P4-S5 code/local approved one at a time; P4-S6/S7 not approved
+**Planning status:** APPROVED — P4-S1, P4-S2, P4-S3, P4-S4 and P4-S5 implemented code/local; P4-S6/S7 not approved
 **Revision:** 2 — 11 November 2026
 **Founder approval:** APPROVED for P4-S1 code/local (ADR-042), for hosted account-email configuration on THE SCENES (ADR-043, 11 November 2026), and for the code/local scope of P4-S2 ... P4-S5 one slice at a time (ADR-044, 11 November 2026)
 **Parent:** `docs/PHASES.md`, ADR-006, ADR-009, ADR-010, ADR-012, ADR-017, ADR-029,

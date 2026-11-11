@@ -21,3 +21,13 @@ export const getAuthEmailSetupStatus = createServerFn({ method: "GET" })
       return inspectAuthEmailSetup();
     }),
   );
+
+/** Reports each integration by name and state with required variable names only; never a value. */
+export const getIntegrationsHealth = createServerFn({ method: "GET" })
+  .validator(nonThrowingTypedPassthrough)
+  .handler(
+    withSafeHandler(z.unknown(), async () => {
+      const { inspectIntegrations } = await import("../../server/integrations/health.server");
+      return inspectIntegrations();
+    }),
+  );

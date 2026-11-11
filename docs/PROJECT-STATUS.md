@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 11 November 2026
-**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and for the code/local scope of P4-S2 to P4-S5 one slice at a time (ADR-044); P4-S2 rate limiting and P4-S3 connected in-app notifications implemented code/local
+**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and for the code/local scope of P4-S2 to P4-S5 one slice at a time (ADR-044); P4-S2 rate limiting, P4-S3 connected in-app notifications, P4-S4 feedback channel and P4-S5 PWA are implemented code/local, and deployment configuration is now driven by the runtime environment (ADR-045); P4-S6 (web push) and P4-S7 (R2) remain not approved
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -62,6 +62,12 @@ These are milestone estimates, not percentages generated from lines of code:
   duplicate viewport route checks), 0 failed;
 - Wave 5 query plans: all 5 core Wave 4 application queries use index scans with no sequential
   scan observed on the hosted pre-production database.
+- Phase 4 code/local: runtime configuration resolved from the merged Cloudflare `__env__` bindings plus
+  `process.env` (ADR-045); build-time data-mode module removed; a misconfigured connected deployment
+  fails closed with a variable-name-only notice. P4-S2 distributed rate limiting, P4-S3 connected
+  in-app notifications, P4-S4 Telegram/memory feedback provider and P4-S5 PWA/installability are
+  implemented with tests. Settings → Account shows a read-only integration health report (names and
+  states only). P4-S6 web push, P4-S7 R2 and application (Resend) email are reported `disabled`.
 
 ## What is not complete
 
@@ -94,7 +100,35 @@ private audit table. Every expected table has RLS enabled. The founder-authorize
 fictional catalogue is loaded; it contains no seeded learner, customer, payment, membership, enrolment,
 or completion. No production deployment is claimed.
 
-## Latest verified checks — 11 November 2026
+Phase 4 code/local gaps that remain explicit:
+
+- the P4-S3 notifications migration (`20261111120000_phase4_0019_notifications.sql`) is written and
+  unit-tested but **not applied** to `okdzuqgzgnmmbtjxdaci`; applying it needs a separate approval and a
+  reviewed remote migration history;
+- the P4-S4 Telegram channel, the P4-S2 Upstash database and the P4-S1 Resend domain/key are **not
+  created**; the code is configuration-ready and fails safe without them;
+- P4-S5 is code/local only; no deployment has been made and the service worker is registered only in a
+  production build;
+- P4-S6 (web push) and P4-S7 (R2 objects) are **not approved and not implemented**.
+
+See `docs/CLOUDFLARE-DEPLOYMENT.md` for the variables and verification steps an approved deployment uses.
+
+## Phase 4 code/local verified checks — 11 November 2026
+
+- complete unit suite: **264 passed, 0 failed** across 23 files (adds runtime-environment, P4-S4
+  feedback/integration-health and P4-S5 PWA conformance coverage);
+- `bun run typecheck`, `bun run lint`, `bun run verify:client-boundary` and `bun run build`: passed;
+- production build copies `manifest.webmanifest`, `sw.js`, `offline.html` and owned icons into
+  `.output/public`, and the built Worker reads `globalThis.__env__`;
+- `bun run test:fixture`: fixture browser suite passed with expected skips and 0 failures (see the
+  evidence manifest for the exact counts of the run);
+- manual browser check: `VITE_DATA_MODE=supabase-staging` with no URL/key rendered the configuration
+  notice (HTTP 200) with no fixture identity and no mode leak.
+
+These are code/local checks. They do not prove a hosted deployment, a real Telegram delivery, a real
+push subscription, an Upstash connection, or Wave 5 capacity/recovery.
+
+## Phase 3A verified checks — 11 November 2026
 
 - focused environment/server-boundary tests: **40 passed, 0 failed**;
 - complete unit suite: **177 passed, 0 failed**;

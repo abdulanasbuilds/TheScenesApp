@@ -9,7 +9,7 @@ import {
 } from "@/features/auth/auth.functions";
 import { RECOVERY_ACKNOWLEDGEMENT, readRecoveryLink } from "@/features/auth/recovery";
 import { recoveredPasswordSchema } from "@/features/auth/schemas";
-import { dataMode } from "@/lib/data-mode";
+import { useDataMode } from "@/store/app-store";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -22,6 +22,7 @@ type Phase = "checking" | "ready" | "invalid" | "unsupported" | "updated";
 
 function ResetPasswordPage() {
   const router = useRouter();
+  const dataMode = useDataMode();
   const started = useRef(false);
   const codeRef = useRef<string | null>(null);
   const [phase, setPhase] = useState<Phase>("checking");
@@ -73,7 +74,7 @@ function ResetPasswordPage() {
     }, 0);
 
     return () => window.clearTimeout(prepareTimer);
-  }, [consume]);
+  }, [consume, dataMode]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();

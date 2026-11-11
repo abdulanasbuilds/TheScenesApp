@@ -542,3 +542,46 @@ expansion, or a data/security-model change for any of these slices.
 
 Durable record: `docs/PHASE-4-PLAN.md` §12, `docs/PROJECT-STATUS.md`, `docs/PHASES.md` and
 `docs/INTEGRATIONS.md`.
+
+## ADR-045 — Runtime configuration is deployment-driven and fails closed
+
+Status: Accepted (11 November 2026)
+
+Context: the application is deployed to Cloudflare Workers, where configuration is supplied as
+dashboard variables and secrets. The previous implementation read only `process.env` and resolved the
+data mode from a build-time module (`src/lib/data-mode.ts`), so a deployment could not be configured
+without rebuilding, and a misconfigured connected build could silently render fixtures.
+
+Decision:
+
+1. The server reads a **merged runtime environment**: `process.env` overlaid by Cloudflare's
+   `globalThis.__env__` bindings (assigned by the Nitro `cloudflare-module` preset on every request).
+   Binding values win; only string values are read. Implemented in
+   `src/server/runtime-env.server.ts`.
+2. The **server resolves `dataMode`** on every request and delivers it to the client. The build-time
+   `src/lib/data-mode.ts` module is removed; components read the mode through `useDataMode()`, and
+   route loaders call `resolveRuntimeConfiguration()` / `resolveRuntimeDataMode()`.
+3. A missing `VITE_DATA_MODE` means fixtures (documented default). A **present but invalid** mode, or a
+   connected mode with missing values, is **not** silently downgraded: the root renders a
+   `Configuration required` screen listing variable names only, and the server reports `misconfigured`.
+4. A read-only **integration health** report (`inspectIntegrations`) exposes each integration by name
+   and state with required variable **names** only. It is rendered in Settings → Account for connected
+   modes. `ok` is false only when an expected integration is `misconfigured`.
+5. Web push (P4-S6), platform object storage (P4-S7) and application-originated email (Resend) are
+   reported `disabled` with the variable names they would read, so adding keys alone never implies
+   activation. Account email is owned by Supabase Auth custom SMTP, not the app runtime.
+6. `vite.config.ts` publishes `loadEnv(..., "VITE_")` into `process.env` for local development (an
+   existing environment value always wins) while keeping the `import.meta.env` define.
+
+Consequences:
+
+- Deployment configuration lives in the Cloudflare dashboard; no rebuild is needed to change modes.
+- Misconfiguration is explicit and safe; fixture and connected modes never blur.
+- `docs/CLOUDFLARE-DEPLOYMENT.md` becomes the operator contract for variables, verification and rollback.
+- No secret is inlined into the client bundle; only documented `VITE_` values reach the browser.
+
+Re-review triggers: a second hosting target, a new required secret, or any change that would make a
+connected mode fall back automatically.
+
+Durable record: `docs/CLOUDFLARE-DEPLOYMENT.md`, `.env.example`, `docs/PROJECT-STATUS.md`,
+`docs/INTEGRATIONS.md`.

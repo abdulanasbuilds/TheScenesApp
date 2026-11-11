@@ -6,7 +6,6 @@ import { Button, Checkbox, Field, Input } from "@/components/ui";
 import { signInWithPassword } from "@/features/auth/auth.functions";
 import { normalizeAuthNext } from "@/features/auth/redirects";
 import { signInSchema } from "@/features/auth/schemas";
-import { dataMode } from "@/lib/data-mode";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/login")({
@@ -25,7 +24,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const router = useRouter();
   const { confirmation, next, reset } = Route.useSearch();
-  const { signInDemo } = useApp();
+  const { signInDemo, dataMode } = useApp();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);

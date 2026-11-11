@@ -1,0 +1,79 @@
+{
+  "runId": "2026-11-11-runtime-config",
+  "date": "2026-11-11",
+  "phase": 4,
+  "slice": "runtime-configuration",
+  "title": "Deployment-driven runtime configuration and integration health",
+  "approval": {
+    "decision": "ADR-044/ADR-045",
+    "date": "2026-11-11",
+    "scope": "code/local only",
+    "remoteActions": "NONE",
+    "providers": "NONE",
+    "deployment": false,
+    "realCustomerData": false
+  },
+  "target": {
+    "kind": "local-code-and-built-worker-artifact",
+    "supabaseProjectContacted": false,
+    "providerContacted": false
+  },
+  "runtimeEnv": {
+    "sources": ["process.env", "globalThis.__env__"],
+    "precedence": "cloudflare-binding-over-process-env",
+    "readsStringValuesOnly": true,
+    "ignoresObjectBindings": true
+  },
+  "dataMode": {
+    "resolvedBy": "server-per-request",
+    "missingMode": "fixtures",
+    "invalidConnectedMode": "configuration-notice-and-misconfigured",
+    "silentFixtureFallback": false,
+    "buildTimeModuleRemoved": "src/lib/data-mode.ts"
+  },
+  "integrationsReported": [
+    "supabase",
+    "rate-limit",
+    "feedback",
+    "account-email",
+    "application-email",
+    "web-push",
+    "object-storage"
+  ],
+  "disabledByDesign": ["application-email", "web-push", "object-storage"],
+  "exposesValues": false,
+  "verification": {
+    "sliceTestsPassed": 4,
+    "sliceTestsFailed": 0,
+    "unitPassed": 264,
+    "unitFailed": 0,
+    "unitFiles": 23,
+    "typecheck": true,
+    "lint": true,
+    "clientBoundary": true,
+    "productionBuild": true,
+    "diffCheck": true,
+    "fixtureSuite": "shared-final-run",
+    "fixturePassed": 32,
+    "fixtureSkipped": 16,
+    "fixtureFailed": 0
+  },
+  "security": {
+    "criticalFindings": 0,
+    "highFindings": 0,
+    "secretValuesInClientBundle": false
+  },
+  "toolVersions": {
+    "bun": "1.4.4",
+    "node": "v26.12.1",
+    "typescript": "5.9.3",
+    "playwright": "1.64.1"
+  },
+  "notRun": [
+    "deployment",
+    "cloudflare dashboard configuration",
+    "provider connections",
+    "ADR-041 Wave 5 capacity/recovery rehearsal (deferred)"
+  ],
+  "containsSensitiveMaterial": false
+}

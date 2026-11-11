@@ -19,7 +19,7 @@ import type {
 import { RECOVERY_ACKNOWLEDGEMENT } from "@/features/auth/recovery";
 import { passwordRecoveryRequestSchema } from "@/features/auth/schemas";
 import { getAuthEmailSetupStatus } from "@/features/shared/setup.functions";
-import { dataMode } from "@/lib/data-mode";
+import { useDataMode } from "@/store/app-store";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
@@ -38,6 +38,7 @@ const NOT_CONFIGURED_COPY =
   "This preview has no email provider connected, so no reset email was sent. In the connected environment, this same message is returned whether or not an account exists.";
 
 function ForgotPasswordPage() {
+  const dataMode = useDataMode();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");

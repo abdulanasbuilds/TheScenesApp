@@ -1,5 +1,6 @@
 import "@tanstack/react-start/server-only";
 import { EnvValidationError, parseAppEnv, type AppEnv } from "../lib/env";
+import { readRuntimeEnv, type RuntimeEnvSource } from "./runtime-env.server";
 
 export type ConfigurationDiagnostic = Readonly<{
   ok: boolean;
@@ -8,7 +9,7 @@ export type ConfigurationDiagnostic = Readonly<{
   message: string;
 }>;
 
-function rawServerEnv(source: NodeJS.ProcessEnv): Record<string, string | undefined> {
+function rawServerEnv(source: RuntimeEnvSource): Record<string, string | undefined> {
   return {
     VITE_DATA_MODE: source.VITE_DATA_MODE,
     VITE_SUPABASE_URL: source.VITE_SUPABASE_URL,
@@ -16,12 +17,13 @@ function rawServerEnv(source: NodeJS.ProcessEnv): Record<string, string | undefi
   };
 }
 
-export function getServerEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
+/** Validate the runtime environment (Cloudflare bindings merged over `process.env`). */
+export function getServerEnv(source: RuntimeEnvSource = readRuntimeEnv()): AppEnv {
   return parseAppEnv(rawServerEnv(source));
 }
 
 export function inspectServerConfiguration(
-  source: NodeJS.ProcessEnv = process.env,
+  source: RuntimeEnvSource = readRuntimeEnv(),
 ): ConfigurationDiagnostic {
   try {
     const env = getServerEnv(source);
@@ -49,8 +51,8 @@ export function inspectServerConfiguration(
       missingVariables,
       message:
         missingVariables.length > 0
-          ? `Configuration is incomplete. Add ${missingVariables.join(", ")} to the ignored local environment file.`
-          : "Local configuration is invalid. Check the documented data mode and provider settings.",
+          ? `Configuration is incomplete. Add ${missingVariables.join(", ")} to the ignored local environment file or the hosting dashboard variables.`
+          : "Configuration is invalid. Check the documented data mode and provider settings.",
     };
   }
 }

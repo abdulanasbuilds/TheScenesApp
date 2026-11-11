@@ -49,6 +49,7 @@ This directory is the durable operating memory for the project.
 43. [Account Email Setup](./ACCOUNT-EMAIL-SETUP.md) — P4-S1 recovery setup, verification and rollback
 44. [Rate Limiting](./RATE-LIMITING.md) — P4-S2 policies, providers, failure modes and rollback
 45. [Notifications](./NOTIFICATIONS.md) — P4-S3 notification/preference schema, event matrix, allowlist and rollback
+46. [Cloudflare Deployment](./CLOUDFLARE-DEPLOYMENT.md) — runtime configuration contract, variables, verification and rollback (ADR-045)
 
 ## Documentation hierarchy
 
@@ -76,6 +77,7 @@ AGENTS.md
       +-- ACCOUNT-EMAIL-SETUP.md                 (P4-S1 setup, verify, rollback)
       +-- RATE-LIMITING.md                       (P4-S2 policies, failure modes, rollback)
       +-- NOTIFICATIONS.md                       (P4-S3 schema, event matrix, allowlist, rollback)
+      +-- CLOUDFLARE-DEPLOYMENT.md               (runtime config, variables, verify, rollback)
       +-- PHASE-3-BACKEND-SPEC.md              (revision 2 historical)
       +-- PHASE-3-IMPLEMENTATION-PLAN.md        (revision 2 historical)
       +-- PHASE-3-PLAN-REVIEW.md                (revision 2 historical)

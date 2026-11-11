@@ -1,5 +1,6 @@
 import "@tanstack/react-start/server-only";
 import { inspectServerConfiguration, type ConfigurationDiagnostic } from "./env.server";
+import type { RuntimeEnvSource } from "./runtime-env.server";
 
 export type AuthEmailCheckState =
   "configured-in-app" | "manual-verification-required" | "not-configured";
@@ -23,9 +24,7 @@ export type AuthEmailSetupStatus = Readonly<{
  * prints or returns a secret value; it only lists what a human must verify in the approved Supabase
  * project after explicit remote approval.
  */
-export function inspectAuthEmailSetup(
-  source: NodeJS.ProcessEnv = process.env,
-): AuthEmailSetupStatus {
+export function inspectAuthEmailSetup(source?: RuntimeEnvSource): AuthEmailSetupStatus {
   const configuration = inspectServerConfiguration(source);
   const fixture = configuration.dataMode === "fixtures";
 

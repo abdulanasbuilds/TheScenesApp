@@ -41,13 +41,18 @@ import {
   getNotificationPreferences as readNotificationPreferences,
   updateNotificationPreferences as saveNotificationPreferences,
 } from "@/features/notifications/notifications.functions";
-import { dataMode as configuredDataMode } from "@/lib/data-mode";
+import { resolveRuntimeDataMode } from "@/features/shared/runtime-mode";
+import {
+  IntegrationHealthCard,
+  type IntegrationsReportData,
+} from "@/features/shared/integration-health-card";
+import { getIntegrationsHealth } from "@/features/shared/setup.functions";
 import { formatCompact, formatDate } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/settings")({
   loader: async () => {
-    if (configuredDataMode === "fixtures") return;
+    if ((await resolveRuntimeDataMode()) === "fixtures") return { integrations: null };
     const result = await getCurrentViewer({ data: undefined });
     if (!result.ok || !result.data) {
       throw redirect({
@@ -55,6 +60,8 @@ export const Route = createFileRoute("/settings")({
         search: { confirmation: undefined, reset: undefined, next: "/settings" },
       });
     }
+    const health = await getIntegrationsHealth({ data: undefined });
+    return { integrations: health.ok ? (health.data as IntegrationsReportData) : null };
   },
   head: () => ({ meta: [{ title: "Settings — The Scenes" }] }),
   component: SettingsPage,
@@ -64,6 +71,7 @@ type DangerMode = "deactivate" | "delete" | null;
 
 function SettingsPage() {
   const router = useRouter();
+  const { integrations } = Route.useLoaderData();
   const { currentMember, user, signOut, dataMode } = useApp();
   const { toast } = useToast();
   const [tab, setTab] = useState("profile");
@@ -370,6 +378,7 @@ function SettingsPage() {
 
             <TabsContent value="account">
               <div className="mt-4 space-y-4">
+                {integrations ? <IntegrationHealthCard report={integrations} /> : null}
                 <Card className="p-5 sm:p-6">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-indigo-700" />
