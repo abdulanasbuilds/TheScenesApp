@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 11 November 2026
-**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and implementing
+**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and for the code/local scope of P4-S2 to P4-S5 one slice at a time (ADR-044), implementing
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -176,18 +176,22 @@ The founder approved this mode on 6 November 2026:
 
 Phase 3A Waves 1–4 are accepted; the Wave 5 capacity/recovery rehearsal is deferred under ADR-041.
 
-Phase 4 revision 2 is approved for **P4-S1**: code/local work (ADR-042, 11 November 2026) and hosted
-account-email configuration on THE SCENES `okdzuqgzgnmmbtjxdaci` (ADR-043, 11 November 2026). Supabase
-Auth remains the token authority.
+Phase 4 revision 2 is approved for **P4-S1** (code/local ADR-042, 11 November 2026; hosted account-email
+configuration on THE SCENES `okdzuqgzgnmmbtjxdaci` ADR-043, 11 November 2026) and for the **code/local
+scope of P4-S2 ... P4-S5**, one slice at a time (ADR-044, 11 November 2026). Supabase Auth remains the
+token authority.
 
-1. The local recovery journey, redirect allowlist, setup checker, tests and documentation are implemented
+1. The P4-S1 recovery journey, redirect allowlist, setup checker, tests and documentation are implemented
    and committed.
 2. Apply the hosted Auth settings on THE SCENES only — URL allowlist plus Resend custom SMTP. The agent
    cannot script these (no Auth tools in the available MCP), so the founder does the dashboard steps.
 3. Create the Resend account, verify the domain and place the scoped key in the Supabase project.
 4. Run one founder-controlled inbox test, then record connected evidence.
-5. No other Phase 4 slice, project, deployment or real customer data is authorized. `docs/PHASE-4-PLAN.md`
-   §11 records each remaining provider decision.
+5. Build P4-S2 (distributed rate limiting), P4-S3 (in-app notifications), P4-S4 (feedback channel) and
+   P4-S5 (PWA/installability) as code/local slices only, each with its own tests, redacted evidence and
+   commit. No provider account, hosted migration application, sending to real addresses, deployment or
+   real customer data is authorized. P4-S6 (web push) and P4-S7 (R2 objects) are not approved.
+   `docs/PHASE-4-PLAN.md` §11 records each remaining provider decision.
 
 The deferred Wave 5 rehearsal must run before any staging load test or public launch.
 
@@ -211,6 +215,7 @@ The deferred Wave 5 rehearsal must run before any staging load test or public la
   before any staging load test or public launch;
 - working tree: clean; Phase 4 revision-2 review committed at `9cc91e3`; P4-S1 code/local committed;
   hosted account-email config approved (ADR-043) and pending the founder dashboard/Resend steps;
+  P4-S2 to P4-S5 code/local approved (ADR-044), one slice at a time;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;

@@ -506,3 +506,39 @@ Consequences:
 
 Durable record: `docs/ACCOUNT-EMAIL-SETUP.md`, `docs/PHASE-4-PLAN.md` §12, `docs/PROJECT-STATUS.md`,
 `docs/PHASES.md` and `docs/INTEGRATIONS.md`.
+
+## ADR-044 — Phase 4 P4-S2 ... P4-S5 code/local scope pre-approved (one at a time)
+
+Status: Accepted (11 November 2026)
+
+The founder pre-approved the **code/local scope** of the next four Phase 4 slices, to be implemented
+**one at a time**, each with its own tests, redacted evidence and commit:
+
+- P4-S2 — Distributed rate limiting;
+- P4-S3 — Connected in-app notifications;
+- P4-S4 — Replaceable feedback channel;
+- P4-S5 — PWA/installability and low-bandwidth shell.
+
+Approved remote actions: **NONE.**
+
+- No provider account (Upstash Redis, Telegram, Web Push/VAPID), no hosted migration application, no
+  sending to real addresses, no real push subscriptions, no object-storage mutation, no deployment.
+- P4-S3's additive migration may be **written and tested locally/fixture only**; applying it to
+  `okdzuqgzgnmmbtjxdaci` is a separate approval.
+- P4-S6 (web push) and P4-S7 (R2 objects) are **not** approved.
+- Never touch VOICE SYSTEM (`extdmvwwvgqstoayzhhy`) or any project other than the approved pre-production
+  project.
+
+Conditions:
+
+- One slice per change set; no slice may be merged with another.
+- Adapters sit behind a stable interface; memory/fixture implementations are preserved; a configured
+  integration fails safe and never silently falls back to fixtures.
+- No secrets or service-role material in client code; owner-only RLS where new data is added.
+- ADR-041 Wave 5 remains deferred and continues to block load/launch/scale claims.
+
+Re-review triggers: a provider account, hosted migration, real message/subscription, deployment, scope
+expansion, or a data/security-model change for any of these slices.
+
+Durable record: `docs/PHASE-4-PLAN.md` §12, `docs/PROJECT-STATUS.md`, `docs/PHASES.md` and
+`docs/INTEGRATIONS.md`.

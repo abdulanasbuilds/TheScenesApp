@@ -48,8 +48,8 @@ The platform may use Skool, Circle, Kajabi, and other products as references for
 ## Current stage
 
 **Phase 2 fixture frontend and the Phase 3A learning vertical slice (Waves 1–4) are accepted. Wave 5
-capacity/recovery evidence is formally deferred under ADR-041. Phase 4 is in Review and is not approved
-for implementation.**
+capacity/recovery evidence is formally deferred under ADR-041. Phase 4 is approved for P4-S1 and for the
+code/local scope of P4-S2 ... P4-S5, one slice at a time.**
 
 Phase 3A's 18 migrations, local/live database gates, Auth/security boundary, hosted pre-production
 confirmation journey, RLS access matrix and connected catalogue/learning slice have passed their
@@ -62,9 +62,10 @@ fresh business-controlled staging capability only when the relevant integration 
 See ADR-040 and `docs/PROJECT-STATUS.md`.
 
 On 9 November 2026 the founder accepted the Phase 3A learning slice with Wave 5 deferred and opened
-Phase 4 for planning only (ADR-041). `docs/PHASE-4-PLAN.md` revision 2 is ready for founder review but
-is not approved. No Phase 4 implementation or provider action begins until its approval record names
-the first slice and exact remote permissions.
+Phase 4 for planning only (ADR-041). On 11 November 2026 the founder approved P4-S1 code/local work
+(ADR-042), hosted account-email configuration on THE SCENES only (ADR-043), and the code/local scope of
+P4-S2 ... P4-S5 one slice at a time (ADR-044). No provider account, hosted migration application,
+deployment, real message or real customer data is approved. P4-S6 and P4-S7 remain unapproved.
 
 Agents MUST NOT:
 

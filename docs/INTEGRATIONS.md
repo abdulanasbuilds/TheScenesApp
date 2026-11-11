@@ -56,9 +56,16 @@ Do not make client-side pages responsible for privileged mail sending. See
 
 ## Redis-compatible service
 
-**Proposed Phase 4 provider; not configured/approved yet.** Revision 2 proposes Upstash Redis REST for
-pre-production because it is fetch-compatible with the Cloudflare/workerd runtime. Re-check current
-cost/security limits and obtain founder approval before account creation.
+**Code/local adapter approved (P4-S2, ADR-044); provider account NOT approved.** Revision 2 proposes
+Upstash Redis REST for pre-production because it is fetch-compatible with the Cloudflare/workerd
+runtime.
+
+- The agent may add a `RateLimiter` interface with a fetch-compatible Upstash REST adapter that is
+  disabled and safe when configuration is missing.
+- The in-memory limiter remains the fixture/local implementation; a configured integration never
+  silently falls back to memory.
+- Creating an Upstash account, setting credentials or pointing staging at a real Redis instance requires
+  a separate explicit approval. Re-check current cost/security limits before that request.
 
 Use for:
 
@@ -70,9 +77,12 @@ Never treat it as durable source of truth.
 
 ## Telegram
 
-**Proposed Phase 4 provider; not configured/approved yet.** Use only behind a replaceable server-only
-feedback adapter for the founder-approved `TS-FEED-001/002` channel. Minimize data, rate-limit submits,
-never send credentials/protected content and establish the operational deletion process before enablement.
+**Code/local adapter approved (P4-S4, ADR-044); bot/account NOT approved.** Use only behind a
+replaceable server-only feedback adapter for the founder-approved `TS-FEED-001/002` channel, with a
+safe no-op/disabled implementation when configuration is absent. Minimize data, rate-limit submits,
+never send credentials/protected content and establish the operational deletion process before
+enablement. Creating a bot, holding its token or sending a real message requires a separate explicit
+approval.
 
 ## Bunny.net
 
@@ -112,6 +122,11 @@ Evaluate a dedicated search engine or AI-assisted semantic search only when the 
 ## PWA/Web Push
 
 Use for installability and consented notifications.
+
+- **P4-S5 (installability, offline shell, icons, safe runtime caching) is approved as code/local work
+  (ADR-044).**
+- **P4-S6 (Web Push) is NOT approved.** Web Push requires (a) a Cloudflare/workerd compatibility proof
+  and (b) a separate approval before creating a VAPID key pair or any push subscription.
 
 Notification preferences and abuse controls are required.
 
