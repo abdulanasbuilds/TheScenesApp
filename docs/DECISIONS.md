@@ -366,3 +366,53 @@ This ADR changes execution sequence and credit discipline, not the security base
 older wording that required another speculative Phase 3A review before implementation. Executable
 local and staging evidence now decides promotion. It narrows ADR-039's blanket hosted hold only enough
 to permit a later explicitly approved fresh staging resource; production remains unapproved.
+
+## ADR-041 — Phase 3A slice accepted; Wave 5 capacity/recovery deferred; Phase 4 opened for planning
+
+Status: Accepted (9 November 2026)
+
+Phase 3A Waves 1–4 are implemented and independently verified on the hosted THE SCENES pre-production
+project:
+
+- 18 migrations applied; RLS, grants, triggers, commands and functions verified; no Critical/High
+  advisor finding; no health finding;
+- hosted Auth email-confirmation journey exercised in a real inbox;
+- Wave 3 closure: 27 negative authorization tests;
+- Wave 4 connected catalogue and learning slice: public discovery, community, classroom, lesson and
+  My Learning routes read real rows under RLS; protected lesson bodies stay hidden until membership
+  plus enrolment; anonymous membership mutations return `401`;
+- verified: lint, typecheck, 177 unit tests, client/server boundary scan, production build, 26 fixture
+  browser checks, and 12 hosted public connected browser checks across desktop, tablet and mobile;
+- the committed checkpoint is `fdc5c8f`.
+
+Wave 5 (the mandatory capacity, recovery and acceptance rehearsal) is **not executed**. Per
+`docs/PHASE-3-VERIFICATION-RUNBOOK.md` §9–§11 it is defined as a **local-only** rehearsal: the
+deterministic generator refuses hosted/non-loopback targets, the load harness requires
+`VITE_DATA_MODE=supabase-local` with local `wrangler`, the load driver is loopback-gated, and recovery
+requires a second isolated local Supabase stack. The harness (`phase3:generate-data`,
+`phase3:query-plans`, `phase3:load`, `phase3:recover`, `phase3:serve`, `src/routes/phase3-load.tsx`) is
+not yet implemented, and the Docker engine was unavailable during this decision.
+
+Decision (founder, 9 November 2026):
+
+1. Accept the Phase 3A **learning vertical slice** as complete-for-now. It is "accepted with deferred
+   capacity evidence", not a claim of production readiness.
+2. Formally **defer** the Wave 5 rehearsal — deterministic representative dataset, 25-operation/second
+   sustained workload, burst and 30-second recovery measurement, `EXPLAIN (ANALYZE, BUFFERS)` manifest,
+   allowlisted data-only restore rehearsal, and portability export — as a documented residual risk.
+3. Open **Phase 4 (Email, files, notifications)** in the **Planning** state only. No Phase 4
+   implementation begins until its specification passes `docs/PHASE-PLANNING-GATE.md` and the founder
+   approves the scope and provider accounts.
+
+Consequences:
+
+- The deferred Wave 5 rehearsal becomes a **mandatory precondition** before any staging load test,
+  before any real public launch, and before any scale/capacity claim in Phase 6 or Phase 10.
+- The deferral is a scope deviation approved by the founder; it does not mark every Phase 3 exit
+  criterion as met.
+- No production, remote-staging, provider, payment or deployment authorization is granted by this ADR.
+- Re-review triggers: Docker becomes available; credit allows building the harness; a staging resource
+  is proposed; a load, recovery or scale claim is requested.
+
+Durable record: `docs/PROJECT-STATUS.md` (current checkpoint) and
+`docs/PHASE-4-PLAN.md` (drafting under the planning gate).

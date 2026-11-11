@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
-**Last updated:** 7 November 2026
-**Current stage:** Phase 3A — Waves 1–3 complete; Wave 4 hosted vertical slice implemented with public/RLS gates passed; authenticated browser replay and Wave 5 remain
+**Last updated:** 11 November 2026
+**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 (email/files/notifications) opened in Planning only
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -12,7 +12,8 @@ but their old status paragraphs do not override this page, `AGENTS.md` or accept
 These are milestone estimates, not percentages generated from lines of code:
 
 - clickable fixture application: **100%**;
-- Phase 3A real-data foundation: **about 88%**;
+- Phase 3A learning vertical slice (Waves 1–4): **complete and verified**;
+- Phase 3A capacity/recovery rehearsal (Wave 5): **deferred by founder decision (ADR-041)**;
 - complete Phase 0–10 product vision: **about 30%**;
 - ready for real public users: **no**.
 
@@ -63,13 +64,17 @@ These are milestone estimates, not percentages generated from lines of code:
 
 ## What is not complete
 
-Wave 4 implementation and its public/RLS/fixture gates are complete. The founder-controlled account did
-not establish an active session in the shared test browser, so the final authenticated browser replay of
-join → enrol → protected lesson → complete → reload has not been captured on this tree. Phase 3 is also
-blocked by Wave 5's mandatory representative-data workload, burst/recovery measurement, disposable
-restore rehearsal, portability evidence, and final acceptance review. The local database stack is
-stopped; its normal ports are currently occupied by the unrelated `call-hola` local Supabase project,
-which this project did not stop or modify.
+The Phase 3A learning vertical slice (Waves 1–4) is complete and independently verified. By founder
+decision in ADR-041, the Wave 5 capacity/recovery rehearsal is **formally deferred**: the deterministic
+representative dataset, 25-operation/second sustained workload, burst and 30-second recovery
+measurement, `EXPLAIN (ANALYZE, BUFFERS)` manifest, allowlisted data-only restore rehearsal, and
+portability export are not executed. This is a recorded residual risk, not a claim that every Phase 3
+exit criterion is met. The rehearsal remains a mandatory precondition before any staging load test,
+public launch, or scale claim. The local database stack is stopped; the Docker engine was unavailable
+and the unrelated `call-hola` local Supabase project owns the usual ports, which this project did not
+stop or modify. The founder-controlled account did not establish an active session in the shared test
+browser, so the authenticated browser replay of join → enrol → protected lesson → complete → reload was
+not captured on this tree; those same transitions were verified at the hosted database/RLS boundary.
 
 Profile updates now preserve omitted optional fields, clear only explicit `null`, and route persistence
 through the profile repository. The local limiter now removes expired buckets and enforces a fixed
@@ -165,9 +170,16 @@ The founder approved this mode on 6 November 2026:
 
 ## Exact next step
 
-Run Wave 5's deterministic representative dataset, 25-operation/second sustained workload, burst and
-recovery measurement, disposable restore rehearsal, portability evidence, then perform the final
-Phase 3 acceptance review.
+Phase 3A Waves 1–4 are accepted; the Wave 5 capacity/recovery rehearsal is deferred under ADR-041.
+
+The next step is Phase 4 **planning** under `docs/PHASE-PLANNING-GATE.md`:
+
+1. review and approve `docs/PHASE-4-PLAN.md` (email, files, notifications, PWA/web push, rate limiting);
+2. decide the provider accounts (Resend, a Redis-compatible store, PWA/web push, and any separately
+   approved R2 objects);
+3. implement only after explicit approval, one vertical slice at a time.
+
+The deferred Wave 5 rehearsal must run before any staging load test or public launch.
 
 ## Remote project boundary
 
@@ -183,9 +195,11 @@ Phase 3 acceptance review.
 
 ## Checkpoint state
 
-- Founder input needed: **a Wave 5 execution path that does not interfere with the unrelated local
-  Supabase project; hosted large-dataset/load execution remains unapproved**;
-- working tree: Wave 4 hosted integration and evidence ready to commit;
+- Founder input needed: **review and approve `docs/PHASE-4-PLAN.md` and the Phase 4 provider accounts;
+  the deferred Wave 5 rehearsal still needs Docker/credit before any staging load test or public
+  launch**;
+- working tree: Wave 4 hosted integration committed at `fdc5c8f`; Phase 3A acceptance + Phase 4 planning
+  documentation in progress;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;
@@ -193,6 +207,7 @@ Phase 3 acceptance review.
 - Wave 2 completion checkpoint: `7ac5089`;
 - Wave 3 foundation checkpoint: `d023fe2`;
 - Wave 3 profile/limiter checkpoint: `f5173aa`;
+- Wave 4 hosted integration checkpoint: `fdc5c8f`;
 - unresolved risks: database lint records one Low-severity unused local variable warning in
-  `public.leave_community`; Supabase leaked-password protection requires Pro; Wave 5 capacity/recovery
-  evidence remains incomplete.
+  `public.leave_community`; Supabase leaked-password protection requires Pro; **Wave 5
+  capacity/recovery evidence is deferred by founder decision (ADR-041)**.

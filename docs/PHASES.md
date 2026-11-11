@@ -17,6 +17,13 @@ vertical slice, and ask for fresh staging capability only when the integration i
 This does not authorize production, payments, deployment, live customer data or reuse of any old
 account or credential.
 
+On 9 November 2026 the founder accepted the **Phase 3A learning vertical slice** (Waves 1–4) and
+formally deferred the Wave 5 capacity/recovery rehearsal under **ADR-041**. Phase 3A is therefore
+**accepted with deferred capacity evidence**; the rehearsal remains a mandatory precondition before any
+staging load test, public launch, or scale claim. **Phase 4 (email, files, notifications) is now in the
+Planning state only** and is defined by `docs/PHASE-4-PLAN.md`, which must pass the phase planning gate
+and receive founder approval before any implementation. See `docs/PROJECT-STATUS.md`.
+
 ## Mandatory planning gate — every phase
 
 Before implementation, every phase must pass `docs/PHASE-PLANNING-GATE.md` and have a reviewed,
@@ -52,7 +59,10 @@ resource.
    and rollback. Do not ask for secrets in chat.
 6. After explicit action approval, connect only a new business-controlled staging resource, apply the
    reviewed migrations and run the same user journey/security checks. This is not production approval.
-7. Complete capacity/recovery evidence and final Phase 3 acceptance. Phase 4 onward remains gated.
+7. ~~Complete capacity/recovery evidence and final Phase 3 acceptance.~~ Phase 3A was accepted on
+   9 November 2026 with Wave 5 capacity/recovery evidence deferred (ADR-041). That evidence remains a
+   mandatory precondition before any staging load test, public launch, or scale claim. Phase 4 is now
+   open for **planning** under `docs/PHASE-4-PLAN.md`.
 
 > Note: parts of `docs/REVIEW-ACTION-PLAN.md` and the historical analysis retained in
 > `docs/FOUNDER-DECISIONS-REQUIRED.md` predate the 4 November frontend authorization. Their updated
@@ -128,6 +138,9 @@ Exit gate:
 
 ## Phase 3 — Backend foundation
 
+**Status:** Waves 1–4 implemented and verified; learning vertical slice accepted 9 November 2026
+(ADR-041). Wave 5 capacity/recovery evidence deferred; see `docs/PROJECT-STATUS.md`.
+
 Only after Phase 2 is accepted.
 
 Introduce:
@@ -142,6 +155,10 @@ Introduce:
 - server-side authorization.
 
 ## Phase 4 — Email, files, notifications
+
+**Status:** Planning only (opened 9 November 2026, ADR-041). Specification: `docs/PHASE-4-PLAN.md`.
+No implementation until the plan passes `docs/PHASE-PLANNING-GATE.md` and the founder approves scope
+and provider accounts.
 
 Introduce:
 
