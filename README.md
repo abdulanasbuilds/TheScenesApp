@@ -19,14 +19,15 @@ Then read:
 
 ## Current state
 
-Phase 2's complete fixture-backed frontend is accepted. Phase 3A Wave 0 is complete. Wave 1's local
-database implementation and tests are committed and pass static checks, but the live local database
-gate has not run, so Wave 1 is not yet accepted.
+Phase 2's complete fixture-backed frontend and the Phase 3A learning vertical slice (Waves 1–4) are
+accepted. Phase 3A Wave 5 capacity/recovery evidence is deferred under ADR-041 and remains required
+before any staging load test, public launch or scale claim.
 
 The founder selected lean build + staging mode on 6 November 2026: complete the minimum local safety
 gate once, build approved vertical slices, and ask for fresh staging access only when an integration is
 ready. Old accounts/credentials are forbidden. No production backend, payment or deployment is
-approved. See `docs/PROJECT-STATUS.md`.
+approved. Phase 4 revision 2 (email, notifications, rate limiting, feedback, PWA/push and conditional
+platform objects) is in Review and is not approved for implementation. See `docs/PROJECT-STATUS.md`.
 
 ## Core stack direction
 

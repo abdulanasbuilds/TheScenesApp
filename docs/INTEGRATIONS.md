@@ -8,8 +8,10 @@ Use for hosting, edge delivery, security/perimeter controls, and domain/DNS wher
 
 ## Supabase
 
-**Current status:** approved for a bounded, local-only Phase 3 proof-of-fit after the remaining Gate A
-safety work; not approved as a hosted/production commitment and not yet connected.
+**Current status:** selected and connected for the accepted Phase 3A learning slice. THE SCENES
+(`okdzuqgzgnmmbtjxdaci`) is classified as **PRE-PRODUCTION**; 18 migrations and the founder-approved
+fictional catalogue are present. This is not production, deployment, payment or real-customer approval.
+Wave 5 capacity/recovery evidence remains deferred under ADR-041.
 
 Use for:
 
@@ -27,26 +29,28 @@ backup/recovery target and budget.
 
 ## Cloudflare R2
 
-**Conditional / later:** ADR-029 makes launch base plans external-link-only. R2 may be evaluated for
-narrow platform-managed objects (for example, approved system assets or exports) in a later phase;
-it is not launch creator hosting and not a current referral reward.
+**Conditional / separately approved:** ADR-029 makes launch base plans external-link-only. Phase 4
+revision 2 permits only a separately approved narrow platform-managed object after its exact access,
+retention, cost and rollback contract is accepted. R2 is not launch creator hosting or a referral reward.
 
-If separately approved, use for:
-
-- course resources;
-- creator files;
-- media/object storage;
-- exports where appropriate.
+Possible approved uses are limited to system assets or exports. Creator course resources/files,
+video/live media and storage rewards remain excluded.
 
 Private objects require controlled access.
 
 ## Resend
 
-Use for important transactional email.
+**Proposed Phase 4 provider; not configured/approved yet.** Use first as Supabase Auth custom SMTP so
+Supabase remains confirmation/recovery token authority. A direct application email adapter is added only
+when an approved event, idempotency and delivery/retry contract exists.
 
 Do not make client-side pages responsible for privileged mail sending.
 
 ## Redis-compatible service
+
+**Proposed Phase 4 provider; not configured/approved yet.** Revision 2 proposes Upstash Redis REST for
+pre-production because it is fetch-compatible with the Cloudflare/workerd runtime. Re-check current
+cost/security limits and obtain founder approval before account creation.
 
 Use for:
 
@@ -55,6 +59,12 @@ Use for:
 - carefully scoped cache.
 
 Never treat it as durable source of truth.
+
+## Telegram
+
+**Proposed Phase 4 provider; not configured/approved yet.** Use only behind a replaceable server-only
+feedback adapter for the founder-approved `TS-FEED-001/002` channel. Minimize data, rate-limit submits,
+never send credentials/protected content and establish the operational deletion process before enablement.
 
 ## Bunny.net
 

@@ -1,290 +1,480 @@
-# The Scenes — Phase 4 Plan: Email, files, notifications
+# The Scenes — Phase 4 Plan: Email, notifications, PWA and operational services
 
-**Planning status:** PLANNING (drafted 11 November 2026)
+**Planning status:** REVIEW — implementation not authorized
+**Revision:** 2 — 11 November 2026
 **Founder approval:** NOT APPROVED
-**Parent:** `docs/PHASES.md` (Phase 4), ADR-040 (lean build + staged activation), ADR-041
+**Parent:** `docs/PHASES.md`, ADR-006, ADR-009, ADR-010, ADR-012, ADR-017, ADR-029,
+ADR-040 and ADR-041
 **Gate:** `docs/PHASE-PLANNING-GATE.md`
+**Review:** `docs/PHASE-4-PLAN-REVIEW.md`
 
-Nothing in this document authorizes implementation. Phase 4 begins only after the founder approves this
-plan and the provider accounts listed in §11. No production, payment, deployment, live-customer or
-provider action is approved by this plan.
+Nothing in this document authorizes implementation, provider creation/configuration, sending real
+messages, deployment, production data, payments or spend. Phase 4 implementation begins only after the
+founder approves the scope/version, first slice and provider actions in §12.
 
 ---
 
 ## 1. Outcome and business context
 
-Phase 3A delivers the learning slice (discover → join → enrol → learn → persist). Phase 4 makes the
-platform trustworthy and usable in the real world by adding the minimum operational services that a
-learning community needs, behind internal adapters:
+Phase 3A provides the accepted learning slice: discover → join → enrol → learn → persist. Phase 4 adds
+the minimum operational services that make that slice dependable without introducing creator hosting,
+payments or later-phase operations:
 
-- **Transactional email** so people can confirm an account, and so important account events arrive
-  reliably (currently Auth email uses Supabase's built-in sender in pre-production).
-- **Notifications** so learners and creators can be told about meaningful events (enrolment, new lesson,
-  community activity) with explicit consent and control.
-- **Installability (PWA) and consented web push**, important for mobile-first African audiences on
-  variable bandwidth.
-- **Rate limiting / abuse control** at the edge of server functions so public endpoints cannot be
-  abused, and so login/join/enrol cannot be scripted cheaply.
-- **A narrow file/object path** for separately approved platform-managed objects only (not creator
-  hosting; see ADR-029).
+- branded account confirmation and password-reset email through Supabase Auth custom SMTP using Resend;
+- distributed rate limiting for costly or abuse-sensitive server functions;
+- connected owner-only in-app notifications and preferences;
+- the founder-approved, replaceable Telegram feedback channel (`TS-FEED-001/002`);
+- PWA installability and deliberately bounded low-bandwidth/offline behavior;
+- consented web push after a Cloudflare-runtime compatibility proof;
+- separately approved narrow platform-managed objects only when a concrete object exists.
 
-Measurable value:
+Business value:
 
-- trust: reliable confirmation and account email;
-- retention: consented notifications drive return visits;
-- reach: installable PWA works better on low-end/limited-bandwidth devices;
-- safety: bounded abuse of public endpoints;
-- time saved: creators/learners spend less time chasing account state.
+- **trust:** account emails and security actions are understandable and verifiable;
+- **retention:** useful, consented learning/community updates bring people back;
+- **reach:** installability and a low-bandwidth shell improve mobile access;
+- **safety/cost:** shared rate limits reduce credential abuse, spam and avoidable provider spend;
+- **feedback speed:** users can report friction to the founder without exposing credentials.
 
-This work belongs in Phase 4 because it is the first phase that legitimately requires external providers
-beyond Supabase, and the learning slice is now stable enough to attach them.
+Success means one bounded slice at a time is plug-ready, degrades honestly when unconfigured, passes
+security/browser checks, and has a documented rollback. Provider configuration is not proof of success.
 
-## 2. Scope control
+## 2. Scope, slices and phase boundaries
 
-**In scope (proposed first vertical slices, in order):**
+### Proposed implementation order
 
-1. **S1 — Transactional email adapter + auth email.** A server-only `EmailProvider` adapter with a
-   Resend implementation and a safe no-op/console implementation for local/fixture modes. Wire account
-   confirmation and password reset through the adapter where the contract requires our own send.
-2. **S2 — Rate limiting adapter.** A `RateLimiter` adapter with a Redis-compatible implementation and an
-   existing local in-memory limiter for local/fixture modes. Applied to login, signup, join/enrol and
-   other public server functions.
-3. **S3 — Notification model + in-app notifications.** A minimal `notifications` table with RLS, an
-   unread-count contract, and a notifications surface for authenticated users.
-4. **S4 — PWA installability.** Web app manifest, service worker, offline shell, install prompt, and a
-   Lighthouse/installability check.
-5. **S5 — Consented web push.** VAPID keys, push subscription storage, consent + preferences, and a
-   server-side send path behind the notification service.
-6. **S6 (conditional, separately approved) — Narrow platform-managed objects.** An `ObjectStore` adapter
-   with an R2 implementation for approved system assets/exports only. ADR-029 launch base plans remain
-   external-link-only for creator content.
+1. **P4-S1 — Account email and password recovery.** Keep Supabase Auth as the identity/email-event
+   authority. Configure Resend as Supabase Auth custom SMTP only after explicit remote-action approval.
+   Add the application password-reset request/update journey and safe setup/health documentation. Do
+   not replace Supabase confirmation tokens with an application-built token system.
+2. **P4-S2 — Distributed rate limiting.** Promote the existing in-memory limiter behind a stable
+   `RateLimiter` interface. Add a fetch-compatible Upstash Redis REST implementation for connected
+   staging. Preserve the memory implementation for fixture/local mode. Apply configured, documented
+   policies to signup, login, password reset, join, enrol, complete and feedback submission.
+3. **P4-S3 — Connected in-app notifications.** Add the notification/preference schema, caller-bound
+   commands, repository/service/functions, unread count, pagination, owner-only RLS, fixture adapter and
+   the existing `/notifications` and Settings UI states. Initial event types are limited to transitions
+   already owned by Phase 3A; future creator/event/comment triggers remain deferred.
+4. **P4-S4 — Replaceable feedback channel.** Add a server-only `FeedbackProvider` with Telegram and
+   memory implementations, a bounded feedback form, rate limit, data-minimization copy and operational
+   deletion procedure. Telegram is an internal alert destination, never an authorization or durable
+   product database.
+5. **P4-S5 — PWA/installability and low-bandwidth shell.** Add the manifest, owned icons, install
+   guidance and a service worker that caches versioned public static assets plus a generic offline shell
+   only. Never cache authenticated HTML, Supabase responses, server-function responses, cookies,
+   notification data or protected lesson content.
+6. **P4-S6 — Consented web push.** First prove the selected Web Push implementation works in the
+   Cloudflare/workerd production runtime. Then add explicit permission UI, private subscription storage,
+   preferences, send/revoke handling and invalid-subscription cleanup. If the runtime proof fails, keep
+   in-app notifications/PWA and record push as deferred; do not change the deployment architecture just
+   to force push.
+7. **P4-S7 — Conditional narrow object storage.** Only after a separate founder approval identifies the
+   exact platform-managed object, retention and access contract. R2 remains forbidden for creator
+   course files/video/live hosting under ADR-029.
 
-**Out of scope / must remain untouched:**
+Each slice has an independent approval, implementation, verification, evidence and commit checkpoint.
+Do not build all slices in one change set.
 
-- creator native file/video/live hosting (ADR-029) and Bunny/LiveKit/etc.;
-- payments, payouts, marketplace, orders (Phase 7–8, HOLD);
-- the AI/search layer (Phase 9);
-- production deployment, production email domains, production data;
-- referral/provider quota mechanics beyond what Phase 3A already defines;
-- any real customer data.
+### Explicit non-goals
 
-**Dependencies / blocked decisions:** provider selection and accounts (§11); current official provider
-documentation must be re-checked at implementation time; the deferred Wave 5 capacity rehearsal remains a
-precondition before any staging load test or launch.
+- creator native file/video/live hosting, storage quotas or referral storage rewards;
+- comments/posts/events/creator-publishing triggers that belong to Phase 5;
+- direct messaging, marketplace, payments, payouts, search/AI or production deployment;
+- marketing/broadcast email;
+- service-role or secret keys in browser code;
+- real customer data;
+- claims of capacity, recovery or public-launch readiness while ADR-041 Wave 5 remains deferred.
 
-**Reversible vs irreversible:** adapters and local in-memory implementations are reversible; creating
-provider accounts, sending real email to real addresses, and storing real push subscriptions are remote
-side effects requiring explicit approval.
+### Dependencies and reversible actions
+
+- Current official provider documentation must be checked again immediately before each integration.
+- Business-controlled provider accounts and fresh scoped credentials require explicit approval.
+- Code adapters, additive migrations, fixture/memory implementations and feature-disabled states are
+  reversible development work after plan approval.
+- Provider account creation/configuration, hosted migrations, sending to real addresses, Telegram bot
+  messages, storing real push subscriptions, R2 mutations and deployments are separately approved
+  remote actions.
 
 ## 3. Product and interaction contract
 
-- **Notifications surface:** existing `/notifications` route moves from fixture-only to connected for the
-  signed-in viewer; unread badge in the authenticated shell; empty/loading/error/unauthorized states;
-  "mark read" and "mark all read".
-- **Notification preferences:** in Settings, per-category toggles (account/security always on; community,
-  learning, product optional) and a web-push enable/disable control that requests browser permission only
-  on explicit user action.
-- **PWA:** manifest with name/icons/theme; installable on supported browsers; offline fallback for the
-  app shell; no requirement that offline data be authoritative.
-- **Email:** account confirmation and password reset render plain, accessible HTML + text; no secrets in
-  email; unsubscribe only where legally required (transactional email is not marketing).
-- **Consent and abuse:** push permission is never requested on load; rate-limited actions show a clear,
-  human message when throttled; a `429` is safe and does not leak account existence.
-- **Degraded states:** if email/Redis/push provider is unconfigured or down, the app still works;
-  email-dependent actions report a safe "temporarily unavailable" state rather than silently succeeding;
-  there is no silent fallback that pretends a message was delivered.
+### Account email and recovery
 
-**Accessibility:** notifications list has landmarks and live-region-aware unread count; toggles are
-keyboard operable with visible focus; install/push prompts are dismissible and screen-reader labelled.
+- Existing email confirmation remains enabled.
+- `/forgot-password` accepts an email and always returns the same safe acknowledgement, whether or not
+  the account exists.
+- Recovery redirect destinations use the existing strict allowlist/origin checks. Recovery parameters
+  and tokens are removed from the visible URL and never logged.
+- `/reset-password` requires a valid recovery session, validates the new password and signs out other
+  sessions if the approved Auth capability supports it; otherwise the limitation is explicit.
+- Email has accessible text and HTML versions, a verified sender domain, no tracking by default and no
+  claim of delivery until a real staging message arrives.
 
-**Analytics needed:** email accepted/rejected counts (no PII), notification created/read counts, push
-subscribed/unsubscribed counts, rate-limit rejections by surface.
+### Notifications and preferences
+
+- `/notifications` is authenticated, paginated (default 20, maximum 50), newest first, with all/unread,
+  loading, empty, retry, unavailable and concealed-unauthorized states.
+- "Mark read" and "mark all read" are awaited caller-bound commands; pending controls prevent duplicate
+  submission. Badge count comes from the connected state, not fixture data.
+- Settings provides channel/category preferences. Account/security notifications are mandatory in-app;
+  community/learning/product and email/push channels are opt-in or safely defaulted according to the
+  approved matrix.
+- Allowed `href` values are internal relative paths from an allowlist; notification data cannot create
+  an open redirect.
+
+### Feedback
+
+- The form states that feedback and limited context are sent to an internal Telegram channel.
+- Required: message (10–2,000 characters) and current internal route. Optional screenshot, email and
+  file attachment are out of scope. Never send cookies, tokens, browser storage, full email, protected
+  content or raw request headers.
+- The founder receives a pseudonymous user ID (when signed in), route, timestamp, request ID and text.
+  Anonymous feedback is allowed only if the approved abuse limit permits it.
+- Success means Telegram accepted the message; provider failure shows retryable failure and never
+  pretends submission succeeded.
+
+### PWA and push
+
+- Manifest includes name/short name, owned 192px and 512px icons, `start_url`, `scope`, theme/background
+  colors and `display: standalone`. Unsupported browsers continue as ordinary web pages.
+- Install guidance is user-initiated, dismissible and platform-aware; no fake universal install button.
+- Offline shows a generic non-personalized shell. It never presents protected content as current.
+- Push permission is requested only from an explicit user gesture after explaining value. Denied,
+  unsupported, dismissed, subscribed, expired and revoked states are visible.
+
+### Accessibility and mobile/low bandwidth
+
+- Keyboard access, visible focus, correct labels and status announcements are required.
+- Unread status is not conveyed by color alone; counts use accessible names without noisy live updates.
+- Forms preserve input on retry and work at mobile widths. Assets are small and versioned; service-worker
+  updates are announced without trapping the user on stale code.
 
 ## 4. Domain and data model
 
-New/updated tables (all RLS-enabled, owner-scoped; migrations via the pinned Supabase CLI):
+The project uses imperative, timestamped Supabase migrations. Create migrations with the pinned CLI,
+review SQL, and apply remotely only after explicit hosted-mutation approval. New public tables require
+explicit grants because Supabase stopped auto-exposing new public tables in 2026.
 
-- `notifications` — `id uuid pk`, `user_id uuid fk auth.users`, `type text`, `title text`, `body text`,
-  `href text null`, `read_at timestamptz null`, `created_at timestamptz default now()`; index
-  `(user_id, read_at, created_at desc)`.
-- `notification_preferences` — `user_id uuid pk fk auth.users`, per-category booleans with safe defaults,
-  `updated_at`.
-- `push_subscriptions` — `id uuid pk`, `user_id uuid fk`, `endpoint text unique`, `p256dh text`,
-  `auth text`, `created_at`, `last_seen_at`; a subscription is deletable by its owner.
-- `private.email_outbox` (optional, if we add queued send) — append-only, idempotency key, status;
-  private schema, no client access.
-- `private.rate_limit_events` (optional, only if we need durable auditing of throttling) — otherwise
-  Redis-only.
+### `public.notifications`
 
-Rules:
+- `id uuid primary key default gen_random_uuid()`;
+- `user_id uuid not null references auth.users(id) on delete cascade`;
+- `type text not null` constrained to the approved event enum;
+- `title text not null` (1–120 chars), `body text not null` (1–500 chars);
+- `href text null` constrained to a safe internal relative-path shape;
+- `dedupe_key text not null` (1–160 chars);
+- `read_at timestamptz null`, `created_at timestamptz not null default now()`;
+- unique `(user_id, dedupe_key)`; keyset index `(user_id, created_at desc, id desc)`; partial unread
+  index `(user_id, created_at desc) where read_at is null`.
 
-- ownership is `user_id = auth.uid()`; no cross-user reads;
-- service-role/admin write paths are server-only and audited;
-- deletion: notifications are user-deletable and retention-bounded; unsubscribing removes the push row;
-- idempotency: notification creation and email send carry an idempotency key to avoid duplicates;
-- append-only where history matters (email outbox, audit events);
-- migration/rollback: additive migrations only; rollback = drop the new tables/adapter wiring; no
-  destructive change to Phase 3A tables;
-- representative queries: unread count, latest N notifications, preferences read, push subscriptions by
-  user — each gets a justified index and an `EXPLAIN` check on representative data.
+Authenticated users receive column-limited `SELECT` and `UPDATE (read_at)` for owned rows only. They
+cannot insert arbitrary notifications, reassign ownership or update content. Notification creation is
+inside reviewed, caller-bound domain commands and is idempotent/atomic with the state transition where
+possible. `UPDATE` policies include both `USING` and `WITH CHECK`; direct cross-user reads/writes fail.
 
-## 5. API and integration contracts
+### `public.notification_preferences`
 
-All providers sit behind internal adapters (ADR-006). No vendor SDK is imported directly by routes or
-client code. No secrets reach the client bundle.
+- `user_id uuid primary key references auth.users(id) on delete cascade`;
+- explicit boolean columns for the approved categories/channels (no opaque settings JSON);
+- `updated_at timestamptz not null` maintained by the existing timestamp pattern.
 
-Adapters (proposed interfaces):
+Owner-only select/update/insert with column grants and validation. Defaults are explicit in the
+migration and UI. No preference can suppress a legally/security-required account email.
+
+### `private.push_subscriptions`
+
+- `id uuid primary key`, `user_id uuid not null references auth.users(id) on delete cascade`;
+- `endpoint_hash text unique not null`; encrypted provider endpoint/key material or a documented
+  equivalent at-rest protection approved before S6;
+- `created_at`, `last_seen_at`, `revoked_at`.
+
+Push subscription material is sensitive and is not exposed through the Data API. Browser subscribe,
+revoke and list-status operations use narrow caller-bound server functions/RPCs; no endpoint or key is
+returned after storage. A user can revoke only their own subscription. Expired/410 subscriptions are
+revoked automatically.
+
+### Notification event matrix for Phase 4
+
+Initial connected triggers are limited to existing durable transitions:
+
+- `community_joined` — on a changed join, dedupe by membership ID/status transition;
+- `course_enrolled` — on a changed enrolment, dedupe by enrollment ID;
+- `lesson_completed` — optional and default-off to avoid noise, dedupe by completion ID;
+- `system` — only through a privileged, audited server path; not exposed to ordinary users.
+
+Comments, mentions, new creator content and event reminders remain fixture-labelled/deferred until the
+owning Phase 5 data exists.
+
+### Lifecycle and retention
+
+- read notifications: delete after 180 days; unread notifications: delete after 365 days;
+- revoked/stale push subscriptions: delete after 90 days;
+- Redis counters: TTL equals the policy window plus bounded clock tolerance; never durable;
+- Resend Free plan provider logs: currently 30 days; no email body is copied into project logs;
+- Telegram feedback: operational channel deletion review every 90 days; no duplicate durable project
+  copy in this phase. This retention must be operationally feasible before S4 is enabled.
+
+Retention jobs are not invented without an approved scheduler. If no safe scheduler exists, keep the
+feature disabled and record the blocker.
+
+## 5. API, provider and adapter contracts
+
+### Auth email boundary
+
+Supabase Auth remains responsible for confirmation/recovery token generation and consumption. Resend is
+configured as Supabase custom SMTP (host `smtp.resend.com`, port 465, username `resend`, scoped API key as
+password) through the approved Supabase configuration path. The application uses its existing Auth
+repository/service boundary to request password recovery. It does not handle raw SMTP or generate Auth
+links with an admin key.
+
+Application-originated email, if approved later in Phase 4, uses a separate server-only
+`EmailProvider.send()` adapter and Resend API implementation with idempotency; do not build it before an
+actual event and delivery/retry contract exist.
+
+### Rate limiter
 
 ```text
-EmailProvider.send({ to, subject, html, text, idempotencyKey }) -> { ok, providerMessageId? }
-RateLimiter.consume({ key, limit, windowSeconds }) -> { allowed, remaining, resetAt }
-PushProvider.send({ subscriptions, payload }) -> { ok, failed[] }
-ObjectStore.put/getSignedUrl/delete({ key, ... }) -> { ... }   // conditional S6 only
+RateLimiter.consume({ policy, subjectHash, now })
+  -> { allowed, remaining, retryAfterSeconds, limit }
 ```
 
-Implementations:
+- `subjectHash` is an HMAC/one-way derived key; raw email, IP or user ID is not stored in Redis keys.
+- Connected staging proposes Upstash Redis REST because it is fetch-compatible with Cloudflare/workerd.
+- Commands are atomic (provider-supported rate-limit algorithm/script); no read-then-write race.
+- Provider failure is policy-specific: auth/password/feedback fails closed with a short safe unavailable
+  response after the local emergency guard; ordinary authenticated learning reads do not depend on Redis.
+- Responses include safe `Retry-After`; logs contain policy and request ID, never the raw subject.
 
-- `resend` (email), `memory` (local/fixture email = record, never send);
-- `redis` (rate limit), `memory` (local in-memory limiter);
-- `web-push` (push), `memory` (local no-op);
-- `r2` (objects), `memory` (local no-op) — conditional.
+### Notifications
 
-Trust boundaries: browser → server functions (existing CSRF/origin/session checks) → adapter → provider.
-Providers are called only from server code. Webhook endpoints (if any, e.g. email delivery events) verify
-signatures and are idempotent.
+Repositories and services mirror Phase 3A boundaries. DTOs expose only display-safe fields. Server
+functions validate keyset cursors and bounded limits. Mutations invalidate the smallest relevant loader.
 
-Errors/retries/timeouts: provider calls have timeouts, bounded retries with backoff, and a circuit-breaker
-style "fail safe" that degrades to the safe state; a failed email never blocks the user flow it belongs
-to; a failed push send never fails the triggering request.
+### Feedback
 
-Pagination/filtering: notifications are paginated and bounded; preferences/push are single-object reads.
+```text
+FeedbackProvider.submit({ text, route, pseudonymousUserId?, occurredAt, requestId })
+  -> { accepted, providerReference? }
+```
 
-Rate limits and abuse controls: per-IP and per-account limits on auth, join/enrol, and notification
-actions; limits are configured values, not magic numbers, and are recorded.
+Telegram is one implementation; memory is deterministic for unit/local tests. Provider secrets and chat
+IDs are server-only. Telegram failure is mapped to the existing safe `UNAVAILABLE` contract.
 
-Version/backward compatibility: adapters are internal; adding a provider must not change route contracts.
+### Push
 
-Provider constraints/costs: confirm against current official documentation at implementation time.
+```text
+PushProvider.send({ subscriptionRef, payload })
+  -> { delivered, terminalFailure, retryableFailure }
+```
 
-## 6. Security and privacy
+Payloads contain a generic title/body and allowlisted internal path only—no protected lesson content or
+sensitive personal data. The provider implementation must pass a Cloudflare-module/workerd build and
+runtime smoke before adoption; adding a Node-only package that builds but fails at runtime is a gate
+failure.
 
-- **Permission matrix:** notifications/preferences/push are owner-only; no public read; admin/ops access
-  is server-side and audited.
-- **Enforcement points:** RLS policies for owner scope; server functions re-check `auth.uid()`; adapter
-  credentials live only in server env.
-- **Secrets (ADR-017):** names only, stored in ignored local env or the approved platform secret store;
-  never in chat, source control, docs, logs or the client bundle. Candidate names:
-  `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `APP_BASE_URL`,
-  `REDIS_URL` (and `REDIS_TOKEN` if required),
-  `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`,
-  and for conditional S6: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`,
-  `R2_ENDPOINT`.
-- **Safe missing-config behavior:** server functions detect missing provider config and return an explicit
-  "not configured" state; they never silently fall back to fixtures after a configured provider fails,
-  and never claim an email/push was delivered when it was not.
-- **Input validation / output encoding:** validate email/URL/endpoint inputs; encode user content in HTML
-  email bodies; never render unsanitized user content into email.
-- **Sensitive data:** minimize PII; push endpoints are treated as sensitive; logs redact addresses,
-  tokens and endpoints.
-- **Audit:** privileged sends and preference changes produce audit events; push/email failures are logged
-  without PII.
-- **Privacy/safeguarding:** consent for notifications; clear opt-out; no marketing email in this phase.
-- **Threats:** email header injection, open-relay abuse, push endpoint spoofing, notification spam,
-  rate-limit bypass, SSRF via resource fetches, secret leakage via error messages.
+### Conditional objects
 
-## 7. Scale and performance envelope
+`ObjectStore` is not implemented until S7 has a concrete object contract. Any signed URL has a short
+TTL, exact object/owner binding, private-by-default bucket and denial tests. No public bucket workaround.
 
-Targets are stated for the **pre-production/staging envelope** and must be measured, not assumed. The
-long-term direction is millions of registered accounts over time, not millions of concurrent users.
+## 6. Security and privacy contract
 
-- registered accounts at first staging: bounded test accounts only;
-- peak concurrent sessions: measured during staging, not claimed;
-- email volume: bounded by auth events and explicit notification triggers; provider rate limits enforced;
-- push: bounded by consented subscribers; fan-out is chunked and idempotent;
-- rate limiting: Redis holds short-lived counters only; never a durable source of truth;
-- latency budgets: notification read APIs p95 ≤ 300 ms, p99 ≤ 800 ms on the documented environment;
-  email/push sends are asynchronous or non-blocking relative to the user request;
-- overload behavior: rate limits shed load gracefully with `429`; email/push failures degrade safely;
-- scaling triggers: if notification/push volume or rate-limit QPS exceeds the measured envelope, add
-  indexing, batching or a queue boundary before raising limits;
-- cost: provider free/low tiers for staging; production budget is a separate founder decision.
+- Preserve existing request ID, CSRF/origin, safe-error, cookie and no-store boundaries.
+- No direct vendor imports in routes/client components. No secret-prefixed `VITE_` variable.
+- Candidate server-only names:
+  - app email (only if approved later): `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`;
+  - Redis REST: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`,
+    `RATE_LIMIT_KEY_SECRET`;
+  - Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_FEEDBACK_CHAT_ID`;
+  - web push: `VAPID_PUBLIC_KEY` (public), `VAPID_PRIVATE_KEY` (server-only), `VAPID_SUBJECT`;
+  - conditional R2: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`,
+    `R2_ENDPOINT`.
+- Supabase custom SMTP credentials live in Supabase Auth configuration, not browser/application config.
+- Setup checks report missing variable names and provider state only; never values.
+- Logs redact email, IP, feedback text, Telegram identifiers, push endpoints/keys and provider bodies.
+- Safe errors do not reveal account existence, row IDs, SQL/constraints, provider credentials or stack
+  traces.
+- Rate-limit keys are unguessable and environment/policy scoped. Trusted client-IP derivation is
+  documented for the actual Cloudflare deployment; do not trust arbitrary forwarding headers locally.
+- Push/feedback consent and privacy copy are required before remote enablement.
+- Webhook endpoints, if introduced, verify signatures over raw bodies, reject replay and are idempotent.
+- Dependencies are reviewed/pinned before addition; prefer platform/fetch APIs where maintainable.
 
-**Note:** the deferred Wave 5 rehearsal (ADR-041) must complete before any Phase 4 load or scale claim.
+Threat cases to test: account enumeration, recovery redirect abuse, email flooding, rate-limit race and
+bypass, forwarded-header spoofing, notification BOLA/IDOR, arbitrary notification injection, open
+redirect in `href`, stored script content, Telegram injection/oversharing, push endpoint theft,
+subscription reassignment, stale service-worker cache disclosure, and secret/client-bundle leakage.
 
-## 8. Reliability and operations
+## 7. Scale, performance and cost envelope
 
-- dependency failure modes: provider outage → safe degradation, no blocked core flows;
-- timeouts/retries/circuit breaker: bounded retries with backoff; stop after threshold; surface safe error;
-- backup/recovery: Phase 3A database backup/recovery posture applies; new tables inherit it; the deferred
-  restore rehearsal must cover the new tables before launch;
-- logs/metrics/traces: structured logs with correlation IDs; counts for sent/failed/rate-limited;
-- SLIs/alerts: email failure rate, push failure rate, rate-limit rejection spikes;
-- runbooks: setup/health check for each adapter; how to rotate each secret; how to disable a provider;
-- rollout/rollback: feature-flag each provider (config presence = enabled); roll back by removing config
-  and reverting adapter wiring; additive migrations only;
-- cost guardrails: alerting on provider usage; hard caps where the provider supports them.
+This is a pre-production envelope, not a production capacity claim. ADR-041 Wave 5 must run before any
+staging load test, public launch or scale claim.
+
+- notification list: default 20/max 50; unread count is a bounded indexed aggregate;
+- notification API target on documented staging: p95 ≤300 ms, p99 ≤800 ms; no target is claimed until
+  measured;
+- provider calls have explicit timeouts (initial proposal: 3 seconds Redis/Telegram, 5 seconds email or
+  push), one bounded retry only for safe/idempotent transient failure, and no unbounded fan-out;
+- push/email fan-out is chunked and moves behind an approved durable job boundary before bulk sends;
+- Resend current Free plan (checked 11 Nov 2026): 3,000 transactional emails/month, 100/day, one webhook
+  endpoint, 30-day provider retention; verified domain required. Pro begins at $20/month for 50,000;
+- Upstash Redis current Free plan (checked 11 Nov 2026): 500,000 commands/month, 250 MB, 10 GB bandwidth,
+  one database, no SLA/access logs/at-rest encryption. It is acceptable only for pre-production. PAYG is
+  currently $0.20/100,000 commands and supports a monthly budget cap;
+- Web Push has no message provider fee but incurs application/runtime traffic;
+- Telegram Bot API has no planned provider spend; privacy/operational cost still applies;
+- R2 pricing and exact limits are researched only if S7 is approved.
+
+Cost guardrails: free tier by default, overages disabled, usage checked during active development,
+50/75/90% alerts where available, and no paid upgrade without founder approval.
+
+## 8. Reliability, recovery and operations
+
+- **Core-flow rule:** notification/feedback/push failure must not corrupt join/enrol/complete. Account
+  recovery correctly reports temporary unavailability if Auth/email cannot accept the request.
+- **RPO/RTO:** for pre-production, target database RPO ≤24 hours and RTO ≤4 hours after an approved
+  backup plan exists. These are unproven targets—not guarantees—and remain launch blockers until the
+  ADR-041 restore rehearsal covers Phase 4 tables. Redis has no RPO because counters are disposable.
+- **Observability:** structured counts/latency for accepted/failed/throttled provider calls, request IDs,
+  unread query latency, service-worker version and subscription churn; no PII in metrics.
+- **Health/setup:** one command reports adapters as `ready`, `missing`, `disabled` or `unhealthy`
+  without printing credentials.
+- **Runbooks:** configure/verify/disable/rotate each provider; bounce/suppression response; Redis outage;
+  Telegram outage; push 404/410 cleanup; service-worker rollback; retention/deletion procedure.
+- **Rollout:** explicit per-slice feature flag plus validated config; configuration presence alone does
+  not imply enabled. Start with founder-controlled fictional accounts.
+- **Rollback:** disable the flag/provider, preserve durable rows, revert UI wiring, then use a reviewed
+  forward migration if schema removal is ever necessary. Do not drop populated tables as routine
+  rollback.
 
 ## 9. Verification plan
 
-- unit tests for each adapter's success/failure/missing-config behavior (no real network);
-- contract tests for `EmailProvider`, `RateLimiter`, `PushProvider`, `ObjectStore`;
-- RLS/authorization allow/deny tests for notifications/preferences/push (owner-only);
-- integration tests against the local stack (or, if approved, pre-production) for the notification read
-  path and rate limiting;
-- browser checks for the notifications surface, preferences, and consent/denied-permission push states
-  across desktop/tablet/mobile;
-- accessibility checks for notifications and toggles;
-- PWA installability check (manifest, service worker, Lighthouse installability where available);
-- rate-limit behavior tests including `429` and no account-existence leak;
-- a redacted health/setup checker that reports missing variable **names** without printing values;
-- final diff/changed-path review and an independent review for the provider/security boundary.
+### Every slice
+
+```text
+bun run test:unit
+bun run typecheck
+bun run lint
+bun run verify:client-boundary
+bun run build
+git diff --check
+git status --short
+```
+
+Run the independent fixture regression at each slice promotion point. Run connected browser tests at
+desktop/tablet/mobile for changed user journeys. Record exact commit, tool versions and redacted evidence
+under `docs/evidence/phase-4/<run-id>/`.
+
+### P4-S1
+
+- unknown/known email have the same response;
+- malformed/missing/cross-origin requests fail safely;
+- only approved recovery redirects survive;
+- expired/replayed/malformed recovery links fail; parameters are stripped;
+- real staging confirmation and recovery email arrive through Resend after separate remote approval;
+- no token/address/provider response is logged or stored in evidence.
+
+### P4-S2
+
+- memory/Redis contract tests use the same policy fixtures;
+- concurrent requests cannot exceed the approved allowance through a race;
+- TTL/reset/`Retry-After`, fail-closed/fail-open policy and subject hashing pass;
+- no raw email/IP/user ID appears in provider keys or logs;
+- forced provider outage produces the documented behavior.
+
+### P4-S3
+
+- migration/constraint/grant/default-ACL/RLS allow-deny tests;
+- user B sees/updates zero user-A notifications/preferences;
+- arbitrary user insert/content/user reassignment fails;
+- duplicate event produces one notification; transition + notification is atomic where specified;
+- keyset pages have no gaps/duplicates; unread count/read/all-read persistence survives reload;
+- `EXPLAIN (ANALYZE, BUFFERS)` after representative data for list/unread/preference queries (after the
+  ADR-041 capacity gate is available; until then record non-analyze plans and no capacity claim).
+
+### P4-S4
+
+- length/route validation, injection-safe formatting, anonymous/authenticated limits;
+- memory provider unit tests and one founder-controlled Telegram staging message after approval;
+- forced provider failure preserves text and offers retry without duplicate success;
+- output proves no cookie/token/email/protected content was transmitted.
+
+### P4-S5/S6
+
+- manifest installability and owned icon checks;
+- service-worker cache allowlist test proves authenticated/API/server-function/protected responses are
+  never cached; update/unregister rollback test;
+- supported/unsupported/denied/dismissed/revoked push states;
+- workerd production-runtime smoke; invalid subscription cleanup; permission requested only on gesture;
+- accessibility and reduced-bandwidth checks.
 
 ## 10. Acceptance and handoff
 
-Exit criteria (proposed):
+Phase 4 is accepted only when all approved slices—not conditional/deferred slices—meet their gates:
 
-- each implemented slice works with its provider configured and degrades safely without it;
-- no secret or provider implementation appears in the client bundle (`verify:client-boundary` passes);
-- owner-only RLS verified with positive and negative tests;
-- notifications, preferences, PWA and (if approved) push verified in the browser on all three viewports;
-- evidence recorded under `docs/evidence/phase-4/<run-id>/` as redacted `summary.md` + `manifest.json`;
-- remaining limitations and deferred items documented (including the ADR-041 Wave 5 precondition).
+- provider adapters/configuration fail safely and never silently substitute fixtures;
+- owner-only data access and cross-account denial are verified;
+- no provider secret/implementation leaks into the client bundle;
+- connected and fixture browser suites remain independent and green;
+- accessibility/mobile/degraded states pass;
+- remote actions and costs match explicit approvals;
+- runbooks and redacted evidence exist;
+- unresolved items, including ADR-041 Wave 5 and any deferred push/R2 slice, are explicit;
+- final diff/security review passes.
 
-Evidence locations: `docs/evidence/phase-4/`. Durable decisions: `docs/DECISIONS.md`.
+Phase 4 acceptance does not authorize production deployment or real customer data.
 
-## 11. Required founder decisions and provider-account request
+## 11. Provider/account decisions required
 
-To implement Phase 4, the founder must approve this plan and provide/authorize the accounts below. Names
-are variables only; no secret value is requested in chat.
+| Slice | Proposed provider | Current pre-production posture | Remote action requiring approval | Rollback |
+|---|---|---|---|---|
+| S1 Auth email | Resend SMTP through Supabase Auth | Free plan; verified business domain required | Create/approve Resend account/key/domain and update THE SCENES Auth SMTP | Restore disabled/custom SMTP config; keep safe no-send/local path |
+| S2 rate limiting | Upstash Redis REST | Free plan, pre-production only; no SLA/at-rest encryption | Create business-controlled DB, configure scoped REST credentials | Disable Redis flag; memory limiter remains for local/fixture only |
+| S3 notifications | THE SCENES Supabase | Additive migration on pre-production | Apply reviewed migration after dry run | Disable connected feature; preserve rows; forward-fix schema |
+| S4 feedback | Telegram Bot API | Replaceable internal alert channel | Create bot/chat and send founder-controlled test | Disable Telegram flag; memory provider/local form remains |
+| S5 PWA | Web standards | No provider | None until deployment | Unregister service worker and remove manifest link |
+| S6 push | Web Push/VAPID after workerd proof | No paid provider; browser consent | Store VAPID secret and a founder-controlled subscription | Disable push; revoke/delete subscriptions |
+| S7 objects | Cloudflare R2 (conditional) | Not approved | Separate object/cost/access request | Disable object feature; delete only explicitly approved test objects |
 
-| Capability | Provider (proposed) | Variables (names only) | Cost/impact | Verification | Rollback |
-|---|---|---|---|---|---|
-| Transactional email | Resend (ADR-010) | `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `APP_BASE_URL` | free/low tier; sending to real addresses is a side effect | health check + one real confirmation/reset in staging | remove config → adapter falls back to safe no-send |
-| Rate limiting | Redis-compatible (e.g. Upstash) | `REDIS_URL`, `REDIS_TOKEN` | free/low tier | throttle test returns `429`; counters expire | remove config → in-memory limiter |
-| Web push | Standards Web Push (VAPID) | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | free; browser permission required | consented subscribe → receive → unsubscribe | disable push; delete subscription rows |
-| PWA | none (standard) | none | none | installability/Lighthouse | remove service worker/manifest |
-| Objects (conditional S6) | Cloudflare R2 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT` | pay-as-you-go; ADR-029 limits scope | signed URL + access-control test | remove config → adapter no-op |
-
-Decisions needed:
-
-1. Approve this plan (or amend scope) — section 12.
-2. Approve which slices to build first (recommend S1 → S2 → S3 → S4/S5; S6 only if needed).
-3. Approve the provider accounts and where the secrets live (ignored local file / approved secret store).
+No secret is pasted in chat or committed. The founder places it in an ignored local environment file or
+the approved provider/platform secret store; the agent verifies presence/behavior without printing it.
 
 ## 12. Approval record
 
 ```text
-Planning status: REVIEWED (drafted 11 November 2026)
+Planning status: REVIEW
 Founder approval: NOT APPROVED
-Approved scope version/date:
-Approved first vertical slice:
+Reviewed scope version/date: Phase 4 revision 2 / 11 November 2026
+Proposed first vertical slice: P4-S1 — Account email and password recovery
 Production actions authorized: NONE
-Known blockers: Phase 3A Wave 5 capacity/recovery evidence deferred (ADR-041);
-                provider accounts not yet created;
-                current official provider documentation to be re-checked at implementation time.
-Required re-review triggers: any provider/scope change; any request for production, payment or
-                live-customer action; a load/scale claim; the ADR-041 Wave 5 precondition being triggered.
+Remote pre-production actions authorized: NONE until explicitly approved per slice
+Known blockers:
+- ADR-041 Wave 5 capacity/recovery evidence is deferred and blocks load/launch/scale claims.
+- Provider accounts, domain and credentials are not approved/configured.
+- S6 requires a Cloudflare/workerd Web Push compatibility proof.
+- S7 has no approved concrete object use case.
+Required re-review triggers:
+- provider, data model, retention, hosting/runtime or scope change;
+- production, deployment, real-customer, payment, native creator-file or paid action;
+- a load/scale/restore claim or the ADR-041 Wave 5 gate becoming executable.
 ```
 
-When the founder approves, copy the approval into this record and update `docs/PROJECT-STATUS.md` and
-`docs/PHASES.md`. Chat approval alone is not durable approval.
+Founder approval must name the approved revision, first slice and remote/provider permissions. Copy that
+decision into this record, `docs/DECISIONS.md`, `docs/PROJECT-STATUS.md` and `docs/PHASES.md` before
+implementation.
+
+## 13. Current authoritative references checked
+
+- Supabase changelog (checked 11 Nov 2026), including CLI v3 local-by-default/remote confirmation,
+  public-table Data API opt-in, and Free-plan Auth template customization changes:
+  <https://supabase.com/changelog.md>;
+- Supabase security/RLS guidance and this repository's Phase 3A authorization patterns:
+  <https://supabase.com/docs/guides/database/postgres/row-level-security>;
+- Resend Supabase SMTP guide and pricing (checked 11 Nov 2026):
+  <https://resend.com/docs/send-with-supabase-smtp>, <https://resend.com/pricing>;
+- Upstash Redis pricing/security capabilities (checked 11 Nov 2026):
+  <https://upstash.com/docs/redis/overall/pricing>;
+- MDN PWA installability guide (updated 6 Oct 2026):
+  <https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable>.
+
+Re-check official documentation immediately before implementation; this list is evidence of planning,
+not permission or a substitute for runtime verification.

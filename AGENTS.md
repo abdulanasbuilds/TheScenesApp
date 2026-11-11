@@ -47,17 +47,24 @@ The platform may use Skool, Circle, Kajabi, and other products as references for
 
 ## Current stage
 
-**Phase 2 fixture frontend accepted; Phase 3A Wave 0 is complete and Wave 1 is implemented but awaits
-its live local database gate. Lean build + staging mode is founder-approved.**
+**Phase 2 fixture frontend and the Phase 3A learning vertical slice (Waves 1–4) are accepted. Wave 5
+capacity/recovery evidence is formally deferred under ADR-041. Phase 4 is in Review and is not approved
+for implementation.**
 
-The frontend design gate and Phase 3A local-isolation Wave 0 have passed. Wave 1 migrations, security
-rules, commands, seed and tests exist and passed static checks, but they are not accepted until the
-documented live local database and integration gate passes.
+Phase 3A's 18 migrations, local/live database gates, Auth/security boundary, hosted pre-production
+confirmation journey, RLS access matrix and connected catalogue/learning slice have passed their
+recorded gates. Wave 5's representative-data load, burst/recovery, restore and portability rehearsal is
+not executed; it remains mandatory before any staging load test, public launch or scale claim.
 
 On 6 November 2026 the founder selected a lean integration-ready workflow: finish the minimum local
 security proof once, build approved vertical slices without repeated speculative review, and request a
 fresh business-controlled staging capability only when the relevant integration is ready to connect.
 See ADR-040 and `docs/PROJECT-STATUS.md`.
+
+On 9 November 2026 the founder accepted the Phase 3A learning slice with Wave 5 deferred and opened
+Phase 4 for planning only (ADR-041). `docs/PHASE-4-PLAN.md` revision 2 is ready for founder review but
+is not approved. No Phase 4 implementation or provider action begins until its approval record names
+the first slice and exact remote permissions.
 
 Agents MUST NOT:
 

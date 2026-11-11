@@ -208,10 +208,11 @@ old code, placeholder routes or provider documentation never counts as approval.
 ## Current application
 
 - Phase 2 was accepted on 4 November 2026.
-- Phase 3A remains a proposed bounded local Supabase proof and first learning slice.
-- Five independent reviews rejected revision 2 as implementation authority. The founder approved
-  revision 3's six product rules and isolated local implementation on 5 November 2026. Final technical
-  re-review and clean-install/local-isolation gates remain before a wave starts. Legacy hosted
-  accounts/credentials are permanently forbidden and their revocation/deletion/log review remains a
-  separate incident action and hosted/production blocker.
-- No hosted Supabase project, credentials or production integration is currently authorized.
+- Phase 3A revision 3 Waves 1–4 are implemented and the learning vertical slice is accepted. Wave 5
+  capacity/recovery evidence is deferred by founder decision under ADR-041 and remains a mandatory
+  pre-launch/load/scale gate.
+- THE SCENES Supabase project (`okdzuqgzgnmmbtjxdaci`) is the designated pre-production/final project;
+  this is not production or deployment authorization. Old accounts/credentials remain forbidden.
+- Phase 4 revision 2 is in Review. `docs/PHASE-4-PLAN-REVIEW.md` records the completeness review.
+  Founder approval, first-slice selection and exact provider/remote permissions are still required
+  before implementation.

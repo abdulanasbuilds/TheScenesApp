@@ -414,5 +414,5 @@ Consequences:
 - Re-review triggers: Docker becomes available; credit allows building the harness; a staging resource
   is proposed; a load, recovery or scale claim is requested.
 
-Durable record: `docs/PROJECT-STATUS.md` (current checkpoint) and
-`docs/PHASE-4-PLAN.md` (drafting under the planning gate).
+Durable record: `docs/PROJECT-STATUS.md` (current checkpoint), `docs/PHASE-4-PLAN.md` revision 2 and
+`docs/PHASE-4-PLAN-REVIEW.md` (ready for founder review; not approved for implementation).

@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 11 November 2026
-**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 (email/files/notifications) opened in Planning only
+**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 is in Review and is not approved for implementation
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -58,7 +58,8 @@ These are milestone estimates, not percentages generated from lines of code:
 - hosted deterministic fictional catalogue loaded after founder authorization and exact dry run;
 - Wave 4 RLS/access/idempotency/leave-rejoin matrix passed in rolled-back hosted transactions;
 - hosted public browser acceptance: 12 checks passed across desktop, tablet, and mobile;
-- fresh fixture regression: 26 passed, 4 intentional duplicate viewport skips, 0 failed;
+- fresh fixture regression: 26 passed, 16 expected skips (12 hosted-only connected checks plus 4
+  duplicate viewport route checks), 0 failed;
 - Wave 5 query plans: all 5 core Wave 4 application queries use index scans with no sequential
   scan observed on the hosted pre-production database.
 
@@ -93,14 +94,16 @@ private audit table. Every expected table has RLS enabled. The founder-authorize
 fictional catalogue is loaded; it contains no seeded learner, customer, payment, membership, enrolment,
 or completion. No production deployment is claimed.
 
-## Latest verified checks — 7 November 2026
+## Latest verified checks — 11 November 2026
 
 - focused environment/server-boundary tests: **40 passed, 0 failed**;
 - complete unit suite: **177 passed, 0 failed**;
 - TypeScript check: passed;
-- ESLint: passed after one formatting-only correction in the new cookie test;
+- ESLint: passed;
 - production application build: passed;
 - client/server boundary scan: passed;
+- dependency audit: no reported vulnerabilities across 505 packages after the repository's one explicit
+  advisory exception;
 - `git diff --check`: passed;
 - hosted-mode browser checks: unauthenticated onboarding/settings redirect safely, no fixture identity
   appears, confirmation parameters are stripped, unsafe return paths are normalized, and no console or
@@ -109,7 +112,8 @@ or completion. No production deployment is claimed.
   return, post-confirmation login and onboarding all passed;
 - Wave 5 query plans: 5 core queries confirmed to use index scans, no sequential scan, on hosted
   pre-production database via MCP `EXPLAIN (FORMAT JSON)`;
-- fresh fixture browser regression: **26 passed, 4 intentional duplicate viewport skips, 0 failed**;
+- fresh fixture browser regression (11 November review tree): **26 passed, 16 expected skips, 0
+  failed**; 12 skips are the hosted-only connected suite and 4 are duplicate viewport route checks;
 - hosted public connected browser suite: **12 passed, 0 failed** across all three viewports;
 - rolled-back hosted access matrix: join/enrol/complete, cross-user isolation, private concealment,
   idempotency, leave lock, history preservation, and rejoin restoration passed.
@@ -172,12 +176,13 @@ The founder approved this mode on 6 November 2026:
 
 Phase 3A Waves 1–4 are accepted; the Wave 5 capacity/recovery rehearsal is deferred under ADR-041.
 
-The next step is Phase 4 **planning** under `docs/PHASE-PLANNING-GATE.md`:
+The next step is Phase 4 **founder review/approval** under `docs/PHASE-PLANNING-GATE.md`:
 
-1. review and approve `docs/PHASE-4-PLAN.md` (email, files, notifications, PWA/web push, rate limiting);
-2. decide the provider accounts (Resend, a Redis-compatible store, PWA/web push, and any separately
-   approved R2 objects);
-3. implement only after explicit approval, one vertical slice at a time.
+1. review `docs/PHASE-4-PLAN.md` revision 2 and `docs/PHASE-4-PLAN-REVIEW.md`;
+2. approve/amend the first slice (recommended P4-S1 account email/password recovery);
+3. decide provider accounts and exact remote permissions (Resend, Upstash Redis REST, Telegram, VAPID;
+   R2 remains conditional);
+4. copy approval into durable records, then implement one vertical slice at a time.
 
 The deferred Wave 5 rehearsal must run before any staging load test or public launch.
 
@@ -195,11 +200,11 @@ The deferred Wave 5 rehearsal must run before any staging load test or public la
 
 ## Checkpoint state
 
-- Founder input needed: **review and approve `docs/PHASE-4-PLAN.md` and the Phase 4 provider accounts;
+- Founder input needed: **review and approve Phase 4 revision 2 and the first-slice/provider permissions;
   the deferred Wave 5 rehearsal still needs Docker/credit before any staging load test or public
   launch**;
-- working tree: Wave 4 hosted integration committed at `fdc5c8f`; Phase 3A acceptance + Phase 4 planning
-  documentation in progress;
+- working tree: Wave 4 hosted integration committed at `fdc5c8f`; Phase 3A acceptance committed at
+  `7e97d37`; Phase 4 revision-2 review documentation is the current uncommitted change set;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;

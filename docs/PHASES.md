@@ -1,15 +1,15 @@
 # The Scenes — Build Phases
 
-## Current implementation checkpoint — 6 November 2026
+## Current implementation checkpoint — 11 November 2026
 
 The founder accepted the complete fixture-backed frontend on 4 November 2026. **Phase 2 is accepted.**
 All 30 requested primary route types are implemented; the current baseline passes 26 Playwright checks
 with 4 intentional duplicate viewport skips.
 
-Phase 3A Wave 0 subsequently passed its clean-install, environment and loopback-isolation gates. Wave
-1 now contains 18 migrations, deterministic seed data, database security/command tests and local gate
-tooling. Its static checks pass, but its live local database gate has not run, so **Wave 1 is not yet
-accepted**. See `docs/PROJECT-STATUS.md` and the Wave 1 evidence record.
+Phase 3A Waves 1–4 subsequently passed their recorded migration, database, Auth/security, RLS,
+connected-application and browser gates. The learning vertical slice is accepted. Wave 5's capacity,
+recovery and portability rehearsal is deferred under ADR-041 and remains mandatory before any staging
+load test, public launch or scale claim. See `docs/PROJECT-STATUS.md` and Phase 3 evidence records.
 
 On 6 November 2026 the founder selected **lean build + staging** mode under ADR-040. The project will
 finish each essential local safety gate once, build the already-approved learning journey as a useful
@@ -21,8 +21,9 @@ On 9 November 2026 the founder accepted the **Phase 3A learning vertical slice**
 formally deferred the Wave 5 capacity/recovery rehearsal under **ADR-041**. Phase 3A is therefore
 **accepted with deferred capacity evidence**; the rehearsal remains a mandatory precondition before any
 staging load test, public launch, or scale claim. **Phase 4 (email, files, notifications) is now in the
-Planning state only** and is defined by `docs/PHASE-4-PLAN.md`, which must pass the phase planning gate
-and receive founder approval before any implementation. See `docs/PROJECT-STATUS.md`.
+Review state only** and is defined by `docs/PHASE-4-PLAN.md` revision 2 plus
+`docs/PHASE-4-PLAN-REVIEW.md`. The plan has passed an internal completeness review but requires founder
+approval before implementation or provider action. See `docs/PROJECT-STATUS.md`.
 
 ## Mandatory planning gate — every phase
 
@@ -156,16 +157,17 @@ Introduce:
 
 ## Phase 4 — Email, files, notifications
 
-**Status:** Planning only (opened 9 November 2026, ADR-041). Specification: `docs/PHASE-4-PLAN.md`.
-No implementation until the plan passes `docs/PHASE-PLANNING-GATE.md` and the founder approves scope
-and provider accounts.
+**Status:** Review only (revision 2 reviewed 11 November 2026; not founder-approved). Specification:
+`docs/PHASE-4-PLAN.md`; review: `docs/PHASE-4-PLAN-REVIEW.md`. No implementation until the founder
+approves the revision, first slice and exact provider/remote permissions.
 
 Introduce:
 
 - R2 only for separately approved, narrow platform-managed objects; not native creator hosting;
 - Resend;
 - PWA/web push where appropriate;
-- Redis rate limiting.
+- Redis rate limiting;
+- replaceable Telegram feedback channel.
 
 ## Phase 5 — Teacher/creator operations
 
