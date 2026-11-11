@@ -9,7 +9,9 @@ import { waitForApp } from "./helpers";
  * network call. Connected recovery behaviour is verified separately under explicit approval.
  */
 
-test("forgot-password validates the address and never claims an email was sent", async ({ page }) => {
+test("forgot-password validates the address and never claims an email was sent", async ({
+  page,
+}) => {
   await page.goto("/forgot-password");
   await waitForApp(page);
 
