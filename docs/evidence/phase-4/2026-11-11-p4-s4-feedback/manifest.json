@@ -1,0 +1,94 @@
+{
+  "runId": "2026-11-11-p4-s4-feedback",
+  "date": "2026-11-11",
+  "phase": 4,
+  "slice": "P4-S4",
+  "title": "Replaceable feedback channel",
+  "approval": {
+    "decision": "ADR-044",
+    "date": "2026-11-11",
+    "scope": "code/local only",
+    "remoteActions": "NONE",
+    "providers": "NONE",
+    "deployment": false,
+    "realCustomerData": false
+  },
+  "target": {
+    "kind": "local-code-and-fixture-browser",
+    "supabaseProjectContacted": false,
+    "providerContacted": false,
+    "botCreated": false,
+    "messageSent": false
+  },
+  "providers": [
+    {
+      "name": "memory",
+      "selectedBy": "FEEDBACK_PROVIDER unset (default)",
+      "deliveryState": "local-preview",
+      "claimsHumanReceived": false
+    },
+    {
+      "name": "telegram",
+      "selectedBy": "FEEDBACK_PROVIDER=telegram",
+      "variables": ["TELEGRAM_BOT_TOKEN", "TELEGRAM_FEEDBACK_CHAT_ID"],
+      "incompleteBehavior": "misconfigured + UNAVAILABLE (fails closed)",
+      "silentFallbackToMemory": false
+    }
+  ],
+  "errorCodes": [
+    "UNAUTHENTICATED",
+    "FORBIDDEN",
+    "NOT_FOUND",
+    "CONFLICT",
+    "RATE_LIMITED",
+    "UNAVAILABLE"
+  ],
+  "validation": {
+    "messageBounded": true,
+    "categoryEnum": true,
+    "contactOptional": true,
+    "honeypot": true,
+    "routeRestrictedToSafeInternalPath": true,
+    "rateLimitPolicy": "feedback"
+  },
+  "routeEcho": {
+    "source": "useRouterState(state => state.location.href)",
+    "reason": "location.search is an object and would stringify as [object Object]"
+  },
+  "verification": {
+    "sliceTestsPassed": 14,
+    "sliceTestsFailed": 0,
+    "unitPassed": 264,
+    "unitFailed": 0,
+    "unitFiles": 23,
+    "typecheck": true,
+    "lint": true,
+    "clientBoundary": true,
+    "productionBuild": true,
+    "fixtureSuite": "shared-final-run",
+    "fixturePassed": 32,
+    "fixtureSkipped": 16,
+    "fixtureFailed": 0,
+    "diffCheck": true
+  },
+  "security": {
+    "criticalFindings": 0,
+    "highFindings": 0,
+    "tokenClientVisible": false,
+    "openRedirectPreventedBy": ["schema-safe-internal-path"],
+    "failsClosedWhenMisconfigured": true
+  },
+  "toolVersions": {
+    "bun": "1.4.4",
+    "node": "v26.12.1",
+    "typescript": "5.9.3",
+    "playwright": "1.64.1"
+  },
+  "notRun": [
+    "Telegram bot creation and a real internal message",
+    "provider account or hosted project mutation",
+    "deployment",
+    "ADR-041 Wave 5 capacity/recovery rehearsal (deferred)"
+  ],
+  "containsSensitiveMaterial": false
+}

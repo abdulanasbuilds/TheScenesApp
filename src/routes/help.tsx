@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, type FormEvent } from "react";
+import { createFileRoute, useRouterState } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import {
   ArrowRight,
   Bell,
@@ -10,25 +10,14 @@ import {
   LockKeyhole,
   Mail,
   Search,
-  Send,
   ShieldCheck,
   Sparkles,
   TriangleAlert,
   UserRound,
 } from "lucide-react";
 import { PublicShell } from "@/components/layout/public-shell";
-import {
-  Badge,
-  Button,
-  Card,
-  Chip,
-  EmptyState,
-  Field,
-  Input,
-  Select,
-  Textarea,
-  buttonClass,
-} from "@/components/ui";
+import { Badge, Button, Card, Chip, EmptyState, buttonClass } from "@/components/ui";
+import { FeedbackForm } from "@/features/feedback/feedback-form";
 
 export const Route = createFileRoute("/help")({
   head: () => ({
@@ -208,6 +197,11 @@ const statusRows = [
 function HelpPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<FaqCategory>("All topics");
+  const currentRoute = useRouterState({
+    // `href` is the origin-less path (pathname + search + hash), which is exactly the safe internal
+    // route the feedback schema accepts. `search` is an object and would stringify as "[object Object]".
+    select: (state) => state.location.href,
+  });
 
   const visibleFaqs = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -433,15 +427,15 @@ function HelpPage() {
                   id="contact-heading"
                   className="font-display text-xl font-extrabold text-slate-900"
                 >
-                  Send a support note
+                  Send feedback
                 </h2>
-                <Badge tone="outline">Preview form</Badge>
               </div>
               <p className="mt-1 text-sm leading-6 text-slate-600">
-                Use this to test the form states. There is no support inbox connected, so nothing is
-                delivered.
+                Tell us what is confusing, broken or missing. Your note goes to the internal team
+                channel, together with the page you were on, the time and a reference. Nothing else
+                is included.
               </p>
-              <ContactForm />
+              <FeedbackForm route={currentRoute} />
             </Card>
 
             <div className="space-y-4">
@@ -496,109 +490,5 @@ function HelpPage() {
         </div>
       </div>
     </PublicShell>
-  );
-}
-
-function ContactForm() {
-  const [values, setValues] = useState({
-    name: "",
-    email: "",
-    topic: "General question",
-    message: "",
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [sent, setSent] = useState(false);
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    const next: Record<string, string> = {};
-    if (values.name.trim().length < 2) next.name = "Enter your name.";
-    if (!/^\S+@\S+\.\S+$/.test(values.email)) next.email = "Enter a valid email address.";
-    if (values.message.trim().length < 20) next.message = "Add at least 20 characters of context.";
-    setErrors(next);
-    if (Object.keys(next).length) return;
-    setSent(true);
-  };
-
-  if (sent) {
-    return (
-      <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
-        <p className="flex items-center gap-2 text-sm font-bold text-amber-950">
-          <TriangleAlert className="h-4 w-4" /> Nothing was sent
-        </p>
-        <p className="mt-1.5 text-sm leading-6 text-amber-900">
-          The form validated and completed locally, but there is no support inbox, email provider or
-          ticket system connected in this build. No message left your browser.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setSent(false);
-              setValues({ name: "", email: "", topic: "General question", message: "" });
-            }}
-          >
-            Write another
-          </Button>
-          <a href="#status" className={buttonClass("ghost", "md")}>
-            Review service status
-          </a>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={submit} className="mt-4 space-y-4" noValidate>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Your name" htmlFor="help-name" error={errors.name} required>
-          <Input
-            id="help-name"
-            value={values.name}
-            onChange={(event) => setValues({ ...values, name: event.target.value })}
-            invalid={Boolean(errors.name)}
-          />
-        </Field>
-        <Field label="Email" htmlFor="help-email" error={errors.email} required>
-          <Input
-            id="help-email"
-            type="email"
-            value={values.email}
-            onChange={(event) => setValues({ ...values, email: event.target.value })}
-            invalid={Boolean(errors.email)}
-          />
-        </Field>
-      </div>
-      <Field label="Topic" htmlFor="help-topic">
-        <Select
-          id="help-topic"
-          value={values.topic}
-          onChange={(event) => setValues({ ...values, topic: event.target.value })}
-        >
-          <option>General question</option>
-          <option>Account and sign-in</option>
-          <option>Communities and posts</option>
-          <option>Courses and learning</option>
-          <option>Creator tools</option>
-          <option>Marketplace and payments</option>
-          <option>Accessibility</option>
-        </Select>
-      </Field>
-      <Field label="Message" htmlFor="help-message" error={errors.message} required>
-        <Textarea
-          id="help-message"
-          value={values.message}
-          onChange={(event) => setValues({ ...values, message: event.target.value })}
-          className="min-h-28"
-          invalid={Boolean(errors.message)}
-        />
-      </Field>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-        <p className="text-xs text-slate-500">Preview form · no message is delivered.</p>
-        <Button type="submit">
-          <Send className="h-4 w-4" /> Validate message
-        </Button>
-      </div>
-    </form>
   );
 }
