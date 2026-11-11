@@ -207,9 +207,17 @@ describe("start", () => {
     const { runtime, out, err } = makeRuntime();
     expect(execute(["start", "--json", "--github-mask"], runtime)).toBe(0);
     const combined = out.join("") + err.join("");
-    expect(combined).not.toContain(JWT_SECRET_VALUE);
-    expect(combined).not.toContain(SERVICE_ROLE_VALUE);
-    if (process.env.GITHUB_ACTIONS !== "true") {
+    if (process.env.GITHUB_ACTIONS === "true") {
+      // Inside GitHub Actions the sanctioned `::add-mask::` command intentionally carries the value
+      // so the runner can redact every later occurrence. The secret must therefore appear *only*
+      // inside those directives and never in ordinary output.
+      const withoutMaskDirectives = combined.replace(/^::add-mask::.*$/gm, "");
+      expect(withoutMaskDirectives).not.toContain(JWT_SECRET_VALUE);
+      expect(withoutMaskDirectives).not.toContain(SERVICE_ROLE_VALUE);
+      expect(combined).toContain("::add-mask::");
+    } else {
+      expect(combined).not.toContain(JWT_SECRET_VALUE);
+      expect(combined).not.toContain(SERVICE_ROLE_VALUE);
       expect(combined).not.toContain("::add-mask::");
     }
   });
