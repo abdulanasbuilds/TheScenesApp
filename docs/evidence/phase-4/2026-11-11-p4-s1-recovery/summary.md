@@ -69,10 +69,28 @@ Tool versions: Bun `1.4.4`, Node `v26.12.1`, TypeScript `5.9.3`, Playwright `1.6
   silently falls back to fixtures.
 - Critical findings: 0. High findings: 0.
 
+## Hosted configuration (ADR-043, 11 November 2026)
+
+The founder approved hosted account-email configuration on THE SCENES `okdzuqgzgnmmbtjxdaci` only. The
+application environment is already correctly staged (verified read-only): the git-ignored
+`.env.staging.local` parses to `dataMode=supabase-staging`,
+`url=https://okdzuqgzgnmmbtjxdaci.supabase.co`, publishable (non-secret) key. No secret was printed.
+
+**No remote change was made.** While attempting a read-only project lookup, the Supabase MCP in this
+session resolved to VOICE SYSTEM (`extdmvwwvgqstoayzhhy`) because a global OpenCode config defines the
+`supabase` server against that project and overrides the project-level `okdzuqgzgnmmbtjxdaci` binding.
+That tool is therefore unsafe for this work and was not used for any write. The returned values were
+discarded and not written to any file.
+
+Remaining work is founder dashboard/account work: Supabase Auth URL allowlist + Resend custom SMTP on
+THE SCENES, a Resend account and verified domain, then one founder-controlled inbox test. No database
+migration is required.
+
 ## Not run under this approval
 
-- **Connected/hosted recovery** (real inbox, Supabase Auth custom SMTP, Resend) — not authorized.
-- No migration, hosted configuration, deploy, message, push subscription or provider account.
+- **Connected/hosted recovery** (real inbox, Supabase Auth custom SMTP, Resend) — approved in principle
+  by ADR-043 but not executed; blocked by the misbound MCP plus pending founder dashboard/Resend steps.
+- No migration, deploy, message, push subscription or provider account.
 - ADR-041 Wave 5 capacity/recovery rehearsal remains deferred and blocks any load/launch/scale claim.
 
 ## Residual risks and follow-ups

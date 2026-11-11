@@ -21,9 +21,10 @@ On 9 November 2026 the founder accepted the **Phase 3A learning vertical slice**
 formally deferred the Wave 5 capacity/recovery rehearsal under **ADR-041**. Phase 3A is therefore
 **accepted with deferred capacity evidence**; the rehearsal remains a mandatory precondition before any
 staging load test, public launch, or scale claim. **Phase 4 revision 2 is approved for P4-S1
-account email and password recovery as code/local work only** under ADR-042 (11 November 2026); every
-other Phase 4 slice remains planned, conditional or deferred. No provider configuration, hosted
-mutation, real-inbox verification or deployment is authorized. See `docs/PROJECT-STATUS.md`.
+account email and password recovery as code/local work** under ADR-042 (11 November 2026), and for
+**hosted account-email configuration on THE SCENES only** under ADR-043 (11 November 2026); every
+other Phase 4 slice remains planned, conditional or deferred. Deployment, real customer data and any
+other provider/project remain unauthorized. See `docs/PROJECT-STATUS.md`.
 
 ## Mandatory planning gate — every phase
 
@@ -157,10 +158,10 @@ Introduce:
 
 ## Phase 4 — Email, files, notifications
 
-**Status:** Approved for P4-S1 only (ADR-042, 11 November 2026) as code/local work. Specification:
+**Status:** Approved for P4-S1 as code/local (ADR-042, 11 November 2026) and for hosted account-email configuration on THE SCENES (ADR-043, 11 November 2026). Specification:
 `docs/PHASE-4-PLAN.md`; review: `docs/PHASE-4-PLAN-REVIEW.md`. P4-S1 keeps Supabase Auth as the
-recovery token authority; Resend custom SMTP, hosted configuration and real-inbox verification require
-a later explicit approval. All other slices (P4-S2 … P4-S7) remain planned, conditional or deferred.
+recovery token authority; Auth URL configuration and Resend custom SMTP are approved on
+`okdzuqgzgnmmbtjxdaci` only, with the Resend account/domain/key and one inbox test still pending. All other slices (P4-S2 … P4-S7) remain planned, conditional or deferred.
 
 Introduce:
 

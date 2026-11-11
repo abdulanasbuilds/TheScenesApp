@@ -44,9 +44,15 @@
     "playwright": "1.64.1"
   },
   "notRun": [
-    "connected/hosted recovery (no remote approval)",
+    "connected/hosted recovery (ADR-043 approved; blocked by misbound MCP and pending founder dashboard/Resend steps)",
     "real-inbox delivery verification",
     "ADR-041 Wave 5 capacity/recovery rehearsal (deferred)"
   ],
+  "hostedConfig": {
+    "approval": "ADR-043",
+    "executed": false,
+    "appEnvVerified": true,
+    "blocker": "Supabase MCP resolves to VOICE SYSTEM via global config"
+  },
   "containsSensitiveMaterial": false
 }

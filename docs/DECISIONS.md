@@ -461,3 +461,48 @@ Consequences and limits:
 
 Durable record: `docs/PHASE-4-PLAN.md` §12 (approval record), `docs/PROJECT-STATUS.md`,
 `docs/PHASES.md` and `docs/INTEGRATIONS.md`.
+
+## ADR-043 — P4-S1 hosted account-email configuration approved on THE SCENES
+
+Status: Accepted (11 November 2026)
+
+The founder approved configuring hosted account-email settings for P4-S1 on the approved
+pre-production project THE SCENES (`okdzuqgzgnmmbtjxdaci`) only. This supersedes ADR-042's
+"remote actions: NONE" **only** for the exact actions listed here.
+
+Authorized remote actions:
+
+1. **Supabase Auth → URL Configuration** — set the Site URL and allow the redirect URLs the app
+   actually sends. While the app runs locally at `http://127.0.0.1:5000` in `supabase-staging` mode,
+   those are `http://127.0.0.1:5000/auth/confirm` and `http://127.0.0.1:5000/reset-password`. If an
+   HTTPS app host is later approved, add its `/auth/confirm` and `/reset-password` URLs.
+2. **Supabase Auth → SMTP Settings** — configure Resend custom SMTP (host, port, username, scoped
+   API key) and a verified sending domain.
+3. **Application environment** — point the app at hosted staging via the ignored `.env.staging.local`
+   (`VITE_DATA_MODE=supabase-staging`,
+   `VITE_SUPABASE_URL=https://okdzuqgzgnmmbtjxdaci.supabase.co`, `VITE_SUPABASE_PUBLISHABLE_KEY=<
+   sb_publishable_...>`).
+
+Not authorized:
+
+- No database migration or schema change; P4-S1 requires none.
+- No production action, deployment, real customer data or payment.
+- Never touch VOICE SYSTEM (`extdmvwwvgqstoayzhhy`) or any other Supabase project.
+- No secret may be pasted in chat, committed or printed.
+
+Conditions and blockers:
+
+- The Supabase MCP available in this session resolves to VOICE SYSTEM, not THE SCENES, because a
+  global OpenCode config defines the `supabase` server against `extdmvwwvgqstoayzhhy`. It must not be
+  used for this work until its `project_ref` is corrected and the target is verified read-only.
+- Resend account, verified domain and SMTP credentials are still required; creating them is a founder
+  action and is not performed by the agent.
+- Verification requires one founder-controlled inbox test after the dashboard settings are applied.
+
+Consequences:
+
+- Every other P4-S1 limit and every other Phase 4 slice remains unchanged.
+- ADR-041 Wave 5 remains deferred and blocks load/launch/scale claims.
+
+Durable record: `docs/ACCOUNT-EMAIL-SETUP.md`, `docs/PHASE-4-PLAN.md` §12, `docs/PROJECT-STATUS.md`,
+`docs/PHASES.md` and `docs/INTEGRATIONS.md`.

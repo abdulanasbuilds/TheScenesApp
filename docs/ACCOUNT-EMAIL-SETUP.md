@@ -1,7 +1,8 @@
 # The Scenes — Account Email and Password Recovery Setup
 
-**Status:** P4-S1 implemented as code/local work under ADR-042 (11 November 2026). No provider,
-hosted configuration, real-inbox verification or deployment is authorized.
+**Status:** P4-S1 implemented as code/local work under ADR-042; hosted account-email configuration on
+THE SCENES is approved under ADR-043 (11 November 2026) and pending the founder dashboard/Resend steps.
+No deployment or real customer data is authorized.
 **Parent documents:** `docs/PHASE-4-PLAN.md` (§P4-S1, §11, §12), `docs/INTEGRATIONS.md` (Resend),
 `docs/DECISIONS.md` (ADR-042).
 
@@ -34,6 +35,25 @@ directly.
 | `supabase-staging` | Connects to the approved pre-production Supabase project. Real email delivery requires Supabase Auth custom SMTP (see below). |
 
 A configured integration never silently falls back to fixtures.
+
+## Hosted pre-production (THE SCENES) — current status
+
+Approved by ADR-043 on 11 November 2026, **only** for the pre-production project
+`okdzuqgzgnmmbtjxdaci`.
+
+- **App environment:** the git-ignored `.env.staging.local` sets `VITE_DATA_MODE=supabase-staging` and
+  `VITE_SUPABASE_URL=https://okdzuqgzgnmmbtjxdaci.supabase.co` with an `sb_publishable_...` key, and it
+  validates against `src/lib/env.ts`. No secret is committed.
+- **Redirect URLs to allow in Supabase:** the app currently runs at `http://127.0.0.1:5000`, so it sends
+  `http://127.0.0.1:5000/auth/confirm` and `http://127.0.0.1:5000/reset-password` as `redirectTo`. If an
+  HTTPS app host is later approved, add its `/auth/confirm` and `/reset-password` URLs instead.
+- **SMTP:** configure Resend custom SMTP and a verified sending domain (names above).
+- **Pending:** the Supabase Auth dashboard settings, the Resend account/domain/key, and one
+  founder-controlled inbox test. No database migration is needed for P4-S1.
+
+> Operational note: the Supabase MCP configured in this environment currently resolves to VOICE SYSTEM
+> (`extdmvwwvgqstoayzhhy`) through a global OpenCode config, not THE SCENES. Do not run its tools for this
+> work until the `project_ref` is corrected and a read-only check confirms the target.
 
 ## Configuration names (values are never printed)
 
@@ -114,7 +134,16 @@ Template rules:
 - Request rate limiting uses the existing local limiter in code/local mode; provider-backed limits are
   a later (P4-S2) slice.
 
-## Not authorized yet
+## Authorization boundary
 
-Resend account/domain/key creation, Supabase Auth SMTP changes, hosted configuration and real-inbox
-verification each require an explicit remote approval that ADR-042 does **not** grant.
+ADR-043 authorizes the Supabase Auth URL/SMTP configuration and the hosted `.env.staging.local` target on
+THE SCENES `okdzuqgzgnmmbtjxdaci` only. It does **not** authorize:
+
+- the Resend account, domain verification or scoped key — these remain founder actions (never paste the
+  key into chat, issues or source control);
+- deployment, a production environment, real customer data or payments;
+- VOICE SYSTEM (`extdmvwwvgqstoayzhhy`) or any other Supabase project;
+- any other Phase 4 slice.
+
+The agent records configuration names and state, never values. Connected recovery is verified by one
+founder-controlled inbox test after the dashboard settings exist.

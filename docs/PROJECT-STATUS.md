@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 11 November 2026
-**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery as code/local work only (ADR-042) and implementing
+**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and implementing
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -176,15 +176,18 @@ The founder approved this mode on 6 November 2026:
 
 Phase 3A Waves 1–4 are accepted; the Wave 5 capacity/recovery rehearsal is deferred under ADR-041.
 
-Phase 4 revision 2 is approved for **P4-S1 only** as code/local work (ADR-042, 11 November 2026):
-account email and password recovery, with Supabase Auth remaining the token authority.
+Phase 4 revision 2 is approved for **P4-S1**: code/local work (ADR-042, 11 November 2026) and hosted
+account-email configuration on THE SCENES `okdzuqgzgnmmbtjxdaci` (ADR-043, 11 November 2026). Supabase
+Auth remains the token authority.
 
-1. Finish and verify the local recovery journey, redirect allowlist, setup checker and documentation.
-2. Record redacted evidence and promote P4-S1 once its slice checks pass.
-3. Only then, if the founder wants real delivery, present one exact request for the Resend account,
-   verified domain, Supabase Auth custom SMTP change and one founder-controlled inbox test.
-4. No other Phase 4 slice is authorized. `docs/PHASE-4-PLAN.md` §11 records each remaining provider
-   decision.
+1. The local recovery journey, redirect allowlist, setup checker, tests and documentation are implemented
+   and committed.
+2. Apply the hosted Auth settings on THE SCENES only — URL allowlist plus Resend custom SMTP. The agent
+   cannot script these (no Auth tools in the available MCP), so the founder does the dashboard steps.
+3. Create the Resend account, verify the domain and place the scoped key in the Supabase project.
+4. Run one founder-controlled inbox test, then record connected evidence.
+5. No other Phase 4 slice, project, deployment or real customer data is authorized. `docs/PHASE-4-PLAN.md`
+   §11 records each remaining provider decision.
 
 The deferred Wave 5 rehearsal must run before any staging load test or public launch.
 
@@ -202,11 +205,12 @@ The deferred Wave 5 rehearsal must run before any staging load test or public la
 
 ## Checkpoint state
 
-- Founder input needed: **none for P4-S1 code/local work**; a later explicit approval is required for
-  Resend/Supabase custom SMTP and any real-inbox verification. The deferred Wave 5 rehearsal still needs
-  Docker/credit before any staging load test or public launch;
-- working tree: clean; Phase 4 revision-2 review committed at `9cc91e3`; P4-S1 implementation committed
-  as the current code/local change set (connected verification pending a separate approval);
+- Founder action needed: **apply the Supabase Auth URL/SMTP settings on THE SCENES and create the
+  Resend account/domain**, then run one inbox test (ADR-043). The Supabase MCP here resolves to VOICE
+  SYSTEM and must not be used until corrected. The deferred Wave 5 rehearsal still needs Docker/credit
+  before any staging load test or public launch;
+- working tree: clean; Phase 4 revision-2 review committed at `9cc91e3`; P4-S1 code/local committed;
+  hosted account-email config approved (ADR-043) and pending the founder dashboard/Resend steps;
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;

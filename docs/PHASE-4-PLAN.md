@@ -2,14 +2,15 @@
 
 **Planning status:** APPROVED — P4-S1 implementing; all other slices unchanged
 **Revision:** 2 — 11 November 2026
-**Founder approval:** APPROVED for P4-S1 code/local only (ADR-042, 11 November 2026)
+**Founder approval:** APPROVED for P4-S1 code/local (ADR-042) and for hosted account-email configuration on THE SCENES (ADR-043, 11 November 2026)
 **Parent:** `docs/PHASES.md`, ADR-006, ADR-009, ADR-010, ADR-012, ADR-017, ADR-029,
 ADR-040 and ADR-041
 **Gate:** `docs/PHASE-PLANNING-GATE.md`
 **Review:** `docs/PHASE-4-PLAN-REVIEW.md`
 
-Only P4-S1 code/local work is authorized (ADR-042). Nothing in this document authorizes provider
-creation/configuration, sending real messages, hosted migration/configuration, deployment, production
+ADR-042 authorizes P4-S1 code/local work; ADR-043 additionally authorizes hosted account-email
+configuration on THE SCENES (`okdzuqgzgnmmbtjxdaci`) only. Nothing in this document authorizes any
+other provider creation/configuration, sending real messages, hosted migration, deployment, production
 data, payments or spend. Any other slice or remote action begins only after the founder approves it in
 §12.
 
@@ -443,18 +444,19 @@ the approved provider/platform secret store; the agent verifies presence/behavio
 
 ```text
 Planning status: APPROVED (P4-S1 implementing)
-Founder approval: APPROVED (ADR-042, 11 November 2026)
+Founder approval: APPROVED (ADR-042 code/local; ADR-043 hosted account-email config, 11 November 2026)
 Reviewed scope version/date: Phase 4 revision 2 / 11 November 2026
 Approved current slice: P4-S1 — Account email and password recovery
-Approved remote actions: NONE
-Approved providers/accounts: NONE
+Approved remote actions: hosted account-email configuration on THE SCENES (okdzuqgzgnmmbtjxdaci) only (ADR-043)
+Approved providers/accounts: Resend as Supabase Auth custom SMTP (account/domain/key still founder-created)
 Production actions authorized: NONE
 Real customer data authorized: NO
 Deployment authorized: NO
 Known blockers:
 - ADR-041 Wave 5 capacity/recovery evidence is deferred and blocks load/launch/scale claims.
-- Resend/Supabase Auth custom SMTP, verified domain and credentials are not approved/configured.
-- Connected/hosted recovery verification is not authorized; it requires a later explicit approval.
+- Resend account, verified sending domain and SMTP credentials still need to be created and applied.
+- The Supabase MCP in this environment resolves to VOICE SYSTEM and must not be used until corrected.
+- Connected recovery verification requires the dashboard settings plus one founder-controlled inbox test (ADR-043).
 - S6 requires a Cloudflare/workerd Web Push compatibility proof.
 - S7 has no approved concrete object use case.
 Required re-review triggers:
@@ -464,8 +466,9 @@ Required re-review triggers:
 ```
 
 Founder approval named the approved revision, first slice and remote/provider permissions in ADR-042
-(11 November 2026). That decision is copied into `docs/DECISIONS.md`, `docs/PROJECT-STATUS.md`,
-`docs/PHASES.md` and `docs/INTEGRATIONS.md`.
+(11 November 2026) and the hosted account-email configuration in ADR-043 (11 November 2026). That
+decision is copied into `docs/DECISIONS.md`, `docs/PROJECT-STATUS.md`, `docs/PHASES.md` and
+`docs/INTEGRATIONS.md`.
 
 ## 13. Current authoritative references checked
 
