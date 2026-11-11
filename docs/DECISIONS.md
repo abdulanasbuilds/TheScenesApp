@@ -416,3 +416,48 @@ Consequences:
 
 Durable record: `docs/PROJECT-STATUS.md` (current checkpoint), `docs/PHASE-4-PLAN.md` revision 2 and
 `docs/PHASE-4-PLAN-REVIEW.md` (ready for founder review; not approved for implementation).
+
+## ADR-042 — Phase 4 revision 2 approved for P4-S1 (code/local only)
+
+Status: Accepted (11 November 2026)
+
+The founder approved `docs/PHASE-4-PLAN.md` revision 2 dated 11 November 2026 for exactly one vertical
+slice:
+
+- **Approved slice:** P4-S1 — Account email and password recovery.
+- **Approved remote actions:** NONE. No Resend account, domain, key, Supabase Auth SMTP change, hosted
+  migration, hosted configuration, message, push subscription or deployment is authorized.
+- **Approved providers/accounts:** NONE. Resend remains the planned provider only, to be configured as
+  Supabase Auth custom SMTP after a later separate approval.
+- **Production actions authorized:** NONE.
+- **Real customer data authorized:** NO.
+- **Deployment authorized:** NO.
+
+Scope of this approval:
+
+1. Supabase Auth remains the sole confirmation/recovery token authority. No application-built tokens,
+   links, admin keys or custom SMTP calls are permitted.
+2. The application may add `/forgot-password` wiring and a recovery-only `/reset-password` route through
+   the existing repository/service/server-function boundary, using the existing user-scoped SSR client.
+3. Recovery requests must return the same acknowledgement for known and unknown accounts, use the
+   existing strict redirect allowlist/origin checks, strip recovery parameters from the visible URL and
+   never log email addresses, tokens, recovery codes or provider response bodies.
+4. Accessible email-template and provider configuration documentation plus a setup checker that reports
+   variable/template names and state only may be added. No secret value is read, printed or committed.
+5. The unit/fixture verification set may run. Connected/hosted recovery verification is **not** run
+   under this approval and must be requested separately after Resend/Supabase SMTP is approved.
+6. Every other Phase 4 slice (P4-S2 … P4-S7) remains planned, conditional or deferred exactly as
+   recorded in `docs/PHASE-4-PLAN.md`.
+
+Consequences and limits:
+
+- ADR-041 Wave 5 capacity/recovery evidence remains deferred and continues to block any staging load
+  test, public launch or scale claim.
+- This is not permission to enable email delivery, claim delivery, deploy, use real customer data, or
+  touch any Supabase project other than the approved pre-production project
+  `okdzuqgzgnmmbtjxdaci` under a later explicit approval.
+- Re-review triggers: any provider account/configuration, hosted mutation, real-inbox verification,
+  deployment, scope expansion to another slice, or a change to the recovery data/security model.
+
+Durable record: `docs/PHASE-4-PLAN.md` §12 (approval record), `docs/PROJECT-STATUS.md`,
+`docs/PHASES.md` and `docs/INTEGRATIONS.md`.

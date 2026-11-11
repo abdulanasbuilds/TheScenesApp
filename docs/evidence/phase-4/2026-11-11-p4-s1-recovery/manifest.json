@@ -1,0 +1,52 @@
+{
+  "runId": "2026-11-11-p4-s1-recovery",
+  "date": "2026-11-11",
+  "phase": 4,
+  "slice": "P4-S1",
+  "title": "Account email and password recovery",
+  "approval": {
+    "decision": "ADR-042",
+    "date": "2026-11-11",
+    "scope": "code/local only",
+    "remoteActions": "NONE",
+    "providers": "NONE",
+    "deployment": false,
+    "realCustomerData": false
+  },
+  "target": {
+    "kind": "local-code-and-fixture-browser",
+    "supabaseProjectContacted": false,
+    "providerContacted": false
+  },
+  "baseRevision": "9cc91e3",
+  "tokenAuthority": "supabase-auth",
+  "flow": "resetPasswordForEmail -> /reset-password?code -> exchangeCodeForSession -> updateUser -> signOut(global)",
+  "verification": {
+    "unitPassed": 197,
+    "unitFailed": 0,
+    "typecheck": true,
+    "lint": true,
+    "clientBoundary": true,
+    "productionBuild": true,
+    "fixtureTotal": 48,
+    "fixturePassed": 32,
+    "fixtureSkipped": 16,
+    "recoverySpecPassed": 6,
+    "recoveryViewports": ["desktop", "tablet", "mobile"],
+    "diffCheck": true,
+    "criticalSecurityFindings": 0,
+    "highSecurityFindings": 0
+  },
+  "toolVersions": {
+    "bun": "1.4.4",
+    "node": "v26.12.1",
+    "typescript": "5.9.3",
+    "playwright": "1.64.1"
+  },
+  "notRun": [
+    "connected/hosted recovery (no remote approval)",
+    "real-inbox delivery verification",
+    "ADR-041 Wave 5 capacity/recovery rehearsal (deferred)"
+  ],
+  "containsSensitiveMaterial": false
+}

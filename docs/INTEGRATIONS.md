@@ -40,11 +40,16 @@ Private objects require controlled access.
 
 ## Resend
 
-**Proposed Phase 4 provider; not configured/approved yet.** Use first as Supabase Auth custom SMTP so
-Supabase remains confirmation/recovery token authority. A direct application email adapter is added only
-when an approved event, idempotency and delivery/retry contract exists.
+**Planned Phase 4 provider; not configured or remotely approved.** ADR-042 approves only P4-S1
+code/local work. Use Resend first as Supabase Auth custom SMTP so Supabase remains
+confirmation/recovery token authority. The application never handles raw SMTP or builds Auth links.
 
-Do not make client-side pages responsible for privileged mail sending.
+Resend account creation, verified sending domain, scoped key, Supabase Auth SMTP change and real-inbox
+verification each require a later explicit remote approval. A direct application email adapter is added
+only when an approved event, idempotency and delivery/retry contract exists.
+
+Do not make client-side pages responsible for privileged mail sending. See
+`docs/ACCOUNT-EMAIL-SETUP.md` for the configuration names, templates, verification and rollback.
 
 ## Redis-compatible service
 

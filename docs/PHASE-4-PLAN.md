@@ -1,16 +1,17 @@
 # The Scenes — Phase 4 Plan: Email, notifications, PWA and operational services
 
-**Planning status:** REVIEW — implementation not authorized
+**Planning status:** APPROVED — P4-S1 implementing; all other slices unchanged
 **Revision:** 2 — 11 November 2026
-**Founder approval:** NOT APPROVED
+**Founder approval:** APPROVED for P4-S1 code/local only (ADR-042, 11 November 2026)
 **Parent:** `docs/PHASES.md`, ADR-006, ADR-009, ADR-010, ADR-012, ADR-017, ADR-029,
 ADR-040 and ADR-041
 **Gate:** `docs/PHASE-PLANNING-GATE.md`
 **Review:** `docs/PHASE-4-PLAN-REVIEW.md`
 
-Nothing in this document authorizes implementation, provider creation/configuration, sending real
-messages, deployment, production data, payments or spend. Phase 4 implementation begins only after the
-founder approves the scope/version, first slice and provider actions in §12.
+Only P4-S1 code/local work is authorized (ADR-042). Nothing in this document authorizes provider
+creation/configuration, sending real messages, hosted migration/configuration, deployment, production
+data, payments or spend. Any other slice or remote action begins only after the founder approves it in
+§12.
 
 ---
 
@@ -441,15 +442,19 @@ the approved provider/platform secret store; the agent verifies presence/behavio
 ## 12. Approval record
 
 ```text
-Planning status: REVIEW
-Founder approval: NOT APPROVED
+Planning status: APPROVED (P4-S1 implementing)
+Founder approval: APPROVED (ADR-042, 11 November 2026)
 Reviewed scope version/date: Phase 4 revision 2 / 11 November 2026
-Proposed first vertical slice: P4-S1 — Account email and password recovery
+Approved current slice: P4-S1 — Account email and password recovery
+Approved remote actions: NONE
+Approved providers/accounts: NONE
 Production actions authorized: NONE
-Remote pre-production actions authorized: NONE until explicitly approved per slice
+Real customer data authorized: NO
+Deployment authorized: NO
 Known blockers:
 - ADR-041 Wave 5 capacity/recovery evidence is deferred and blocks load/launch/scale claims.
-- Provider accounts, domain and credentials are not approved/configured.
+- Resend/Supabase Auth custom SMTP, verified domain and credentials are not approved/configured.
+- Connected/hosted recovery verification is not authorized; it requires a later explicit approval.
 - S6 requires a Cloudflare/workerd Web Push compatibility proof.
 - S7 has no approved concrete object use case.
 Required re-review triggers:
@@ -458,9 +463,9 @@ Required re-review triggers:
 - a load/scale/restore claim or the ADR-041 Wave 5 gate becoming executable.
 ```
 
-Founder approval must name the approved revision, first slice and remote/provider permissions. Copy that
-decision into this record, `docs/DECISIONS.md`, `docs/PROJECT-STATUS.md` and `docs/PHASES.md` before
-implementation.
+Founder approval named the approved revision, first slice and remote/provider permissions in ADR-042
+(11 November 2026). That decision is copied into `docs/DECISIONS.md`, `docs/PROJECT-STATUS.md`,
+`docs/PHASES.md` and `docs/INTEGRATIONS.md`.
 
 ## 13. Current authoritative references checked
 

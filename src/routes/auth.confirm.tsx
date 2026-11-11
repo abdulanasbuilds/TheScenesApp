@@ -12,7 +12,7 @@ export const Route = createFileRoute("/auth/confirm")({
   beforeLoad: ({ search }) => {
     throw redirect({
       to: "/login",
-      search: { confirmation: search.confirmation, next: search.next },
+      search: { confirmation: search.confirmation, reset: undefined, next: search.next },
       replace: true,
     });
   },

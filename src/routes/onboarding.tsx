@@ -17,7 +17,7 @@ export const Route = createFileRoute("/onboarding")({
     if (!result.ok || !result.data) {
       throw redirect({
         to: "/login",
-        search: { confirmation: undefined, next: "/onboarding" },
+        search: { confirmation: undefined, reset: undefined, next: "/onboarding" },
       });
     }
   },

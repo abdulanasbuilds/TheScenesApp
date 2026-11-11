@@ -20,10 +20,10 @@ account or credential.
 On 9 November 2026 the founder accepted the **Phase 3A learning vertical slice** (Waves 1–4) and
 formally deferred the Wave 5 capacity/recovery rehearsal under **ADR-041**. Phase 3A is therefore
 **accepted with deferred capacity evidence**; the rehearsal remains a mandatory precondition before any
-staging load test, public launch, or scale claim. **Phase 4 (email, files, notifications) is now in the
-Review state only** and is defined by `docs/PHASE-4-PLAN.md` revision 2 plus
-`docs/PHASE-4-PLAN-REVIEW.md`. The plan has passed an internal completeness review but requires founder
-approval before implementation or provider action. See `docs/PROJECT-STATUS.md`.
+staging load test, public launch, or scale claim. **Phase 4 revision 2 is approved for P4-S1
+account email and password recovery as code/local work only** under ADR-042 (11 November 2026); every
+other Phase 4 slice remains planned, conditional or deferred. No provider configuration, hosted
+mutation, real-inbox verification or deployment is authorized. See `docs/PROJECT-STATUS.md`.
 
 ## Mandatory planning gate — every phase
 
@@ -157,9 +157,10 @@ Introduce:
 
 ## Phase 4 — Email, files, notifications
 
-**Status:** Review only (revision 2 reviewed 11 November 2026; not founder-approved). Specification:
-`docs/PHASE-4-PLAN.md`; review: `docs/PHASE-4-PLAN-REVIEW.md`. No implementation until the founder
-approves the revision, first slice and exact provider/remote permissions.
+**Status:** Approved for P4-S1 only (ADR-042, 11 November 2026) as code/local work. Specification:
+`docs/PHASE-4-PLAN.md`; review: `docs/PHASE-4-PLAN-REVIEW.md`. P4-S1 keeps Supabase Auth as the
+recovery token authority; Resend custom SMTP, hosted configuration and real-inbox verification require
+a later explicit approval. All other slices (P4-S2 … P4-S7) remain planned, conditional or deferred.
 
 Introduce:
 

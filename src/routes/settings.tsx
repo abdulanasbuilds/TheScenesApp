@@ -43,7 +43,7 @@ export const Route = createFileRoute("/settings")({
     if (!result.ok || !result.data) {
       throw redirect({
         to: "/login",
-        search: { confirmation: undefined, next: "/settings" },
+        search: { confirmation: undefined, reset: undefined, next: "/settings" },
       });
     }
   },

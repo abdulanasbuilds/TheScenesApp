@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 11 November 2026
-**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 is in Review and is not approved for implementation
+**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery as code/local work only (ADR-042) and implementing
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -176,13 +176,15 @@ The founder approved this mode on 6 November 2026:
 
 Phase 3A Waves 1–4 are accepted; the Wave 5 capacity/recovery rehearsal is deferred under ADR-041.
 
-The next step is Phase 4 **founder review/approval** under `docs/PHASE-PLANNING-GATE.md`:
+Phase 4 revision 2 is approved for **P4-S1 only** as code/local work (ADR-042, 11 November 2026):
+account email and password recovery, with Supabase Auth remaining the token authority.
 
-1. review `docs/PHASE-4-PLAN.md` revision 2 and `docs/PHASE-4-PLAN-REVIEW.md`;
-2. approve/amend the first slice (recommended P4-S1 account email/password recovery);
-3. decide provider accounts and exact remote permissions (Resend, Upstash Redis REST, Telegram, VAPID;
-   R2 remains conditional);
-4. copy approval into durable records, then implement one vertical slice at a time.
+1. Finish and verify the local recovery journey, redirect allowlist, setup checker and documentation.
+2. Record redacted evidence and promote P4-S1 once its slice checks pass.
+3. Only then, if the founder wants real delivery, present one exact request for the Resend account,
+   verified domain, Supabase Auth custom SMTP change and one founder-controlled inbox test.
+4. No other Phase 4 slice is authorized. `docs/PHASE-4-PLAN.md` §11 records each remaining provider
+   decision.
 
 The deferred Wave 5 rehearsal must run before any staging load test or public launch.
 
@@ -200,11 +202,11 @@ The deferred Wave 5 rehearsal must run before any staging load test or public la
 
 ## Checkpoint state
 
-- Founder input needed: **review and approve Phase 4 revision 2 and the first-slice/provider permissions;
-  the deferred Wave 5 rehearsal still needs Docker/credit before any staging load test or public
-  launch**;
-- working tree: Wave 4 hosted integration committed at `fdc5c8f`; Phase 3A acceptance committed at
-  `7e97d37`; Phase 4 revision-2 review documentation is the current uncommitted change set;
+- Founder input needed: **none for P4-S1 code/local work**; a later explicit approval is required for
+  Resend/Supabase custom SMTP and any real-inbox verification. The deferred Wave 5 rehearsal still needs
+  Docker/credit before any staging load test or public launch;
+- working tree: clean; Phase 4 revision-2 review committed at `9cc91e3`; P4-S1 implementation committed
+  as the current code/local change set (connected verification pending a separate approval);
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;

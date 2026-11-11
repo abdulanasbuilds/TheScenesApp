@@ -35,4 +35,13 @@ export const updateProfileSchema = z
   })
   .strict();
 
+/** Recovery request input. Email is normalized exactly like sign-up/sign-in. */
+export const passwordRecoveryRequestSchema = z.object({ email: emailSchema }).strict();
+
+/** PKCE recovery code returned by Supabase Auth in the recovery email link. */
+export const recoveryExchangeSchema = z.object({ code: z.string().min(8).max(1024) }).strict();
+
+/** New password for a verified recovery session. */
+export const recoveredPasswordSchema = z.object({ password: passwordSchema }).strict();
+
 export const noInputSchema = z.unknown().transform(() => undefined);

@@ -15,6 +15,7 @@ export const Route = createFileRoute("/login")({
       search.confirmation === "complete" || search.confirmation === "error"
         ? search.confirmation
         : undefined,
+    reset: search.reset === "complete" ? ("complete" as const) : undefined,
     next: normalizeAuthNext(search.next),
   }),
   head: () => ({ meta: [{ title: "Log in — The Scenes" }] }),
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const router = useRouter();
-  const { confirmation, next } = Route.useSearch();
+  const { confirmation, next, reset } = Route.useSearch();
   const { signInDemo } = useApp();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
@@ -110,6 +111,14 @@ function LoginPage() {
           {confirmation === "complete"
             ? "Sign in with your password to continue."
             : "Request a new confirmation email or try registering again."}
+        </div>
+      ) : null}
+      {reset === "complete" ? (
+        <div
+          role="status"
+          className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs leading-5 text-emerald-950"
+        >
+          <strong>Password updated.</strong> Sign in with your new password.
         </div>
       ) : null}
       <form onSubmit={submit} className="space-y-4" noValidate>
