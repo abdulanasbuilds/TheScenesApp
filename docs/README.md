@@ -48,6 +48,7 @@ This directory is the durable operating memory for the project.
 42. [Phase 4 Implementation Prompt](./PHASE-4-IMPLEMENTATION-PROMPT.md) — reusable gated execution prompt
 43. [Account Email Setup](./ACCOUNT-EMAIL-SETUP.md) — P4-S1 recovery setup, verification and rollback
 44. [Rate Limiting](./RATE-LIMITING.md) — P4-S2 policies, providers, failure modes and rollback
+45. [Notifications](./NOTIFICATIONS.md) — P4-S3 notification/preference schema, event matrix, allowlist and rollback
 
 ## Documentation hierarchy
 
@@ -74,6 +75,7 @@ AGENTS.md
       +-- PHASE-4-IMPLEMENTATION-PROMPT.md
       +-- ACCOUNT-EMAIL-SETUP.md                 (P4-S1 setup, verify, rollback)
       +-- RATE-LIMITING.md                       (P4-S2 policies, failure modes, rollback)
+      +-- NOTIFICATIONS.md                       (P4-S3 schema, event matrix, allowlist, rollback)
       +-- PHASE-3-BACKEND-SPEC.md              (revision 2 historical)
       +-- PHASE-3-IMPLEMENTATION-PLAN.md        (revision 2 historical)
       +-- PHASE-3-PLAN-REVIEW.md                (revision 2 historical)

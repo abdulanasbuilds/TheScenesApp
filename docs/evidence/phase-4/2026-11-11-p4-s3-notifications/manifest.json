@@ -1,0 +1,108 @@
+{
+  "runId": "2026-11-11-p4-s3-notifications",
+  "date": "2026-11-11",
+  "phase": 4,
+  "slice": "P4-S3",
+  "title": "Connected in-app notifications",
+  "approval": {
+    "decision": "ADR-044",
+    "date": "2026-11-11",
+    "scope": "code/local only",
+    "remoteActions": "NONE",
+    "providers": "NONE",
+    "deployment": false,
+    "realCustomerData": false
+  },
+  "target": {
+    "kind": "local-code-and-fixture-browser",
+    "supabaseProjectContacted": false,
+    "providerContacted": false,
+    "migrationWritten": true,
+    "migrationApplied": false
+  },
+  "schema": {
+    "migration": "20261111120000_phase4_0019_notifications.sql",
+    "tables": ["public.notifications", "public.notification_preferences"],
+    "additive": true,
+    "rlsEnabled": true,
+    "anonGranted": false,
+    "notificationsClientInsert": false,
+    "notificationsWritableColumns": ["read_at"],
+    "policies": [
+      "notifications_select_own",
+      "notifications_update_own",
+      "notification_preferences_select_own",
+      "notification_preferences_insert_own",
+      "notification_preferences_update_own"
+    ]
+  },
+  "events": {
+    "trigger": "private.create_notification_from_audit_event",
+    "on": "after insert on private.audit_events",
+    "atomicWithTransition": true,
+    "dedupeKey": "audit:<event.id>",
+    "emitted": ["community_joined", "course_enrolled"],
+    "defaultOff": ["lesson_completed"],
+    "reserved": ["system"]
+  },
+  "preferences": {
+    "columns": [
+      "in_app_learning",
+      "in_app_community",
+      "in_app_product",
+      "email_learning",
+      "email_community",
+      "email_product",
+      "push_learning",
+      "push_community",
+      "push_product"
+    ],
+    "inAppDefaults": "on",
+    "emailPushDefaults": "off",
+    "accountSecurityRepresentable": false
+  },
+  "hrefAllowlist": [
+    "/home",
+    "/my-learning",
+    "/notifications",
+    "/settings",
+    "/c/<slug>",
+    "/c/<slug>/classroom/<slug>"
+  ],
+  "verification": {
+    "sliceTestsPassed": 25,
+    "sliceTestsFailed": 0,
+    "unitPassed": 237,
+    "unitFailed": 0,
+    "unitFiles": 20,
+    "typecheck": true,
+    "lint": true,
+    "clientBoundary": true,
+    "productionBuild": true,
+    "fixtureTotal": 48,
+    "fixturePassed": 32,
+    "fixtureSkipped": 16,
+    "diffCheck": true,
+    "databaseGate": "not-run"
+  },
+  "security": {
+    "criticalFindings": 0,
+    "highFindings": 0,
+    "openRedirectPreventedBy": ["database-check", "client-zod"]
+  },
+  "toolVersions": {
+    "bun": "1.4.4",
+    "node": "v26.12.1",
+    "typescript": "5.9.3",
+    "playwright": "1.64.1"
+  },
+  "notRun": [
+    "local database gate (Docker daemon unavailable)",
+    "live RLS/constraint allow-deny matrix",
+    "EXPLAIN plans after representative data",
+    "hosted migration application on THE SCENES",
+    "email/push delivery provider",
+    "ADR-041 Wave 5 capacity/recovery rehearsal (deferred)"
+  ],
+  "containsSensitiveMaterial": false
+}

@@ -60,6 +60,7 @@ type AppState = {
   postLikeDelta: Record<string, number>;
   extraComments: Record<string, PostComment[]>;
   notifications: NotificationItem[];
+  connectedUnreadCount: number;
   completedLessons: string[];
   enrolledCourses: string[];
   rsvps: string[];
@@ -86,6 +87,7 @@ type Action =
       joined: string[];
       enrolledCourses: string[];
       completedLessons: string[];
+      unreadCount: number;
     }
   | { type: "toggleRsvp"; eventId: string }
   | { type: "purchase"; productId: string }
@@ -112,6 +114,7 @@ const initialState: AppState = {
   postLikeDelta: {},
   extraComments: {},
   notifications: seedNotifications,
+  connectedUnreadCount: 0,
   completedLessons: ["les-agents-1", "les-agents-2", "les-critique-1", "les-pricing-1"],
   enrolledCourses: ["course-agents", "course-critique", "course-pricing"],
   rsvps: ["ev-1"],
@@ -191,6 +194,7 @@ function reducer(state: AppState, action: Action): AppState {
         enrolledCourses: action.enrolledCourses,
         completedLessons: action.completedLessons,
         notifications: [],
+        connectedUnreadCount: action.unreadCount,
         rsvps: [],
         purchases: [],
         saved: [],
@@ -274,12 +278,14 @@ export function AppProvider({
   dataMode,
   connectedCatalog,
   learningState,
+  notificationSummary,
 }: {
   children: ReactNode;
   viewer: ViewerDTO | null;
   dataMode: DataMode;
   connectedCatalog: ConnectedCatalog | null;
   learningState: LearningState | null;
+  notificationSummary: Readonly<{ unreadCount: number }> | null;
 }) {
   const router = useRouter();
   const connectedData = useMemo(
@@ -295,6 +301,7 @@ export function AppProvider({
           enrolledCourses: [...(learningState?.enrolledCourseIds ?? [])],
           completedLessons: [...(learningState?.completedLessonIds ?? [])],
           notifications: [],
+          connectedUnreadCount: notificationSummary?.unreadCount ?? 0,
           rsvps: [],
           purchases: [],
           saved: [],
@@ -311,8 +318,9 @@ export function AppProvider({
       joined: viewer?.joinedCommunities.map((community) => community.slug) ?? [],
       enrolledCourses: [...(learningState?.enrolledCourseIds ?? [])],
       completedLessons: [...(learningState?.completedLessonIds ?? [])],
+      unreadCount: notificationSummary?.unreadCount ?? 0,
     });
-  }, [dataMode, learningState, viewer]);
+  }, [dataMode, learningState, notificationSummary, viewer]);
 
   const signInDemo = useCallback((email?: string) => {
     dispatch({
@@ -400,7 +408,10 @@ export function AppProvider({
       toggleFollow: (handle) => dispatch({ type: "toggleFollow", handle }),
       addPost: (post) => dispatch({ type: "addPost", post }),
       updatePost: (postId, changes) => dispatch({ type: "updatePost", postId, changes }),
-      unreadCount: state.notifications.filter((n) => !n.read).length,
+      unreadCount:
+        dataMode === "fixtures"
+          ? state.notifications.filter((n) => !n.read).length
+          : state.connectedUnreadCount,
       currentMember,
     }),
     [connectedCatalog, connectedData, currentMember, dataMode, router, signInDemo, signOut, state],

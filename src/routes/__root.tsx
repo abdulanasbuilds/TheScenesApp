@@ -3,6 +3,7 @@ import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/r
 import { InternalNavigationBridge } from "@/components/internal-navigation-bridge";
 import { getCurrentViewer } from "@/features/auth/auth.functions";
 import { getConnectedCatalog, getLearningState } from "@/features/learning/learning.functions";
+import { getNotificationUnreadCount } from "@/features/notifications/notifications.functions";
 import { dataMode } from "@/lib/data-mode";
 import { AppProvider, ToastProvider } from "@/store/app-store";
 import appCss from "../styles.css?url";
@@ -10,12 +11,19 @@ import appCss from "../styles.css?url";
 export const Route = createRootRoute({
   loader: async () => {
     if (dataMode === "fixtures") {
-      return { dataMode, viewer: null, catalog: null, learningState: null } as const;
+      return {
+        dataMode,
+        viewer: null,
+        catalog: null,
+        learningState: null,
+        notificationSummary: null,
+      } as const;
     }
-    const [viewerResult, catalogResult, learningResult] = await Promise.all([
+    const [viewerResult, catalogResult, learningResult, notificationResult] = await Promise.all([
       getCurrentViewer({ data: undefined }),
       getConnectedCatalog({ data: {} }),
       getLearningState({ data: {} }),
+      getNotificationUnreadCount({ data: undefined }),
     ]);
     return {
       dataMode,
@@ -24,6 +32,7 @@ export const Route = createRootRoute({
       learningState: learningResult.ok
         ? learningResult.data
         : { enrolledCourseIds: [], completedLessonIds: [] },
+      notificationSummary: notificationResult.ok ? notificationResult.data : { unreadCount: 0 },
     } as const;
   },
   head: () => ({
@@ -44,7 +53,7 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const { viewer, catalog, learningState } = Route.useLoaderData();
+  const { viewer, catalog, learningState, notificationSummary } = Route.useLoaderData();
   return (
     <RootDocument>
       <ToastProvider>
@@ -53,6 +62,7 @@ function RootComponent() {
           dataMode={dataMode}
           connectedCatalog={catalog}
           learningState={learningState}
+          notificationSummary={notificationSummary}
         >
           <InternalNavigationBridge />
           <a

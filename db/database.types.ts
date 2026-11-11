@@ -287,6 +287,34 @@ isOneToOne: false
       referencedColumns: ["course_id","id"]
     }
                   ]
+                },"notification_preferences": {
+                  Row: {
+                    "created_at": string,"email_community": boolean,"email_learning": boolean,"email_product": boolean,"in_app_community": boolean,"in_app_learning": boolean,"in_app_product": boolean,"push_community": boolean,"push_learning": boolean,"push_product": boolean,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"email_community"?: boolean,"email_learning"?: boolean,"email_product"?: boolean,"in_app_community"?: boolean,"in_app_learning"?: boolean,"in_app_product"?: boolean,"push_community"?: boolean,"push_learning"?: boolean,"push_product"?: boolean,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"email_community"?: boolean,"email_learning"?: boolean,"email_product"?: boolean,"in_app_community"?: boolean,"in_app_learning"?: boolean,"in_app_product"?: boolean,"push_community"?: boolean,"push_learning"?: boolean,"push_product"?: boolean,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+
+                  ]
+                },"notifications": {
+                  Row: {
+                    "body": string,"created_at": string,"dedupe_key": string,"href": string | null,"id": string,"read_at": string | null,"title": string,"type": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"created_at"?: string,"dedupe_key": string,"href"?: string | null,"id"?: string,"read_at"?: string | null,"title": string,"type": string,"user_id": string
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"dedupe_key"?: string,"href"?: string | null,"id"?: string,"read_at"?: string | null,"title"?: string,"type"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+
+                  ]
                 },"profiles": {
                   Row: {
                     "bio": string | null,"created_at": string,"display_name": string,"handle": string,"headline": string | null,"id": string,"location": string | null,"status": string,"updated_at": string

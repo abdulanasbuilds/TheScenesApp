@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   Bell,
   Check,
@@ -19,6 +19,7 @@ import {
   Badge,
   Button,
   Card,
+  EmptyState,
   Field,
   Input,
   Modal,
@@ -32,6 +33,14 @@ import {
   buttonClass,
 } from "@/components/ui";
 import { getCurrentViewer, updateOwnProfile } from "@/features/auth/auth.functions";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  type NotificationPreferences,
+} from "@/features/notifications/contracts";
+import {
+  getNotificationPreferences as readNotificationPreferences,
+  updateNotificationPreferences as saveNotificationPreferences,
+} from "@/features/notifications/notifications.functions";
 import { dataMode as configuredDataMode } from "@/lib/data-mode";
 import { formatCompact, formatDate } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
@@ -505,84 +514,88 @@ function SettingsPage() {
             </TabsContent>
 
             <TabsContent value="notifications">
-              <Card className="mt-4 p-5 sm:p-6">
-                <div className="flex items-center gap-2">
-                  <Bell className="h-4 w-4 text-indigo-700" />
-                  <h2 className="font-display text-lg font-extrabold text-slate-900">
-                    What reaches you
-                  </h2>
-                  <Badge tone="amber">Delivery not connected</Badge>
-                </div>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  These switches save a local preference. Email, push and in-app delivery are not
-                  wired to a provider in this phase.
-                </p>
-                <div className="mt-4 divide-y divide-slate-100">
-                  <Toggle
-                    id="notify-digest"
-                    checked={notifications.digest}
-                    onChange={(value) => setNotifications({ ...notifications, digest: value })}
-                    label="Weekly learning digest"
-                    description="A short summary of new lessons and posts from your communities."
-                  />
-                  <Toggle
-                    id="notify-replies"
-                    checked={notifications.replies}
-                    onChange={(value) => setNotifications({ ...notifications, replies: value })}
-                    label="Replies and mentions"
-                    description="When someone responds to your post or mentions your handle."
-                  />
-                  <Toggle
-                    id="notify-events"
-                    checked={notifications.events}
-                    onChange={(value) => setNotifications({ ...notifications, events: value })}
-                    label="Event reminders"
-                    description="A reminder before sessions you confirmed."
-                  />
-                  <Toggle
-                    id="notify-creator"
-                    checked={notifications.creator}
-                    onChange={(value) => setNotifications({ ...notifications, creator: value })}
-                    label="Creator announcements"
-                    description="Updates from the teachers and communities you follow."
-                  />
-                  <Toggle
-                    id="notify-product"
-                    checked={notifications.product}
-                    onChange={(value) => setNotifications({ ...notifications, product: value })}
-                    label="Product and marketplace updates"
-                    description="Occasional changes to resources you saved or bought."
-                  />
-                  <Toggle
-                    id="notify-push"
-                    checked={notifications.push}
-                    onChange={(value) => {
-                      setNotifications({ ...notifications, push: value });
-                      if (value) {
+              {dataMode === "fixtures" ? (
+                <Card className="mt-4 p-5 sm:p-6">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-indigo-700" />
+                    <h2 className="font-display text-lg font-extrabold text-slate-900">
+                      What reaches you
+                    </h2>
+                    <Badge tone="amber">Delivery not connected</Badge>
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    These switches save a local preference. Email, push and in-app delivery are not
+                    wired to a provider in this phase.
+                  </p>
+                  <div className="mt-4 divide-y divide-slate-100">
+                    <Toggle
+                      id="notify-digest"
+                      checked={notifications.digest}
+                      onChange={(value) => setNotifications({ ...notifications, digest: value })}
+                      label="Weekly learning digest"
+                      description="A short summary of new lessons and posts from your communities."
+                    />
+                    <Toggle
+                      id="notify-replies"
+                      checked={notifications.replies}
+                      onChange={(value) => setNotifications({ ...notifications, replies: value })}
+                      label="Replies and mentions"
+                      description="When someone responds to your post or mentions your handle."
+                    />
+                    <Toggle
+                      id="notify-events"
+                      checked={notifications.events}
+                      onChange={(value) => setNotifications({ ...notifications, events: value })}
+                      label="Event reminders"
+                      description="A reminder before sessions you confirmed."
+                    />
+                    <Toggle
+                      id="notify-creator"
+                      checked={notifications.creator}
+                      onChange={(value) => setNotifications({ ...notifications, creator: value })}
+                      label="Creator announcements"
+                      description="Updates from the teachers and communities you follow."
+                    />
+                    <Toggle
+                      id="notify-product"
+                      checked={notifications.product}
+                      onChange={(value) => setNotifications({ ...notifications, product: value })}
+                      label="Product and marketplace updates"
+                      description="Occasional changes to resources you saved or bought."
+                    />
+                    <Toggle
+                      id="notify-push"
+                      checked={notifications.push}
+                      onChange={(value) => {
+                        setNotifications({ ...notifications, push: value });
+                        if (value) {
+                          toast(
+                            "Push permission was not requested",
+                            "Browser notification permission belongs to a later phase.",
+                          );
+                        }
+                      }}
+                      label="Browser push notifications"
+                      description="Requires explicit browser permission. Not requested in this preview."
+                    />
+                  </div>
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                    <p className="text-xs text-slate-500">Preferences are local to this session.</p>
+                    <Button
+                      onClick={() =>
                         toast(
-                          "Push permission was not requested",
-                          "Browser notification permission belongs to a later phase.",
-                        );
+                          "Notification preferences saved locally",
+                          "No email or push provider was contacted.",
+                        )
                       }
-                    }}
-                    label="Browser push notifications"
-                    description="Requires explicit browser permission. Not requested in this preview."
-                  />
-                </div>
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-                  <p className="text-xs text-slate-500">Preferences are local to this session.</p>
-                  <Button
-                    onClick={() =>
-                      toast(
-                        "Notification preferences saved locally",
-                        "No email or push provider was contacted.",
-                      )
-                    }
-                  >
-                    <Save className="h-4 w-4" /> Save preferences
-                  </Button>
-                </div>
-              </Card>
+                    >
+                      <Save className="h-4 w-4" /> Save preferences
+                    </Button>
+                  </div>
+                </Card>
+              ) : (
+                <ConnectedNotificationPreferences />
+              )}
             </TabsContent>
 
             <TabsContent value="privacy">
@@ -797,5 +810,227 @@ function SettingsPage() {
         </div>
       </Modal>
     </MemberShell>
+  );
+}
+
+/* --------------------------------------------------- connected notifications */
+
+const PREFERENCE_FIELDS = [
+  "inAppLearning",
+  "inAppCommunity",
+  "inAppProduct",
+  "emailLearning",
+  "emailCommunity",
+  "emailProduct",
+  "pushLearning",
+  "pushCommunity",
+  "pushProduct",
+] as const satisfies readonly (keyof NotificationPreferences)[];
+
+const CATEGORY_ROWS = [
+  {
+    key: "learning",
+    label: "Learning",
+    description: "Enrolment and lesson progress on courses you take.",
+  },
+  {
+    key: "community",
+    label: "Community",
+    description: "Joining a community and activity in the spaces you belong to.",
+  },
+  {
+    key: "product",
+    label: "Product and marketplace",
+    description: "Occasional changes to resources you saved or bought.",
+  },
+] as const;
+
+type PreferencesStatus = "loading" | "ready" | "error";
+
+function preferencesEqual(a: NotificationPreferences, b: NotificationPreferences): boolean {
+  return PREFERENCE_FIELDS.every((field) => a[field] === b[field]);
+}
+
+function ConnectedNotificationPreferences() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [status, setStatus] = useState<PreferencesStatus>("loading");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [preferences, setPreferences] = useState<NotificationPreferences>(
+    DEFAULT_NOTIFICATION_PREFERENCES,
+  );
+  const [saved, setSaved] = useState<NotificationPreferences>(DEFAULT_NOTIFICATION_PREFERENCES);
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setStatus("loading");
+    setErrorMessage("");
+    const result = await readNotificationPreferences({ data: undefined });
+    if (!result.ok) {
+      setStatus("error");
+      setErrorMessage(result.error.message);
+      return;
+    }
+    setPreferences(result.data);
+    setSaved(result.data);
+    setStatus("ready");
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
+
+  const dirty = !preferencesEqual(preferences, saved);
+
+  const setField = (field: keyof NotificationPreferences, value: boolean) => {
+    setPreferences((current) => ({ ...current, [field]: value }));
+  };
+
+  const save = async () => {
+    if (saving || !dirty) return;
+    setSaving(true);
+    const result = await saveNotificationPreferences({ data: preferences });
+    setSaving(false);
+    if (!result.ok) {
+      toast("Could not save preferences", result.error.message);
+      return;
+    }
+    setPreferences(result.data);
+    setSaved(result.data);
+    toast("Preferences saved", "Your notification choices were stored on your account.");
+    await router.invalidate();
+  };
+
+  return (
+    <Card className="mt-4 p-5 sm:p-6" aria-busy={status === "loading"}>
+      <div className="flex items-center gap-2">
+        <Bell className="h-4 w-4 text-indigo-700" />
+        <h2 className="font-display text-lg font-extrabold text-slate-900">What reaches you</h2>
+        <Badge tone="green">Connected preferences</Badge>
+      </div>
+      <p className="mt-1 text-sm leading-6 text-slate-600">
+        Account and security notices are always delivered in-app and cannot be turned off.
+        Everything else is your choice. Email and push delivery are not connected in this phase, so
+        those switches store your preference for when a provider is approved.
+      </p>
+
+      {status === "loading" ? (
+        <div className="mt-4 space-y-3" role="status" aria-live="polite">
+          <span className="sr-only">Loading notification preferences</span>
+          {[0, 1, 2, 3].map((row) => (
+            <div key={row} className="flex animate-pulse items-center justify-between gap-4 py-3">
+              <span className="space-y-2">
+                <span className="block h-3.5 w-40 rounded bg-slate-200" />
+                <span className="block h-3 w-64 rounded bg-slate-100" />
+              </span>
+              <span className="h-6 w-11 rounded-full bg-slate-200" />
+            </div>
+          ))}
+        </div>
+      ) : status === "error" ? (
+        <EmptyState
+          icon={<TriangleAlert className="h-5 w-5" />}
+          title="Preferences are unavailable"
+          description={errorMessage}
+          action={
+            <Button variant="secondary" onClick={() => void load()}>
+              Try again
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <div className="mt-4 divide-y divide-slate-100 border-b border-slate-200">
+            <div className="flex items-start justify-between gap-4 py-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Account and security notices</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
+                  Sign-in, password and security messages are always delivered in-app and cannot be
+                  turned off.
+                </p>
+              </div>
+              <Badge tone="green">Always on</Badge>
+            </div>
+          </div>
+
+          <ChannelPreferencesGroup
+            title="In-app"
+            description="Shown in the bell menu and the notifications page."
+            channel="inApp"
+            preferences={preferences}
+            onChange={setField}
+          />
+          <ChannelPreferencesGroup
+            title="Email"
+            description="Not connected in this phase. Your choice is stored for a later email provider."
+            channel="email"
+            preferences={preferences}
+            onChange={setField}
+          />
+          <ChannelPreferencesGroup
+            title="Push"
+            description="Not connected in this phase. Browser permission is a later step."
+            channel="push"
+            preferences={preferences}
+            onChange={setField}
+          />
+
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+            <p className="text-xs text-slate-500">
+              {dirty ? "You have unsaved changes." : "All changes saved."}
+            </p>
+            <Button disabled={!dirty || saving} onClick={() => void save()}>
+              <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save preferences"}
+            </Button>
+          </div>
+        </>
+      )}
+    </Card>
+  );
+}
+
+function capitalize(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function ChannelPreferencesGroup({
+  title,
+  description,
+  channel,
+  preferences,
+  onChange,
+}: {
+  title: string;
+  description: string;
+  channel: "inApp" | "email" | "push";
+  preferences: NotificationPreferences;
+  onChange: (field: keyof NotificationPreferences, value: boolean) => void;
+}) {
+  const channelDescription =
+    channel === "inApp" ? "in-app" : channel === "email" ? "email" : "push";
+  return (
+    <fieldset className="mt-4">
+      <legend className="text-[11px] font-bold tracking-[0.14em] text-slate-500 uppercase">
+        {title}
+      </legend>
+      <p className="mt-0.5 text-xs leading-relaxed text-slate-500">{description}</p>
+      <div className="mt-2 divide-y divide-slate-100">
+        {CATEGORY_ROWS.map((row) => {
+          const field = `${channel}${capitalize(row.key)}` as keyof NotificationPreferences;
+          const id = `notify-${channel}-${row.key}`;
+          return (
+            <Toggle
+              key={field}
+              id={id}
+              checked={preferences[field]}
+              onChange={(value) => onChange(field, value)}
+              label={`${row.label} ${channelDescription}`}
+              description={row.description}
+            />
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }
