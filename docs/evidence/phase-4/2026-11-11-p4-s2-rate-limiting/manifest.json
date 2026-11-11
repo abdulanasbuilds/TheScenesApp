@@ -1,0 +1,74 @@
+{
+  "runId": "2026-11-11-p4-s2-rate-limiting",
+  "date": "2026-11-11",
+  "phase": 4,
+  "slice": "P4-S2",
+  "title": "Distributed rate limiting",
+  "approval": {
+    "decision": "ADR-044",
+    "date": "2026-11-11",
+    "scope": "code/local only",
+    "remoteActions": "NONE",
+    "providers": "NONE",
+    "deployment": false,
+    "realCustomerData": false
+  },
+  "target": {
+    "kind": "local-code-and-fixture-browser",
+    "supabaseProjectContacted": false,
+    "providerContacted": false,
+    "migrationWrittenOrApplied": false
+  },
+  "drivers": {
+    "fixtureLocal": "memory",
+    "connectedStaging": "upstash-rest",
+    "providerAccountCreated": false
+  },
+  "policies": [
+    "signup",
+    "login",
+    "password-reset",
+    "community-join",
+    "course-enrol",
+    "lesson-complete",
+    "feedback"
+  ],
+  "security": {
+    "subjectHashing": "HMAC-SHA256",
+    "rawSubjectInKeys": false,
+    "atomicIncrement": "redis-eval",
+    "failClosedPolicies": ["signup", "login", "password-reset", "feedback"],
+    "failOpenPolicies": ["community-join", "course-enrol", "lesson-complete"],
+    "criticalFindings": 0,
+    "highFindings": 0
+  },
+  "verification": {
+    "sliceTestsPassed": 15,
+    "sliceTestsFailed": 0,
+    "unitPassed": 212,
+    "unitFailed": 0,
+    "unitFiles": 19,
+    "typecheck": true,
+    "lint": true,
+    "clientBoundary": true,
+    "productionBuild": true,
+    "fixtureTotal": 48,
+    "fixturePassed": 32,
+    "fixtureSkipped": 16,
+    "diffCheck": true
+  },
+  "toolVersions": {
+    "bun": "1.4.4",
+    "node": "v26.12.1",
+    "typescript": "5.9.3",
+    "playwright": "1.64.1"
+  },
+  "notRun": [
+    "Upstash account/database/token creation",
+    "hosted staging secret configuration",
+    "connected distributed-limit verification",
+    "feedback endpoint enforcement (arrives with P4-S4)",
+    "ADR-041 Wave 5 capacity/recovery rehearsal (deferred)"
+  ],
+  "containsSensitiveMaterial": false
+}

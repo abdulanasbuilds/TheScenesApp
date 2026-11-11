@@ -1,7 +1,7 @@
 # The Scenes — Current Project Status
 
 **Last updated:** 11 November 2026
-**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and for the code/local scope of P4-S2 to P4-S5 one slice at a time (ADR-044), implementing
+**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and for the code/local scope of P4-S2 to P4-S5 one slice at a time (ADR-044); P4-S2 rate limiting implemented code/local
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
@@ -187,11 +187,14 @@ token authority.
    cannot script these (no Auth tools in the available MCP), so the founder does the dashboard steps.
 3. Create the Resend account, verify the domain and place the scoped key in the Supabase project.
 4. Run one founder-controlled inbox test, then record connected evidence.
-5. Build P4-S2 (distributed rate limiting), P4-S3 (in-app notifications), P4-S4 (feedback channel) and
-   P4-S5 (PWA/installability) as code/local slices only, each with its own tests, redacted evidence and
-   commit. No provider account, hosted migration application, sending to real addresses, deployment or
-   real customer data is authorized. P4-S6 (web push) and P4-S7 (R2 objects) are not approved.
-   `docs/PHASE-4-PLAN.md` §11 records each remaining provider decision.
+5. P4-S2 (distributed rate limiting) is implemented as code/local work: a stable `RateLimiter`
+   interface, HMAC-hashed subjects, bounded memory and fetch-compatible Upstash REST implementations,
+   documented policies for signup, login, password reset, join, enrol, complete and the future feedback
+   form, and explicit fail-closed/fail-open behaviour. P4-S3 (in-app notifications), P4-S4 (feedback
+   channel) and P4-S5 (PWA/installability) follow as code/local slices only, each with its own tests,
+   redacted evidence and commit. No provider account, hosted migration application, sending to real
+   addresses, deployment or real customer data is authorized. P4-S6 (web push) and P4-S7 (R2 objects)
+   are not approved. `docs/PHASE-4-PLAN.md` §11 records each remaining provider decision.
 
 The deferred Wave 5 rehearsal must run before any staging load test or public launch.
 
@@ -216,6 +219,7 @@ The deferred Wave 5 rehearsal must run before any staging load test or public la
 - working tree: clean; Phase 4 revision-2 review committed at `9cc91e3`; P4-S1 code/local committed;
   hosted account-email config approved (ADR-043) and pending the founder dashboard/Resend steps;
   P4-S2 to P4-S5 code/local approved (ADR-044), one slice at a time;
+- P4-S2 rate limiting implemented code/local (memory + Upstash adapter, no account or hosted migration);
 - ADR-040 documentation checkpoint: `d335749`;
 - Wave 1 live-attempt checkpoint: `57eebfe`;
 - Wave 1 completion checkpoint: `2d58659`;

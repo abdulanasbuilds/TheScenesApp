@@ -4,6 +4,7 @@ import { LearningRepository } from "../repositories/learning.repository.server";
 import { getVerifiedPrincipal } from "../supabase/auth.server";
 import { createRequestSupabaseClient } from "../supabase/server-client.server";
 import { PublicAppError } from "../../features/shared/safe-handler";
+import { assertRateLimit, consumeRateLimit } from "../security/rate-limit.server";
 
 export type EnrolResult = Readonly<{ changed: boolean }>;
 
@@ -38,6 +39,10 @@ export async function enrolInCourse(courseId: string, requestId: string): Promis
   applyPrivateNoStoreResponse();
   const principal = await getVerifiedPrincipal();
   if (!principal) throw new PublicAppError("UNAUTHENTICATED", "Sign in to enrol in a course.");
+  assertRateLimit(
+    await consumeRateLimit("course-enrol", principal.userId),
+    "Please wait before enrolling in another course.",
+  );
   const client = createRequestSupabaseClient();
   const result = await new LearningRepository(client).enrolInCourse(courseId, requestId);
   if (!result.ok) {
@@ -56,6 +61,10 @@ export async function completeLesson(
   applyPrivateNoStoreResponse();
   const principal = await getVerifiedPrincipal();
   if (!principal) throw new PublicAppError("UNAUTHENTICATED", "Sign in to record lesson progress.");
+  assertRateLimit(
+    await consumeRateLimit("lesson-complete", principal.userId),
+    "Please wait before recording more progress.",
+  );
   const client = createRequestSupabaseClient();
   const result = await new LearningRepository(client).completeLesson(lessonId, requestId);
   if (!result.ok) {

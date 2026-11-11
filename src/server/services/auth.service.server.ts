@@ -7,7 +7,7 @@ import type { signInSchema, signUpSchema, updateProfileSchema } from "../../feat
 import { getServerEnv } from "../env.server";
 import { applyPrivateNoStoreResponse } from "../http/errors.server";
 import { ProfileRepository } from "../repositories/profile.repository.server";
-import { localRateLimiter } from "../security/local-rate-limit.server";
+import { assertRateLimit, consumeRateLimit } from "../security/rate-limit.server";
 import { getVerifiedPrincipal } from "../supabase/auth.server";
 import { createRequestSupabaseClient } from "../supabase/server-client.server";
 
@@ -17,13 +17,10 @@ type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
 export async function signUp(input: SignUpInput) {
   applyPrivateNoStoreResponse();
-  const limit = localRateLimiter.check(`signup:${input.email}`, { limit: 10, windowMs: 900_000 });
-  if (!limit.allowed)
-    throw new PublicAppError(
-      "RATE_LIMITED",
-      "Please wait before trying again.",
-      limit.retryAfterSeconds,
-    );
+  assertRateLimit(
+    await consumeRateLimit("signup", input.email),
+    "Please wait before trying again.",
+  );
   const env = getServerEnv();
   const client = createRequestSupabaseClient();
   const { data, error } = await client.auth.signUp({
@@ -55,13 +52,7 @@ export async function signUp(input: SignUpInput) {
 
 export async function signIn(input: SignInInput) {
   applyPrivateNoStoreResponse();
-  const limit = localRateLimiter.check(`login:${input.email}`, { limit: 20, windowMs: 900_000 });
-  if (!limit.allowed)
-    throw new PublicAppError(
-      "RATE_LIMITED",
-      "Please wait before trying again.",
-      limit.retryAfterSeconds,
-    );
+  assertRateLimit(await consumeRateLimit("login", input.email), "Please wait before trying again.");
   const client = createRequestSupabaseClient();
   const { data, error } = await client.auth.signInWithPassword(input);
   if (error || !data.user) {

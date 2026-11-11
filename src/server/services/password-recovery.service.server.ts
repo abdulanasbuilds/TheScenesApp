@@ -23,8 +23,11 @@ import {
   AuthRecoveryRepository,
   type AuthRecoveryRepositoryLike,
 } from "../repositories/auth-recovery.repository.server";
-import { localRateLimiter } from "../security/local-rate-limit.server";
-import type { RateLimitResult, RateLimitRule } from "../security/local-rate-limit.server";
+import {
+  assertRateLimit,
+  consumeRateLimit,
+  type RateLimitDecision,
+} from "../security/rate-limit.server";
 
 type RequestInput = z.infer<typeof passwordRecoveryRequestSchema>;
 type ExchangeInput = z.infer<typeof recoveryExchangeSchema>;
@@ -37,7 +40,7 @@ export type PasswordRecoveryDeps = Readonly<{
   mode: "fixtures" | "supabase-local" | "supabase-staging";
   repository: AuthRecoveryRepositoryLike | null;
   resolveRedirectTo: () => string;
-  checkLimit: (key: string, rule: RateLimitRule) => RateLimitResult;
+  consumeLimit: (subject: string) => Promise<RateLimitDecision>;
   prepareResponse: () => void;
 }>;
 
@@ -47,7 +50,7 @@ export function createPasswordRecoveryDeps(): PasswordRecoveryDeps {
     mode: env.dataMode,
     repository: env.dataMode === "fixtures" ? null : new AuthRecoveryRepository(),
     resolveRedirectTo: () => buildPasswordRecoveryRedirect(getRequestUrl()),
-    checkLimit: (key, rule) => localRateLimiter.check(key, rule),
+    consumeLimit: (subject) => consumeRateLimit("password-reset", subject),
     prepareResponse: applyPrivateNoStoreResponse,
   };
 }
@@ -69,13 +72,7 @@ export async function requestPasswordRecovery(
   deps: PasswordRecoveryDeps = createPasswordRecoveryDeps(),
 ): Promise<PasswordRecoveryAcknowledgement> {
   deps.prepareResponse();
-  const limit = deps.checkLimit(`account-recovery:${input.email}`, {
-    limit: 5,
-    windowMs: 900_000,
-  });
-  if (!limit.allowed) {
-    throw new PublicAppError("RATE_LIMITED", RATE_LIMITED_MESSAGE, limit.retryAfterSeconds);
-  }
+  assertRateLimit(await deps.consumeLimit(input.email), RATE_LIMITED_MESSAGE);
   if (!deps.repository) {
     return { acknowledged: true, delivery: "not-configured" };
   }

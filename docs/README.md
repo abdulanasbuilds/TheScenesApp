@@ -43,10 +43,11 @@ This directory is the durable operating memory for the project.
 37. [Phase 3 Revision 2 Implementation Plan (historical)](./PHASE-3-IMPLEMENTATION-PLAN.md)
 38. [Phase 3 Revision 2 Plan Review (historical)](./PHASE-3-PLAN-REVIEW.md)
 39. [Security Scan Results](./SECURITY-SCAN-RESULTS.md) — redacted scan evidence and required historical credential response
-40. [Phase 4 Plan](./PHASE-4-PLAN.md) — revision-2; approved for P4-S1 only (ADR-042)
+40. [Phase 4 Plan](./PHASE-4-PLAN.md) — revision-2; approved for P4-S1 and code/local P4-S2 ... P4-S5 (ADR-042/043/044)
 41. [Phase 4 Plan Review](./PHASE-4-PLAN-REVIEW.md) — planning-gate findings and founder decisions
 42. [Phase 4 Implementation Prompt](./PHASE-4-IMPLEMENTATION-PROMPT.md) — reusable gated execution prompt
 43. [Account Email Setup](./ACCOUNT-EMAIL-SETUP.md) — P4-S1 recovery setup, verification and rollback
+44. [Rate Limiting](./RATE-LIMITING.md) — P4-S2 policies, providers, failure modes and rollback
 
 ## Documentation hierarchy
 
@@ -68,10 +69,11 @@ AGENTS.md
       +-- PHASE-3-IMPLEMENTATION-PLAN-R3.md
       +-- PHASE-3-VERIFICATION-RUNBOOK.md
       +-- PHASE-3-REVISION-3-REVIEW.md
-      +-- PHASE-4-PLAN.md                        (approved for P4-S1, ADR-042)
+      +-- PHASE-4-PLAN.md                        (approved for P4-S1 and code/local P4-S2...S5)
       +-- PHASE-4-PLAN-REVIEW.md
       +-- PHASE-4-IMPLEMENTATION-PROMPT.md
       +-- ACCOUNT-EMAIL-SETUP.md                 (P4-S1 setup, verify, rollback)
+      +-- RATE-LIMITING.md                       (P4-S2 policies, failure modes, rollback)
       +-- PHASE-3-BACKEND-SPEC.md              (revision 2 historical)
       +-- PHASE-3-IMPLEMENTATION-PLAN.md        (revision 2 historical)
       +-- PHASE-3-PLAN-REVIEW.md                (revision 2 historical)

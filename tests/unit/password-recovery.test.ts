@@ -76,7 +76,12 @@ function deps(
     mode: repository ? "supabase-local" : "fixtures",
     repository,
     resolveRedirectTo: () => "http://127.0.0.1:5000/reset-password",
-    checkLimit: () => ({ allowed: true, remaining: 10 }),
+    consumeLimit: async () => ({
+      allowed: true,
+      remaining: 10,
+      limit: 5,
+      policy: "password-reset",
+    }),
     prepareResponse: () => {},
     ...overrides,
   };
@@ -236,7 +241,14 @@ describe("P4-S1 recovery service", () => {
       requestPasswordRecovery(
         { email: "fictional@test.invalid" },
         deps(repository, {
-          checkLimit: () => ({ allowed: false, remaining: 0, retryAfterSeconds: 42 }),
+          consumeLimit: async () => ({
+            allowed: false,
+            remaining: 0,
+            limit: 5,
+            policy: "password-reset",
+            retryAfterSeconds: 42,
+            reason: "limit",
+          }),
         }),
       ),
     ).rejects.toMatchObject({ code: "RATE_LIMITED", retryAfterSeconds: 42 });

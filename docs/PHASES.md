@@ -161,7 +161,7 @@ Introduce:
 **Status:** Approved for P4-S1 as code/local (ADR-042, 11 November 2026) and for hosted account-email configuration on THE SCENES (ADR-043, 11 November 2026). Specification:
 `docs/PHASE-4-PLAN.md`; review: `docs/PHASE-4-PLAN-REVIEW.md`. P4-S1 keeps Supabase Auth as the
 recovery token authority; Auth URL configuration and Resend custom SMTP are approved on
-`okdzuqgzgnmmbtjxdaci` only, with the Resend account/domain/key and one inbox test still pending. P4-S2 through P4-S5 are approved as code/local, one at a time (ADR-044); P4-S6 and P4-S7 remain deferred.
+`okdzuqgzgnmmbtjxdaci` only, with the Resend account/domain/key and one inbox test still pending. P4-S2 through P4-S5 are approved as code/local, one at a time (ADR-044); P4-S2 rate limiting is implemented. P4-S6 and P4-S7 remain deferred.
 
 Introduce:
 
