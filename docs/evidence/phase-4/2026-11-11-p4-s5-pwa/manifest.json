@@ -1,0 +1,98 @@
+{
+  "runId": "2026-11-11-p4-s5-pwa",
+  "date": "2026-11-11",
+  "phase": 4,
+  "slice": "P4-S5",
+  "title": "PWA/installability and low-bandwidth shell",
+  "approval": {
+    "decision": "ADR-044",
+    "date": "2026-11-11",
+    "scope": "code/local only",
+    "remoteActions": "NONE",
+    "providers": "NONE",
+    "deployment": false,
+    "realCustomerData": false
+  },
+  "target": {
+    "kind": "local-code-and-built-worker-artifact",
+    "supabaseProjectContacted": false,
+    "providerContacted": false,
+    "pushSubscriptionCreated": false
+  },
+  "pwa": {
+    "manifest": "public/manifest.webmanifest",
+    "serviceWorker": "public/sw.js",
+    "offlineShell": "public/offline.html",
+    "icons": [
+      "public/icons/icon-192.png",
+      "public/icons/icon-512.png",
+      "public/icons/icon-512-maskable.png",
+      "public/icons/apple-touch-icon.png"
+    ],
+    "iconGenerator": "scripts/generate-pwa-icons.ts",
+    "display": "standalone",
+    "registration": "production-build-only",
+    "installPrompt": "user-initiated-and-dismissible",
+    "iosGuidance": true
+  },
+  "serviceWorker": {
+    "cacheVersion": "thescenes-pwa-v1",
+    "cacheablePrefixes": ["/assets/", "/icons/"],
+    "cacheableExact": ["/offline.html", "/manifest.webmanifest"],
+    "neverCachePrefixes": ["/_server", "/api", "/notifications", "/settings", "/dashboard"],
+    "cachesHtmlDocuments": false,
+    "cachesAuthenticatedResponses": false,
+    "navigations": "network-only-with-offline-shell-fallback",
+    "interceptsCrossOrigin": false,
+    "interceptsNonGet": false,
+    "activation": "waits-for-user-skip-waiting"
+  },
+  "verification": {
+    "sliceTestsPassed": 9,
+    "sliceTestsFailed": 0,
+    "unitPassed": 264,
+    "unitFailed": 0,
+    "unitFiles": 23,
+    "typecheck": true,
+    "lint": true,
+    "clientBoundary": true,
+    "productionBuild": true,
+    "buildArtifacts": {
+      "manifestWebmanifest": true,
+      "serviceWorker": true,
+      "offlineShell": true,
+      "icons": 4
+    },
+    "fixtureTotal": 48,
+    "fixturePassed": 32,
+    "fixtureSkipped": 16,
+    "fixtureFailed": 0,
+    "fixtureExitCode": 0,
+    "diffCheck": true
+  },
+  "notes": {
+    "fixtureSkips": "expected connected-mode browser tests, declared skips in fixture mode",
+    "transientFlakes": "two isolated net::ERR_ABORTED navigation flakes each passed on rerun; final full run passed with 0 failures"
+  },
+  "security": {
+    "criticalFindings": 0,
+    "highFindings": 0,
+    "cachesPrivateContent": false,
+    "offlineShellContainsUserData": false,
+    "externalAssetsCopied": false,
+    "webPushImplemented": false
+  },
+  "toolVersions": {
+    "bun": "1.4.4",
+    "node": "v26.12.1",
+    "typescript": "5.9.3",
+    "playwright": "1.64.1"
+  },
+  "notRun": [
+    "deployment and Lighthouse/installability audit",
+    "VAPID key pair and push subscription (P4-S6 not approved)",
+    "provider account or hosted project mutation",
+    "ADR-041 Wave 5 capacity/recovery rehearsal (deferred)"
+  ],
+  "containsSensitiveMaterial": false
+}

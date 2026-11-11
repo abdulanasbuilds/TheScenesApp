@@ -5,6 +5,7 @@ import { getCurrentViewer } from "@/features/auth/auth.functions";
 import { getConnectedCatalog, getLearningState } from "@/features/learning/learning.functions";
 import { getNotificationUnreadCount } from "@/features/notifications/notifications.functions";
 import { resolveRuntimeConfiguration } from "@/features/shared/runtime-mode";
+import { PwaExperience } from "@/features/pwa/pwa-experience";
 import { AppProvider, ToastProvider } from "@/store/app-store";
 import appCss from "../styles.css?url";
 
@@ -49,9 +50,18 @@ export const Route = createRootRoute({
         content:
           "The Scenes is where creators build communities, teach what they know, and get paid for it. Discover communities, courses, events and digital products.",
       },
+      { name: "theme-color", content: "#4338ca" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: "The Scenes" },
       { title: "The Scenes — Learn, build and belong" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icons/icon-192.png" },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/icons/apple-touch-icon.png" },
+    ],
   }),
   component: RootComponent,
   notFoundComponent: NotFound,
@@ -87,6 +97,7 @@ function RootComponent() {
             Skip to content
           </a>
           <Outlet />
+          <PwaExperience />
         </AppProvider>
       </ToastProvider>
     </RootDocument>
