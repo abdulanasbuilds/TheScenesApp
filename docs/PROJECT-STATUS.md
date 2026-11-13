@@ -1,11 +1,23 @@
 # The Scenes — Current Project Status
 
-**Last updated:** 11 November 2026
+**Last updated:** 13 November 2026
 **Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and for the code/local scope of P4-S2 to P4-S5 one slice at a time (ADR-044); P4-S2 rate limiting, P4-S3 connected in-app notifications, P4-S4 feedback channel and P4-S5 PWA are implemented code/local, and deployment configuration is now driven by the runtime environment (ADR-045); P4-S6 (web push) and P4-S7 (R2) remain not approved
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
 but their old status paragraphs do not override this page, `AGENTS.md` or accepted ADRs.
+
+## Founder working mode update — 13 November 2026 (ADR-046)
+
+The founder set the standing working mode: local-first work with no Docker dependency, code synced to
+GitHub when needed; hosted/provider actions run only when the founder connects the required tools and
+approves the target; the founder creates provider accounts (Resend, Upstash, the Telegram bot)
+himself, with the environment contract kept ready so pasted credentials work; the feedback
+integration is a Telegram bot, not a channel; after a GitHub push and Cloudflare deployment the
+founder tests himself; and agents summarize reviews, plans and blockers in chat in plain English.
+The historical root audits (`*_AUDIT.md`, `ARCHITECTURAL_RISKS.md`, `RECOMMENDED_CHANGES.md`,
+`FINAL_ARCHITECTURE_ASSESSMENT.md`) describe the pre-implementation Phase 0 state and are superseded
+by this page.
 
 ## Simple progress view
 

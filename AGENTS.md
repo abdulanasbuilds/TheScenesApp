@@ -86,6 +86,25 @@ and credentials remain permanently forbidden.
 
 Mocked or deterministic fixture data is permitted for frontend work.
 
+## Founder working mode (ADR-046, 13 November 2026)
+
+Standing instructions from the founder:
+
+- Docker is not a blocker. Work stays local-first and syncs to GitHub when needed. Missing local
+  database verification is deferred, not blocking.
+- Hosted/provider actions wait until the founder connects the required APIs/CLIs/MCPs and approves
+  the target; then pending hosted actions may run against the designated location only.
+- The founder creates provider accounts (Resend, Upstash, the Telegram bot, others) himself. Keep
+  `.env.example`/`.env` placeholders exact so pasted credentials work immediately. Never read, print
+  or receive secret values.
+- The feedback integration is a Telegram **bot**, not a channel.
+- After a GitHub push and a Cloudflare deployment, the founder tests himself. Present the exact
+  deployment action before executing it; never claim his verification.
+- Summarize reviews, plans and blockers in chat, in plain English, instead of expecting the founder
+  to read repository documents. The historical root audits (`*_AUDIT.md`, `ARCHITECTURAL_RISKS.md`,
+  `RECOMMENDED_CHANGES.md`, `FINAL_ARCHITECTURE_ASSESSMENT.md`) describe the pre-implementation
+  Phase 0 state and are superseded by `docs/PROJECT-STATUS.md`.
+
 ## Design mandate
 
 Before backend integration, design the whole application.

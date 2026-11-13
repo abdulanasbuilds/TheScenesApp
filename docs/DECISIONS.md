@@ -585,3 +585,46 @@ connected mode fall back automatically.
 
 Durable record: `docs/CLOUDFLARE-DEPLOYMENT.md`, `.env.example`, `docs/PROJECT-STATUS.md`,
 `docs/INTEGRATIONS.md`.
+
+## ADR-046 — Founder working and integration mode
+
+Status: Accepted (13 November 2026)
+
+The founder set the following standing working mode for every agent on The Scenes:
+
+1. **Local-first; Docker is not a blocker.** Work stays in the local project folder and is synced to
+   the GitHub repository (`origin/main`) when needed. Missing local database verification is deferred
+   until a connected capability exists; it no longer counts as a blocker for continuing approved
+   local code work.
+2. **Hosted actions run when the founder connects the tools.** Database and provider integrations
+   stay local until the necessary APIs, CLIs, MCPs or skills are connected and the target is
+   approved; pending hosted actions (for example applying the P4-S3 notification migration to THE
+   SCENES) may then be executed against the designated location only.
+3. **The founder creates provider accounts himself.** Resend, Upstash Redis, the Telegram bot and any
+   other external service accounts are created by the founder when necessary. The agent's duty is to
+   keep the environment contract ready (`.env.example` plus a local `.env` with placeholders) so that
+   pasted credentials work immediately, and to name required variables without ever reading, printing
+   or receiving secret values.
+4. **Telegram correction.** The feedback integration is a Telegram **bot**, not a channel. The
+   configuration contract is unchanged: `TELEGRAM_BOT_TOKEN` plus `TELEGRAM_FEEDBACK_CHAT_ID` (the
+   founder's chat with the bot, or a group the bot can post to).
+5. **The founder performs final testing.** Pushing to GitHub and deploying to Cloudflare are part of
+   the normal flow; the agent presents the exact deployment action before executing it, and after
+   deployment the founder tests it himself. Agents never claim production verification on his behalf.
+6. **Standing chat-communication protocol.** Agents summarize reviews, plans, stage blockers and
+   required founder actions in chat, in plain English, instead of expecting the founder to read
+   repository documents. The historical root audits (`*_AUDIT.md`, `ARCHITECTURAL_RISKS.md`,
+   `RECOMMENDED_CHANGES.md`, `FINAL_ARCHITECTURE_ASSESSMENT.md`) describe the pre-implementation
+   Phase 0 state; they are history, not current blockers, and are superseded by
+   `docs/PROJECT-STATUS.md`.
+
+Consequences and limits:
+
+- Nothing here authorizes production deployment, payments, production secrets or real customer data.
+  A deployment is still presented in advance and executed only as part of the approved flow.
+- ADR-041 Wave 5 evidence remains required before any staging load test, public launch or scale
+  claim; per this mode it does not block approved local code work.
+- The Supabase MCP `project_ref` correction to THE SCENES (`okdzuqgzgnmmbtjxdaci`) remains a
+  prerequisite for any tool-based hosted action.
+
+Durable record: `AGENTS.md`, `docs/PROJECT-STATUS.md`, `.env.example`, `docs/CLOUDFLARE-DEPLOYMENT.md`.
