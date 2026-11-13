@@ -153,14 +153,20 @@ Cross-reference: All requirement IDs are defined in `docs/PRODUCT-REQUIREMENTS.m
 | 0 — Governance                   | **BUILT / ONGOING**           | Agent contract, docs, CI, architecture decisions    |
 | 1 — Design exploration           | **DESIGNED**                  | Reference-informed direction implemented in code    |
 | 2 — Frontend with fixtures       | **BUILT — ACCEPTED**          | 30 primary pages, responsive shells and local flows |
-| 3A — Backend learning slice      | **WAVE 0 COMPLETE; WAVE 1 LIVE GATE PENDING** | Local proof, then explicitly approved fresh staging |
-| 4 — Email/files/notifications    | NOT STARTED                   | Resend, PWA, Redis; conditional narrow R2 use       |
+| 3A — Backend learning slice      | **WAVES 1–4 ACCEPTED; WAVE 5 DEFERRED (ADR-041)** | Learning journey, Auth/RLS gates, hosted pre-production slice |
+| 4 — Email/files/notifications    | **P4-S1 ... P4-S5 IMPLEMENTED (CODE/LOCAL, ADR-044)** | Account email, rate limiting, notifications, feedback, PWA; P4-S6/S7 unapproved |
 | 5 — Creator operations           | NOT STARTED                   | Teacher flows, referrals, messaging, moderation     |
 | 6 — Live/media/storage providers | DEFERRED (ADR-029)            | Conditional adapters; new decision required         |
 | 7 — Payments                     | NOT STARTED                   | Checkout, subscriptions, webhooks                   |
 | 8 — Marketplace                  | NOT STARTED                   | Digital products, splits, creator economy           |
 | 9 — Search + AI                  | NOT STARTED                   | Intelligent search, AI assistant                    |
 | 10 — Scale                       | NOT STARTED                   | Organizations, multi-tenancy                        |
+
+> **Checkpoint update (13 November 2026):** Phase 3A Waves 1–4 are accepted and the Wave 5
+> capacity/recovery rehearsal is deferred under ADR-041. Phase 4 P4-S1 ... P4-S5 are implemented
+> code/local under ADR-042 ... ADR-044; P4-S6/P4-S7 are unapproved. The row-level statuses below are
+> still not fully reconciled with current evidence — treat `docs/PROJECT-STATUS.md` as the current
+> status and this matrix as a requirement-level trace, not a live build status.
 
 > Next actionable work (the Gate A pre-Phase-3 blockers, then Phase 3) is ordered in
 > `docs/PHASES.md` → "Next work — ordered (4 November 2026)".

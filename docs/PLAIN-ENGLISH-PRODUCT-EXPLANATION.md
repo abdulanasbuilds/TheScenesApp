@@ -283,11 +283,19 @@ The security approach:
 Phases 0–2 are complete: the project rules, design direction and 30-page fixture-backed application
 are established and verified across desktop, tablet and mobile.
 
-The current work is **Phase 3A**: turning the demonstration into a safe real-data learning slice. The
-local safety setup is complete. The first database implementation is written but still needs its live
-local execution test. After that minimum gate passes, the team will build the account → profile →
-community → course → lesson-progress journey end to end. When that integration is ready, the agent
-will ask for fresh staging access and verify it there. Production remains a separate later decision.
+The Phase 3A learning journey is built and accepted: real sign-up and login, profiles, community
+membership, course enrolment, protected lessons and saved progress work against the approved
+pre-production database, with database-level security rules. The capacity and recovery proof
+("Wave 5") is deferred and remains required before any public launch or scale claim.
+
+The current work is **Phase 4** (operational services): account email and password recovery,
+distributed rate limiting, connected in-app notifications, the feedback channel and app
+installability are implemented in code and locally. Connecting their external services (the Resend
+account for email delivery, Upstash for shared rate limiting, the Telegram bot for feedback) happens
+when the founder creates those accounts; the configuration contract is already prepared in
+`.env`/`.env.example` so pasted credentials work immediately (ADR-046, 13 November 2026: build
+locally, sync to GitHub, test after a Cloudflare deployment). Production remains a separate later
+decision.
 
 ---
 
@@ -295,16 +303,19 @@ will ask for fresh staging access and verify it there. Production remains a sepa
 
 These features are real requirements but are being held for later phases:
 
-- **Real user authentication** (Phase 3)
-- **Real database and data storage** (Phase 3)
-- **Email notifications** (Phase 4)
-- **File uploads and storage** (Phase 4)
 - **Creator tools and operations** (Phase 5)
 - **Live video sessions** (Phase 6)
+- **Native file uploads and storage** (deferred; launch resources use external links — ADR-029)
 - **Payments and checkout** (Phase 7)
 - **Marketplace and digital products** (Phase 8)
 - **AI features** (Phase 9)
 - **Organizations and multi-tenancy** (Phase 10)
+- **Web push notifications** (P4-S6, not yet approved)
+- **Platform-managed object storage** (P4-S7, not yet approved)
+
+Real user authentication, the real database, the email/password-recovery journey and the in-app
+notification code are already implemented for the approved learning journey; their full rollout
+awaits the remaining operational integrations and the launch gate.
 
 This is deliberate. Building the interface first ensures the product makes sense before connecting it to complex backend systems.
 

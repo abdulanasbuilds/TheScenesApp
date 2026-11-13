@@ -1,10 +1,12 @@
 # The Scenes — Security and Privacy Rules
 
-**Last reviewed:** 5 November 2026
-**Current implementation boundary:** Phase 3A revision 3 is awaiting re-review and founder approval.
-Documentation and local configuration-safety corrections may proceed; no Supabase stack, migration,
-hosted project, credentials, production data, payments, deployment, or provider-side mutation is
-authorized.
+**Last reviewed:** 13 November 2026
+**Current implementation boundary:** the Phase 3A learning slice (Waves 1–4) is accepted with its
+recorded Auth, RLS and client/server boundary gates. Phase 4 P4-S1 ... P4-S5 are implemented
+code/local (ADR-042 ... ADR-044); P4-S6 (web push) and P4-S7 (R2) are unapproved. No production
+deployment, payment, real customer data or unapproved provider-side mutation is authorized. Per
+ADR-046 (13 November 2026), hosted/provider actions run only after the founder connects the required
+tools and approves the target.
 
 This document defines testable security rules. `AGENTS.md`, the current phase specification, and the
 current user instruction remain higher authority. A later phase must extend this document before it

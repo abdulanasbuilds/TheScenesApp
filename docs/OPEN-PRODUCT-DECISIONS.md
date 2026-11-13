@@ -271,4 +271,9 @@ ADR-031 and ADR-034.
 
 ---
 
-(Continue with remaining OPD-005 through OPD-014 unchanged...)
+OPD-005 through OPD-014 were never written up in this file. Their topics and current handling are
+traceable through `docs/PRODUCT-REQUIREMENTS.md` and `docs/FEATURE-MATRIX.md` (for example: learning
+streaks are blocked pending the founder decision referenced as OPD-005, and auto-DM onboarding is
+deferred as OPD-007). Do not treat these decisions as resolved. Completing their records is accepted
+documentation work; it is not a blocker for the current phase. See `docs/PROJECT-STATUS.md` and
+ADR-046 for the current working mode.

@@ -26,8 +26,12 @@ before any staging load test, public launch or scale claim.
 The founder selected lean build + staging mode on 6 November 2026: complete the minimum local safety
 gate once, build approved vertical slices, and ask for fresh staging access only when an integration is
 ready. Old accounts/credentials are forbidden. No production backend, payment or deployment is
-approved. Phase 4 revision 2 (email, notifications, rate limiting, feedback, PWA/push and conditional
-platform objects) is in Review and is not approved for implementation. See `docs/PROJECT-STATUS.md`.
+approved. Phase 4 revision 2 is approved for its code/local scope: P4-S1 (account email/recovery),
+P4-S2 (rate limiting), P4-S3 (connected notifications), P4-S4 (feedback channel) and P4-S5 (PWA) are
+implemented locally, one slice at a time; P4-S6 (web push) and P4-S7 (R2 objects) are not approved.
+On 13 November 2026 the founder set the standing local-first working mode (ADR-046): no Docker
+dependency, code syncs to GitHub when needed, the founder creates provider accounts himself, and the
+founder tests after GitHub push and Cloudflare deployment. See `docs/PROJECT-STATUS.md`.
 
 ## Core stack direction
 

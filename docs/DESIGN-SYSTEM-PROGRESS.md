@@ -1,9 +1,15 @@
 # THE SCENES — Frontend Design System Progress
 
-## Status: IN PROGRESS
+## Status: HISTORICAL EXPLORATION RECORD
+
 **Started:** November 2, 2026
 **Design File:** THE-SCENES-Complete-Frontend-Design-System.pen
 **Location:** C:\Users\DELL\THE-SCENES-Complete-Frontend-Design-System.pen
+
+> **Status note (13 November 2026):** this file records the early design exploration and is kept for
+> history. The designed direction was implemented, and the complete 30-page fixture frontend was
+> accepted by the founder on 4 November 2026 (Phase 2 accepted). "In progress" below refers to that
+> exploration period, not the current build. Current status: `docs/PROJECT-STATUS.md`.
 
 ---
 
