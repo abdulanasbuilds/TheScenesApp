@@ -220,13 +220,13 @@ Member shell (community-scoped sidebar + top bar + mobile tab bar)
   /notifications                 notification centre
   /my-learning                   cross-community learning
 
-Creator / admin shell
-  /workspace                     dashboard
-  /workspace/community           settings (general, branding, access, features)
-  /workspace/members             member management + moderation
-  /workspace/courses             course library + builder
-  /workspace/events              event management
-  /workspace/commerce            subscriptions, orders, earnings, payouts, enterprise
+Creator shell
+  /dashboard/creator             overview
+  /dashboard/community           settings (general, branding, access, features)
+  /dashboard/members             member management + moderation
+  /dashboard/courses             course library + builder
+  /dashboard/events              event management
+  /dashboard/commerce            subscriptions, orders, earnings, payouts, enterprise
 ```
 
 Key interaction patterns adopted: community-scoped navigation, tabbed community surfaces,

@@ -139,7 +139,7 @@ function MemberManagementPage() {
     setInviteRole("Member");
     setInviteError("");
     setInviteOpen(false);
-    toast("Invitation added locally", "No email was sent. Email delivery is not connected.");
+    toast("Invitation saved for this preview", "Email delivery is coming soon.");
   };
 
   return (
@@ -171,10 +171,14 @@ function MemberManagementPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat label="Members in view" value={directory.length} hint="Fixture community roster" />
+          <Stat label="Members in view" value={directory.length} hint="Sample community roster" />
           <Stat label="Active" value={activeCount} hint={`${invitedCount} invited`} />
-          <Stat label="Online now" value={onlineCount} hint="Deterministic fixture presence" />
-          <Stat label="Admins + moderators" value={teamCount} hint="Role changes are local only" />
+          <Stat label="Online now" value={onlineCount} hint="Sample presence" />
+          <Stat
+            label="Admins + moderators"
+            value={teamCount}
+            hint="Role changes apply to this preview"
+          />
         </div>
 
         <Card className="mt-5 overflow-hidden">
@@ -430,8 +434,7 @@ function MemberManagementPage() {
             </Select>
           </Field>
           <div className="rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-950">
-            This creates a fixture row only. Invitations, email delivery and token-based acceptance
-            are not connected.
+            This adds a sample row. Email invitations and token-based acceptance are coming soon.
           </div>
         </form>
       </Modal>
@@ -463,8 +466,8 @@ function MemberManagementPage() {
         }
       >
         <p className="text-sm leading-6 text-slate-700">
-          In production this action would need object-level authorization, an audit record and a
-          clear policy for owned content. None of that exists in this frontend preview.
+          This action will need authorization, an audit record and a clear policy for owned content.
+          That work is coming soon.
         </p>
       </Modal>
     </CreatorShell>

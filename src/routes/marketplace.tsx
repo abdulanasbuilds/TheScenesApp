@@ -90,8 +90,8 @@ function MarketplacePage() {
                 Commerce preview
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                Checkout is simulated in this frontend build. No card details are requested and no
-                payment is processed.
+                Checkout is a preview in this build. No card details are requested and no payment is
+                processed.
               </p>
               <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-emerald-700">
                 <span className="h-2 w-2 rounded-full bg-emerald-600" /> Safe to explore
@@ -169,7 +169,7 @@ function MarketplacePage() {
           </p>
           <p className="inline-flex items-center gap-1.5 text-xs text-slate-500">
             <SlidersHorizontal className="h-3.5 w-3.5" />
-            {savedOnly ? "Showing saved items" : "Fixture catalogue"}
+            {savedOnly ? "Showing saved items" : "Sample catalogue"}
           </p>
         </div>
 

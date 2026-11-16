@@ -140,7 +140,7 @@ function SearchResultsPage() {
           <p className="text-sm font-bold text-slate-900">
             {results.length} results{query ? ` for “${query}”` : ""}
           </p>
-          <p className="text-xs text-slate-500">Fixture search · updates as you type</p>
+          <p className="text-xs text-slate-500">Updates as you type</p>
         </div>
         {results.length ? (
           <Card className="mt-4 divide-y divide-slate-100 overflow-hidden">

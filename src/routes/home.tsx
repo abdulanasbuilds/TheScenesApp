@@ -61,7 +61,7 @@ function MemberHomePage() {
                 description="Your progress follows you across communities."
                 action={
                   <a href="/my-learning" className="text-xs font-bold text-indigo-700">
-                    All learning →
+                    All learning
                   </a>
                 }
               />
@@ -96,7 +96,13 @@ function MemberHomePage() {
                     Recent, useful activity — not an infinite feed.
                   </p>
                 </div>
-                <Badge tone="green">● Updated</Badge>
+                <Badge tone="green">
+                  <span
+                    className="mr-1.5 inline-block h-2 w-2 rounded-full bg-current align-middle"
+                    aria-hidden="true"
+                  />
+                  Updated
+                </Badge>
               </div>
               <div className="mt-4 space-y-4">
                 {joinedPosts.map((post) => (
@@ -163,7 +169,7 @@ function MemberHomePage() {
                     Worth a look
                   </h2>
                   <p className="mt-1 text-xs text-slate-500">
-                    Not algorithmic — fixture recommendations.
+                    Picked from sample data for this preview.
                   </p>
                 </div>
                 <div className="space-y-3">

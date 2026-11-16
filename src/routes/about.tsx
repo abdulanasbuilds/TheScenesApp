@@ -51,7 +51,7 @@ const principles = [
   {
     icon: ShieldCheck,
     title: "Clear boundaries",
-    body: "No fake provider success. If payments, email, storage or live video are not connected, the interface says so plainly.",
+    body: "Honest by default. Anything still being built is marked Coming soon instead of pretending to be finished.",
   },
 ];
 
@@ -331,7 +331,7 @@ function AboutPage() {
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-emerald-600" />
               <h2 className="font-display text-xl font-extrabold text-slate-900">
-                What is actually live in this build
+                What works today
               </h2>
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -354,10 +354,11 @@ function AboutPage() {
               ))}
             </div>
             <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-950">
-              <p className="font-bold">Not connected yet</p>
+              <p className="font-bold">Coming soon</p>
               <p className="mt-1">
                 Production authentication, payments, payouts, email delivery, file storage, video
-                hosting and browser push. Every affected screen says so instead of faking success.
+                hosting and browser push. Every affected screen says Coming soon instead of faking
+                success.
               </p>
             </div>
           </Card>

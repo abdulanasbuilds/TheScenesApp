@@ -55,7 +55,7 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
     category: "Getting started",
     question: "How does sign-in work in this preview?",
     answer:
-      "Sign-in is simulated in the browser. Any valid-looking email and password opens a demo session for Ama Boateng. No server account is created, no password is stored and no verification email is sent.",
+      "Sign-in runs in preview mode. Any valid-looking email and password opens a demo session for Ama Boateng. No real account is created and no verification email is sent yet.",
   },
   {
     category: "Getting started",
@@ -67,7 +67,7 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
     category: "Communities & posts",
     question: "Can I join a community?",
     answer:
-      "Yes. Joining and leaving update the local member state and unlock the community feed view. Billing, access control and server membership records are not connected, so no payment or permanent membership is created.",
+      "Yes. Joining and leaving update the member state and unlock the community feed. Billing and permanent membership records are coming soon.",
   },
   {
     category: "Communities & posts",
@@ -85,7 +85,7 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
     category: "Courses & learning",
     question: "How is course progress calculated?",
     answer:
-      "Each course is made of modules and lessons. Completing a lesson adds it to local state, and progress is the share of lessons completed. The next incomplete lesson becomes the continue target. Reloading the page resets progress to the seeded starting point.",
+      "Each course is made of modules and lessons. Completing a lesson adds it to local state, and progress is the share of lessons completed. The next incomplete lesson becomes the continue target. Reloading the page resets progress to the starting point.",
   },
   {
     category: "Courses & learning",
@@ -97,25 +97,25 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
     category: "Courses & learning",
     question: "What is the leaderboard based on?",
     answer:
-      "The leaderboard uses fixture points and levels. Ranking policy, privacy controls and anti-gaming rules are unresolved, so the community setting that would enable a public leaderboard is off by default.",
+      "The leaderboard uses sample points and levels. Ranking policy, privacy controls and anti-gaming rules are still being decided, so the community setting that would enable a public leaderboard is off by default.",
   },
   {
     category: "Creators & commerce",
     question: "How do I become a teacher or creator?",
     answer:
-      "The creator workspace is available as a full frontend preview from the member header. A production creator application, identity verification, revenue share and payout setup do not exist yet.",
+      "The creator workspace is open from the member header. Creator applications, identity verification, revenue share and payouts are coming soon.",
   },
   {
     category: "Creators & commerce",
     question: "Can I buy a resource in the marketplace?",
     answer:
-      "You can complete a simulated checkout. It records a local purchase state and nothing else: no card is collected, no money moves, no receipt is emailed and no file is delivered.",
+      "You can complete a preview checkout. It records a purchase state and nothing else: no card is collected, no money moves, no receipt is emailed and no file is delivered.",
   },
   {
     category: "Creators & commerce",
     question: "Are the prices final?",
     answer:
-      "Community prices shown in the fixture catalogue are sample values. The approved platform monthly direction is Pro at $19 / GH₵300 and Pro Plus at $39 / GH₵620. Pro and Pro Plus have a 3% platform fee; Free has a 7% platform fee. No charge can occur in this preview because payments remain on hold.",
+      "Community prices shown in the sample catalogue are examples. The approved platform monthly direction is Pro at $19 / GH₵300 and Pro Plus at $39 / GH₵620. Pro and Pro Plus have a 3% platform fee; Free has a 7% platform fee. No charge can occur in this preview because checkout is coming soon.",
   },
   {
     category: "Account & privacy",
@@ -134,63 +134,63 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
 const statusRows = [
   {
     service: "Public pages and discovery",
-    status: "Available",
+    status: "Live",
     tone: "green" as const,
-    detail: "Fixture catalogue with search, filters and sorting.",
+    detail: "Sample catalogue with search, filters and sorting.",
   },
   {
     service: "Member feed, posts and comments",
-    status: "Local preview",
+    status: "Preview",
     tone: "amber" as const,
-    detail: "Changes live in browser memory for the session.",
+    detail: "Changes are saved for this preview session.",
   },
   {
     service: "Course progress and RSVPs",
-    status: "Local preview",
+    status: "Preview",
     tone: "amber" as const,
-    detail: "No learner record is persisted to a server.",
+    detail: "Progress is saved for this preview only.",
   },
   {
     service: "Creator workspace",
-    status: "Local preview",
+    status: "Preview",
     tone: "amber" as const,
-    detail: "Settings, curriculum and event edits reset on reload.",
+    detail: "Settings, curriculum and event edits are saved for this preview.",
   },
   {
     service: "Accounts and sign-in",
-    status: "Simulated",
+    status: "Preview",
     tone: "amber" as const,
     detail: "Demo session only. No credential is stored.",
   },
   {
     service: "Marketplace checkout",
-    status: "Simulated",
+    status: "Preview",
     tone: "amber" as const,
-    detail: "No card, payment, receipt or file delivery.",
+    detail: "Checkout is a preview; payments are coming soon.",
   },
   {
     service: "Payments, payouts and refunds",
-    status: "Not connected",
+    status: "Coming soon",
     tone: "slate" as const,
-    detail: "Requires a payment provider, KYC and settlement rules.",
+    detail: "Will connect to a payment provider, KYC and settlement rules.",
   },
   {
     service: "Email and browser push",
-    status: "Not connected",
+    status: "Coming soon",
     tone: "slate" as const,
-    detail: "No transactional email or push permission request.",
+    detail: "Transactional email and push permission arrive after launch.",
   },
   {
     service: "File storage and downloads",
-    status: "Not connected",
+    status: "Coming soon",
     tone: "slate" as const,
-    detail: "No uploads, private files or delivery links.",
+    detail: "Uploads, private files and delivery links are being built.",
   },
   {
     service: "Video hosting and live rooms",
-    status: "Not connected",
+    status: "Coming soon",
     tone: "slate" as const,
-    detail: "Lesson video and live sessions are placeholders.",
+    detail: "Native video and live sessions are being built.",
   },
 ];
 
@@ -225,8 +225,7 @@ function HelpPage() {
             What do you need to know?
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-            Answers about the product, the current frontend preview and what is deliberately not
-            connected yet. If an action is simulated, it says so here.
+            Answers about the product, what works today and what is coming soon.
           </p>
 
           <div className="mt-6 flex max-w-2xl items-center gap-2 rounded-xl border border-slate-300 bg-white p-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-2 focus-within:ring-indigo-600/15">
@@ -374,15 +373,14 @@ function HelpPage() {
                 id="status-heading"
                 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-slate-900"
               >
-                What is connected right now
+                What works today
               </h2>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
-                This build is a frontend preview. The table below is the boundary between working
-                interface behaviour and services that still need a backend.
+                The table below separates what works today from what is coming soon.
               </p>
             </div>
             <Badge tone="amber">
-              <TriangleAlert className="h-3 w-3" /> No production services
+              <TriangleAlert className="h-3 w-3" /> Preview build
             </Badge>
           </div>
 
@@ -485,7 +483,7 @@ function HelpPage() {
             Explore
           </a>
           <span className="inline-flex items-center gap-1">
-            <Bell className="h-3.5 w-3.5" /> Notifications are not connected
+            <Bell className="h-3.5 w-3.5" /> Notifications are coming soon
           </span>
         </div>
       </div>

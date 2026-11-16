@@ -159,7 +159,7 @@ function SettingsPage() {
       return;
     }
     setProfileSaved(true);
-    toast("Profile saved locally", "No server profile was updated in this frontend preview.");
+    toast("Profile saved", "Your profile is saved for this preview.");
   };
 
   const saveEmail = (event: FormEvent) => {
@@ -169,10 +169,7 @@ function SettingsPage() {
       return;
     }
     setEmailError("");
-    toast(
-      "Email change is not connected",
-      "No verification email was sent and no account record changed.",
-    );
+    toast("Email changes are coming soon", "Your current email is unchanged.");
   };
 
   const savePassword = (event: FormEvent) => {
@@ -186,10 +183,7 @@ function SettingsPage() {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
-    toast(
-      "Password unchanged",
-      "Authentication is simulated in this preview. No credential was stored.",
-    );
+    toast("Password unchanged", "Preview session. No credential was stored.");
   };
 
   const closeDanger = () => {
@@ -209,7 +203,7 @@ function SettingsPage() {
                 </p>
                 <Badge tone={dataMode === "fixtures" ? "amber" : "green"}>
                   {dataMode === "fixtures"
-                    ? "Frontend preview"
+                    ? "Preview build"
                     : dataMode === "supabase-staging"
                       ? "Pre-production connected"
                       : "Connected local proof"}
@@ -271,7 +265,7 @@ function SettingsPage() {
                     </p>
                     <p className="text-xs text-slate-500">@{profile.handle || "handle"}</p>
                   </div>
-                  <Badge tone="outline">Avatar uploads not connected</Badge>
+                  <Badge tone="outline">Avatar uploads coming soon</Badge>
                 </div>
 
                 <form onSubmit={saveProfile} className="mt-5 space-y-4" noValidate>
@@ -388,8 +382,8 @@ function SettingsPage() {
                   </div>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
                     {dataMode === "supabase-staging"
-                      ? "Used for sign-in and confirmation. Email changes are not available in this phase."
-                      : "Used for sign-in and important account messages. Verification email is not connected locally."}
+                      ? "Used for sign-in and confirmation. Email changes are coming soon."
+                      : "Used for sign-in and important account messages. Verification email is coming soon."}
                   </p>
                   <form onSubmit={saveEmail} className="mt-4 space-y-4" noValidate>
                     <Field label="Email" htmlFor="account-email" error={emailError} required>
@@ -412,9 +406,7 @@ function SettingsPage() {
                         </Button>
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-500">
-                        Email changes are unavailable in this phase.
-                      </p>
+                      <p className="text-xs text-slate-500">Email changes are coming soon.</p>
                     )}
                   </form>
                 </Card>
@@ -426,8 +418,8 @@ function SettingsPage() {
                   </div>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
                     {dataMode === "fixtures"
-                      ? "Authentication is simulated. These fields validate locally and never store a credential."
-                      : "Password changes are unavailable until secure recovery and transactional email are connected."}
+                      ? "Password changes are coming soon. These fields are checked for format only."
+                      : "Password changes are coming soon, once secure recovery and transactional email are connected."}
                   </p>
                   {dataMode === "fixtures" ? (
                     <form onSubmit={savePassword} className="mt-4 space-y-4" noValidate>
@@ -498,7 +490,7 @@ function SettingsPage() {
                       <p className="text-sm font-semibold text-slate-900">This browser session</p>
                       <p className="mt-0.5 text-xs text-slate-500">
                         {dataMode === "fixtures"
-                          ? "Local demo session · no server token"
+                          ? "Demo session · saved for this preview"
                           : dataMode === "supabase-staging"
                             ? "Verified pre-production session"
                             : "Verified isolated local session"}
@@ -530,11 +522,10 @@ function SettingsPage() {
                     <h2 className="font-display text-lg font-extrabold text-slate-900">
                       What reaches you
                     </h2>
-                    <Badge tone="amber">Delivery not connected</Badge>
+                    <Badge tone="amber">Delivery coming soon</Badge>
                   </div>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
-                    These switches save a local preference. Email, push and in-app delivery are not
-                    wired to a provider in this phase.
+                    These switches save your preference. Email and push delivery are coming soon.
                   </p>
                   <div className="mt-4 divide-y divide-slate-100">
                     <Toggle
@@ -589,12 +580,14 @@ function SettingsPage() {
                     />
                   </div>
                   <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-                    <p className="text-xs text-slate-500">Preferences are local to this session.</p>
+                    <p className="text-xs text-slate-500">
+                      Preferences are saved for this preview.
+                    </p>
                     <Button
                       onClick={() =>
                         toast(
-                          "Notification preferences saved locally",
-                          "No email or push provider was contacted.",
+                          "Notification preferences saved",
+                          "Email and push delivery are coming soon.",
                         )
                       }
                     >
@@ -616,8 +609,7 @@ function SettingsPage() {
                   </h2>
                 </div>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  These controls describe the intended product policy. Server-side enforcement and
-                  database policies do not exist yet.
+                  These controls describe the intended product policy. Enforcement is coming soon.
                 </p>
                 <div className="mt-4 divide-y divide-slate-100">
                   <Toggle
@@ -639,7 +631,7 @@ function SettingsPage() {
                     checked={privacy.allowDms}
                     onChange={(value) => setPrivacy({ ...privacy, allowDms: value })}
                     label="Allow direct messages"
-                    description="Messaging is a later product phase. This preference is stored locally only."
+                    description="Direct messages are coming soon. This preference is saved for launch."
                   />
                   <Toggle
                     id="privacy-search"
@@ -663,15 +655,10 @@ function SettingsPage() {
                   </Field>
                 </div>
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-                  <p className="text-xs text-slate-500">
-                    No database policy or RLS rule is changed here.
-                  </p>
+                  <p className="text-xs text-slate-500">Preferences are saved for this preview.</p>
                   <Button
                     onClick={() =>
-                      toast(
-                        "Privacy preferences saved locally",
-                        "Production authorization was not changed.",
-                      )
+                      toast("Privacy preferences saved", "Account-wide enforcement is coming soon.")
                     }
                   >
                     <Save className="h-4 w-4" /> Save privacy
@@ -687,8 +674,8 @@ function SettingsPage() {
                   <h2 className="font-display text-lg font-extrabold">Danger zone</h2>
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Deactivation and deletion are not implemented. Both actions would need server-side
-                  authorization, audit logging, retention rules and a recovery path.
+                  Deactivation and deletion are coming soon. Both actions will need authorization,
+                  audit logging, retention rules and a recovery path.
                 </p>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
@@ -790,7 +777,7 @@ function SettingsPage() {
                 closeDanger();
                 toast(
                   mode === "delete" ? "No data was deleted" : "No account was deactivated",
-                  "Destructive account operations are disabled in this frontend preview.",
+                  "Account deletion and deactivation are coming soon.",
                 );
               }}
             >
@@ -805,8 +792,8 @@ function SettingsPage() {
         <div className="space-y-3">
           <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs leading-5 text-rose-950">
             {dangerMode === "delete"
-              ? "A production deletion would need identity re-verification, ownership rules for posts and files, retention exceptions and an audit trail. None of that exists in this build."
-              : "A production deactivation would need session revocation, sign-in blocking and a clear policy for public content. None of that exists in this build."}
+              ? "Account deletion will need identity re-verification, ownership rules for posts and files, retention exceptions and an audit trail. That work is coming soon."
+              : "Account deactivation will need session revocation, sign-in blocking and a clear policy for public content. That work is coming soon."}
           </div>
           <Field label={`Type “${profile.handle}” to confirm`} htmlFor="danger-confirm">
             <Input
@@ -920,8 +907,8 @@ function ConnectedNotificationPreferences() {
       </div>
       <p className="mt-1 text-sm leading-6 text-slate-600">
         Account and security notices are always delivered in-app and cannot be turned off.
-        Everything else is your choice. Email and push delivery are not connected in this phase, so
-        those switches store your preference for when a provider is approved.
+        Everything else is your choice. Email and push delivery are coming soon, so those switches
+        store your preference for launch.
       </p>
 
       {status === "loading" ? (
@@ -972,14 +959,14 @@ function ConnectedNotificationPreferences() {
           />
           <ChannelPreferencesGroup
             title="Email"
-            description="Not connected in this phase. Your choice is stored for a later email provider."
+            description="Coming soon. Your choice is saved for launch."
             channel="email"
             preferences={preferences}
             onChange={setField}
           />
           <ChannelPreferencesGroup
             title="Push"
-            description="Not connected in this phase. Browser permission is a later step."
+            description="Coming soon. Browser permission arrives with notifications."
             channel="push"
             preferences={preferences}
             onChange={setField}

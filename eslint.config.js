@@ -13,6 +13,7 @@ export default tseslint.config(
       ".vinxi",
       ".cache",
       ".playwright",
+      ".audit",
       "node_modules",
       "db/database.types.ts",
     ],

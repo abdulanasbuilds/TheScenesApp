@@ -226,10 +226,7 @@ function NewPostPage() {
                         onClick={() =>
                           index < 4
                             ? insert(String(token))
-                            : toast(
-                                "Attachment unavailable",
-                                "File storage is not connected in this frontend phase.",
-                              )
+                            : toast("Attachment unavailable", "File storage is coming soon.")
                         }
                         className="flex h-8 w-8 items-center justify-center rounded text-slate-500 hover:bg-white hover:text-slate-900"
                         aria-label={`Insert ${String(token)}`}

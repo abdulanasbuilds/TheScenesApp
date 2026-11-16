@@ -175,7 +175,7 @@ function EventManagementPage() {
     setTab(next.status === "scheduled" ? "scheduled" : "draft");
     toast(
       next.status === "scheduled" ? "Event marked scheduled" : "Event saved as a draft",
-      "Local preview only. No invitation, reminder or calendar sync occurred.",
+      "Saved for this preview. Email invitations, reminders and calendar sync are coming soon.",
     );
   };
 
@@ -196,7 +196,7 @@ function EventManagementPage() {
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 Plan sessions, manage capacity and review registrations. Calendar sync, reminders
-                and live-room provisioning are deliberately not connected.
+                and live-room provisioning are coming soon.
               </p>
             </div>
             <Button onClick={() => setCreateOpen(true)}>
@@ -842,7 +842,7 @@ function AttendeesModal({
       open={Boolean(event)}
       onOpenChange={(open) => (!open ? onClose() : undefined)}
       title={event ? `Attendees — ${event.title}` : "Attendees"}
-      description="A fixture roster. Registration, ticketing and check-in are not connected."
+      description="A sample roster. Registration, ticketing and check-in are coming soon."
       size="lg"
       footer={
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">

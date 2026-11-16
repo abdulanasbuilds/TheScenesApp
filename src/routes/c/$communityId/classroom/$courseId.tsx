@@ -1,6 +1,7 @@
 import { Outlet, createFileRoute, notFound, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { Check, ChevronDown, Clock3, Lock, Play, Star, Users } from "lucide-react";
+import { MediaCover } from "@/components/domain/media-upload";
 import { Avatar, Badge, Button, Card, CoverArt, Progress } from "@/components/ui";
 import { getCreator } from "@/data/seed";
 import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
@@ -123,9 +124,11 @@ function CourseOverview() {
               </div>
             </div>
           </div>
-          <CoverArt
+          <MediaCover
+            src={course.coverUrl}
             seed={course.slug}
             hue={course.accentHue}
+            label={course.title}
             rounded="rounded-2xl"
             className="aspect-[16/10] border border-white/10"
           />
@@ -264,7 +267,7 @@ function CourseOverview() {
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   {course.price === "included"
                     ? `Included with your ${community.name} membership.`
-                    : "One-time course access in this frontend preview."}
+                    : "One-time course access. Checkout is coming soon."}
                 </p>
                 <Button className="mt-5 w-full" size="lg" onClick={handleEnroll} disabled={pending}>
                   Add to my learning

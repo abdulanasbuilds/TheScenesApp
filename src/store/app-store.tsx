@@ -28,6 +28,7 @@ import {
   notifications as seedNotifications,
   posts as seedPosts,
 } from "@/data/seed";
+import { X } from "lucide-react";
 import type {
   Category,
   Community,
@@ -68,6 +69,7 @@ type AppState = {
   saved: string[];
   following: string[];
   localPosts: Post[];
+  customCategories: Category[];
 };
 
 type Action =
@@ -93,6 +95,8 @@ type Action =
   | { type: "purchase"; productId: string }
   | { type: "toggleSave"; slug: string }
   | { type: "toggleFollow"; handle: string }
+  | { type: "addCategory"; category: Category }
+  | { type: "removeCategory"; categoryId: string }
   | { type: "addPost"; post: Post }
   | {
       type: "updatePost";
@@ -122,6 +126,7 @@ const initialState: AppState = {
   saved: ["prod-3"],
   following: ["nanaadjei"],
   localPosts: [],
+  customCategories: [],
 };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -131,11 +136,39 @@ function reducer(state: AppState, action: Action): AppState {
     case "signOut":
       return { ...state, user: null };
     case "join":
-      return state.joined.includes(action.slug)
-        ? state
-        : { ...state, joined: [...state.joined, action.slug] };
+      if (state.joined.includes(action.slug)) return state;
+      return {
+        ...state,
+        joined: [...state.joined, action.slug],
+        notifications: state.notifications.some((n) => n.id === `welcome-${action.slug}`)
+          ? state.notifications
+          : [
+              {
+                id: `welcome-${action.slug}`,
+                kind: "system",
+                title: `Welcome to ${
+                  communities.find((community) => community.slug === action.slug)?.name ??
+                  action.slug.replaceAll("-", " ")
+                }`,
+                body: "Introduce yourself, read the pinned start-here post and ask one question to get going.",
+                createdAt: new Date().toISOString(),
+                read: false,
+                href: `/c/${action.slug}`,
+              },
+              ...state.notifications,
+            ],
+      };
     case "leave":
       return { ...state, joined: state.joined.filter((slug) => slug !== action.slug) };
+    case "addCategory":
+      return state.customCategories.some((item) => item.slug === action.category.slug)
+        ? state
+        : { ...state, customCategories: [...state.customCategories, action.category] };
+    case "removeCategory":
+      return {
+        ...state,
+        customCategories: state.customCategories.filter((item) => item.id !== action.categoryId),
+      };
     case "toggleLike": {
       const liked = state.likedPosts.includes(action.postId);
       return {
@@ -238,6 +271,9 @@ type AppContextValue = {
   signOut: () => Promise<void>;
   dataMode: DataMode;
   categories: Category[];
+  creatorCategories: Category[];
+  addCategory: (category: Category) => void;
+  removeCategory: (categoryId: string) => void;
   communities: Community[];
   courses: Course[];
   joinCommunity: (slug: string) => Promise<void>;
@@ -358,6 +394,9 @@ export function AppProvider({
       user: state.user,
       dataMode,
       categories: dataMode === "fixtures" ? categories : (connectedData?.categories ?? []),
+      creatorCategories: dataMode === "fixtures" ? state.customCategories : [],
+      addCategory: (category) => dispatch({ type: "addCategory", category }),
+      removeCategory: (categoryId) => dispatch({ type: "removeCategory", categoryId }),
       communities: dataMode === "fixtures" ? communities : (connectedData?.communities ?? []),
       courses: dataMode === "fixtures" ? courses : (connectedData?.courses ?? []),
       signInDemo,
@@ -507,7 +546,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 className="rounded p-1 text-slate-400 hover:text-white"
                 aria-label="Dismiss notification"
               >
-                ✕
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
           </div>

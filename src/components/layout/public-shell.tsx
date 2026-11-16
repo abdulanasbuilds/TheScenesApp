@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Bell, Menu, Search, X } from "lucide-react";
 import { Avatar, Badge, buttonClass } from "@/components/ui";
 import { useApp } from "@/store/app-store";
-import { cn } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils";
 import { useGlobalSearchShortcut } from "@/lib/use-global-search-shortcut";
 
 export function Brand({
@@ -41,7 +41,7 @@ const publicLinks = [
   { href: "/explore", label: "Explore" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/creators/nanaadjei", label: "For creators" },
+  { href: "/become-a-teacher", label: "For creators" },
 ];
 
 export function PublicHeader({ active }: { active?: string }) {
@@ -79,7 +79,7 @@ export function PublicHeader({ active }: { active?: string }) {
               <Search className="h-4 w-4" />
               <span>Search…</span>
               <kbd aria-hidden="true" className="ml-auto text-[10px] font-semibold text-slate-600">
-                ⌘K
+                Ctrl K
               </kbd>
             </a>
             {user ? (
@@ -94,7 +94,11 @@ export function PublicHeader({ active }: { active?: string }) {
                     <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-clay-600 ring-2 ring-white" />
                   ) : null}
                 </a>
-                <a href="/home" className="rounded-full" aria-label="Open your home">
+                <a
+                  href="/home"
+                  className="rounded-full"
+                  aria-label={`${initials(currentMember?.name ?? user.name)} — open your home`}
+                >
                   <Avatar name={currentMember?.name ?? user.name} size={34} online />
                 </a>
               </>
@@ -196,9 +200,13 @@ export function PublicFooter() {
               open to the world.
             </p>
             <Badge tone="green" className="mt-4">
+              <span
+                className="mr-1.5 inline-block h-2 w-2 rounded-full bg-current align-middle"
+                aria-hidden="true"
+              />
               {dataMode === "fixtures"
-                ? "● Frontend preview · fixture data"
-                : "● Connected pre-production catalogue"}
+                ? "Preview build · sample data"
+                : "Connected pre-production catalogue"}
             </Badge>
           </div>
           {[
@@ -213,6 +221,7 @@ export function PublicFooter() {
             {
               title: "Create",
               links: [
+                ["Become a teacher", "/become-a-teacher"],
                 ["Creator workspace", "/dashboard/creator"],
                 ["Pricing", "/pricing"],
                 ["Creator profile", "/creators/nanaadjei"],
@@ -247,8 +256,8 @@ export function PublicFooter() {
           <p>© 2026 The Scenes. Designed for useful knowledge.</p>
           <p>
             {dataMode === "fixtures"
-              ? "Payments, auth and live services are not connected in this frontend preview."
-              : "Authentication and learning progress are connected. Payments and live services remain unavailable."}
+              ? "Payments, accounts and live services are coming soon."
+              : "Authentication and learning progress are connected. Payments and live services are coming soon."}
           </p>
         </div>
       </div>

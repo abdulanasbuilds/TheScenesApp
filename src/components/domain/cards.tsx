@@ -36,6 +36,7 @@ import {
   Progress,
   buttonClass,
 } from "@/components/ui";
+import { MediaCover } from "@/components/domain/media-upload";
 import { useApp, useToast } from "@/store/app-store";
 import { cn, formatCompact, formatDate, formatMoney, formatTime, relativeTime } from "@/lib/utils";
 
@@ -55,7 +56,8 @@ export function CommunityCard({
   return (
     <Card className="group overflow-hidden transition-colors hover:border-slate-300">
       <a href={`/communities/${community.slug}`} className="block">
-        <CoverArt
+        <MediaCover
+          src={community.coverUrl}
           seed={community.slug}
           hue={community.accentHue}
           label={community.categorySlug.replaceAll("-", " ")}
@@ -64,13 +66,24 @@ export function CommunityCard({
         />
         <div className={cn(compact ? "p-3.5" : "p-4")}>
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h3 className="font-display text-[17px] font-bold tracking-tight text-slate-900 group-hover:text-indigo-700">
-                {community.name}
-              </h3>
-              <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-slate-600">
-                {community.tagline}
-              </p>
+            <div className="flex min-w-0 items-start gap-2.5">
+              {community.iconUrl ? (
+                <img
+                  src={community.iconUrl}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="mt-0.5 h-8 w-8 shrink-0 rounded-lg border border-slate-200 object-cover"
+                />
+              ) : null}
+              <div className="min-w-0">
+                <h3 className="font-display text-[17px] font-bold tracking-tight text-slate-900 group-hover:text-indigo-700">
+                  {community.name}
+                </h3>
+                <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-slate-600">
+                  {community.tagline}
+                </p>
+              </div>
             </div>
             {community.privacy === "private" ? (
               <Lock
@@ -299,11 +312,17 @@ export function EventCard({ event, compact = false }: { event: EventItem; compac
               toggleRsvp(event.id);
               toast(
                 going ? "RSVP removed" : "You’re on the list",
-                going ? undefined : "This is saved locally in the frontend preview.",
+                going ? undefined : "Your RSVP is saved for this preview.",
               );
             }}
           >
-            {going ? "Going ✓" : "RSVP"}
+            {going ? (
+              <span className="inline-flex items-center gap-1">
+                <Check className="h-3.5 w-3.5" aria-hidden="true" /> Going
+              </span>
+            ) : (
+              "RSVP"
+            )}
           </Button>
         </div>
       ) : null}
@@ -408,7 +427,8 @@ export function PostCard({ post, detailHref }: { post: Post; detailHref?: string
               </a>
               {"verified" in (author ?? {}) && (author as { verified?: boolean }).verified ? (
                 <Badge tone="indigo" className="px-1.5 py-0 text-[9px]">
-                  ✓
+                  <Check className="h-3 w-3" aria-hidden="true" />
+                  <span className="sr-only">Verified</span>
                 </Badge>
               ) : null}
               <span className="text-xs text-slate-600">{relativeTime(post.createdAt)}</span>
@@ -448,10 +468,7 @@ export function PostCard({ post, detailHref }: { post: Post; detailHref?: string
               <DropdownSeparator />
               <DropdownItem
                 onSelect={() =>
-                  toast(
-                    "Report not sent",
-                    "Moderation reporting is not connected in this frontend preview.",
-                  )
+                  toast("Report not sent", "Reporting is coming soon. Nothing was sent.")
                 }
               >
                 <Flag className="h-4 w-4" /> Report discussion

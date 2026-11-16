@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" role="img" aria-label="AI Builders Guild wordmark">
+  <rect width="200" height="50" rx="8" fill="#1e1b4b"/>
+  <g fill="none" stroke="#818cf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 35 22 22l12 13"/>
+    <path d="M15 40 22 33l7 7"/>
+  </g>
+  <text x="44" y="24" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="1.5">AI BUILDERS</text>
+  <text x="44" y="39" fill="#c7d2fe" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="600" letter-spacing="5">GUILD</text>
+</svg>

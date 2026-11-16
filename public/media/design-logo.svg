@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" role="img" aria-label="Product Design Studio wordmark">
+  <rect width="200" height="50" rx="8" fill="#7c2d12"/>
+  <g fill="#ffffff">
+    <rect x="10" y="14" width="10" height="10" rx="2" fill-opacity="0.95"/>
+    <rect x="23" y="14" width="10" height="10" rx="5" fill-opacity="0.5"/>
+    <rect x="10" y="27" width="10" height="10" rx="5" fill-opacity="0.5"/>
+    <rect x="23" y="27" width="10" height="10" rx="2" fill-opacity="0.95"/>
+  </g>
+  <text x="44" y="24" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="700" letter-spacing="1">PRODUCT DESIGN</text>
+  <text x="44" y="39" fill="#fed7aa" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="600" letter-spacing="4">STUDIO</text>
+</svg>

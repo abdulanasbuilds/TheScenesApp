@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Avatar, Badge } from "@/components/ui";
 import { Brand } from "./public-shell";
-import { cn } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils";
 import { useGlobalSearchShortcut } from "@/lib/use-global-search-shortcut";
 import { useApp } from "@/store/app-store";
 
@@ -42,7 +42,7 @@ export function MemberShell({ active, children }: { active: MemberSection; child
           >
             <Search className="h-4 w-4" /> Search communities, courses and creators{" "}
             <kbd aria-hidden="true" className="ml-auto text-[10px] font-bold text-slate-600">
-              ⌘K
+              Ctrl K
             </kbd>
           </a>
           <div className="ml-auto flex items-center gap-2">
@@ -71,7 +71,7 @@ export function MemberShell({ active, children }: { active: MemberSection; child
             </a>
             <a
               href={`/c/ai-builders-guild/members/${currentMember?.id}`}
-              aria-label="Open your profile"
+              aria-label={`${initials(currentMember?.name ?? "Ama Boateng")} — open your profile`}
             >
               <Avatar name={currentMember?.name ?? "Ama Boateng"} size={34} online />
             </a>
@@ -135,7 +135,11 @@ export function MemberShell({ active, children }: { active: MemberSection; child
               Activity and progress live only in browser memory.
             </p>
             <Badge tone="green" className="mt-2">
-              ● Local state
+              <span
+                className="mr-1.5 inline-block h-2 w-2 rounded-full bg-current align-middle"
+                aria-hidden="true"
+              />
+              Local state
             </Badge>
           </div>
         </div>

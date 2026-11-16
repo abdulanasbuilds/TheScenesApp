@@ -33,7 +33,7 @@ test("reset-password strips recovery parameters and refuses in preview", async (
 
   await expect(page).toHaveURL(/\/reset-password$/);
   await expect(
-    page.getByRole("heading", { name: "Recovery is not connected in this preview" }),
+    page.getByRole("heading", { name: "Password recovery is coming soon" }),
   ).toBeVisible();
   await expect(page.getByText(/fixture-code-should-be-stripped/)).toHaveCount(0);
 
@@ -42,7 +42,7 @@ test("reset-password strips recovery parameters and refuses in preview", async (
 
   await expect(page).toHaveURL(/\/reset-password$/);
   await expect(
-    page.getByRole("heading", { name: "Recovery is not connected in this preview" }),
+    page.getByRole("heading", { name: "Password recovery is coming soon" }),
   ).toBeVisible();
   await expect(page.getByText(/otp_expired|access_denied/)).toHaveCount(0);
 });

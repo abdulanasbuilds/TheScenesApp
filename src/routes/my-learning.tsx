@@ -124,7 +124,9 @@ function MyLearningPage() {
                   Your library
                 </p>
                 <Badge tone="outline">
-                  {dataMode === "fixtures" ? "Preview session progress" : "Progress saved securely"}
+                  {dataMode === "fixtures"
+                    ? "Progress saved for this preview"
+                    : "Progress saved securely"}
                 </Badge>
               </div>
               <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-950">
@@ -163,7 +165,7 @@ function MyLearningPage() {
             </TabsList>
             <p className="text-xs text-slate-500">
               {dataMode === "fixtures"
-                ? "Progress is stored in browser memory for this preview."
+                ? "Progress is saved for this preview."
                 : "Course progress is loaded from your account."}
             </p>
           </div>
@@ -452,7 +454,7 @@ function MyLearningPage() {
         <p className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[11px] text-slate-600">
           <GraduationCap className="h-3.5 w-3.5" />
           {formatCompact(communities.length)} communities · {formatCompact(courses.length)} courses
-          in the preview catalogue
+          in the sample catalogue
         </p>
       </div>
     </MemberShell>

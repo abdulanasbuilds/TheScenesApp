@@ -2,7 +2,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
 import * as DropdownPrimitive from "@radix-ui/react-dropdown-menu";
-import { Check, ChevronDown, X } from "lucide-react";
+import { Check, ChevronDown, Clock, X } from "lucide-react";
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -142,6 +142,26 @@ export function Badge({
         className,
       )}
     >
+      {children}
+    </span>
+  );
+}
+
+export function ComingSoon({
+  children = "Coming soon",
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600",
+        className,
+      )}
+    >
+      <Clock className="h-3 w-3" aria-hidden="true" />
       {children}
     </span>
   );

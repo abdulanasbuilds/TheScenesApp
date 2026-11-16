@@ -133,8 +133,8 @@ function ResetPasswordPage() {
   if (phase === "unsupported") {
     return (
       <ResetNotice
-        title="Recovery is not connected in this preview"
-        description="Password reset needs a connected Supabase Auth environment and an approved email provider. This preview has neither, so no password can be changed here."
+        title="Password recovery is coming soon"
+        description="Password reset will open once account recovery is connected. No password can be changed in this preview."
         tone="amber"
       />
     );

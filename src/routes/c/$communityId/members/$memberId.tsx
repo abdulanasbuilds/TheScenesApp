@@ -114,9 +114,7 @@ function MemberProfilePage() {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() =>
-                  toast("Messaging unavailable", "Private messaging is a later product phase.")
-                }
+                onClick={() => toast("Messaging coming soon", "Private messaging is coming soon.")}
               >
                 <MessageCircle className="h-4 w-4" /> Message
               </Button>

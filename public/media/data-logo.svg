@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" role="img" aria-label="Data for Good wordmark">
+  <rect width="200" height="50" rx="8" fill="#042f2e"/>
+  <g fill="#5eead4">
+    <rect x="10" y="27" width="6" height="11" rx="2" fill-opacity="0.55"/>
+    <rect x="20" y="21" width="6" height="17" rx="2" fill-opacity="0.75"/>
+    <rect x="30" y="14" width="6" height="24" rx="2" fill-opacity="0.95"/>
+  </g>
+  <text x="46" y="24" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="10.5" font-weight="700" letter-spacing="1.2">DATA FOR GOOD</text>
+  <text x="46" y="39" fill="#99f6e4" font-family="Segoe UI, Arial, sans-serif" font-size="8" font-weight="600" letter-spacing="3.5">PUBLIC INTEREST</text>
+</svg>

@@ -169,9 +169,7 @@ function ProductDetailPage() {
               </div>
               <div className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm">
                 <dt className="text-slate-500">Delivery</dt>
-                <dd className="font-semibold text-slate-900">
-                  Digital download · not connected in preview
-                </dd>
+                <dd className="font-semibold text-slate-900">Digital download · coming soon</dd>
               </div>
               <div className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm">
                 <dt className="text-slate-500">Updates</dt>
@@ -194,7 +192,7 @@ function ProductDetailPage() {
                   Ratings
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Aggregate fixture values, not verified customer reviews.
+                  Sample ratings, not verified customer reviews.
                 </p>
               </div>
               <span className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-900">
@@ -285,8 +283,7 @@ function ProductDetailPage() {
               </p>
             </div>
             <p className="mt-4 rounded-lg bg-amber-50 p-3 text-[11px] leading-4 text-amber-950">
-              This is a frontend preview. No card is collected, no money moves and no receipt is
-              sent.
+              Checkout is coming soon. No card is collected and no money moves.
             </p>
           </Card>
 
@@ -355,11 +352,10 @@ function ProductDetailPage() {
         {completed ? (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
             <p className="flex items-center gap-2 text-sm font-bold text-emerald-950">
-              <Check className="h-4 w-4" /> Recorded locally
+              <Check className="h-4 w-4" /> Saved for this preview
             </p>
             <p className="mt-1 text-xs leading-5 text-emerald-900">
-              No server order was created. No download is available because storage and delivery are
-              not connected.
+              No order was created. Downloads are coming soon.
             </p>
           </div>
         ) : (
@@ -396,8 +392,8 @@ function ProductDetailPage() {
             <div className="rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
               <p className="font-semibold text-slate-800">What happens when you confirm?</p>
               <p className="mt-1">
-                Only local purchase state changes. There is no card form, payment provider, receipt
-                email or file delivery in this phase.
+                Only local purchase state changes. There is no card form or payment provider yet;
+                receipts and downloads are coming soon.
               </p>
             </div>
           </div>

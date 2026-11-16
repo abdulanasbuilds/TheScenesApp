@@ -177,10 +177,7 @@ function PostDetailPage() {
                     <DropdownSeparator />
                     <DropdownItem
                       onSelect={() =>
-                        toast(
-                          "Report noted",
-                          "No report was sent; moderation is not connected in this preview.",
-                        )
+                        toast("Report noted", "Reporting is coming soon. Nothing was sent.")
                       }
                     >
                       <Flag className="h-4 w-4" /> Report discussion

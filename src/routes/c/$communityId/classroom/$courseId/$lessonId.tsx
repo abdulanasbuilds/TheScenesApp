@@ -9,6 +9,7 @@ import {
   Download,
   FileText,
   ListTree,
+  Lock,
   Pause,
   Play,
   RotateCcw,
@@ -17,6 +18,8 @@ import { Badge, Button, Card, Progress } from "@/components/ui";
 import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
 import { cn } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
+
+const FIXTURE_REFERENCE_MS = new Date("2026-11-03T09:00:00.000Z").getTime();
 
 export const Route = createFileRoute("/c/$communityId/classroom/$courseId/$lessonId")({
   loader: async ({ params }) => {
@@ -52,20 +55,30 @@ export const Route = createFileRoute("/c/$communityId/classroom/$courseId/$lesso
 function LessonViewerPage() {
   const { community, course, lesson, previous, next, lessonIndex, lessonCount } =
     Route.useLoaderData();
-  const { state, completeLesson } = useApp();
+  const { state, completeLesson, currentMember } = useApp();
   const { toast } = useToast();
   const [playing, setPlaying] = useState(false);
   const [curriculumOpen, setCurriculumOpen] = useState(false);
   const [completionPending, setCompletionPending] = useState(false);
   const completed = state.completedLessons.includes(lesson.id);
   const contentLocked = !lesson.free && lesson.body.length === 0;
+  const joinedDays = (() => {
+    const joined = currentMember?.joined;
+    if (!joined) return Number.POSITIVE_INFINITY;
+    // Fixture dates are anchored to a fixed reference; production drip must use the server clock.
+    const elapsed = FIXTURE_REFERENCE_MS - new Date(joined).getTime();
+    return Number.isFinite(elapsed) ? Math.max(0, Math.floor(elapsed / 86_400_000)) : 0;
+  })();
+  const dripDays = lesson.dripDays ?? 0;
+  const dripLocked = !contentLocked && dripDays > 0 && joinedDays < dripDays;
+  const dripDaysRemaining = dripLocked ? dripDays - joinedDays : 0;
   const totalCompleted = course.modules
     .flatMap((module) => module.lessons)
     .filter((item) => state.completedLessons.includes(item.id)).length;
   const courseProgress = Math.round((totalCompleted / lessonCount) * 100);
 
   const markComplete = async () => {
-    if (completionPending || contentLocked) return;
+    if (completionPending || contentLocked || dripLocked) return;
     setCompletionPending(true);
     try {
       await completeLesson(lesson.id);
@@ -128,6 +141,9 @@ function LessonViewerPage() {
                 Lesson {lessonIndex + 1} of {lessonCount}
               </Badge>
               <Badge tone="slate">{lesson.type}</Badge>
+              {dripDays ? (
+                <Badge tone={dripLocked ? "amber" : "outline"}>Drip · unlocks day {dripDays}</Badge>
+              ) : null}
               <span className="text-xs text-slate-500">{lesson.duration}</span>
             </div>
             <h1
@@ -155,11 +171,9 @@ function LessonViewerPage() {
                       )}
                     </button>
                     <p className="mt-4 text-sm font-semibold">
-                      {playing ? "Playing simulated lesson" : "Video presentation preview"}
+                      {playing ? "Playing lesson preview" : "Lesson video"}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Media provider is intentionally not connected
-                    </p>
+                    <p className="mt-1 text-xs text-slate-400">Video hosting is coming soon</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 border-t border-slate-800 px-4 py-3">
@@ -213,6 +227,21 @@ function LessonViewerPage() {
                 <p className="mt-2 text-sm leading-6 text-amber-900">
                   Join the community and enrol in the course to open this lesson. Preview lesson
                   metadata remains visible, but protected content and resources are not returned.
+                </p>
+              </Card>
+            ) : dripLocked ? (
+              <Card className="mt-8 border-indigo-200 bg-indigo-50 p-6">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-indigo-700" />
+                  <h2 className="font-display text-xl font-extrabold text-indigo-950">
+                    Drip content: day {dripDays}
+                  </h2>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-indigo-900">
+                  This lesson unlocks {dripDays} days after you join. You joined {joinedDays} days
+                  ago, so it opens in {dripDaysRemaining} {dripDaysRemaining === 1 ? "day" : "days"}
+                  . The schedule is a local fixture; a production drip policy must be enforced by
+                  the server against the real join date.
                 </p>
               </Card>
             ) : (
@@ -290,7 +319,10 @@ function LessonViewerPage() {
                     <Check className="h-4 w-4 text-emerald-600" /> Completed
                   </Button>
                 ) : (
-                  <Button onClick={markComplete} disabled={completionPending || contentLocked}>
+                  <Button
+                    onClick={markComplete}
+                    disabled={completionPending || contentLocked || dripLocked}
+                  >
                     <Check className="h-4 w-4" /> Mark complete
                   </Button>
                 )}
@@ -366,7 +398,10 @@ function LessonViewerPage() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block font-semibold leading-5">{item.title}</span>
-                        <span className="text-[10px] opacity-70">{item.duration}</span>
+                        <span className="text-[10px] opacity-70">
+                          {item.duration}
+                          {item.dripDays ? ` · Day ${item.dripDays}` : ""}
+                        </span>
                       </span>
                     </a>
                   );

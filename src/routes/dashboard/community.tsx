@@ -5,9 +5,13 @@ import {
   ArrowUpRight,
   Check,
   Globe2,
+  LayoutGrid,
+  Link2,
   Lock,
+  Palette,
   Plus,
   Save,
+  Search,
   Settings2,
   ShieldCheck,
   Trash2,
@@ -30,9 +34,11 @@ import {
   Toggle,
   buttonClass,
 } from "@/components/ui";
+import { MediaUploadField } from "@/components/domain/media-upload";
 import { categories, getCommunity } from "@/data/seed";
-import { formatCompact, formatMoney } from "@/lib/utils";
-import { useToast } from "@/store/app-store";
+import type { CommunitySpace } from "@/data/types";
+import { createLocalId, formatCompact, formatMoney } from "@/lib/utils";
+import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/dashboard/community")({
   head: () => ({ meta: [{ title: "Community settings — The Scenes creator workspace" }] }),
@@ -42,6 +48,7 @@ export const Route = createFileRoute("/dashboard/community")({
 function CommunitySettingsPage() {
   const community = getCommunity("ai-builders-guild")!;
   const { toast } = useToast();
+  const { creatorCategories } = useApp();
   const [tab, setTab] = useState("general");
   const [values, setValues] = useState({
     name: community.name,
@@ -60,6 +67,56 @@ function CommunitySettingsPage() {
   const [publicDirectory, setPublicDirectory] = useState(true);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveText, setArchiveText] = useState("");
+  const [iconUrl, setIconUrl] = useState(community.iconUrl ?? "");
+  const [logoUrl, setLogoUrl] = useState(community.logoUrl ?? "");
+  const [coverUrl, setCoverUrl] = useState(community.coverUrl ?? "");
+  const [brandColor, setBrandColor] = useState(community.brandColor ?? "#4338ca");
+  const [keywords, setKeywords] = useState((community.keywords ?? []).join(", "));
+  const [customDomain, setCustomDomain] = useState(community.customDomain ?? "");
+  const [minPostLevel, setMinPostLevel] = useState(String(community.minPostLevel ?? 1));
+  const [spaces, setSpaces] = useState<CommunitySpace[]>(community.spaces ?? []);
+  const [newSpace, setNewSpace] = useState({
+    name: "",
+    group: "Community",
+    type: "posts" as CommunitySpace["type"],
+    layout: "feed" as CommunitySpace["layout"],
+  });
+  const [links, setLinks] = useState(community.externalLinks ?? []);
+  const [newLink, setNewLink] = useState({ label: "", url: "" });
+
+  const keywordList = keywords
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const brandColorValid = /^#[0-9a-fA-F]{6}$/.test(brandColor);
+
+  const addSpace = () => {
+    if (newSpace.name.trim().length < 3) {
+      toast("Name the space", "Use at least 3 characters so members know what it is for.");
+      return;
+    }
+    setSpaces((current) => [
+      ...current,
+      {
+        id: createLocalId("space-local"),
+        name: newSpace.name.trim(),
+        group: newSpace.group.trim() || "Community",
+        type: newSpace.type,
+        layout: newSpace.layout,
+      },
+    ]);
+    setNewSpace({ ...newSpace, name: "" });
+    toast("Space added locally", "No server record was created.");
+  };
+
+  const addLink = () => {
+    if (!newLink.label.trim() || !/^https:\/\//.test(newLink.url.trim())) {
+      toast("Link needs a label and an https address", "Nothing was saved.");
+      return;
+    }
+    setLinks((current) => [...current, { label: newLink.label.trim(), url: newLink.url.trim() }]);
+    setNewLink({ label: "", url: "" });
+  };
 
   const saveGeneral = (event: FormEvent) => {
     event.preventDefault();
@@ -70,10 +127,7 @@ function CommunitySettingsPage() {
       next.description = "Add at least 40 characters of context.";
     setErrors(next);
     if (Object.keys(next).length) return;
-    toast(
-      "Community details saved",
-      "Saved to local preview state only; no server write occurred.",
-    );
+    toast("Community details saved", "Saved in this preview. Cloud sync is coming soon.");
   };
 
   const addRule = () => {
@@ -129,6 +183,9 @@ function CommunitySettingsPage() {
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList>
               <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="branding">Branding</TabsTrigger>
+              <TabsTrigger value="spaces">Spaces</TabsTrigger>
+              <TabsTrigger value="discovery">Discovery</TabsTrigger>
               <TabsTrigger value="rules">Rules</TabsTrigger>
               <TabsTrigger value="access">Access</TabsTrigger>
               <TabsTrigger value="danger">Danger zone</TabsTrigger>
@@ -194,9 +251,12 @@ function CommunitySettingsPage() {
                         value={values.category}
                         onChange={(event) => setValues({ ...values, category: event.target.value })}
                       >
-                        {categories.map((category) => (
+                        {[...categories, ...creatorCategories].map((category) => (
                           <option key={category.id} value={category.slug}>
                             {category.name}
+                            {creatorCategories.some((item) => item.id === category.id)
+                              ? " (draft)"
+                              : ""}
                           </option>
                         ))}
                       </Select>
@@ -266,6 +326,431 @@ function CommunitySettingsPage() {
               </Card>
             </TabsContent>
 
+            <TabsContent value="branding">
+              <div className="mt-4 space-y-5">
+                <Card className="p-5 sm:p-6">
+                  <div className="flex items-center gap-2">
+                    <Palette className="h-4 w-4 text-indigo-700" />
+                    <h2 className="font-display text-lg font-extrabold text-slate-900">
+                      Brand identity
+                    </h2>
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Upload the images members see in discovery, the community page and the
+                    classroom. Keep icons simple and text-free because they render small.
+                  </p>
+                  <div className="mt-5 grid gap-5 sm:grid-cols-[180px_minmax(0,1fr)]">
+                    <MediaUploadField
+                      label="Community icon"
+                      recommended="128 × 128"
+                      value={iconUrl}
+                      onChange={setIconUrl}
+                      seed={community.slug}
+                      hue={community.accentHue}
+                      aspectClassName="aspect-square"
+                    />
+                    <MediaUploadField
+                      label="Cover image"
+                      recommended="1084 × 576"
+                      value={coverUrl}
+                      onChange={setCoverUrl}
+                      seed={community.slug}
+                      hue={community.accentHue}
+                    />
+                  </div>
+                  <div className="mt-5 max-w-xs">
+                    <MediaUploadField
+                      label="Wordmark logo"
+                      recommended="200 × 50 (4:1)"
+                      value={logoUrl}
+                      onChange={setLogoUrl}
+                      seed={`${community.slug}-logo`}
+                      hue={community.accentHue}
+                      aspectClassName="aspect-[4/1]"
+                    />
+                  </div>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <Field
+                      label="Brand colour"
+                      htmlFor="brand-colour"
+                      hint="Six-digit hex value. Used for buttons and accents."
+                      error={brandColorValid ? undefined : "Use a hex colour like #4338ca."}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-9 w-9 shrink-0 rounded-lg border border-slate-200"
+                          style={{ backgroundColor: brandColorValid ? brandColor : "#e2e8f0" }}
+                          aria-hidden="true"
+                        />
+                        <Input
+                          id="brand-colour"
+                          value={brandColor}
+                          onChange={(event) => setBrandColor(event.target.value)}
+                          invalid={!brandColorValid}
+                          spellCheck={false}
+                        />
+                      </div>
+                    </Field>
+                    <Field
+                      label="Theme"
+                      htmlFor="brand-theme"
+                      hint="Light theme today. More themes are coming soon."
+                    >
+                      <Select id="brand-theme" value="light" disabled>
+                        <option value="light">Light (default)</option>
+                        <option value="dark">Dark (coming soon)</option>
+                      </Select>
+                    </Field>
+                  </div>
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                    <p className="text-xs text-slate-500">
+                      Images stay in this browser tab. Upload storage and dark-mode tokens are not
+                      connected.
+                    </p>
+                    <Button
+                      disabled={!brandColorValid}
+                      onClick={() =>
+                        toast(
+                          "Brand settings saved locally",
+                          "No image was uploaded and no theme token was changed.",
+                        )
+                      }
+                    >
+                      <Save className="h-4 w-4" /> Save branding
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="spaces">
+              <div className="mt-4 space-y-5">
+                <Card className="p-5 sm:p-6">
+                  <div className="flex items-center gap-2">
+                    <LayoutGrid className="h-4 w-4 text-indigo-700" />
+                    <h2 className="font-display text-lg font-extrabold text-slate-900">
+                      Spaces and layouts
+                    </h2>
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Group content the way Circle does with spaces. Each space has a type, a layout
+                    and an uploaded image icon that stays crisp at small sizes.
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    {spaces.map((space) => (
+                      <div
+                        key={space.id}
+                        className="grid gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-[minmax(0,1fr)_130px_130px_96px_auto] sm:items-end"
+                      >
+                        <div>
+                          <p className="text-[11px] font-bold tracking-wide text-slate-500 uppercase">
+                            {space.group}
+                          </p>
+                          <Input
+                            value={space.name}
+                            aria-label={`Space name for ${space.name}`}
+                            onChange={(event) =>
+                              setSpaces((current) =>
+                                current.map((item) =>
+                                  item.id === space.id
+                                    ? { ...item, name: event.target.value }
+                                    : item,
+                                ),
+                              )
+                            }
+                            className="mt-1 h-9"
+                          />
+                        </div>
+                        <Field label="Type" htmlFor={`space-type-${space.id}`}>
+                          <Select
+                            id={`space-type-${space.id}`}
+                            value={space.type}
+                            onChange={(event) =>
+                              setSpaces((current) =>
+                                current.map((item) =>
+                                  item.id === space.id
+                                    ? {
+                                        ...item,
+                                        type: event.target.value as CommunitySpace["type"],
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                            className="h-9"
+                          >
+                            <option value="posts">Posts</option>
+                            <option value="chat">Chat</option>
+                            <option value="events">Events</option>
+                            <option value="courses">Courses</option>
+                          </Select>
+                        </Field>
+                        <Field label="Layout" htmlFor={`space-layout-${space.id}`}>
+                          <Select
+                            id={`space-layout-${space.id}`}
+                            value={space.layout}
+                            onChange={(event) =>
+                              setSpaces((current) =>
+                                current.map((item) =>
+                                  item.id === space.id
+                                    ? {
+                                        ...item,
+                                        layout: event.target.value as CommunitySpace["layout"],
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                            className="h-9"
+                          >
+                            <option value="feed">Feed</option>
+                            <option value="list">List</option>
+                            <option value="card">Card</option>
+                          </Select>
+                        </Field>
+                        <div className="w-20">
+                          <MediaUploadField
+                            label="Icon"
+                            value={space.iconUrl}
+                            onChange={(value) =>
+                              setSpaces((current) =>
+                                current.map((item) =>
+                                  item.id === space.id ? { ...item, iconUrl: value } : item,
+                                ),
+                              )
+                            }
+                            seed={space.id}
+                            hue={community.accentHue}
+                            aspectClassName="aspect-square"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSpaces((current) => current.filter((item) => item.id !== space.id))
+                          }
+                          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-700"
+                          aria-label={`Remove ${space.name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3">
+                    <p className="text-xs font-bold text-slate-700">Add a space</p>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_130px_130px_130px_auto]">
+                      <Input
+                        value={newSpace.name}
+                        onChange={(event) => setNewSpace({ ...newSpace, name: event.target.value })}
+                        placeholder="Space name"
+                        aria-label="New space name"
+                      />
+                      <Input
+                        value={newSpace.group}
+                        onChange={(event) =>
+                          setNewSpace({ ...newSpace, group: event.target.value })
+                        }
+                        placeholder="Group"
+                        aria-label="New space group"
+                      />
+                      <Select
+                        value={newSpace.type}
+                        onChange={(event) =>
+                          setNewSpace({
+                            ...newSpace,
+                            type: event.target.value as CommunitySpace["type"],
+                          })
+                        }
+                        aria-label="New space type"
+                      >
+                        <option value="posts">Posts</option>
+                        <option value="chat">Chat</option>
+                        <option value="events">Events</option>
+                        <option value="courses">Courses</option>
+                      </Select>
+                      <Select
+                        value={newSpace.layout}
+                        onChange={(event) =>
+                          setNewSpace({
+                            ...newSpace,
+                            layout: event.target.value as CommunitySpace["layout"],
+                          })
+                        }
+                        aria-label="New space layout"
+                      >
+                        <option value="feed">Feed</option>
+                        <option value="list">List</option>
+                        <option value="card">Card</option>
+                      </Select>
+                      <Button type="button" variant="secondary" onClick={addSpace}>
+                        <Plus className="h-4 w-4" /> Add
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                    <p className="text-xs text-slate-500">
+                      Saved for this preview. Full space permissions are coming soon.
+                    </p>
+                    <Button
+                      onClick={() =>
+                        toast(
+                          "Spaces saved locally",
+                          "Your layout is saved for this preview. Connected routing is coming soon.",
+                        )
+                      }
+                    >
+                      <Save className="h-4 w-4" /> Save spaces
+                    </Button>
+                  </div>
+                </Card>
+
+                <Card className="p-5 sm:p-6">
+                  <div className="flex items-center gap-2">
+                    <Link2 className="h-4 w-4 text-indigo-700" />
+                    <h2 className="font-display text-lg font-extrabold text-slate-900">
+                      External links
+                    </h2>
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Links shown in the community sidebar. Only https addresses are accepted.
+                  </p>
+                  <ul className="mt-3 space-y-2">
+                    {links.map((link) => (
+                      <li
+                        key={`${link.label}-${link.url}`}
+                        className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-2.5"
+                      >
+                        <Link2 className="h-4 w-4 shrink-0 text-slate-400" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-slate-900">
+                            {link.label}
+                          </span>
+                          <span className="block truncate text-[11px] text-slate-500">
+                            {link.url}
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setLinks((current) => current.filter((item) => item !== link))
+                          }
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-700"
+                          aria-label={`Remove link ${link.label}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto]">
+                    <Input
+                      value={newLink.label}
+                      onChange={(event) => setNewLink({ ...newLink, label: event.target.value })}
+                      placeholder="Link label"
+                      aria-label="New external link label"
+                    />
+                    <Input
+                      value={newLink.url}
+                      onChange={(event) => setNewLink({ ...newLink, url: event.target.value })}
+                      placeholder="https://"
+                      aria-label="New external link address"
+                      spellCheck={false}
+                    />
+                    <Button type="button" variant="secondary" onClick={addLink}>
+                      <Plus className="h-4 w-4" /> Add
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="discovery">
+              <div className="mt-4 space-y-5">
+                <Card className="p-5 sm:p-6">
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-indigo-700" />
+                    <h2 className="font-display text-lg font-extrabold text-slate-900">
+                      Discovery and search
+                    </h2>
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Describe the room in the words a member would search for. Discovery keyword
+                    metadata is stored locally in this preview.
+                  </p>
+                  <div className="mt-4">
+                    <Field
+                      label="Search keywords"
+                      htmlFor="community-keywords"
+                      hint={`${keywordList.length} of 11 keywords · separate with commas.`}
+                      error={keywordList.length > 11 ? "Use at most 11 keywords." : undefined}
+                    >
+                      <Textarea
+                        id="community-keywords"
+                        value={keywords}
+                        onChange={(event) => setKeywords(event.target.value)}
+                        className="min-h-20"
+                        invalid={keywordList.length > 11}
+                      />
+                    </Field>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {keywordList.slice(0, 11).map((keyword) => (
+                        <Badge key={keyword} tone="outline">
+                          {keyword}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <Field
+                      label="Custom domain"
+                      htmlFor="community-domain"
+                      hint="Custom domains are coming soon."
+                    >
+                      <Input
+                        id="community-domain"
+                        value={customDomain}
+                        onChange={(event) => setCustomDomain(event.target.value)}
+                        placeholder="community.yourbrand.com"
+                        spellCheck={false}
+                      />
+                    </Field>
+                    <Field
+                      label="Minimum level to post"
+                      htmlFor="community-post-level"
+                      hint="Spam prevention: hold new members at level 1 until they participate."
+                    >
+                      <Select
+                        id="community-post-level"
+                        value={minPostLevel}
+                        onChange={(event) => setMinPostLevel(event.target.value)}
+                      >
+                        <option value="1">Level 1 · post immediately</option>
+                        <option value="2">Level 2 · after activity</option>
+                        <option value="3">Level 3 · after more activity</option>
+                      </Select>
+                    </Field>
+                  </div>
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                    <p className="text-xs text-slate-500">
+                      Public preview for non-members is already on; private spaces stay concealed.
+                    </p>
+                    <Button
+                      disabled={keywordList.length > 11}
+                      onClick={() =>
+                        toast(
+                          "Discovery settings saved locally",
+                          "Saved in this preview. Search indexing and domain routing are coming soon.",
+                        )
+                      }
+                    >
+                      <Save className="h-4 w-4" /> Save discovery
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            </TabsContent>
+
             <TabsContent value="rules">
               <Card className="mt-4 p-5 sm:p-6">
                 <h2 className="font-display text-lg font-extrabold text-slate-900">House rules</h2>
@@ -322,10 +807,7 @@ function CommunitySettingsPage() {
                 <div className="mt-5 flex justify-end">
                   <Button
                     onClick={() =>
-                      toast(
-                        "Rules saved locally",
-                        "Community rules are not persisted to a server in this phase.",
-                      )
+                      toast("Rules saved locally", "Community rules are saved for this preview.")
                     }
                   >
                     <Save className="h-4 w-4" /> Save rules
@@ -359,7 +841,7 @@ function CommunitySettingsPage() {
                     checked={directMessages}
                     onChange={setDirectMessages}
                     label="Allow member direct messages"
-                    description="Off by default. Messaging is a later product phase."
+                    description="Off by default. Messaging is coming soon."
                   />
                   <Toggle
                     id="public-directory"
@@ -437,7 +919,13 @@ function CommunitySettingsPage() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-slate-500">Online now</dt>
-                  <dd className="font-semibold text-emerald-700">● {community.online}</dd>
+                  <dd className="font-semibold text-emerald-700">
+                    <span
+                      className="mr-1 inline-block h-2 w-2 rounded-full bg-current align-middle"
+                      aria-hidden="true"
+                    />
+                    {community.online}
+                  </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-slate-500">Posts / week</dt>
@@ -482,8 +970,8 @@ function CommunitySettingsPage() {
           setArchiveOpen(open);
           if (!open) setArchiveText("");
         }}
-        title="Archive is not connected"
-        description="This preview cannot archive a community or delete member data."
+        title="Archiving is coming soon"
+        description="Community archiving and member-data deletion are coming soon."
         footer={
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button variant="secondary" onClick={() => setArchiveOpen(false)}>
@@ -496,19 +984,19 @@ function CommunitySettingsPage() {
                 setArchiveText("");
                 toast(
                   "No community was archived",
-                  "Destructive actions are disabled in the frontend preview.",
+                  "Destructive actions stay off until archiving is live.",
                 );
               }}
             >
-              Confirm preview archive
+              Confirm archive
             </Button>
           </div>
         }
       >
         <div className="space-y-3">
           <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs leading-5 text-rose-950">
-            A production archive would require server-side authorization, audit logging, data
-            retention rules and a recovery plan. None of that exists in this build.
+            Archiving will require authorization, audit logging, data-retention rules and a recovery
+            plan. That work is coming soon, so no community can be archived yet.
           </div>
           <Field label={`Type “${community.name}” to confirm`} htmlFor="archive-confirm">
             <Input

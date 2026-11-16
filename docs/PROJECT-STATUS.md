@@ -1,6 +1,6 @@
 # The Scenes — Current Project Status
 
-**Last updated:** 13 November 2026
+**Last updated:** 14 November 2026
 **Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and for the code/local scope of P4-S2 to P4-S5 one slice at a time (ADR-044); P4-S2 rate limiting, P4-S3 connected in-app notifications, P4-S4 feedback channel and P4-S5 PWA are implemented code/local, and deployment configuration is now driven by the runtime environment (ADR-045); P4-S6 (web push) and P4-S7 (R2) remain not approved
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
@@ -19,6 +19,86 @@ The historical root audits (`*_AUDIT.md`, `ARCHITECTURAL_RISKS.md`, `RECOMMENDED
 `FINAL_ARCHITECTURE_ASSESSMENT.md`) describe the pre-implementation Phase 0 state and are superseded
 by this page.
 
+## Frontend audit Batch 1 — 14 November 2026
+
+A frontend/competitor audit (`docs/FRONTEND-COMPETITOR-AUDIT-2026-11-14.docx`) reviewed the
+implemented surfaces against the reference Skool/Circle material and the creator-setup guidance.
+Batch 1 implemented only compute-safe, in-phase public-surface and accessibility work; no
+backend, payment, admin, AI or provider wiring was added.
+
+- New public `/become-a-teacher` teacher-recruitment page (surfaces, steps, honest "what is not
+  connected" status, FAQ). Linked from primary nav, footer and category pages.
+- New public `/categories/$slug` category landing page from the data-driven seed categories.
+  Linked from the landing category grid, Explore's selected-category hint, the public community
+  page's category badge, and cross-linked between categories.
+- Landing category links now resolve to category pages instead of pre-filtered Explore URLs.
+- Accessibility: account/avatar menu accessible names now include initials on the public, member
+  and community shells; the category page gained an `h2` section heading to keep heading order
+  sequential.
+- Docs corrected: `docs/FRONTEND-RESEARCH-EVIDENCE.md` creator routes now use the real
+  `/dashboard/*` paths instead of the assumed `/workspace/*`.
+
+Verification at this batch: `typecheck` and `eslint` pass; production build passes; Playwright
+fixture suite is **32 passed, 16 skipped, 0 failed** across desktop/tablet/mobile, including the
+two new canonical routes and the internal-link graph; Lighthouse on `/c/ai-builders-guild`,
+`/become-a-teacher` and `/categories/ai-automation` is accessibility/best-practices/SEO **1.0**
+with no failures; zero console errors on the changed pages.
+
+Still intentionally out of scope (needs founder decisions or a later approved phase): real
+payments/checkout for creators, admin workspace, marketplace transactions, production auth and
+secrets, AI layer, web push, R2, and any one-to-one competitor copy or protected content.
+
+## Frontend audit Batch 2 — 14 November 2026
+
+Batch 2 extended fixture-only onboarding, engagement and creator surfaces. Nothing here connects a
+provider or a payment; every "connected" claim is withheld and each surface says plainly what is a
+local preview.
+
+- Onboarding: a guided first-run flow and community screening questions (up to three) on the public
+  community page before joining.
+- Member home "Start here" checklist on the community feed, with dismiss and progress controls.
+- Events: email-reminder toggle on the event page (copy states no email is sent), RSVP retained.
+- Gamification view: levels, points and leaderboard remaining fixture-driven.
+- Creator analytics and referral dashboard: fixture metrics with explicit "not financial data" labels.
+- Pricing clarity page copy aligned to the approved external-link launch direction (ADR-029).
+
+Verification at this batch: typecheck, eslint, production build and Playwright all passed; the
+interaction review confirmed the checklist counter, event-reminder toggle and welcome notification
+work. Prior intermittent failures were React hydration timing and cross-tab fixture-state artifacts,
+not code faults.
+
+## Frontend audit Batch 3 — 14 November 2026
+
+Batch 3 closed the remaining competitor-parity gaps that can be implemented safely in the fixture
+frontend: no-emoji cleanup, creator branding/media uploads, creator-managed categories, drip content,
+Course Key import, deeper affiliate controls, spaces/layouts, discovery keywords, a custom-domain
+placeholder, a posting-level gate, a creator setup checklist and a member location summary. Uploads
+are preview-only (`URL.createObjectURL`) and every control states that storage is not connected.
+
+- No-emoji policy: removed the last decorative glyphs (`✓`, `✕`, `●`, `→`, `⌘`) from `src`, replacing
+  them with real Lucide icons or styled dots. No emoji remain in the product source.
+- Branding/media: a shared `MediaCover`/`MediaUploadField` primitive renders real images with generated
+  fallback art. Community icon (128×128), wordmark logo (200×50), cover (1084×576) and course cover
+  (1460×752) uploads exist in the creator workspace; license-safe generated SVG placeholders live in
+  `public/media/`.
+- Creator categories: `/dashboard/categories` lets a creator create and remove draft categories, which
+  become selectable in the community editor. Public listing still requires review.
+- Drip content: lessons support a per-lesson unlock delay measured from the member's join date; locked
+  lessons show an unlock explanation and cannot be completed.
+- Course Key import: a creator can enter an `ABCD-1234-EFGH` key to duplicate fixture content locally.
+- Affiliate depth: 10%–50% commission control, affiliate performance table, invitation links with access
+  level, trial length and coupon, and a "payouts not connected" placeholder.
+- Spaces/layouts and discovery: community settings gained Branding, Spaces and Discovery tabs (space
+  groups, space types, Feed/List/Card layouts, space icon uploads, external links, up to 11 SEO
+  keywords, custom-domain placeholder, minimum posting level).
+- Creator setup checklist on `/dashboard/creator`; 72-hour email-broadcast cooldown copy; member location
+  summary on the community members page.
+
+Verification at this batch: `tsc --noEmit` (app and scripts), `eslint`, and the production build pass;
+Playwright route/visual contracts pass; the full fixture suite is unchanged at **32 passed, 16 skipped,
+0 failed**. `docs/COMPETITIVE-PARITY-MATRIX.md` maps every report item to implemented, placeholder or
+blocked.
+
 ## Simple progress view
 
 These are milestone estimates, not percentages generated from lines of code:
@@ -33,7 +113,7 @@ These are milestone estimates, not percentages generated from lines of code:
 
 - Phase 0 governance and architecture foundation;
 - Phase 1 design direction;
-- Phase 2 fixture-backed frontend with all 30 primary page types;
+- Phase 2 fixture-backed frontend with all 32 primary page types;
 - responsive fixture verification on desktop, tablet and mobile;
 - Phase 3A Wave 0 clean-install, environment and loopback-isolation setup;
 - Phase 3A Wave 1 implementation files: 18 migrations, deterministic seed, database security tests,
@@ -267,9 +347,15 @@ The deferred Wave 5 rehearsal must run before any staging load test or public la
   Resend account/domain**, then run one inbox test (ADR-043). The Supabase MCP here resolves to VOICE
   SYSTEM and must not be used until corrected. The deferred Wave 5 rehearsal still needs Docker/credit
   before any staging load test or public launch;
-- working tree: clean; Phase 4 revision-2 review committed at `9cc91e3`; P4-S1 code/local committed;
-  hosted account-email config approved (ADR-043) and pending the founder dashboard/Resend steps;
-  P4-S2 to P4-S5 code/local approved (ADR-044), one slice at a time;
+- working tree: **uncommitted fixture media and copy pass on `main` (16 November 2026)**; Phase 4
+  revision-2 review committed at `9cc91e3`; P4-S1 code/local committed; hosted account-email config
+  approved (ADR-043) and pending the founder dashboard/Resend steps; P4-S2 to P4-S5 code/local
+  approved (ADR-044), one slice at a time;
+- fixture media/copy pass (16 November 2026): real CC0/public-domain covers with provenance in
+  `docs/ASSET-PROVENANCE.md`, four real app screenshots on the public landing page, uploadable
+  wordmark logos, and "Coming soon" copy replacing internal engineering wording. No provider or
+  storage integration is connected; uploads remain preview-only. Targeted verification: typecheck,
+  lint, build and 30 Playwright tests passed;
 - P4-S2 rate limiting implemented code/local (memory + Upstash adapter, no account or hosted migration);
 - P4-S3 connected in-app notifications implemented code/local (additive migration authored but not
   applied; connected page, badge and preferences; fixture behaviour unchanged; Docker DB gate not run);

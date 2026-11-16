@@ -53,8 +53,7 @@ export function AuthShell({
           </div>
         </div>
         <p className="relative z-10 text-xs leading-5 text-indigo-200">
-          Frontend preview. Authentication is simulated locally and no account is created on a
-          server.
+          Preview build. You can explore every screen; live accounts are coming soon.
         </p>
         <div className="absolute -right-24 -bottom-32 h-96 w-96 rounded-full border border-white/10" />
         <div className="absolute -right-8 -bottom-20 h-64 w-64 rounded-full border border-white/10" />

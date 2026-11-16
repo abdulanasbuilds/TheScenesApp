@@ -6,6 +6,7 @@ import {
   Check,
   Copy,
   FilePlus2,
+  KeyRound,
   Layers,
   Pencil,
   Plus,
@@ -13,6 +14,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import { MediaCover, MediaUploadField } from "@/components/domain/media-upload";
 import { CreatorShell } from "@/components/layout/creator-shell";
 import {
   Badge,
@@ -48,6 +50,40 @@ function CourseManagementPage() {
   const [status, setStatus] = useState("all");
   const [editing, setEditing] = useState<Course | null>(null);
   const [creating, setCreating] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importKey, setImportKey] = useState("");
+  const [importError, setImportError] = useState("");
+
+  const importCourse = (event: FormEvent) => {
+    event.preventDefault();
+    const normalized = importKey.trim().toUpperCase();
+    if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(normalized)) {
+      setImportError("Use a course key in the format ABCD-1234-EFGH.");
+      return;
+    }
+    const source = seedCourses[0];
+    const importedId = createLocalId("course-imported");
+    setCourseList((current) => [
+      {
+        ...source,
+        id: importedId,
+        slug: `imported-${importedId.slice(-6)}`,
+        title: `${source.title} (imported)`,
+        status: "draft",
+        students: 0,
+        rating: 0,
+        reviews: 0,
+      },
+      ...current,
+    ]);
+    setImportOpen(false);
+    setImportKey("");
+    setImportError("");
+    toast(
+      "Course imported into this preview",
+      "The key was accepted locally. No course data left this browser and nothing was transferred between communities.",
+    );
+  };
 
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -72,7 +108,7 @@ function CourseManagementPage() {
       current.map((course) => (course.id === updated.id ? updated : course)),
     );
     setEditing(updated);
-    toast("Course saved locally", "No production course record was written.");
+    toast("Course saved", "Your course is saved for this preview.");
   };
 
   const togglePublish = (course: Course) => {
@@ -122,9 +158,14 @@ function CourseManagementPage() {
                 change local preview state only.
               </p>
             </div>
-            <Button onClick={() => setCreating(true)}>
-              <FilePlus2 className="h-4 w-4" /> New course
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={() => setImportOpen(true)}>
+                <KeyRound className="h-4 w-4" /> Import with course key
+              </Button>
+              <Button onClick={() => setCreating(true)}>
+                <FilePlus2 className="h-4 w-4" /> New course
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -178,9 +219,11 @@ function CourseManagementPage() {
               return (
                 <Card key={course.id} className="overflow-hidden">
                   <div className="grid sm:grid-cols-[150px_1fr]">
-                    <CoverArt
+                    <MediaCover
+                      src={course.coverUrl}
                       seed={course.slug}
                       hue={course.accentHue}
+                      label={course.title}
                       rounded="rounded-none"
                       className="h-32 w-full sm:h-full"
                     />
@@ -274,6 +317,51 @@ function CourseManagementPage() {
         </Card>
       </div>
 
+      <Modal
+        open={importOpen}
+        onOpenChange={(open) => {
+          setImportOpen(open);
+          if (!open) setImportError("");
+        }}
+        title="Import with a course key"
+        description="Duplicate a course you own into this workspace."
+        footer={
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button variant="secondary" onClick={() => setImportOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" form="course-import-form">
+              <KeyRound className="h-4 w-4" /> Import course
+            </Button>
+          </div>
+        }
+      >
+        <form id="course-import-form" onSubmit={importCourse} className="space-y-4" noValidate>
+          <Field
+            label="Course key"
+            htmlFor="course-key"
+            hint="Course keys identify a course you own. Format ABCD-1234-EFGH."
+            error={importError}
+            required
+          >
+            <Input
+              id="course-key"
+              value={importKey}
+              onChange={(event) => {
+                setImportKey(event.target.value.toUpperCase());
+                if (importError) setImportError("");
+              }}
+              placeholder="ABCD-1234-EFGH"
+              invalid={Boolean(importError)}
+            />
+          </Field>
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
+            The course key copies this sample course into your workspace. Importing a course from
+            another creator is coming soon.
+          </div>
+        </form>
+      </Modal>
+
       <CourseModal
         open={Boolean(editing)}
         onOpenChange={(open) => (!open ? setEditing(null) : undefined)}
@@ -365,6 +453,22 @@ function CourseModal({
     setLessonTitles((current) => ({ ...current, [moduleId]: "" }));
   };
 
+  const setLessonDrip = (moduleId: string, lessonId: string, days: number | undefined) => {
+    update({
+      ...active,
+      modules: active.modules.map((module) =>
+        module.id === moduleId
+          ? {
+              ...module,
+              lessons: module.lessons.map((item) =>
+                item.id === lessonId ? { ...item, dripDays: days } : item,
+              ),
+            }
+          : module,
+      ),
+    });
+  };
+
   return (
     <Modal
       open={open}
@@ -399,6 +503,15 @@ function CourseModal({
             onChange={(event) => setDraft({ ...active, subtitle: event.target.value })}
           />
         </Field>
+        <MediaUploadField
+          label="Course cover image"
+          recommended="1460 × 752 (1.94:1)"
+          value={active.coverUrl}
+          onChange={(coverUrl) => setDraft({ ...active, coverUrl })}
+          seed={active.slug}
+          hue={active.accentHue}
+          aspectClassName="aspect-[1460/752]"
+        />
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Level" htmlFor="edit-course-level">
             <Select
@@ -481,6 +594,26 @@ function CourseModal({
                     <BookOpen className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                     <span className="min-w-0 flex-1 truncate text-slate-700">{lesson.title}</span>
                     <span className="shrink-0 text-[10px] text-slate-600">{lesson.duration}</span>
+                    <label className="flex shrink-0 items-center gap-1 text-[10px] text-slate-500">
+                      Drip
+                      <input
+                        type="number"
+                        min={0}
+                        max={365}
+                        value={lesson.dripDays ?? 0}
+                        onChange={(event) => {
+                          const days = Number(event.target.value);
+                          setLessonDrip(
+                            module.id,
+                            lesson.id,
+                            Number.isFinite(days) && days > 0 ? days : undefined,
+                          );
+                        }}
+                        aria-label={`Drip days for ${lesson.title}`}
+                        className="h-6 w-12 rounded border border-slate-300 px-1 text-center text-[10px] text-slate-700"
+                      />
+                      d
+                    </label>
                     <button
                       type="button"
                       onClick={() =>

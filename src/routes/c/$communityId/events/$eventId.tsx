@@ -1,5 +1,17 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { CalendarPlus, Check, Clock3, ExternalLink, MapPin, Share2, Users } from "lucide-react";
+import { useState } from "react";
+import {
+  Bell,
+  CalendarPlus,
+  Check,
+  Clock3,
+  ExternalLink,
+  MapPin,
+  Repeat2,
+  Share2,
+  Users,
+  Video,
+} from "lucide-react";
 import { CommunityShell } from "@/components/layout/community-shell";
 import { Avatar, AvatarStack, Badge, Button, Card, CoverArt } from "@/components/ui";
 import { getCommunity, getCreator, getEvent, members } from "@/data/seed";
@@ -26,6 +38,7 @@ function EventDetailsPage() {
   const { toast } = useToast();
   const going = state.rsvps.includes(event.id);
   const full = event.attendees >= event.capacity;
+  const [reminder, setReminder] = useState(Boolean(event.reminderEnabled));
 
   const copyEventLink = async () => {
     const url = window.location.href;
@@ -59,6 +72,11 @@ function EventDetailsPage() {
           />
           <div className="mt-6 flex flex-wrap gap-2">
             <Badge tone="indigo">{event.kind.replace("-", " ")}</Badge>
+            {event.recurrence ? (
+              <Badge tone="outline">
+                <Repeat2 className="h-3 w-3" /> {event.recurrence}
+              </Badge>
+            ) : null}
             {event.replay ? (
               <Badge tone="green">Replay available</Badge>
             ) : (
@@ -109,12 +127,12 @@ function EventDetailsPage() {
             </h2>
             <div className="mt-3 space-y-4 text-sm leading-7 text-slate-700">
               <p>
-                This session belongs to the {community.name} event programme. Members can RSVP in
-                the preview and keep the event on their local calendar state.
+                This session belongs to the {community.name} event programme. Members can RSVP and
+                keep the event on their calendar for this preview.
               </p>
               <p>
-                Live room delivery, email reminders and attendance tracking are not connected in
-                this frontend phase. The interface never generates an external meeting link.
+                Your reminder preference is saved for this preview. Email reminders, live rooms and
+                attendance tracking are coming soon.
               </p>
             </div>
           </section>
@@ -158,6 +176,42 @@ function EventDetailsPage() {
           </Card>
           <Card className="p-4">
             <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
+              Reminders &amp; access
+            </p>
+            <p className="mt-2 text-xs leading-5 text-slate-600">
+              Your reminder preference is saved for this preview. Email reminders are coming soon.
+            </p>
+            <Button
+              variant={reminder ? "secondary" : "primary"}
+              size="sm"
+              className="mt-3 w-full"
+              aria-pressed={reminder}
+              onClick={() => {
+                setReminder((value) => !value);
+                toast(
+                  reminder ? "Reminder turned off" : "Reminder set locally",
+                  "No email service or calendar provider was contacted.",
+                );
+              }}
+            >
+              <Bell className="h-4 w-4" />{" "}
+              {reminder ? "Reminder on · 1 day before" : "Remind me 1 day before"}
+            </Button>
+            {event.liveRoom && !event.replay ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2 w-full"
+                onClick={() =>
+                  toast("Live room coming soon", "Live room links arrive with live sessions.")
+                }
+              >
+                <Video className="h-4 w-4" /> Join live room
+              </Button>
+            ) : null}
+          </Card>
+          <Card className="p-4">
+            <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
               Hosted by
             </p>
             <div className="mt-3 flex items-center gap-3">
@@ -185,7 +239,7 @@ function EventDetailsPage() {
               <AvatarStack names={members.slice(0, 7).map((member) => member.name)} max={6} />
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">
-              Attendance shown is fixture data for interface testing.
+              Attendance is sample data for this preview.
             </p>
           </Card>
         </aside>

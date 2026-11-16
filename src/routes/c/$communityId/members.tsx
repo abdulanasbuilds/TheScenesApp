@@ -41,6 +41,19 @@ function MembersDirectoryPage() {
     [community.slug, query, role, status],
   );
 
+  const locations = useMemo(() => {
+    const counts = new Map<string, number>();
+    directory.forEach((member) => {
+      const city = member.location.split(",")[0]?.trim();
+      if (!city) return;
+      counts.set(city, (counts.get(city) ?? 0) + 1);
+    });
+    return Array.from(counts.entries())
+      .map(([city, count]) => ({ city, count }))
+      .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city))
+      .slice(0, 6);
+  }, [directory]);
+
   return (
     <CommunityShell community={community} active="members">
       <section className="border-b border-slate-200 bg-white">
@@ -77,7 +90,11 @@ function MembersDirectoryPage() {
               Everyone
             </Chip>
             <Chip active={status === "online"} onClick={() => setStatus("online")}>
-              ● Online
+              <span
+                className="mr-1.5 inline-block h-2 w-2 rounded-full bg-emerald-500 align-middle"
+                aria-hidden="true"
+              />
+              Online
             </Chip>
             <Chip active={status === "offline"} onClick={() => setStatus("offline")}>
               Offline
@@ -97,6 +114,39 @@ function MembersDirectoryPage() {
         </div>
       </section>
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        <Card className="mb-5 p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-indigo-700" />
+              <h2 className="font-display text-base font-extrabold text-slate-900">
+                Where members are
+              </h2>
+            </div>
+            <span className="text-xs text-slate-500">
+              Top cities from member profiles · interactive map coming soon
+            </span>
+          </div>
+          {locations.length ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {locations.map((place) => (
+                <span
+                  key={place.city}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700"
+                >
+                  {place.city}
+                  <span className="rounded-full bg-white px-1.5 text-[10px] font-bold text-indigo-700 ring-1 ring-slate-200">
+                    {place.count}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-xs text-slate-500">
+              No member locations match the current filters.
+            </p>
+          )}
+        </Card>
+
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm font-bold text-slate-900">{directory.length} preview profiles</p>
           <p className="text-xs text-slate-500">Sorted by recent activity</p>

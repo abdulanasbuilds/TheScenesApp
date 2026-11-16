@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { waitForApp } from "./helpers";
 import { canonicalRoutes } from "./routes";
 
-test("all 30 canonical routes return their application page", async ({ request }, testInfo) => {
+test("all canonical routes return their application page", async ({ request }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "Route existence is checked once on desktop.");
 
   for (const route of canonicalRoutes) {

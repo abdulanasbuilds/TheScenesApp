@@ -35,7 +35,7 @@ export const Route = createFileRoute("/forgot-password")({
 });
 
 const NOT_CONFIGURED_COPY =
-  "This preview has no email provider connected, so no reset email was sent. In the connected environment, this same message is returned whether or not an account exists.";
+  "Email delivery is coming soon, so no reset email was sent yet. This preview still answers the same way whether or not an account exists.";
 
 function ForgotPasswordPage() {
   const dataMode = useDataMode();
@@ -141,7 +141,7 @@ function ForgotPasswordPage() {
       title="Reset your password"
       description={
         dataMode === "fixtures"
-          ? "This preview validates the recovery request but has no email provider connected."
+          ? "Password reset emails are coming soon. You can still see how the form behaves."
           : "Enter the email connected to your account. We give the same answer whether or not an account exists."
       }
       footer={
@@ -162,7 +162,7 @@ function ForgotPasswordPage() {
           <Badge tone="outline">
             <Mail className="h-3 w-3" /> Email reset
           </Badge>
-          {dataMode === "fixtures" ? <Badge tone="amber">Delivery not connected</Badge> : null}
+          {dataMode === "fixtures" ? <Badge tone="amber">Email delivery coming soon</Badge> : null}
         </div>
 
         <Field label="Email address" htmlFor="reset-email" error={error} required>
@@ -201,10 +201,10 @@ function ForgotPasswordPage() {
 
         {dataMode === "fixtures" ? (
           <div className="rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-            <p className="font-semibold text-slate-800">Preview boundary</p>
+            <p className="font-semibold text-slate-800">How this preview works</p>
             <p className="mt-1">
-              No email is sent, no reset token is created and no password can be changed from this
-              preview.
+              No email is sent yet, no reset token is created and no password can be changed from
+              this preview.
             </p>
           </div>
         ) : null}

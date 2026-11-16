@@ -16,6 +16,7 @@ import {
   TabsTrigger,
   buttonClass,
 } from "@/components/ui";
+import { MediaCover } from "@/components/domain/media-upload";
 import { events, getCreator, members, posts } from "@/data/seed";
 import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
 import { formatCompact, formatMoney } from "@/lib/utils";
@@ -51,6 +52,14 @@ function PublicCommunityPage() {
   const [tab, setTab] = useState("about");
   const [membershipPending, setMembershipPending] = useState(false);
   const joined = state.joined.includes(community.slug);
+  const screeningQuestions = community.screeningQuestions ?? [];
+  const [showScreening, setShowScreening] = useState(false);
+  const [screeningAnswers, setScreeningAnswers] = useState<string[]>(() =>
+    screeningQuestions.map(() => ""),
+  );
+  const screeningReady = screeningQuestions.every((_, index) =>
+    Boolean(screeningAnswers[index]?.trim()),
+  );
 
   const toggleJoin = async () => {
     if (membershipPending) return;
@@ -73,11 +82,25 @@ function PublicCommunityPage() {
     }
   };
 
+  const requestMembership = () => {
+    if (joined) {
+      void toggleJoin();
+      return;
+    }
+    if (screeningQuestions.length && !showScreening) {
+      setShowScreening(true);
+      return;
+    }
+    if (screeningQuestions.length && !screeningReady) return;
+    void toggleJoin();
+  };
+
   return (
     <PublicShell>
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-          <CoverArt
+          <MediaCover
+            src={community.coverUrl}
             seed={community.slug}
             hue={community.accentHue}
             rounded="rounded-2xl"
@@ -86,6 +109,15 @@ function PublicCommunityPage() {
           />
           <div className="grid gap-6 py-7 lg:grid-cols-[1fr_310px] lg:items-start">
             <div>
+              {community.logoUrl ? (
+                <img
+                  src={community.logoUrl}
+                  alt=""
+                  width={200}
+                  height={50}
+                  className="mb-4 h-10 w-auto max-w-[200px] rounded-lg"
+                />
+              ) : null}
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={community.privacy === "private" ? "slate" : "green"}>
                   {community.privacy === "private" ? (
@@ -95,11 +127,24 @@ function PublicCommunityPage() {
                   )}
                   {community.privacy}
                 </Badge>
-                <Badge tone="outline">{community.categorySlug.replaceAll("-", " ")}</Badge>
+                <a href={`/categories/${community.categorySlug}`} className="inline-flex">
+                  <Badge tone="outline">{community.categorySlug.replaceAll("-", " ")}</Badge>
+                </a>
               </div>
-              <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
-                {community.name}
-              </h1>
+              <div className="mt-3 flex items-center gap-3">
+                {community.iconUrl ? (
+                  <img
+                    src={community.iconUrl}
+                    alt=""
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 rounded-xl border border-slate-200 bg-white object-cover"
+                  />
+                ) : null}
+                <h1 className="font-display text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
+                  {community.name}
+                </h1>
+              </div>
               <p className="mt-2 max-w-3xl text-base leading-7 text-slate-600">
                 {community.tagline}
               </p>
@@ -138,7 +183,7 @@ function PublicCommunityPage() {
                 className="mt-4 w-full"
                 size="lg"
                 variant={joined ? "secondary" : "primary"}
-                onClick={toggleJoin}
+                onClick={requestMembership}
                 disabled={membershipPending || (!joined && community.privacy === "private")}
               >
                 {joined ? <Check className="h-4 w-4" /> : null}
@@ -147,9 +192,52 @@ function PublicCommunityPage() {
                   : community.pricing.type === "free"
                     ? community.privacy === "private"
                       ? "Invite only"
-                      : "Join community"
+                      : screeningQuestions.length
+                        ? "Answer questions to join"
+                        : "Join community"
                     : "Preview membership"}
               </Button>
+              {showScreening && !joined && screeningQuestions.length ? (
+                <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/60 p-3">
+                  <p className="text-xs font-bold text-indigo-900">Membership questions</p>
+                  <p className="mt-1 text-[11px] leading-4 text-indigo-800">
+                    Answer all {screeningQuestions.length} questions to join. Answers stay local to
+                    this preview and are not sent to a server.
+                  </p>
+                  <div className="mt-3 space-y-2.5">
+                    {screeningQuestions.map((question, index) => (
+                      <label
+                        key={question}
+                        className="block text-[11px] font-semibold text-slate-700"
+                      >
+                        {question}
+                        <textarea
+                          value={screeningAnswers[index]}
+                          onChange={(event) =>
+                            setScreeningAnswers((current) =>
+                              current.map((value, i) => (i === index ? event.target.value : value)),
+                            )
+                          }
+                          rows={2}
+                          className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-normal text-slate-800 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      onClick={requestMembership}
+                      disabled={!screeningReady || membershipPending}
+                    >
+                      Submit and join
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setShowScreening(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
               {joined ? (
                 <a
                   href={`/c/${community.slug}`}
@@ -194,7 +282,7 @@ function PublicCommunityPage() {
                   </div>
                   {connected ? (
                     <p className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
-                      Posts, reactions, and member previews are not connected in Phase 3.
+                      Posts, reactions and member previews are coming soon.
                     </p>
                   ) : (
                     <>
@@ -301,7 +389,13 @@ function PublicCommunityPage() {
                   {dataMode === "fixtures" ? (
                     <div className="flex justify-between">
                       <dt className="text-slate-500">Active now</dt>
-                      <dd className="font-semibold text-emerald-700">● {community.online}</dd>
+                      <dd className="font-semibold text-emerald-700">
+                        <span
+                          className="mr-1 inline-block h-2 w-2 rounded-full bg-current align-middle"
+                          aria-hidden="true"
+                        />
+                        {community.online}
+                      </dd>
                     </div>
                   ) : null}
                 </dl>

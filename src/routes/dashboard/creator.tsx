@@ -4,13 +4,19 @@ import {
   ArrowRight,
   BookOpen,
   CalendarDays,
+  CheckCircle2,
   ChevronRight,
+  Circle,
   CircleDollarSign,
   Clock3,
+  Eye,
   FilePlus2,
+  Mail,
   MessageSquareText,
   MoreHorizontal,
+  Palette,
   Sparkles,
+  Tags,
   TrendingUp,
   UserPlus,
   Users,
@@ -26,8 +32,55 @@ export const Route = createFileRoute("/dashboard/creator")({
   component: CreatorDashboardPage,
 });
 
+const setupSteps = [
+  {
+    id: "profile",
+    title: "Write the community name and description",
+    hint: "Members decide in seconds whether this room is for them.",
+    href: "/dashboard/community",
+    icon: MessageSquareText,
+  },
+  {
+    id: "branding",
+    title: "Upload an icon and a cover image",
+    hint: "Discovery cards and the community page both use them.",
+    href: "/dashboard/community",
+    icon: Palette,
+  },
+  {
+    id: "categories",
+    title: "Create the categories you teach",
+    hint: "Group knowledge the way your audience searches for it.",
+    href: "/dashboard/categories",
+    icon: Tags,
+  },
+  {
+    id: "welcome",
+    title: "Publish a welcome post",
+    hint: "Pin one clear post that starts the first conversation.",
+    href: "/c/ai-builders-guild/posts/new",
+    icon: FilePlus2,
+  },
+  {
+    id: "course",
+    title: "Publish your first course",
+    hint: "Turn your best explanation into a structured classroom.",
+    href: "/dashboard/courses",
+    icon: BookOpen,
+  },
+  {
+    id: "event",
+    title: "Schedule the first live session",
+    hint: "A calendar event gives members a reason to return.",
+    href: "/dashboard/events",
+    icon: CalendarDays,
+  },
+];
+
 function CreatorDashboardPage() {
   const [range, setRange] = useState("30");
+  const [broadcast, setBroadcast] = useState("");
+  const [setupDone, setSetupDone] = useState<string[]>(["profile"]);
   const { toast } = useToast();
   const community = getCommunity("ai-builders-guild")!;
   const communityCourses = courses.filter((course) => course.communitySlug === community.slug);
@@ -39,6 +92,11 @@ function CreatorDashboardPage() {
   const previewRevenue = orders
     .filter((order) => order.status === "paid")
     .reduce((sum, order) => sum + order.amount, 0);
+  const completedSetup = setupDone.length;
+  const toggleSetup = (id: string) =>
+    setSetupDone((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
 
   return (
     <CreatorShell active="overview">
@@ -48,16 +106,16 @@ function CreatorDashboardPage() {
             <div>
               <div className="flex items-center gap-2">
                 <Badge className="bg-white/12 text-indigo-50 ring-1 ring-white/20">
-                  Fixture workspace
+                  Demo workspace
                 </Badge>
-                <span className="text-xs text-indigo-200">No production analytics connected</span>
+                <span className="text-xs text-indigo-200">Live analytics coming soon</span>
               </div>
               <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
                 Good morning, Nana.
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-indigo-100">
-                Here is what needs attention in {community.name} — based on deterministic preview
-                data.
+                Here is what needs attention in {community.name} — based on sample data for this
+                preview.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -83,9 +141,7 @@ function CreatorDashboardPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-bold text-slate-900">Workspace pulse</p>
-            <p className="text-xs text-slate-500">
-              Preview values for layout and interaction testing
-            </p>
+            <p className="text-xs text-slate-500">Sample performance for this preview</p>
           </div>
           <Select
             value={range}
@@ -100,15 +156,11 @@ function CreatorDashboardPage() {
         </div>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat
-            label="Members"
-            value={formatCompact(community.members)}
-            hint="Community fixture total"
-          />
+          <Stat label="Members" value={formatCompact(community.members)} hint="Community total" />
           <Stat
             label="Posts this week"
             value={community.postsPerWeek}
-            hint={`${communityPosts.length} preview posts loaded`}
+            hint={`${communityPosts.length} posts in this preview`}
           />
           <Stat
             label="Course learners"
@@ -118,14 +170,106 @@ function CreatorDashboardPage() {
             hint="Across published courses"
           />
           <Stat
-            label="Preview gross sales"
+            label="Gross sales"
             value={formatMoney(previewRevenue)}
-            hint="Fixture orders · not financial data"
+            hint="Sample orders · not financial data"
+          />
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Stat
+            label="Page visitors"
+            value={formatCompact(18420)}
+            hint="Last 30 days · sample traffic"
+          />
+          <Stat label="Visitor to member" value="6.1%" hint="Sample conversion rate" />
+          <Stat label="30-day retention" value="82%" hint="Sample cohort model" />
+          <Stat
+            label="MRR"
+            value={formatMoney(
+              community.pricing.type === "free" ? 0 : community.members * community.pricing.amount,
+            )}
+            hint="Members × plan · sample estimate"
           />
         </div>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.75fr)]">
           <div className="space-y-6">
+            <Card className="p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
+                    Setup
+                  </p>
+                  <h2 className="mt-1 font-display text-lg font-extrabold text-slate-900">
+                    Finish setting up {community.name}
+                  </h2>
+                </div>
+                <Badge tone={completedSetup === setupSteps.length ? "green" : "outline"}>
+                  {completedSetup} of {setupSteps.length} complete
+                </Badge>
+              </div>
+              <Progress
+                value={Math.round((completedSetup / setupSteps.length) * 100)}
+                className="mt-3"
+                aria-label={`Setup ${completedSetup} of ${setupSteps.length} complete`}
+              />
+              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                {setupSteps.map((step) => {
+                  const done = setupDone.includes(step.id);
+                  const StepIcon = step.icon;
+                  return (
+                    <li
+                      key={step.id}
+                      className="flex items-start gap-3 rounded-xl border border-slate-200 p-3"
+                    >
+                      <button
+                        type="button"
+                        aria-pressed={done}
+                        onClick={() => toggleSetup(step.id)}
+                        aria-label={`Mark ${step.title} as ${done ? "not done" : "done"}`}
+                        className="mt-0.5 shrink-0 text-indigo-700"
+                      >
+                        {done ? (
+                          <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+                        ) : (
+                          <Circle className="h-5 w-5 text-slate-300" aria-hidden="true" />
+                        )}
+                      </button>
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className={
+                            done
+                              ? "flex items-center gap-1.5 text-sm font-semibold text-slate-400 line-through"
+                              : "flex items-center gap-1.5 text-sm font-semibold text-slate-900"
+                          }
+                        >
+                          <StepIcon
+                            className="h-3.5 w-3.5 shrink-0 text-indigo-600"
+                            aria-hidden="true"
+                          />
+                          {step.title}
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-5 text-slate-500">
+                          {step.hint}
+                        </span>
+                        <a
+                          href={step.href}
+                          className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-indigo-700"
+                        >
+                          Open <ArrowRight className="h-3 w-3" aria-hidden="true" />
+                        </a>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-3 text-[11px] leading-4 text-slate-500">
+                Tick items as you go. Progress is stored in this browser tab only and is not saved
+                to an account yet.
+              </p>
+            </Card>
+
             <Card className="overflow-hidden">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
                 <div>
@@ -347,6 +491,60 @@ function CreatorDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
+                    Email
+                  </p>
+                  <h2 className="mt-1 font-display text-lg font-extrabold text-slate-900">
+                    Broadcast to members
+                  </h2>
+                </div>
+                <Mail className="h-5 w-5 text-indigo-700" />
+              </div>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Draft an update for the room. Email delivery is coming soon.
+              </p>
+              <p className="mt-2 inline-flex items-start gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-4 text-amber-950">
+                <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                To protect members from email fatigue, broadcasts are limited to one every 72 hours
+                per community. The cooldown is enforced by the server once email delivery is
+                connected.
+              </p>
+              <label htmlFor="creator-broadcast" className="sr-only">
+                Draft email broadcast
+              </label>
+              <textarea
+                id="creator-broadcast"
+                value={broadcast}
+                onChange={(event) => setBroadcast(event.target.value)}
+                rows={3}
+                placeholder="What should members know this week?"
+                className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none"
+              />
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
+                  <Eye className="h-3.5 w-3.5" /> {formatCompact(community.members)} members
+                  (fixture)
+                </span>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() =>
+                    toast(
+                      broadcast.trim() ? "Broadcast saved locally" : "Nothing to save yet",
+                      broadcast.trim()
+                        ? "No email service was contacted. This draft is not stored across reloads."
+                        : "Write a short update before saving a draft.",
+                    )
+                  }
+                >
+                  Save draft
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
                     Commercial preview
                   </p>
                   <h2 className="mt-1 font-display text-lg font-extrabold text-slate-900">
@@ -374,7 +572,7 @@ function CreatorDashboardPage() {
                 </div>
               </dl>
               <div className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">
-                Payments and payouts are not connected. These figures exist only to validate the
+                Payments and payouts are coming soon. These figures exist only to show the
                 management interface.
               </div>
               <a
@@ -417,7 +615,7 @@ function CreatorDashboardPage() {
                   onClick={() =>
                     toast(
                       "Product publishing unavailable",
-                      "Marketplace publishing is a later product phase.",
+                      "Marketplace publishing is coming soon.",
                     )
                   }
                   className="rounded-lg border border-slate-200 p-3 text-center text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50"

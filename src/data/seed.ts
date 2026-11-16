@@ -192,6 +192,62 @@ export const communities: Community[] = [
       "Private build-log channel and eval templates",
       "Monthly office hours for paid members",
     ],
+    screeningQuestions: [
+      "What are you building with AI right now, and what is the hardest part?",
+      "Which part of the stack do you own: product, engineering, data or operations?",
+      "What do you want to get from this guild in the next 30 days?",
+    ],
+    iconUrl: "/media/guild-icon.svg",
+    logoUrl: "/media/guild-logo.svg",
+    coverUrl: "/media/guild-cover.jpg",
+    brandColor: "#4338ca",
+    keywords: [
+      "ai agents",
+      "llm",
+      "evals",
+      "prompt engineering",
+      "production ai",
+      "automation",
+      "builders",
+      "africa",
+    ],
+    customDomain: "community.thescenes.example",
+    minPostLevel: 2,
+    spaces: [
+      {
+        id: "sp-guild-1",
+        name: "Start here",
+        group: "Member central",
+        type: "posts",
+        layout: "list",
+        iconUrl: "/media/guild-icon.svg",
+      },
+      {
+        id: "sp-guild-2",
+        name: "Build logs",
+        group: "Community",
+        type: "posts",
+        layout: "feed",
+      },
+      {
+        id: "sp-guild-3",
+        name: "Architecture reviews",
+        group: "Coaching",
+        type: "events",
+        layout: "card",
+      },
+      {
+        id: "sp-guild-4",
+        name: "Agent foundations",
+        group: "Courses",
+        type: "courses",
+        layout: "card",
+      },
+    ],
+    externalLinks: [
+      { label: "Weekly build log", url: "https://example.com/build-log" },
+      { label: "Eval templates", url: "https://example.com/evals" },
+    ],
     accentHue: 246,
     featured: true,
     joined: true,
@@ -224,6 +280,36 @@ export const communities: Community[] = [
       "Design system library and tokens",
       "Portfolio reviews with senior leads",
       "Free to join, open to all levels",
+    ],
+    iconUrl: "/media/design-icon.svg",
+    logoUrl: "/media/design-logo.svg",
+    coverUrl: "/media/design-cover.jpg",
+    brandColor: "#c2410c",
+    keywords: ["product design", "design systems", "critique", "portfolio", "ux"],
+    minPostLevel: 1,
+    spaces: [
+      {
+        id: "sp-design-1",
+        name: "Critique queue",
+        group: "Member central",
+        type: "posts",
+        layout: "feed",
+        iconUrl: "/media/design-icon.svg",
+      },
+      {
+        id: "sp-design-2",
+        name: "Resource library",
+        group: "Community",
+        type: "posts",
+        layout: "card",
+      },
+      {
+        id: "sp-design-3",
+        name: "Friday critique",
+        group: "Coaching",
+        type: "events",
+        layout: "list",
+      },
     ],
     accentHue: 320,
     featured: true,
@@ -323,6 +409,41 @@ export const communities: Community[] = [
       "Peer review of dashboards",
       "Free and always public",
     ],
+    screeningQuestions: [
+      "What decision is your analysis meant to change?",
+      "Which dataset or programme are you working with?",
+      "What kind of feedback do you want: methods, visualisation or framing?",
+    ],
+    iconUrl: "/media/data-icon.svg",
+    logoUrl: "/media/data-logo.svg",
+    coverUrl: "/media/data-cover.jpg",
+    brandColor: "#0f766e",
+    keywords: ["public health", "civic tech", "data analysis", "dashboards", "evaluation"],
+    minPostLevel: 1,
+    spaces: [
+      {
+        id: "sp-data-1",
+        name: "Decision memos",
+        group: "Member central",
+        type: "posts",
+        layout: "feed",
+        iconUrl: "/media/data-icon.svg",
+      },
+      {
+        id: "sp-data-2",
+        name: "Dashboard clinic",
+        group: "Coaching",
+        type: "events",
+        layout: "list",
+      },
+      {
+        id: "sp-data-3",
+        name: "Methods library",
+        group: "Courses",
+        type: "courses",
+        layout: "card",
+      },
+    ],
     accentHue: 168,
     joined: false,
   },
@@ -369,7 +490,8 @@ const lesson = (
   body: string[],
   resources: { label: string; kind: string; meta: string }[] = [],
   free = false,
-) => ({ id, title, duration, type, summary, body, resources, free });
+  dripDays?: number,
+) => ({ id, title, duration, type, summary, body, resources, free, dripDays });
 
 export const courses: Course[] = [
   {
@@ -389,6 +511,7 @@ export const courses: Course[] = [
     reviews: 186,
     status: "published",
     price: "included",
+    coverUrl: "/media/course-agents-cover.jpg",
     accentHue: 246,
     outcomes: [
       "Choose a task that is worth automating",
@@ -539,6 +662,9 @@ export const courses: Course[] = [
               "Examples teach format more reliably than instructions. We cover diversity, edge cases and when to stop adding examples.",
               "The exercise gives you six examples and asks you to remove the two that hurt.",
             ],
+            [],
+            false,
+            45,
           ),
         ],
       },
@@ -880,6 +1006,26 @@ const comment = (
 ): Post["comments"][number] => ({ id, authorId, body, createdAt, likes, replies });
 
 export const posts: Post[] = [
+  {
+    id: "post-start-here",
+    communitySlug: "ai-builders-guild",
+    authorId: "c-nana",
+    category: "Start here",
+    title: "Start here: four steps for your first week",
+    body: "Welcome to the guild. Do these four things and you will get value in your first week: (1) reply to this post with what you are building and the decision you are stuck on; (2) add a headline and location to your profile so people know your context; (3) open the classroom and complete the free preview lesson; (4) RSVP to the next live teardown so you see how reviews work. Ask questions in public — the answer usually helps someone else too.",
+    createdAt: daysAgo(0),
+    likes: 64,
+    pinned: true,
+    comments: [
+      comment(
+        "c0",
+        "m-tobi",
+        "New here. Building a support triage agent and stuck on when to escalate to a human.",
+        daysAgo(0),
+        7,
+      ),
+    ],
+  },
   {
     id: "post-1",
     communitySlug: "ai-builders-guild",
@@ -1453,6 +1599,9 @@ export const events: EventItem[] = [
     kind: "live",
     attendees: 184,
     capacity: 300,
+    recurrence: "Repeats on the first Thursday of each month",
+    reminderEnabled: true,
+    liveRoom: true,
     accentHue: 246,
   },
   {
@@ -1487,6 +1636,8 @@ export const events: EventItem[] = [
     kind: "office-hours",
     attendees: 240,
     capacity: 500,
+    recurrence: "Repeats monthly on the second Tuesday",
+    reminderEnabled: true,
     accentHue: 28,
   },
   {
@@ -1749,6 +1900,15 @@ export const products: Product[] = [
 ];
 
 export const notifications: NotificationItem[] = [
+  {
+    id: "n0",
+    kind: "system",
+    title: "Welcome to AI Builders Guild",
+    body: "Start with the pinned “Start here” post: introduce yourself, complete one preview lesson and RSVP to the next teardown.",
+    createdAt: daysAgo(0),
+    read: false,
+    href: "/c/ai-builders-guild/posts/post-start-here",
+  },
   {
     id: "n1",
     kind: "comment",

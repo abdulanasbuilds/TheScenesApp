@@ -85,14 +85,14 @@ function CommercePage() {
                 <p className="text-[11px] font-bold tracking-[0.14em] text-indigo-700 uppercase">
                   Commerce
                 </p>
-                <Badge tone="amber">Fixture data · no money moves</Badge>
+                <Badge tone="amber">Sample data · no money moves</Badge>
               </div>
               <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-950">
                 Orders, products and payouts.
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Validate the commercial interface with deterministic orders. Payment providers,
-                refunds and payouts are intentionally not connected.
+                Explore the commercial interface with sample orders. Payments, refunds and payouts
+                are coming soon.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -109,18 +109,14 @@ function CommercePage() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat
-            label="Gross paid sales"
-            value={formatMoney(gross)}
-            hint="Paid fixture orders only"
-          />
+          <Stat label="Gross paid sales" value={formatMoney(gross)} hint="Sample paid orders" />
           <Stat
             label="Net after 3% fee"
             value={formatMoney(gross - fees)}
             hint="Illustrative Pro fee model"
           />
-          <Stat label="Refunded" value={formatMoney(refunds)} hint="One refunded fixture order" />
-          <Stat label="Pending" value={formatMoney(pending)} hint="Not settled · no provider" />
+          <Stat label="Refunded" value={formatMoney(refunds)} hint="One sample refund" />
+          <Stat label="Pending" value={formatMoney(pending)} hint="Not settled" />
         </div>
 
         <div className="mt-6">
@@ -164,9 +160,7 @@ function CommercePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      toast("Export prepared", "CSV export is not connected in this preview.")
-                    }
+                    onClick={() => toast("Export prepared", "CSV export is coming soon.")}
                   >
                     <Download className="h-4 w-4" /> Export
                   </Button>
@@ -267,8 +261,8 @@ function CommercePage() {
               </Card>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-950">
                 <p className="flex items-center gap-2">
-                  <TriangleAlert className="h-4 w-4 shrink-0" /> Orders are fixture records.
-                  Refunds, taxes and chargebacks are not implemented.
+                  <TriangleAlert className="h-4 w-4 shrink-0" /> Orders are samples. Refunds, taxes
+                  and chargebacks are coming soon.
                 </p>
                 <a href="/pricing" className="font-bold underline underline-offset-2">
                   Read the commercial boundary
@@ -303,7 +297,7 @@ function CommercePage() {
                             <span>{product.sales.toLocaleString()} sales</span>
                             <span className="inline-flex items-center gap-1">
                               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Published
-                              fixture
+                              sample
                             </span>
                           </div>
                         </div>
@@ -320,7 +314,7 @@ function CommercePage() {
                           onClick={() =>
                             toast(
                               "Product editing unavailable",
-                              "Marketplace publishing belongs to a later product phase.",
+                              "Marketplace publishing is coming soon.",
                             )
                           }
                           className="text-xs font-semibold text-slate-500 hover:text-slate-900"
@@ -399,15 +393,16 @@ function CommercePage() {
                   </Card>
                   <Card className="p-4">
                     <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" /> What is connected
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" /> What works in this
+                      preview
                     </h2>
                     <ul className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
-                      <li>• Local purchase state for marketplace testing</li>
-                      <li>• Fixture orders and fee display</li>
+                      <li>• Purchase state for marketplace testing</li>
+                      <li>• Sample orders and fee display</li>
                       <li>• Clear commercial boundary messaging</li>
                     </ul>
                     <p className="mt-3 rounded-lg bg-amber-50 p-2.5 text-[11px] leading-4 text-amber-950">
-                      Not connected: cards, mobile money, payouts, tax, receipts or refunds.
+                      Coming soon: cards, mobile money, payouts, tax, receipts and refunds.
                     </p>
                   </Card>
                   <a href="/pricing" className={buttonClass("secondary", "md", "w-full")}>
@@ -420,8 +415,8 @@ function CommercePage() {
         </div>
 
         <p className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[11px] text-slate-600">
-          <CreditCard className="h-3.5 w-3.5" /> Commerce fixture snapshot ·{" "}
-          {formatDate("2026-11-03")} ·<span>No production provider connected</span>
+          <CreditCard className="h-3.5 w-3.5" /> Sample commerce snapshot ·{" "}
+          {formatDate("2026-11-03")} ·<span>Live payments coming soon</span>
         </p>
       </div>
 
@@ -429,7 +424,7 @@ function CommercePage() {
         open={Boolean(selectedOrder)}
         onOpenChange={(open) => (!open ? setSelectedOrder(null) : undefined)}
         title={`Order ${selectedOrder?.id ?? ""}`}
-        description="Fixture order detail. No payment provider record exists behind this view."
+        description="Sample order detail. No payment provider record exists behind this view."
         footer={
           <Button variant="secondary" onClick={() => setSelectedOrder(null)}>
             Close
@@ -468,8 +463,8 @@ function CommercePage() {
       <Modal
         open={payoutOpen}
         onOpenChange={setPayoutOpen}
-        title="Payouts are not connected"
-        description="This preview cannot move money or create a payout request."
+        title="Payouts are coming soon"
+        description="Payout requests open once payments are connected."
         footer={
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button variant="secondary" onClick={() => setPayoutOpen(false)}>
@@ -483,12 +478,12 @@ function CommercePage() {
       >
         <div className="space-y-3 text-sm leading-6 text-slate-700">
           <p>
-            A production payout flow needs a payment provider, identity checks, settlement rules,
-            tax handling and a verified ledger. None of those exist in this build.
+            Payouts need a payment provider, identity checks, settlement rules, tax handling and a
+            verified ledger. Those are being built.
           </p>
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
-            The figures on this page are derived from fixture orders. They are not a balance and
-            cannot be withdrawn.
+            The figures on this page come from sample orders. They are not a balance and cannot be
+            withdrawn.
           </div>
         </div>
       </Modal>
@@ -496,8 +491,8 @@ function CommercePage() {
       <Modal
         open={productOpen}
         onOpenChange={setProductOpen}
-        title="Product publishing is a later phase"
-        description="The listing form is not being faked into a working marketplace."
+        title="Product publishing is coming soon"
+        description="The listing form opens once the marketplace goes live."
         footer={
           <Button variant="secondary" onClick={() => setProductOpen(false)}>
             Close
@@ -505,9 +500,9 @@ function CommercePage() {
         }
       >
         <p className="text-sm leading-6 text-slate-700">
-          Marketplace discovery and product detail are implemented. Creating and publishing a real
-          listing requires media storage, payment setup, moderation and delivery rules. The public
-          catalogue uses fixture products until those decisions are made.
+          Marketplace discovery and product detail are ready to explore. Creating and publishing a
+          real listing needs media storage, payment setup, moderation and delivery rules, so
+          publishing is coming soon. The public catalogue uses sample products until then.
         </p>
       </Modal>
     </CreatorShell>

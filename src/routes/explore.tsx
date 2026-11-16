@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Grid2X2, List, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, Grid2X2, List, Search, SlidersHorizontal, X } from "lucide-react";
 import { CommunityCard, CommunityRow } from "@/components/domain/cards";
 import { PublicShell } from "@/components/layout/public-shell";
 import { Button, Card, Chip, EmptyState, Select } from "@/components/ui";
@@ -94,7 +94,7 @@ function ExplorePage() {
             </div>
             <span className="text-xs font-semibold text-slate-500">
               {dataMode === "fixtures"
-                ? "Fixture catalogue · updated for this preview"
+                ? "Sample catalogue for this preview"
                 : "Connected pre-production catalogue"}
             </span>
           </div>
@@ -136,6 +136,15 @@ function ExplorePage() {
               </Chip>
             ))}
           </div>
+          {category !== "all" ? (
+            <a
+              href={`/categories/${category}`}
+              className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-indigo-700 hover:text-indigo-900"
+            >
+              Open the {categories.find((item) => item.slug === category)?.name} category page
+              <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+          ) : null}
         </div>
       </section>
 

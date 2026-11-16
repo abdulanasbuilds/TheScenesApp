@@ -95,7 +95,7 @@ function RegisterPage() {
           confirmationRequired
             ? "We sent a confirmation link to your email address. Confirm it, then return to log in."
             : dataMode === "fixtures"
-              ? "The account exists only in this browser session. Continue to personalise the fixture experience."
+              ? "The account exists only in this browser session. Continue to personalise your preview."
               : "Your connected account is ready. Continue to review your profile and learning preferences."
         }
         footer={
@@ -142,7 +142,7 @@ function RegisterPage() {
             ? "Create a pre-production test account. Email confirmation is required; no payment or production deployment is connected."
             : "Create a local account for the connected learning proof. No email provider, payment method or production service is used."
           : role === "creator"
-            ? "Preview the teaching and community workspace. No production creator account or payout profile is created."
+            ? "Preview the teaching and community workspace. Live creator accounts and payouts are coming soon."
             : "Start with a local preview profile. Production authentication will connect only after the frontend phase is accepted."
       }
       footer={
@@ -223,7 +223,7 @@ function RegisterPage() {
           }
           description={
             dataMode === "fixtures"
-              ? "This is simulated auth; no production account or payment method is created."
+              ? "This is a preview account; no payment method is created."
               : isHostedPreProduction
                 ? "This creates a test account in the pre-production project. No payment method is collected."
                 : "This creates only an isolated local account. No email or payment provider is contacted."

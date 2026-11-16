@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowRight, FilePlus2, Search } from "lucide-react";
+import { ArrowRight, CheckCircle2, FilePlus2, Search, X } from "lucide-react";
 import { EventCard, PostCard } from "@/components/domain/cards";
 import { CommunityShell } from "@/components/layout/community-shell";
 import { Avatar, Badge, Button, Card, Chip } from "@/components/ui";
@@ -64,7 +64,13 @@ function CommunityFeedPage() {
                   Community
                 </h1>
                 {dataMode === "fixtures" ? (
-                  <Badge tone="green">● {community.online} online</Badge>
+                  <Badge tone="green">
+                    <span
+                      className="mr-1.5 inline-block h-2 w-2 rounded-full bg-current align-middle"
+                      aria-hidden="true"
+                    />
+                    {community.online} online
+                  </Badge>
                 ) : (
                   <Badge tone="outline">Connected community</Badge>
                 )}
@@ -106,6 +112,7 @@ function CommunityFeedPage() {
 
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-4">
+          {dataMode === "fixtures" ? <StartHereChecklist communitySlug={community.slug} /> : null}
           <Card className="p-4">
             <div className="flex gap-3">
               <Avatar name={currentMember?.name ?? "Member"} size={40} online />
@@ -115,14 +122,14 @@ function CommunityFeedPage() {
               >
                 {dataMode === "fixtures"
                   ? "Share a question, build log or useful note…"
-                  : "Community posts are not connected in Phase 3."}
+                  : "Community posts are coming soon."}
               </a>
             </div>
             <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
               <p className="text-xs text-slate-500">
                 {dataMode === "fixtures"
-                  ? "Posts are saved locally in this frontend preview."
-                  : "Posts and comments remain unavailable in this connected slice."}
+                  ? "Posts are saved for this preview."
+                  : "Connected posting is coming soon."}
               </p>
               <a
                 href={`/c/${community.slug}/posts/new`}
@@ -210,5 +217,93 @@ function CommunityFeedPage() {
         </aside>
       </div>
     </CommunityShell>
+  );
+}
+
+function StartHereChecklist({ communitySlug }: { communitySlug: string }) {
+  const [dismissed, setDismissed] = useState(false);
+  const [done, setDone] = useState([false, false, false, false]);
+  const completed = done.filter(Boolean).length;
+  const steps = [
+    {
+      label: "Introduce yourself",
+      hint: "Reply to the pinned Start here post",
+      href: `/c/${communitySlug}/posts/post-start-here`,
+    },
+    {
+      label: "Add your headline and location",
+      hint: "Help people understand your context",
+      href: "/settings",
+    },
+    {
+      label: "Complete one preview lesson",
+      hint: "Open the classroom",
+      href: `/c/${communitySlug}/classroom`,
+    },
+    {
+      label: "RSVP to the next live session",
+      hint: "See how a teardown works",
+      href: `/c/${communitySlug}/calendar`,
+    },
+  ];
+  if (dismissed) return null;
+  return (
+    <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold tracking-[0.14em] text-indigo-700 uppercase">
+            New here?
+          </p>
+          <h2 className="mt-1 font-display text-lg font-extrabold text-slate-900">Start here</h2>
+          <p className="mt-1 text-xs text-slate-600">
+            {completed} of {steps.length} steps done · saved for this preview
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          aria-label="Dismiss start-here checklist"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-white hover:text-slate-900"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      <ol className="mt-4 grid gap-2 sm:grid-cols-2">
+        {steps.map((step, index) => {
+          const complete = done[index];
+          return (
+            <li key={step.label}>
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2.5">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDone((current) => current.map((value, i) => (i === index ? !value : value)))
+                  }
+                  aria-pressed={complete}
+                  aria-label={`Mark “${step.label}” as ${complete ? "not done" : "done"}`}
+                  className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  <CheckCircle2
+                    className={complete ? "h-5 w-5 text-emerald-600" : "h-5 w-5 text-slate-300"}
+                  />
+                </button>
+                <a href={step.href} className="min-w-0 flex-1">
+                  <span
+                    className={
+                      complete
+                        ? "block text-sm font-semibold text-slate-400 line-through"
+                        : "block text-sm font-semibold text-slate-800"
+                    }
+                  >
+                    {step.label}
+                  </span>
+                  <span className="block text-[11px] text-slate-500">{step.hint}</span>
+                </a>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </Card>
   );
 }

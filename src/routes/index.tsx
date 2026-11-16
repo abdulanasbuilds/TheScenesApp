@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { CommunityCard, CourseCard } from "@/components/domain/cards";
 import { PublicShell } from "@/components/layout/public-shell";
-import { Badge, Card, CoverArt, Eyebrow, SectionHeading, buttonClass } from "@/components/ui";
+import { Badge, Card, Eyebrow, SectionHeading, buttonClass } from "@/components/ui";
 import { categories, communities, courses, creators } from "@/data/seed";
 import { formatCompact } from "@/lib/utils";
 
@@ -29,6 +29,44 @@ export const Route = createFileRoute("/")({
   }),
   component: Home,
 });
+
+function ScreenshotFrame({
+  src,
+  alt,
+  label,
+  className,
+  imgClassName,
+}: {
+  src: string;
+  alt: string;
+  label: string;
+  className?: string;
+  imgClassName?: string;
+}) {
+  return (
+    <figure
+      className={`overflow-hidden rounded-xl border border-slate-300 bg-white shadow-[0_24px_60px_-30px_rgba(15,23,42,0.45)] ${className ?? ""}`}
+    >
+      <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-100 px-3 py-2">
+        <span className="flex gap-1" aria-hidden="true">
+          <span className="h-2 w-2 rounded-full bg-slate-300" />
+          <span className="h-2 w-2 rounded-full bg-slate-300" />
+          <span className="h-2 w-2 rounded-full bg-slate-300" />
+        </span>
+        <span className="truncate text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
+          {label}
+        </span>
+      </div>
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        className={`block w-full bg-slate-50 object-cover object-top ${imgClassName ?? ""}`}
+      />
+    </figure>
+  );
+}
 
 function Home() {
   const featuredCommunities = communities.filter((community) => community.featured).slice(0, 3);
@@ -93,7 +131,11 @@ function Home() {
                 </p>
               </div>
               <Badge className="bg-emerald-400/15 text-emerald-100 ring-1 ring-emerald-300/30">
-                ● Preview data
+                <span
+                  className="mr-1.5 inline-block h-2 w-2 rounded-full bg-current align-middle"
+                  aria-hidden="true"
+                />
+                Preview data
               </Badge>
             </div>
             <div className="overflow-hidden rounded-xl bg-white text-slate-900">
@@ -171,6 +213,48 @@ function Home() {
         </div>
       </section>
 
+      <section className="border-b border-slate-200 bg-slate-50">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <SectionHeading
+            eyebrow="See the app"
+            title="The room, the classroom and the numbers in one place."
+            description="These are screenshots from the working product, filled with sample data so you can judge the fit before you create an account."
+            action={
+              <a href="/explore" className={buttonClass("secondary", "md")}>
+                Open the preview <ArrowRight className="h-4 w-4" />
+              </a>
+            }
+          />
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            <ScreenshotFrame
+              src="/media/screens/creator-overview.jpg"
+              alt="Creator overview showing member counts, weekly posts, course learners and sample gross sales."
+              label="Creator overview"
+              className="lg:col-span-3"
+            />
+            <ScreenshotFrame
+              src="/media/screens/community-home.jpg"
+              alt="Community home for the AI Builders Guild with the post feed, upcoming events and member activity."
+              label="Community home"
+            />
+            <ScreenshotFrame
+              src="/media/screens/classroom-lesson.jpg"
+              alt="Classroom lesson page with the course outline, lesson content and progress controls."
+              label="Classroom lesson"
+            />
+            <ScreenshotFrame
+              src="/media/screens/explore.jpg"
+              alt="Explore page with category filters and community results."
+              label="Explore"
+            />
+          </div>
+          <p className="mt-5 text-xs leading-5 text-slate-500">
+            Captured from the running app with sample data. Payments, image uploads and live video
+            are coming soon.
+          </p>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <SectionHeading
           eyebrow="Find your room"
@@ -213,7 +297,7 @@ function Home() {
               {categories.map((category) => (
                 <a
                   key={category.id}
-                  href={`/explore?category=${category.slug}`}
+                  href={`/categories/${category.slug}`}
                   className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-slate-200 px-4 py-4 last:border-0 hover:bg-white sm:px-5"
                 >
                   <span className="flex min-w-0 items-center gap-3">
@@ -250,7 +334,7 @@ function Home() {
               href="/my-learning"
               className="text-sm font-bold text-indigo-700 hover:text-indigo-900"
             >
-              See the classroom →
+              See the classroom
             </a>
           }
         />
@@ -271,7 +355,7 @@ function Home() {
               </h2>
               <p className="mt-4 max-w-xl text-base leading-7 text-slate-300">
                 Run a community, publish a classroom, host events and understand your audience from
-                one calm workspace. Pricing is being finalised — the product preview is open now.
+                one calm workspace. Plans are set out below; checkout is coming soon.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <a href="/register?role=creator" className={buttonClass("clay", "lg")}>
@@ -290,33 +374,17 @@ function Home() {
               </div>
             </div>
             <div className="relative min-h-64 overflow-hidden border-t border-slate-800 lg:border-t-0 lg:border-l">
-              <CoverArt
-                seed="creator-workspace"
-                hue={26}
-                rounded="rounded-none"
-                className="absolute inset-0 h-full w-full opacity-80"
+              <img
+                src="/media/screens/creator-overview.jpg"
+                alt="Creator overview showing community performance and sample sales at a glance."
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover object-top"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
-              <div className="absolute inset-x-6 bottom-6 rounded-xl border border-white/15 bg-slate-950/75 p-4 backdrop-blur-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-300">
-                    This week in your scene
-                  </span>
-                  <Badge tone="green">● Healthy</Badge>
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-                  {[
-                    ["46", "posts"],
-                    ["3", "events"],
-                    ["81%", "lesson finish"],
-                  ].map(([value, label]) => (
-                    <div key={label}>
-                      <p className="font-display text-xl font-extrabold">{value}</p>
-                      <p className="text-[10px] text-slate-400">{label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+              <span className="absolute inset-x-6 bottom-6 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-semibold text-slate-200 backdrop-blur-sm">
+                Creator overview · sample data
+              </span>
             </div>
           </div>
         </Card>

@@ -25,7 +25,7 @@ import {
   DropdownTrigger,
 } from "@/components/ui";
 import { Brand } from "./public-shell";
-import { cn, formatCompact } from "@/lib/utils";
+import { cn, formatCompact, initials } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 import { useGlobalSearchShortcut } from "@/lib/use-global-search-shortcut";
 
@@ -118,7 +118,7 @@ export function CommunityShell({
             <Search className="h-4 w-4" />
             <span>Search in {community.name}</span>
             <kbd aria-hidden="true" className="ml-auto text-[10px] font-bold text-slate-600">
-              ⌘K
+              Ctrl K
             </kbd>
           </button>
           <div className="ml-auto flex items-center gap-1.5">
@@ -143,7 +143,7 @@ export function CommunityShell({
                 <button
                   type="button"
                   className="flex items-center gap-1 rounded-full p-0.5 pr-1 text-slate-500 hover:bg-slate-100"
-                  aria-label={`${currentMember?.name ?? "Preview learner"} account menu`}
+                  aria-label={`${initials(currentMember?.name ?? "Preview learner")} — ${currentMember?.name ?? "Preview learner"} account menu`}
                 >
                   <Avatar name={currentMember?.name ?? "Preview learner"} size={34} online />
                   <ChevronDown className="h-3.5 w-3.5" />
@@ -194,20 +194,40 @@ export function CommunityShell({
             href={`/communities/${community.slug}`}
             className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 hover:border-slate-300"
           >
-            <span
-              className="flex h-10 w-10 items-center justify-center rounded-lg font-display text-sm font-extrabold text-white"
-              style={{ backgroundColor: `hsl(${community.accentHue} 48% 38%)` }}
-            >
-              {community.name
-                .split(" ")
-                .slice(0, 2)
-                .map((word) => word[0])
-                .join("")}
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-bold text-slate-900">
-                {community.name}
+            {community.iconUrl ? (
+              <img
+                src={community.iconUrl}
+                alt=""
+                width={40}
+                height={40}
+                className="h-10 w-10 shrink-0 rounded-lg border border-slate-200 object-cover"
+              />
+            ) : (
+              <span
+                className="flex h-10 w-10 items-center justify-center rounded-lg font-display text-sm font-extrabold text-white"
+                style={{ backgroundColor: `hsl(${community.accentHue} 48% 38%)` }}
+              >
+                {community.name
+                  .split(" ")
+                  .slice(0, 2)
+                  .map((word) => word[0])
+                  .join("")}
               </span>
+            )}
+            <span className="min-w-0">
+              {community.logoUrl ? (
+                <img
+                  src={community.logoUrl}
+                  alt=""
+                  width={200}
+                  height={50}
+                  className="block h-8 w-auto max-w-[150px] rounded"
+                />
+              ) : (
+                <span className="block truncate text-sm font-bold text-slate-900">
+                  {community.name}
+                </span>
+              )}
               <span className="mt-0.5 block text-[11px] text-slate-500">
                 {formatCompact(community.members)} members
               </span>
@@ -239,7 +259,13 @@ export function CommunityShell({
 
           <div className="mt-auto rounded-xl border border-slate-200 bg-slate-50 p-3">
             <div className="flex items-center justify-between">
-              <Badge tone="green">● {community.online} online</Badge>
+              <Badge tone="green">
+                <span
+                  className="mr-1.5 inline-block h-2 w-2 rounded-full bg-current align-middle"
+                  aria-hidden="true"
+                />
+                {community.online} online
+              </Badge>
               <Dropdown>
                 <DropdownTrigger asChild>
                   <button

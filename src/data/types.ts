@@ -28,6 +28,15 @@ export type PricingModel =
       interval?: "month" | "year";
     };
 
+export type CommunitySpace = {
+  id: string;
+  name: string;
+  group: string;
+  type: "posts" | "chat" | "events" | "courses";
+  layout: "feed" | "list" | "card";
+  iconUrl?: string;
+};
+
 export type Community = {
   id: string;
   slug: string;
@@ -47,6 +56,16 @@ export type Community = {
   founded: string;
   rules: string[];
   highlights: string[];
+  screeningQuestions?: string[];
+  iconUrl?: string;
+  logoUrl?: string;
+  coverUrl?: string;
+  brandColor?: string;
+  keywords?: string[];
+  customDomain?: string;
+  minPostLevel?: number;
+  spaces?: CommunitySpace[];
+  externalLinks?: { label: string; url: string }[];
   accentHue: number;
   featured?: boolean;
   joined?: boolean;
@@ -62,6 +81,7 @@ export type Lesson = {
   body: string[];
   resources: { label: string; kind: string; meta: string; url?: string }[];
   free?: boolean;
+  dripDays?: number;
 };
 
 export type Module = {
@@ -92,6 +112,7 @@ export type Course = {
   price: number | "included";
   modules: Module[];
   outcomes: string[];
+  coverUrl?: string;
   accentHue: number;
 };
 
@@ -150,6 +171,9 @@ export type EventItem = {
   attendees: number;
   capacity: number;
   replay?: boolean;
+  recurrence?: string;
+  reminderEnabled?: boolean;
+  liveRoom?: boolean;
   accentHue: number;
 };
 

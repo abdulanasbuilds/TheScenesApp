@@ -91,10 +91,10 @@ function OnboardingPage() {
       toast(
         "Profile updated",
         role === "creator"
-          ? "Creator intent is saved only for this preview; no creator authority was granted."
+          ? "Creator intent is saved only for this preview; creator tools are coming soon."
           : dataMode === "supabase-staging"
-            ? "Your pre-production profile is ready. Interests and recommendations are not connected yet."
-            : "Your local profile is ready. Interests and recommendations are not connected yet.",
+            ? "Your pre-production profile is ready. Interest matching and recommendations are coming soon."
+            : "Your local profile is ready. Interest matching and recommendations are coming soon.",
       );
     }
     await router.navigate({ href: role === "creator" ? "/dashboard/creator" : "/home" });
@@ -124,7 +124,7 @@ function OnboardingPage() {
           <p className="mt-3 text-sm leading-6 text-slate-600">
             {step === 1
               ? dataMode === "fixtures"
-                ? "This fixture profile is how people will recognise you in communities."
+                ? "This is how people will recognise you in communities."
                 : "Your display name can change, but your registered handle stays fixed."
               : step === 2
                 ? "Pick a few subjects. The taxonomy stays broad outside and structured inside."

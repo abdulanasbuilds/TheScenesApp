@@ -14,20 +14,47 @@ export const Route = createFileRoute("/pricing")({
 const faqs = [
   [
     "What do the paid plans cost?",
-    "The approved monthly direction is Pro at $19 / GH₵300 and Pro Plus at $39 / GH₵620. Yearly pricing, checkout and payment providers are not yet approved or available.",
+    "The approved monthly direction is Pro at $19 / GH₵300 and Pro Plus at $39 / GH₵620. Yearly pricing, checkout and payment providers are coming soon.",
   ],
   [
     "Does the preview process payments?",
-    "No. Payment providers, checkout, verification, refunds and payouts are later product phases. Every commercial action in this build is clearly simulated.",
+    "No. Checkout and payments are coming soon. Every commercial action in this build is clearly simulated.",
   ],
   [
     "What do the platform fees mean?",
-    "Pro and Pro Plus have an approved 3% platform fee. Free has an approved 7% platform fee. Processor fees are separate and payments remain on hold.",
+    "Pro and Pro Plus have an approved 3% platform fee. Free has an approved 7% platform fee. Processor fees are separate. Checkout is coming soon.",
   ],
   [
     "Is video hosting included?",
     "All launch plans use approved external video, file and live-session links. Native hosting and native live delivery are not included; adding them later would require a new provider, cost and quota decision.",
   ],
+];
+
+const pricingModels = [
+  {
+    name: "Free",
+    detail: "Open entry for everyone. Approved 7% platform fee direction.",
+    status: "Approved direction",
+    tone: "green" as const,
+  },
+  {
+    name: "Freemium",
+    detail: "Free entry with paid upgrades layered on top.",
+    status: "Future direction",
+    tone: "outline" as const,
+  },
+  {
+    name: "Tiered",
+    detail: "Multiple monthly levels, each including the level below.",
+    status: "Monthly plans only",
+    tone: "indigo" as const,
+  },
+  {
+    name: "One-time",
+    detail: "A fixed price for lifetime or limited access.",
+    status: "Not approved",
+    tone: "slate" as const,
+  },
 ];
 
 function PricingPage() {
@@ -135,6 +162,32 @@ function PricingPage() {
           payments phase.
         </Card>
       </section>
+      <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+        <div className="max-w-2xl">
+          <p className="text-[11px] font-bold tracking-[0.16em] text-indigo-700 uppercase">
+            Pricing models
+          </p>
+          <h2 className="mt-2 font-display text-2xl font-extrabold text-slate-900">
+            Ways a community can charge
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Skool and Circle both support several models. The approved direction today is free entry
+            plus monthly subscription plans. The others are documented directions, not active
+            offers.
+          </p>
+        </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {pricingModels.map((model) => (
+            <Card key={model.name} className="p-5">
+              <h3 className="font-display text-lg font-extrabold text-slate-900">{model.name}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{model.detail}</p>
+              <Badge tone={model.tone} className="mt-4">
+                {model.status}
+              </Badge>
+            </Card>
+          ))}
+        </div>
+      </section>
       <section className="border-y border-slate-200 bg-white">
         <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-16">
           <div className="text-center">
@@ -176,7 +229,7 @@ function PricingPage() {
           Build the audience before the invoice.
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600">
-          Start a free preview account and explore the complete creator workspace with fixture data.
+          Start a free preview account and explore the complete creator workspace with sample data.
         </p>
         <a href="/register?role=creator" className={buttonClass("primary", "lg", "mt-6")}>
           Create preview account

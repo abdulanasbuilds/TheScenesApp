@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as BecomeATeacherRouteImport } from './routes/become-a-teacher'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HelpRouteImport } from './routes/help'
@@ -26,14 +27,17 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as AuthConfirmRouteImport } from './routes/auth.confirm'
+import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
 import { Route as CommunitiesCommunityIdRouteImport } from './routes/communities/$communityId'
 import { Route as CreatorsHandleRouteImport } from './routes/creators/$handle'
+import { Route as DashboardCategoriesRouteImport } from './routes/dashboard/categories'
 import { Route as DashboardCommerceRouteImport } from './routes/dashboard/commerce'
 import { Route as DashboardCommunityRouteImport } from './routes/dashboard/community'
 import { Route as DashboardCoursesRouteImport } from './routes/dashboard/courses'
 import { Route as DashboardCreatorRouteImport } from './routes/dashboard/creator'
 import { Route as DashboardEventsRouteImport } from './routes/dashboard/events'
 import { Route as DashboardMembersRouteImport } from './routes/dashboard/members'
+import { Route as DashboardReferralsRouteImport } from './routes/dashboard/referrals'
 import { Route as MarketplaceProductIdRouteImport } from './routes/marketplace/$productId'
 import { Route as CCommunityIdIndexRouteImport } from './routes/c/$communityId/index'
 import { Route as CCommunityIdCalendarRouteImport } from './routes/c/$communityId/calendar'
@@ -55,6 +59,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BecomeATeacherRoute = BecomeATeacherRouteImport.update({
+  id: '/become-a-teacher',
+  path: '/become-a-teacher',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExploreRoute = ExploreRouteImport.update({
@@ -132,6 +141,11 @@ const AuthConfirmRoute = AuthConfirmRouteImport.update({
   path: '/auth/confirm',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
+  id: '/categories/$slug',
+  path: '/categories/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CommunitiesCommunityIdRoute = CommunitiesCommunityIdRouteImport.update({
   id: '/communities/$communityId',
   path: '/communities/$communityId',
@@ -140,6 +154,11 @@ const CommunitiesCommunityIdRoute = CommunitiesCommunityIdRouteImport.update({
 const CreatorsHandleRoute = CreatorsHandleRouteImport.update({
   id: '/creators/$handle',
   path: '/creators/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardCategoriesRoute = DashboardCategoriesRouteImport.update({
+  id: '/dashboard/categories',
+  path: '/dashboard/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardCommerceRoute = DashboardCommerceRouteImport.update({
@@ -170,6 +189,11 @@ const DashboardEventsRoute = DashboardEventsRouteImport.update({
 const DashboardMembersRoute = DashboardMembersRouteImport.update({
   id: '/dashboard/members',
   path: '/dashboard/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardReferralsRoute = DashboardReferralsRouteImport.update({
+  id: '/dashboard/referrals',
+  path: '/dashboard/referrals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplaceProductIdRoute = MarketplaceProductIdRouteImport.update({
@@ -240,6 +264,7 @@ const CCommunityIdClassroomCourseIdLessonIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/become-a-teacher': typeof BecomeATeacherRoute
   '/explore': typeof ExploreRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
@@ -255,14 +280,17 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/auth/confirm': typeof AuthConfirmRoute
+  '/categories/$slug': typeof CategoriesSlugRoute
   '/communities/$communityId': typeof CommunitiesCommunityIdRoute
   '/creators/$handle': typeof CreatorsHandleRoute
+  '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/commerce': typeof DashboardCommerceRoute
   '/dashboard/community': typeof DashboardCommunityRoute
   '/dashboard/courses': typeof DashboardCoursesRoute
   '/dashboard/creator': typeof DashboardCreatorRoute
   '/dashboard/events': typeof DashboardEventsRoute
   '/dashboard/members': typeof DashboardMembersRoute
+  '/dashboard/referrals': typeof DashboardReferralsRoute
   '/marketplace/$productId': typeof MarketplaceProductIdRoute
   '/c/$communityId/calendar': typeof CCommunityIdCalendarRoute
   '/c/$communityId/classroom': typeof CCommunityIdClassroomRouteWithChildren
@@ -279,6 +307,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/become-a-teacher': typeof BecomeATeacherRoute
   '/explore': typeof ExploreRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
@@ -294,14 +323,17 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/auth/confirm': typeof AuthConfirmRoute
+  '/categories/$slug': typeof CategoriesSlugRoute
   '/communities/$communityId': typeof CommunitiesCommunityIdRoute
   '/creators/$handle': typeof CreatorsHandleRoute
+  '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/commerce': typeof DashboardCommerceRoute
   '/dashboard/community': typeof DashboardCommunityRoute
   '/dashboard/courses': typeof DashboardCoursesRoute
   '/dashboard/creator': typeof DashboardCreatorRoute
   '/dashboard/events': typeof DashboardEventsRoute
   '/dashboard/members': typeof DashboardMembersRoute
+  '/dashboard/referrals': typeof DashboardReferralsRoute
   '/marketplace/$productId': typeof MarketplaceProductIdRoute
   '/c/$communityId/calendar': typeof CCommunityIdCalendarRoute
   '/c/$communityId/classroom': typeof CCommunityIdClassroomRouteWithChildren
@@ -319,6 +351,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/become-a-teacher': typeof BecomeATeacherRoute
   '/explore': typeof ExploreRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
@@ -334,14 +367,17 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/auth/confirm': typeof AuthConfirmRoute
+  '/categories/$slug': typeof CategoriesSlugRoute
   '/communities/$communityId': typeof CommunitiesCommunityIdRoute
   '/creators/$handle': typeof CreatorsHandleRoute
+  '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/commerce': typeof DashboardCommerceRoute
   '/dashboard/community': typeof DashboardCommunityRoute
   '/dashboard/courses': typeof DashboardCoursesRoute
   '/dashboard/creator': typeof DashboardCreatorRoute
   '/dashboard/events': typeof DashboardEventsRoute
   '/dashboard/members': typeof DashboardMembersRoute
+  '/dashboard/referrals': typeof DashboardReferralsRoute
   '/marketplace/$productId': typeof MarketplaceProductIdRoute
   '/c/$communityId/calendar': typeof CCommunityIdCalendarRoute
   '/c/$communityId/classroom': typeof CCommunityIdClassroomRouteWithChildren
@@ -360,6 +396,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/become-a-teacher'
     | '/explore'
     | '/forgot-password'
     | '/help'
@@ -375,14 +412,17 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/auth/confirm'
+    | '/categories/$slug'
     | '/communities/$communityId'
     | '/creators/$handle'
+    | '/dashboard/categories'
     | '/dashboard/commerce'
     | '/dashboard/community'
     | '/dashboard/courses'
     | '/dashboard/creator'
     | '/dashboard/events'
     | '/dashboard/members'
+    | '/dashboard/referrals'
     | '/marketplace/$productId'
     | '/c/$communityId/calendar'
     | '/c/$communityId/classroom'
@@ -399,6 +439,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/become-a-teacher'
     | '/explore'
     | '/forgot-password'
     | '/help'
@@ -414,14 +455,17 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/auth/confirm'
+    | '/categories/$slug'
     | '/communities/$communityId'
     | '/creators/$handle'
+    | '/dashboard/categories'
     | '/dashboard/commerce'
     | '/dashboard/community'
     | '/dashboard/courses'
     | '/dashboard/creator'
     | '/dashboard/events'
     | '/dashboard/members'
+    | '/dashboard/referrals'
     | '/marketplace/$productId'
     | '/c/$communityId/calendar'
     | '/c/$communityId/classroom'
@@ -438,6 +482,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/become-a-teacher'
     | '/explore'
     | '/forgot-password'
     | '/help'
@@ -453,14 +498,17 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/auth/confirm'
+    | '/categories/$slug'
     | '/communities/$communityId'
     | '/creators/$handle'
+    | '/dashboard/categories'
     | '/dashboard/commerce'
     | '/dashboard/community'
     | '/dashboard/courses'
     | '/dashboard/creator'
     | '/dashboard/events'
     | '/dashboard/members'
+    | '/dashboard/referrals'
     | '/marketplace/$productId'
     | '/c/$communityId/calendar'
     | '/c/$communityId/classroom'
@@ -478,6 +526,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  BecomeATeacherRoute: typeof BecomeATeacherRoute
   ExploreRoute: typeof ExploreRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HelpRoute: typeof HelpRoute
@@ -493,14 +542,17 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   AuthConfirmRoute: typeof AuthConfirmRoute
+  CategoriesSlugRoute: typeof CategoriesSlugRoute
   CommunitiesCommunityIdRoute: typeof CommunitiesCommunityIdRoute
   CreatorsHandleRoute: typeof CreatorsHandleRoute
+  DashboardCategoriesRoute: typeof DashboardCategoriesRoute
   DashboardCommerceRoute: typeof DashboardCommerceRoute
   DashboardCommunityRoute: typeof DashboardCommunityRoute
   DashboardCoursesRoute: typeof DashboardCoursesRoute
   DashboardCreatorRoute: typeof DashboardCreatorRoute
   DashboardEventsRoute: typeof DashboardEventsRoute
   DashboardMembersRoute: typeof DashboardMembersRoute
+  DashboardReferralsRoute: typeof DashboardReferralsRoute
   CCommunityIdCalendarRoute: typeof CCommunityIdCalendarRoute
   CCommunityIdClassroomRoute: typeof CCommunityIdClassroomRouteWithChildren
   CCommunityIdLeaderboardRoute: typeof CCommunityIdLeaderboardRoute
@@ -525,6 +577,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/become-a-teacher': {
+      id: '/become-a-teacher'
+      path: '/become-a-teacher'
+      fullPath: '/become-a-teacher'
+      preLoaderRoute: typeof BecomeATeacherRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore': {
@@ -632,6 +691,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/categories/$slug': {
+      id: '/categories/$slug'
+      path: '/categories/$slug'
+      fullPath: '/categories/$slug'
+      preLoaderRoute: typeof CategoriesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/communities/$communityId': {
       id: '/communities/$communityId'
       path: '/communities/$communityId'
@@ -644,6 +710,13 @@ declare module '@tanstack/react-router' {
       path: '/creators/$handle'
       fullPath: '/creators/$handle'
       preLoaderRoute: typeof CreatorsHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/categories': {
+      id: '/dashboard/categories'
+      path: '/dashboard/categories'
+      fullPath: '/dashboard/categories'
+      preLoaderRoute: typeof DashboardCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/commerce': {
@@ -686,6 +759,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/members'
       fullPath: '/dashboard/members'
       preLoaderRoute: typeof DashboardMembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/referrals': {
+      id: '/dashboard/referrals'
+      path: '/dashboard/referrals'
+      fullPath: '/dashboard/referrals'
+      preLoaderRoute: typeof DashboardReferralsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace/$productId': {
@@ -830,6 +910,7 @@ const CCommunityIdMembersRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  BecomeATeacherRoute: BecomeATeacherRoute,
   ExploreRoute: ExploreRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HelpRoute: HelpRoute,
@@ -845,14 +926,17 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   AuthConfirmRoute: AuthConfirmRoute,
+  CategoriesSlugRoute: CategoriesSlugRoute,
   CommunitiesCommunityIdRoute: CommunitiesCommunityIdRoute,
   CreatorsHandleRoute: CreatorsHandleRoute,
+  DashboardCategoriesRoute: DashboardCategoriesRoute,
   DashboardCommerceRoute: DashboardCommerceRoute,
   DashboardCommunityRoute: DashboardCommunityRoute,
   DashboardCoursesRoute: DashboardCoursesRoute,
   DashboardCreatorRoute: DashboardCreatorRoute,
   DashboardEventsRoute: DashboardEventsRoute,
   DashboardMembersRoute: DashboardMembersRoute,
+  DashboardReferralsRoute: DashboardReferralsRoute,
   CCommunityIdCalendarRoute: CCommunityIdCalendarRoute,
   CCommunityIdClassroomRoute: CCommunityIdClassroomRouteWithChildren,
   CCommunityIdLeaderboardRoute: CCommunityIdLeaderboardRoute,

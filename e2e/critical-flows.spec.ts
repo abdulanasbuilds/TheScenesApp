@@ -119,5 +119,5 @@ test("marketplace checkout is explicitly local and changes preview state", async
   await page.getByRole("button", { name: "Confirm preview purchase" }).click();
 
   await expect(page.getByRole("dialog", { name: "Preview purchase complete" })).toBeVisible();
-  await expect(page.getByText("No server order was created.")).toBeVisible();
+  await expect(page.getByText("No order was created.")).toBeVisible();
 });

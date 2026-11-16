@@ -6,7 +6,9 @@ import {
   CalendarDays,
   ChevronDown,
   CreditCard,
+  Gift,
   LayoutDashboard,
+  Tags,
   LogOut,
   Menu,
   MessageSquareText,
@@ -29,7 +31,15 @@ import { Brand } from "./public-shell";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/store/app-store";
 
-type CreatorSection = "overview" | "community" | "members" | "courses" | "events" | "commerce";
+type CreatorSection =
+  | "overview"
+  | "community"
+  | "members"
+  | "courses"
+  | "events"
+  | "commerce"
+  | "referrals"
+  | "categories";
 
 const navigation: Array<{
   id: CreatorSection;
@@ -39,10 +49,12 @@ const navigation: Array<{
 }> = [
   { id: "overview", label: "Overview", href: "/dashboard/creator", icon: LayoutDashboard },
   { id: "community", label: "Community", href: "/dashboard/community", icon: MessageSquareText },
+  { id: "categories", label: "Categories", href: "/dashboard/categories", icon: Tags },
   { id: "members", label: "Members", href: "/dashboard/members", icon: Users },
   { id: "courses", label: "Courses", href: "/dashboard/courses", icon: BookOpen },
   { id: "events", label: "Events", href: "/dashboard/events", icon: CalendarDays },
   { id: "commerce", label: "Commerce", href: "/dashboard/commerce", icon: CreditCard },
+  { id: "referrals", label: "Referrals", href: "/dashboard/referrals", icon: Gift },
 ];
 
 export function CreatorShell({

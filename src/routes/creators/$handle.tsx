@@ -77,9 +77,7 @@ function CreatorProfilePage() {
               </Button>
               <Button
                 variant="secondary"
-                onClick={() =>
-                  toast("Message unavailable", "Direct messaging belongs to a later product phase.")
-                }
+                onClick={() => toast("Message coming soon", "Direct messaging is coming soon.")}
               >
                 Message
               </Button>

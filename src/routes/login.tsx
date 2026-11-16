@@ -76,7 +76,7 @@ function LoginPage() {
           ? "Use the prefilled demo details or any valid-looking email. This form validates locally and never sends a password."
           : dataMode === "supabase-staging"
             ? "Sign in to the pre-production environment after confirming your email. No payment or production deployment is connected."
-            : "Sign in to the isolated local learning environment. No production service is connected."
+            : "Sign in to the isolated local learning environment. Live accounts are coming soon."
       }
       footer={
         <>
