@@ -1,0 +1,28 @@
+{
+  // Committed Cloudflare Worker config used by Workers Builds (the GitHub-connected
+  // deploy path). The `name` MUST match the Worker name in the Cloudflare dashboard.
+  //
+  // Build applies to the Nitro `cloudflare-module` output:
+  //   build command:  bun run build      (emits ./.output/server + ./.output/public)
+  //   deploy command: npx wrangler deploy
+  //
+  // The compatibility date is pinned (not the build date) so local workerd, CI and the
+  // edge runtime all agree. `nodejs_compat` is required by the Supabase SSR client and the
+  // runtime-env reader; keep it.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "abdulanasbuilds-thescenesapp",
+  "main": "./.output/server/index.mjs",
+  "compatibility_date": "2026-11-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "no_bundle": true,
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./.output/public"
+  },
+  "rules": [
+    {
+      "type": "ESModule",
+      "globs": ["**/*.mjs", "**/*.js"]
+    }
+  ]
+}
