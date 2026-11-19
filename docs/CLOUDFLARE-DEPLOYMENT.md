@@ -1,10 +1,29 @@
 # Cloudflare deployment and runtime configuration
 
-**Status:** code/local ready. Deployment itself is a separately approved operation and has not been
-performed. This document describes how the built application is configured on Cloudflare so that a
-founder-approved deployment can be made without changing code.
+**Status:** a **fixtures-mode preview** is deployed and public at
+`https://thescenesapp.abdulanas.workers.dev/` (Cloudflare Worker `thescenesapp`, account
+`e42e083bcff4407bb54742be6c390108`). It carries no connected backend: `VITE_DATA_MODE=fixtures`.
+Connected/staging deployment remains a separately approved operation and has not been performed. This
+document describes how the built application is configured on Cloudflare.
 
 Related: `docs/INTEGRATIONS.md`, `docs/PHASE-4-PLAN.md`, ADR-045.
+
+## How this repository deploys (GitHub-connected Workers Builds)
+
+Deployment is driven from GitHub, not from a developer machine:
+
+- the repo root contains a committed `wrangler.jsonc` whose `name` **must** match the Worker name in
+  the dashboard (`thescenesapp`), pinned `compatibility_date` and `nodejs_compat`;
+- Cloudflare **Workers Builds** is connected to `abdulanasbuilds/TheScenesApp`, branch `main`, with
+  build command `bun run build` and deploy command `npx wrangler deploy`;
+- a push to `main` builds and deploys; other branches produce preview URLs.
+
+Non-secret runtime variables live in the `vars` block of `wrangler.jsonc` so the committed config and
+the dashboard cannot drift. Secrets must never be committed there. The same recipe applies to other
+projects: a root Wrangler config whose `name` matches the Worker, then connect the repo in Cloudflare.
+
+The Worker was originally created as `abdulanasbuilds-thescenesapp` and renamed to `thescenesapp`
+(Cloudflare renames the Worker and keeps the Git connection, deployments and variables).
 
 ## How configuration reaches the application
 
@@ -95,8 +114,9 @@ Adding these variables alone will not activate the feature. Do not set them expe
 
 1. Apply the P4-S3 notifications migration to the hosted project **after separate approval** (see
    `docs/NOTIFICATIONS.md`).
-2. Set the variables above in the dashboard.
-3. Build and deploy the generated Worker with the approved Wrangler/nitro command for the project.
+2. Set the variables above in the dashboard (or the non-secret ones in `wrangler.jsonc` `vars`).
+3. Push to `main`; Workers Builds builds and deploys, or run the approved Wrangler/nitro command for
+   the project from the repo root.
 4. Verify, in this order:
    - `/` loads without the "Configuration required" notice;
    - `/manifest.webmanifest` returns the manifest and `/sw.js` returns the worker;
