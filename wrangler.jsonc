@@ -10,11 +10,19 @@
   // edge runtime all agree. `nodejs_compat` is required by the Supabase SSR client and the
   // runtime-env reader; keep it.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "abdulanasbuilds-thescenesapp",
+  "name": "thescenesapp",
   "main": "./.output/server/index.mjs",
   "compatibility_date": "2026-11-10",
   "compatibility_flags": ["nodejs_compat"],
   "no_bundle": true,
+  // Non-secret runtime configuration. These are committed so a GitHub build deploys the
+  // same environment the dashboard shows; Cloudflare warns if dashboard variables and the
+  // committed config drift apart. Secrets must never be added here.
+  "vars": {
+    "VITE_DATA_MODE": "fixtures",
+    "RATE_LIMIT_DRIVER": "memory",
+    "FEEDBACK_PROVIDER": "memory"
+  },
   "assets": {
     "binding": "ASSETS",
     "directory": "./.output/public"
