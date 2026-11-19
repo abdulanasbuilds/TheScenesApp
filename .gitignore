@@ -46,3 +46,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Internal audit artifacts kept local (business-sensitive analysis, public repo)
+docs/FRONTEND-COMPETITOR-AUDIT-2026-11-14.docx

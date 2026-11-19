@@ -14,7 +14,7 @@ export const Route = createFileRoute("/pricing")({
 const faqs = [
   [
     "What do the paid plans cost?",
-    "The approved monthly direction is Pro at $19 / GH₵300 and Pro Plus at $39 / GH₵620. Yearly pricing, checkout and payment providers are coming soon.",
+    "Free is $0. Creator is $29 and Studio is $99 per month, priced in US dollars. Your local currency is shown before you pay. Yearly pricing, checkout and payment providers are coming soon.",
   ],
   [
     "Does the preview process payments?",
@@ -22,7 +22,11 @@ const faqs = [
   ],
   [
     "What do the platform fees mean?",
-    "Pro and Pro Plus have an approved 3% platform fee. Free has an approved 7% platform fee. Processor fees are separate. Checkout is coming soon.",
+    "Free has a 10% platform fee on sales, Creator has 5% and Studio has 2%. Payment processing is paid by the buyer at checkout. It is not charged to the creator and it is not absorbed by The Scenes. Checkout is coming soon.",
+  ],
+  [
+    "Which currency will I pay in?",
+    "Plan prices are set in US dollars. The app detects your country and shows the equivalent in your local currency, and creators can choose the currency they price their own products in. The exact amount is always confirmed before payment.",
   ],
   [
     "Is video hosting included?",
@@ -33,7 +37,7 @@ const faqs = [
 const pricingModels = [
   {
     name: "Free",
-    detail: "Open entry for everyone. Approved 7% platform fee direction.",
+    detail: "Open entry for everyone. Approved 10% platform fee direction.",
     status: "Approved direction",
     tone: "green" as const,
   },
@@ -159,7 +163,8 @@ function PricingPage() {
           <strong>Commercial boundary:</strong> these are approved monthly plan directions, not an
           active offer. Checkout, processor selection, yearly prices, refunds, chargebacks,
           settlement timing and Ghana/international payment routes remain unavailable until the
-          payments phase.
+          payments phase. Plan prices are denominated in USD; local-currency figures are indicative
+          until checkout confirms them.
         </Card>
       </section>
       <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">

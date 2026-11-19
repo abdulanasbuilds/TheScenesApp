@@ -115,7 +115,7 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
     category: "Creators & commerce",
     question: "Are the prices final?",
     answer:
-      "Community prices shown in the sample catalogue are examples. The approved platform monthly direction is Pro at $19 / GH₵300 and Pro Plus at $39 / GH₵620. Pro and Pro Plus have a 3% platform fee; Free has a 7% platform fee. No charge can occur in this preview because checkout is coming soon.",
+      "Community prices shown in the sample catalogue are examples. The approved platform direction is Free at $0 with a 10% platform fee, Creator at $29 per month with 5%, and Studio at $99 per month with 2%. Plan prices are set in US dollars and the local equivalent is shown automatically. Payment processing is paid by the buyer at checkout. No charge can occur in this preview because checkout is coming soon.",
   },
   {
     category: "Account & privacy",
@@ -449,7 +449,7 @@ function HelpPage() {
               <Card className="p-5">
                 <h2 className="text-sm font-bold text-slate-900">Looking for the product terms?</h2>
                 <p className="mt-1.5 text-xs leading-5 text-slate-600">
-                  Membership entitlements, the 3% Pro fee direction and the launch-pricing
+                  Membership entitlements, the platform fee direction and the launch-pricing
                   placeholder are documented on the pricing page.
                 </p>
                 <a href="/pricing" className={buttonClass("secondary", "md", "mt-3 w-full")}>

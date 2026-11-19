@@ -4,6 +4,14 @@ This document tracks unresolved product and business questions that require huma
 
 Do not invent answers. Record the question, the historical context, and wait for a decision.
 
+## Decision update — 19 November 2026
+
+The pricing and currency entries below are historical. ADR-030 was superseded by **ADR-047**:
+Free at $0 with a 10% platform fee, Creator at $29 with 5%, Studio at $99 with 2%; buyers pay
+processing fees; USD is the base currency and creators choose their pricing currency. ADR-029
+(external media only) and ADR-031 (instant-withdrawal fee) remain in force. Read
+`docs/DECISIONS.md` and `docs/MONETIZATION-MODEL-SPEC.md` before acting on anything below.
+
 ## Decision update — 4 November 2026
 
 The founder selected external embedding for launch plans, approved Pro at $19 / GH₵300 and Pro Plus

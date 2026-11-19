@@ -568,7 +568,7 @@ function CreatorDashboardPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <dt className="text-slate-500">Platform fee model</dt>
-                  <dd className="font-semibold text-slate-900">3% · Pro</dd>
+                  <dd className="font-semibold text-slate-900">5% · Creator</dd>
                 </div>
               </dl>
               <div className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">

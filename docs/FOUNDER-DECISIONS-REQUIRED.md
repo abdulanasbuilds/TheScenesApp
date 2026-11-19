@@ -5,6 +5,12 @@
 **Status:** RESOLVED FOR THE CURRENT STAGE — production platform/region/budget remain later gates  
 **Context:** Independent project review found critical conflicts in documentation
 
+> **Superseded in part — 19 November 2026.** The price and fee answers below reflect ADR-030, which
+> **ADR-047** has superseded: Free $0 at 10%, Creator $29 at 5%, Studio $99 at 2%, buyer-paid
+> processing fees, USD base with creator-chosen currencies. The provider figures quoted here
+> (GH₵3 transfers, 1.5% + GH₵0.50) are also stale. Read `docs/DECISIONS.md` and
+> `docs/MONETIZATION-MODEL-SPEC.md` before acting on this file.
+
 ---
 
 ## Founder answers — 4 November 2026

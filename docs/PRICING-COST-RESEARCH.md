@@ -1,10 +1,11 @@
 ﻿# The Scenes — Infrastructure Cost Research & Pricing Analysis
 
-> **Status update — 4 November 2026:** This is historical cost evidence, not the current decision
-> authority. ADR-029–030 approve external embedding, the paid-plan prices and a 7% Free-plan sales
-> fee. Provider prices and the complete cost model must be refreshed before payment implementation.
-> See `docs/DATA-LAYER-RESEARCH.md` for the
-> current data-platform comparison.
+> **Status update — 19 November 2026:** Historical cost evidence only, not decision authority.
+> ADR-030 is superseded by ADR-047: Free at $0 with a 10% platform fee, Creator at $29 with 5%,
+> Studio at $99 with 2%; buyers pay processing fees; USD is the base currency and creators choose
+> their pricing currency. The provider prices below are stale — Paystack Ghana is now 1.95% with
+> GH₵1 (MoMo) and GH₵8 (bank) transfers, and Bunny Africa delivery is $0.06/GB. Do not reuse these
+> figures for a commercial decision. Current model: `docs/MONETIZATION-MODEL-SPEC.md`.
 
 **Research Date:** October 29, 2026  
 **Purpose:** Calculate per-user infrastructure costs to establish pricing achieving 70%+ profit margin  

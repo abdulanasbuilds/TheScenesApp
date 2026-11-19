@@ -111,9 +111,9 @@ function CommercePage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Stat label="Gross paid sales" value={formatMoney(gross)} hint="Sample paid orders" />
           <Stat
-            label="Net after 3% fee"
+            label="Net after 5% fee"
             value={formatMoney(gross - fees)}
-            hint="Illustrative Pro fee model"
+            hint="Illustrative Creator fee model"
           />
           <Stat label="Refunded" value={formatMoney(refunds)} hint="One sample refund" />
           <Stat label="Pending" value={formatMoney(pending)} hint="Not settled" />
@@ -344,7 +344,7 @@ function CommercePage() {
                       {formatMoney(gross - fees)}
                     </p>
                     <p className="mt-1 text-xs text-slate-600">
-                      Net of illustrative 3% platform fee
+                      Net of illustrative 5% platform fee
                     </p>
                   </div>
                   <div className="p-5">

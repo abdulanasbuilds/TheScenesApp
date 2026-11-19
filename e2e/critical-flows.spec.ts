@@ -22,9 +22,11 @@ test("pricing reflects the approved external-link launch direction", async ({ pa
   await page.goto("/pricing");
   await waitForApp(page);
 
-  await expect(page.getByText("$19 / GH₵300", { exact: true })).toBeVisible();
-  await expect(page.getByText("$39 / GH₵620", { exact: true })).toBeVisible();
-  await expect(page.getByText("7% platform fee on sales", { exact: true })).toBeVisible();
+  await expect(page.getByText("$29", { exact: true })).toBeVisible();
+  await expect(page.getByText("$99", { exact: true })).toBeVisible();
+  await expect(page.getByText("10% platform fee on sales", { exact: true })).toBeVisible();
+  await expect(page.getByText("5% platform fee on sales", { exact: true })).toBeVisible();
+  await expect(page.getByText("2% platform fee on sales", { exact: true })).toBeVisible();
   await expect(
     page.getByText("Monthly billing direction · yearly pricing not yet set"),
   ).toBeVisible();

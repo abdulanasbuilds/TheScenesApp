@@ -219,7 +219,7 @@ export type Order = {
 };
 
 export type Plan = {
-  id: "free" | "pro" | "pro-plus";
+  id: "free" | "creator" | "studio";
   name: string;
   audience: string;
   priceLabel: string;

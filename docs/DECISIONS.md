@@ -186,7 +186,8 @@ The architecture must not block future multi-tenancy (organizations, private aca
 
 Status: Accepted (4 November 2026)
 
-Free, Pro and Pro Plus use approved external video, file and live-session links at launch. Native
+Free, Pro and Pro Plus use approved external video, file and live-session links at launch. (Plan names
+are now Free, Creator and Studio under ADR-047; this hosting decision is unchanged.) Native
 video hosting, native file hosting and native live streaming are not included in the base plans.
 This supersedes the 300 GB / 1 TB native-hosting allowances recorded in RES-002.
 
@@ -195,7 +196,7 @@ decision. It must not be assumed to be a launch feature or referral reward.
 
 ## ADR-030 — Launch plan prices and sales fees
 
-Status: Accepted (4 November 2026)
+Status: **Superseded by ADR-047 (19 November 2026).** Originally accepted 4 November 2026.
 
 - Free: $0 per month.
 - Pro: $19 USD / GH₵300 per month.
@@ -628,3 +629,132 @@ Consequences and limits:
   prerequisite for any tool-based hosted action.
 
 Durable record: `AGENTS.md`, `docs/PROJECT-STATUS.md`, `.env.example`, `docs/CLOUDFLARE-DEPLOYMENT.md`.
+
+## ADR-047 — Monetization model: plan ladder, buyer-paid fees and multi-currency
+
+Status: Accepted (19 November 2026). Supersedes ADR-030. ADR-029, ADR-031 and ADR-034 remain in force.
+
+The founder retired the ADR-030 ladder ($19/$39 at 7%/3%) and approved a new commercial model on
+19 November 2026. This ADR records that model. It does not authorize payment-provider selection,
+checkout, payouts, publication of a live offer or any hosted change; ADR-034 and SEC-076 still apply.
+
+### 1. Plan ladder
+
+| Plan | Monthly price | Platform fee on creator sales |
+|---|---|---|
+| Free | $0 | **10%** |
+| Creator | **$29** | **5%** |
+| Studio | **$99** | **2%** |
+
+Prices are denominated in USD. The names `Pro` and `Pro Plus` are retired. Studio is a
+high-volume-creator tier, not an organization or team tier; organization tenancy remains Phase 10
+(ADR-028).
+
+Break-even points, for the record: Free → Creator at **$580** of monthly creator sales; Creator →
+Studio at **$2,333**; Free → Studio at **$1,238**.
+
+### 2. Transaction fees are borne by the buyer
+
+The platform does not absorb any transaction fee, and the creator is not charged one. The buyer pays a
+processing fee at checkout that fully covers the payment provider's collection cost.
+
+The fee is calculated so that the provider's deduction is exactly covered:
+
+```
+F = P × r ÷ (1 − r)
+Buyer pays = P + F
+Provider deducts = r × (P + F) = F
+Platform receives exactly P
+```
+
+`F` is rounded **up** to the currency's minor unit. At the verified Paystack Ghana rate of 1.95%, a
+$100 listed price produces a $1.99 fee and a $101.99 buyer total.
+
+The same rule applies when a creator buys a platform subscription: the creator is the buyer there.
+
+The processing fee is a **pass-through**, never platform revenue and never part of GMV.
+
+Where a jurisdiction prohibits separate card surcharges, the fee must be included in the displayed
+price rather than added at checkout. The buyer still bears it economically.
+
+### 3. Currency
+
+- **USD is the base currency** for the plan catalogue, accounting and reporting.
+- **Creators choose the currency** in which they price their own products.
+- **Buyers see their local currency**, auto-detected from country, with a manual override.
+- The **price of record is authoritative**; local prices are derived estimates.
+- If the detected currency cannot be charged by the provider, the buyer is charged in the
+  price-of-record currency and is told so before payment.
+- Every order stores: price-of-record amount and currency, charge amount and currency, processing
+  fee, FX rate, FX source and FX timestamp. No stored charge is ever recomputed from a later rate.
+- Local display prices round up to a currency-appropriate increment; the upward rounding is the FX
+  buffer and the platform does not absorb FX loss.
+- Country detection must never be used to infer tax residency.
+
+The fixed GH₵300 / GH₵620 pairs are withdrawn.
+
+### 4. Media and hosting
+
+ADR-029 is unchanged. All plans use external video, file and live-session links. No native hosting,
+native file storage or native live streaming is included in any plan.
+
+### 5. Payouts
+
+ADR-031 is unchanged: instant withdrawal is 1% plus a flat fee, with the provider transfer fee passed
+to the creator. The flat component is expressed per payout currency (GH₵1 for cedi payouts) and must
+be defined for each supported currency before Phase 7.
+
+Recommended operating settings, still subject to founder confirmation: weekly automatic batch as the
+free default, Mobile Money as the default rail, GH₵50 standard and GH₵100 instant minimums, and a
+7-day availability hold.
+
+### 6. Financial ledger
+
+The platform must record money in an append-only, double-entry ledger with integer minor units:
+
+- no updates or deletes; corrections are reversing entries;
+- unique `(provider, provider_event_id)` for idempotency;
+- fee rate, fee amount, FX rate and FX timestamp snapshotted per order;
+- balances derived from the ledger, never stored mutably;
+- a dedicated `2150 Buyer-paid processing fee` pass-through account that must always net to zero;
+- daily reconciliation against the provider balance.
+
+### 7. Margin standard
+
+`Price = Total variable cost ÷ (1 − target gross margin)`. Provider, infrastructure and contribution
+margins are reported separately. A bare "70%" without a named base is not an acceptable claim. This
+supersedes the formula in `docs/PRICING-MONETIZATION.md` line 320.
+
+### 8. Rejected
+
+- The "automated course compiler" is not a feature and is not a pricing justification.
+- Unlimited native video hosting is rejected on verified African delivery cost ($0.06/GB).
+- Storage allowances inside base plans are rejected under ADR-029.
+
+### Consequences
+
+- Every tier keeps its full stated commission; the platform carries no collection cost.
+- Creator cost rises roughly 55–65% against the retired ladder. This is deliberate and must be
+  reflected in positioning rather than presented as a like-for-like price.
+- Free at 10% remains cheaper than Skool Hobby ($9 + 10%) at every sales level.
+- Below $400/month of sales, Skool Hobby is cheaper than Creator; the Free tier is the answer to that
+  segment and must remain genuinely usable.
+- The multi-currency model removes the 34–35% USD/cedi divergence but adds FX rounding, per-currency
+  price storage and provider currency limits.
+- Holding creator funds between T+1 collection and weekly payout remains a liability and a possible
+  regulatory question requiring legal confirmation.
+
+### Out of scope
+
+No provider, account, key, webhook, checkout, payout, refund, tax registration, hosted migration,
+deployment or live price publication is authorized. Implementation begins in Phase 7 under a
+separate approved plan.
+
+### Evidence
+
+Provider figures fetched 18 November 2026 from paystack.com/gh/pricing, supabase.com/pricing,
+resend.com/pricing, developers.cloudflare.com/r2/pricing, upstash.com/pricing/redis,
+bunny.net/pricing, skool.com/pricing and circle.so/pricing. USD/GHS 11.778354 from
+exchangerate-api.com, updated 18 November 2026 00:02 UTC.
+
+Detail and open items: `docs/MONETIZATION-MODEL-SPEC.md`.
