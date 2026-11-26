@@ -38,7 +38,8 @@ import {
 } from "@/components/ui";
 import { MediaCover } from "@/components/domain/media-upload";
 import { useApp, useToast } from "@/store/app-store";
-import { cn, formatCompact, formatDate, formatMoney, formatTime, relativeTime } from "@/lib/utils";
+import { cn, formatCompact, formatDate, formatTime, relativeTime } from "@/lib/utils";
+import { communityAccessLabel, courseAccessLabel, productAccessLabel } from "@/lib/early-access";
 
 export function CommunityCard({
   community,
@@ -109,9 +110,7 @@ export function CommunityCard({
                 <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {community.rating}
               </span>
               <span className="ml-auto font-semibold text-slate-900">
-                {community.pricing.type === "free"
-                  ? "Free"
-                  : `${formatMoney(community.pricing.amount)}/${community.pricing.interval === "month" ? "mo" : "yr"}`}
+                {communityAccessLabel(community.pricing, { compact: true })}
               </span>
             </div>
           ) : (
@@ -162,9 +161,7 @@ export function CommunityCard({
             ? "Joined"
             : dataMode !== "fixtures" && community.privacy === "private"
               ? "Invite only"
-              : community.pricing.type === "free"
-                ? "Join free"
-                : "View membership"}
+              : "Join free"}
         </button>
       </div>
     </Card>
@@ -214,7 +211,7 @@ export function CommunityRow({ community }: { community: Community }) {
         )}
       </span>
       <span className="font-semibold text-slate-900">
-        {community.pricing.type === "free" ? "Free" : `${formatMoney(community.pricing.amount)}/mo`}
+        {communityAccessLabel(community.pricing, { compact: true })}
       </span>
     </a>
   );
@@ -263,9 +260,7 @@ export function CourseCard({ course, progress }: { course: Course; progress?: nu
               <span className="inline-flex items-center gap-1 text-slate-500">
                 <Users className="h-3.5 w-3.5" /> {formatCompact(course.students)} learners
               </span>
-              <span className="font-bold text-slate-900">
-                {course.price === "included" ? "Included" : formatMoney(course.price)}
-              </span>
+              <span className="font-bold text-slate-900">{courseAccessLabel(course.price)}</span>
             </div>
           )}
         </div>
@@ -369,7 +364,7 @@ export function ProductCard({ product }: { product: Product }) {
             <span className="text-xs font-medium text-slate-600">{creator?.name}</span>
           </div>
           <span className="font-display text-lg font-extrabold text-slate-900">
-            {formatMoney(product.price)}
+            {productAccessLabel(product.price)}
           </span>
         </div>
       </a>
@@ -622,7 +617,7 @@ export function PurchaseButton({ product }: { product: Product }) {
       className={buttonClass(purchased ? "secondary" : "primary", "lg", "w-full")}
     >
       {purchased ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
-      {purchased ? "Purchased" : `Get it for ${formatMoney(product.price)}`}
+      {purchased ? "Purchased" : "Get it free"}
     </a>
   );
 }

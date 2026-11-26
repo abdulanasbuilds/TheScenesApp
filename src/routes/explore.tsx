@@ -155,7 +155,7 @@ function ExplorePage() {
               {filtered.length} {filtered.length === 1 ? "community" : "communities"}
             </p>
             <p className="text-xs text-slate-500">
-              {query ? `Matching “${query}”` : "Browse the full preview catalogue"}
+              {query ? `Matching “${query}”` : "Every community is free during early access"}
             </p>
           </div>
           <Button
@@ -224,9 +224,8 @@ function ExplorePage() {
                 onChange={(event) => setPrice(event.target.value)}
                 className="mt-1.5"
               >
-                <option value="all">Free and paid</option>
+                <option value="all">All access</option>
                 <option value="free">Free only</option>
-                <option value="paid">Paid memberships</option>
               </Select>
             </div>
             <div>
@@ -277,9 +276,11 @@ function ExplorePage() {
         ) : (
           <EmptyState
             className="mt-6"
+            type="filtered"
             icon={<Search className="h-5 w-5" />}
             title="No scenes match those filters"
             description="Try a broader phrase, change the category or clear the price filter. Nothing has been hidden behind a loading state."
+            helperText="Clearing the filters shows every scene again."
             action={
               <Button variant="secondary" onClick={clearFilters}>
                 Clear filters

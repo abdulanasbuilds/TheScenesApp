@@ -14,7 +14,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
-import { MediaCover, MediaUploadField } from "@/components/domain/media-upload";
+import { MediaCover, MediaUploadField, VideoSourceNote } from "@/components/domain/media-upload";
 import { CreatorShell } from "@/components/layout/creator-shell";
 import {
   Badge,
@@ -282,9 +282,11 @@ function CourseManagementPage() {
         ) : (
           <EmptyState
             className="mt-5"
+            type="filtered"
             icon={<BookOpen className="h-5 w-5" />}
             title="No courses match"
             description="Clear the search or choose another status."
+            helperText="Your other courses are still here — just hidden by the current filters."
             action={
               <Button
                 variant="secondary"
@@ -309,6 +311,7 @@ function CourseManagementPage() {
                 The builder edits modules and lessons in memory. Video hosting, file storage and
                 learner progress persistence are deliberately outside this phase.
               </p>
+              <VideoSourceNote className="mt-2" />
             </div>
             <a href="/c/ai-builders-guild/classroom" className={buttonClass("secondary", "md")}>
               View member classroom

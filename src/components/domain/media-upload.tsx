@@ -1,10 +1,27 @@
-import { ImagePlus, Trash2, Upload } from "lucide-react";
+import { ImagePlus, Trash2, Upload, Video } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { CoverArt } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const MAX_BYTES = 2 * 1024 * 1024;
+
+/**
+ * Launch policy for lesson video (ADR-029): creators point lessons at video they already host
+ * elsewhere. Direct uploads and platform-managed hosting are a later provider/cost decision, so the
+ * interface must say so instead of offering an upload that cannot work.
+ */
+export const VIDEO_SOURCE_MESSAGE =
+  "External video links supported at launch. Direct video hosting coming soon.";
+
+export function VideoSourceNote({ className }: { className?: string }) {
+  return (
+    <p className={cn("flex items-start gap-1.5 text-[11px] leading-4 text-slate-500", className)}>
+      <Video className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      <span>{VIDEO_SOURCE_MESSAGE}</span>
+    </p>
+  );
+}
 
 /**
  * Renders a real uploaded/seed image, falling back to the generated cover art.

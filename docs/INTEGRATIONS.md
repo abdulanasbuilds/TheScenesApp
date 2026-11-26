@@ -83,19 +83,21 @@ Use for:
 
 Never treat it as durable source of truth.
 
-## Telegram
+## WhatsApp
 
-**Code/local adapter implemented (P4-S4, ADR-044); bot/account NOT approved.** Use only behind a
-replaceable server-only feedback adapter for the founder-approved `TS-FEED-001/002` channel, with a
-safe no-op/disabled implementation when configuration is absent. Minimize data, rate-limit submits,
-never send credentials/protected content and establish the operational deletion process before
-enablement. Creating a bot, holding its token or sending a real message requires a separate explicit
-approval.
+**Code/local adapter implemented (P4-S4, ADR-048).** Feedback uses the standard
+`https://wa.me/<number>?text=...` deep link to the founder's own WhatsApp chat. This is deliberately
+the leanest, zero-cost path: no WhatsApp Business account, no Business Solution Provider (Twilio,
+MessageBird and similar), no webhook and no template approval. On a phone the link opens the WhatsApp
+app; on desktop it opens WhatsApp Web.
 
 The implementation ships a `memory` provider (local preview, reported `disabled` in a hosted
-deployment) and a `telegram` provider selected by `FEEDBACK_PROVIDER`. An incomplete Telegram
+deployment) and a `whatsapp` provider selected by `FEEDBACK_PROVIDER` with
+`WHATSAPP_FEEDBACK_NUMBER`. The server returns a `handoff` receipt because nothing is delivered until
+the sender presses Send inside WhatsApp; the app never claims otherwise. An incomplete WhatsApp
 configuration is reported `misconfigured` and submissions fail closed with `UNAVAILABLE`; it never
-silently falls back to the memory inbox.
+silently falls back to the memory inbox. The founder's number is a public feedback contact, not a
+secret. Setup: `docs/WHATSAPP-FEEDBACK-SETUP.md`.
 
 ## Bunny.net
 

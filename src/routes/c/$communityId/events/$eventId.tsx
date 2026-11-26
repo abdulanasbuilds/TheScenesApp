@@ -13,7 +13,15 @@ import {
   Video,
 } from "lucide-react";
 import { CommunityShell } from "@/components/layout/community-shell";
-import { Avatar, AvatarStack, Badge, Button, Card, CoverArt } from "@/components/ui";
+import {
+  Avatar,
+  AvatarStack,
+  Badge,
+  Button,
+  Card,
+  CoverArt,
+  FeatureTeaserModal,
+} from "@/components/ui";
 import { getCommunity, getCreator, getEvent, members } from "@/data/seed";
 import { formatDate, formatTime } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
@@ -39,6 +47,7 @@ function EventDetailsPage() {
   const going = state.rsvps.includes(event.id);
   const full = event.attendees >= event.capacity;
   const [reminder, setReminder] = useState(Boolean(event.reminderEnabled));
+  const [liveTeaserOpen, setLiveTeaserOpen] = useState(false);
 
   const copyEventLink = async () => {
     const url = window.location.href;
@@ -202,9 +211,7 @@ function EventDetailsPage() {
                 variant="ghost"
                 size="sm"
                 className="mt-2 w-full"
-                onClick={() =>
-                  toast("Live room coming soon", "Live room links arrive with live sessions.")
-                }
+                onClick={() => setLiveTeaserOpen(true)}
               >
                 <Video className="h-4 w-4" /> Join live room
               </Button>
@@ -244,6 +251,19 @@ function EventDetailsPage() {
           </Card>
         </aside>
       </div>
+
+      <FeatureTeaserModal
+        open={liveTeaserOpen}
+        onOpenChange={setLiveTeaserOpen}
+        feature="Live streaming"
+        title="Live streaming is coming soon"
+        description="This session shows a live room, but no video room is provisioned yet."
+        points={[
+          "Native live delivery needs a dedicated provider, capacity and cost decision.",
+          "At launch, sessions can point to an external live link instead.",
+          "Joining here does not connect you to a room or email a host.",
+        ]}
+      />
     </CommunityShell>
   );
 }

@@ -78,23 +78,23 @@ function MarketplacePage() {
                 <ShoppingBag className="h-3 w-3" /> Creator marketplace
               </Badge>
               <h1 className="mt-4 max-w-3xl font-display text-3xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                Buy the system, not another course about the system.
+                Get the system, not another course about the system.
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                Templates, playbooks and working files from practitioners in The Scenes. Every
-                listing names what is included and who made it.
+                Templates, playbooks and working files from practitioners in The Scenes — free for
+                early access members. Every listing names what is included and who made it.
               </p>
             </div>
             <Card className="border-slate-200 bg-slate-50 p-4">
               <p className="text-[11px] font-bold tracking-[0.14em] text-slate-500 uppercase">
-                Commerce preview
+                Free for early access
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                Checkout is a preview in this build. No card details are requested and no payment is
-                processed.
+                Every resource is free while The Scenes is in early access. No card details, no
+                checkout and no payment.
               </p>
               <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-emerald-700">
-                <span className="h-2 w-2 rounded-full bg-emerald-600" /> Safe to explore
+                <span className="h-2 w-2 rounded-full bg-emerald-600" /> Early Access Member
               </div>
             </Card>
           </div>
@@ -182,9 +182,11 @@ function MarketplacePage() {
         ) : (
           <EmptyState
             className="mt-5"
+            type="filtered"
             icon={<ShoppingBag className="h-5 w-5" />}
             title="No resources match this view"
             description="Try a different category, clear the search, or turn off the saved-items filter."
+            helperText="Clearing the filters shows every resource again."
             action={
               <Button variant="secondary" onClick={clearFilters}>
                 Clear filters
@@ -202,8 +204,8 @@ function MarketplacePage() {
               Turn a repeatable process into a resource.
             </h2>
             <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-700">
-              Marketplace publishing is part of the creator workspace direction. Listings and
-              checkout remain in preview until the payments phase is approved.
+              Publish your templates, playbooks and working files for free during early access. No
+              platform fees during launch and no checkout to set up.
             </p>
           </div>
           <a

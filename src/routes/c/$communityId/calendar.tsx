@@ -187,9 +187,11 @@ function CommunityCalendarPage() {
               ) : (
                 <EmptyState
                   className="py-9"
+                  type="empty"
                   icon={<CalendarDays className="h-5 w-5" />}
                   title="No event this day"
                   description="Choose a highlighted date or switch to list view."
+                  helperText="Highlighted dates have something scheduled."
                 />
               )}
             </aside>
@@ -202,9 +204,11 @@ function CommunityCalendarPage() {
                 .map((event) => <EventCard key={event.id} event={event} />)
             ) : (
               <EmptyState
+                type="empty"
                 icon={<CalendarDays className="h-5 w-5" />}
                 title={`No events in ${monthName}`}
                 description="Move to another month or return to November's fixture schedule."
+                helperText="Every scheduled event still appears in the current fixture list."
                 action={
                   <Button variant="secondary" onClick={() => setMonthOffset(0)}>
                     Back to November

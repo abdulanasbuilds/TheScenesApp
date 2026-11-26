@@ -19,7 +19,8 @@ import {
 import { MediaCover } from "@/components/domain/media-upload";
 import { events, getCreator, members, posts } from "@/data/seed";
 import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
-import { formatCompact, formatMoney } from "@/lib/utils";
+import { EARLY_ACCESS, communityAccessLabel } from "@/lib/early-access";
+import { formatCompact } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/communities/$communityId")({
@@ -166,18 +167,19 @@ function PublicCommunityPage() {
               </div>
             </div>
             <Card className="p-4 lg:-mt-16 lg:relative lg:z-10 lg:shadow-lg">
-              <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
-                Membership
-              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
+                  Membership
+                </p>
+                <Badge tone="green">{EARLY_ACCESS.memberBadge}</Badge>
+              </div>
               <p className="mt-2 font-display text-2xl font-extrabold text-slate-900">
-                {community.pricing.type === "free"
-                  ? "Free"
-                  : `${formatMoney(community.pricing.amount)} / month`}
+                {communityAccessLabel(community.pricing)}
               </p>
               <p className="mt-2 text-xs leading-5 text-slate-500">
                 {connected
-                  ? "Membership is recorded securely. No payment is collected."
-                  : "Membership actions are local preview state. No payment is collected."}
+                  ? "Free for early access. Membership is recorded securely and no payment is collected."
+                  : "Free for early access. Membership is local preview state and no payment is collected."}
               </p>
               <Button
                 className="mt-4 w-full"
@@ -189,13 +191,11 @@ function PublicCommunityPage() {
                 {joined ? <Check className="h-4 w-4" /> : null}
                 {joined
                   ? "Joined"
-                  : community.pricing.type === "free"
-                    ? community.privacy === "private"
-                      ? "Invite only"
-                      : screeningQuestions.length
-                        ? "Answer questions to join"
-                        : "Join community"
-                    : "Preview membership"}
+                  : community.privacy === "private"
+                    ? "Invite only"
+                    : screeningQuestions.length
+                      ? "Answer questions to join free"
+                      : EARLY_ACCESS.joinLabel}
               </Button>
               {showScreening && !joined && screeningQuestions.length ? (
                 <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/60 p-3">

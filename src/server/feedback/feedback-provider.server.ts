@@ -1,5 +1,9 @@
 import "@tanstack/react-start/server-only";
-import type { FeedbackDelivery } from "../../features/feedback/contracts";
+import type { FeedbackCategory, FeedbackDelivery } from "../../features/feedback/contracts";
+import {
+  buildFeedbackWhatsAppLink,
+  type WhatsAppFeedbackContext,
+} from "../../features/feedback/whatsapp";
 
 /**
  * P4-S4 feedback providers.
@@ -10,8 +14,11 @@ import type { FeedbackDelivery } from "../../features/feedback/contracts";
 
 export type FeedbackMessage = Readonly<{
   text: string;
+  category: FeedbackCategory;
   route: string;
   pseudonymousUserId: string | null;
+  /** Coarse role only: a signed-in member or an anonymous guest. Not an authorization claim. */
+  role: "member" | "guest";
   occurredAt: string;
   requestId: string;
 }>;
@@ -29,7 +36,7 @@ export class FeedbackProviderError extends Error {
 }
 
 export interface FeedbackProvider {
-  readonly kind: "memory" | "telegram";
+  readonly kind: "memory" | "whatsapp";
   submit(message: FeedbackMessage): Promise<FeedbackResult>;
 }
 
@@ -59,72 +66,43 @@ export class MemoryFeedbackProvider implements FeedbackProvider {
   }
 }
 
-export const TELEGRAM_TIMEOUT_MS = 3000;
+/**
+ * WhatsApp direct-chat provider (ADR-048).
+ *
+ * WhatsApp has no free server-to-person API, so this adapter does not pretend to deliver. It prepares
+ * a standard `wa.me` deep link containing the structured note and returns a `handoff` receipt. The
+ * sender presses Send inside WhatsApp, which reaches the founder's own DM at zero cost and with no
+ * business account, webhook or third-party broker.
+ *
+ * Only the minimized server context is included. The sender's own name/email is added by the browser
+ * path, where the sender already knows their identity and reviews the text before sending.
+ */
+export class WhatsAppFeedbackProvider implements FeedbackProvider {
+  readonly kind = "whatsapp" as const;
 
-type TelegramResponse = { result?: { message_id?: unknown } };
-
-/** Format the operator message as plain text so no Markdown/HTML injection is possible. */
-export function formatFeedbackMessage(message: FeedbackMessage): string {
-  const identity =
-    message.pseudonymousUserId === null
-      ? "anonymous"
-      : `signed-in user ${message.pseudonymousUserId}`;
-  const body = message.text.length > 3500 ? `${message.text.slice(0, 3500)}…` : message.text;
-  return [
-    "New feedback · The Scenes",
-    `Route: ${message.route}`,
-    `From: ${identity}`,
-    `Time: ${message.occurredAt}`,
-    `Request: ${message.requestId}`,
-    "---",
-    body,
-  ].join("\n");
-}
-
-export class TelegramFeedbackProvider implements FeedbackProvider {
-  readonly kind = "telegram" as const;
-
-  constructor(
-    private readonly config: Readonly<{ botToken: string; chatId: string }>,
-    private readonly fetchImpl: typeof fetch = fetch,
-  ) {}
+  constructor(private readonly config: Readonly<{ number: string }>) {}
 
   async submit(message: FeedbackMessage): Promise<FeedbackResult> {
-    const text = formatFeedbackMessage(message);
-
-    let response: Response;
+    let link: string;
     try {
-      response = await this.fetchImpl(
-        `https://api.telegram.org/bot${this.config.botToken}/sendMessage`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            chat_id: this.config.chatId,
-            text,
-            disable_web_page_preview: true,
-          }),
-          signal: AbortSignal.timeout(TELEGRAM_TIMEOUT_MS),
-        },
+      const context: WhatsAppFeedbackContext = {
+        category: message.category,
+        message: message.text,
+        route: message.route,
+        senderLabel: null,
+        userId: message.pseudonymousUserId,
+        signedIn: message.role === "member",
+        occurredAt: message.occurredAt,
+        requestId: message.requestId,
+      };
+      link = buildFeedbackWhatsAppLink(this.config.number, context);
+    } catch {
+      throw new FeedbackProviderError(
+        "configuration",
+        "The WhatsApp handoff link could not be prepared.",
       );
-    } catch {
-      throw new FeedbackProviderError("network", "The feedback provider did not respond.");
     }
 
-    if (!response.ok) {
-      throw new FeedbackProviderError("rejected", `The feedback provider rejected the message.`);
-    }
-
-    let reference: string | null = null;
-    try {
-      const body = (await response.json()) as TelegramResponse;
-      const messageId = body?.result?.message_id;
-      if (typeof messageId === "number") reference = `telegram:${messageId}`;
-    } catch {
-      // A missing/unreadable body is not a delivery failure; the 2xx status already confirms it.
-      reference = null;
-    }
-
-    return { delivery: "provider", reference };
+    return { delivery: "handoff", reference: link };
   }
 }

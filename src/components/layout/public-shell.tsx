@@ -40,7 +40,6 @@ export function Brand({
 const publicLinks = [
   { href: "/explore", label: "Explore" },
   { href: "/marketplace", label: "Marketplace" },
-  { href: "/pricing", label: "Pricing" },
   { href: "/become-a-teacher", label: "For creators" },
 ];
 
@@ -223,7 +222,7 @@ export function PublicFooter() {
               links: [
                 ["Become a teacher", "/become-a-teacher"],
                 ["Creator workspace", "/dashboard/creator"],
-                ["Pricing", "/pricing"],
+                ["Free early access", "/pricing"],
                 ["Creator profile", "/creators/nanaadjei"],
               ],
             },
@@ -256,8 +255,8 @@ export function PublicFooter() {
           <p>© 2026 The Scenes. Designed for useful knowledge.</p>
           <p>
             {dataMode === "fixtures"
-              ? "Payments, accounts and live services are coming soon."
-              : "Authentication and learning progress are connected. Payments and live services are coming soon."}
+              ? "Free for early members while we build. Payments and live services arrive later."
+              : "Authentication and learning progress are connected. Free for early members while we build."}
           </p>
         </div>
       </div>

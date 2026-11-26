@@ -26,6 +26,8 @@
     "db:fingerprint": "bun scripts/phase3-db.ts fingerprint",
     "db:types:write": "bun scripts/phase3-db.ts types --write",
     "verify:client-boundary": "bun scripts/check-client-boundary.ts",
+    "verify:rate-limit": "bun scripts/rate-limit-upstash-proof.ts check",
+    "verify:rate-limit:prove": "bun scripts/rate-limit-upstash-proof.ts prove",
     "test:fixture": "node ./node_modules/@playwright/test/cli.js test",
     "test:e2e": "node ./node_modules/@playwright/test/cli.js test",
     "test:e2e:ui": "node ./node_modules/@playwright/test/cli.js test --ui",

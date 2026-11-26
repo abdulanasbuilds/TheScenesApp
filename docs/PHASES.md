@@ -169,7 +169,7 @@ Introduce:
 - Resend;
 - PWA/web push where appropriate;
 - Redis rate limiting;
-- replaceable Telegram feedback channel.
+- replaceable direct WhatsApp feedback channel (`wa.me`, ADR-048).
 
 ## Phase 5 — Teacher/creator operations
 

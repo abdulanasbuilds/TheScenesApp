@@ -18,25 +18,30 @@ test("landing search reaches course discovery", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Ship Your First AI Agent/ })).toBeVisible();
 });
 
-test("pricing reflects the approved external-link launch direction", async ({ page }) => {
+test("pricing page presents free early access with no plan tags", async ({ page }) => {
   await page.goto("/pricing");
   await waitForApp(page);
 
-  await expect(page.getByText("$29", { exact: true })).toBeVisible();
-  await expect(page.getByText("$99", { exact: true })).toBeVisible();
-  await expect(page.getByText("10% platform fee on sales", { exact: true })).toBeVisible();
-  await expect(page.getByText("5% platform fee on sales", { exact: true })).toBeVisible();
-  await expect(page.getByText("2% platform fee on sales", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("Monthly billing direction · yearly pricing not yet set"),
+    page.getByRole("heading", { level: 1, name: /free while we build it/i }),
   ).toBeVisible();
-  await expect(page.getByText(/300 GB|1 TB/)).toHaveCount(0);
   await expect(
-    page.getByText("Native video and file hosting planned", { exact: true }),
-  ).toHaveCount(0);
-  await expect(
-    page.getByText("Native live streaming and replay planned", { exact: true }),
-  ).toHaveCount(0);
+    page.getByText("The Scenes is currently free to join, learn, and teach.", { exact: false }),
+  ).toBeVisible();
+  await expect(page.getByText("Free for Early Access", { exact: true }).first()).toBeVisible();
+
+  // No paid plan tags, prices or platform-fee percentages on the public page.
+  for (const forbidden of [
+    "$29",
+    "$99",
+    "10% platform fee on sales",
+    "5% platform fee on sales",
+    "2% platform fee on sales",
+    "Start free. Upgrade when your community grows.",
+    "Monthly billing direction · yearly pricing not yet set",
+  ]) {
+    await expect(page.getByText(forbidden, { exact: true })).toHaveCount(0);
+  }
 });
 
 test("demo login keeps its session through client navigation", async ({ page }) => {
@@ -112,14 +117,38 @@ test("creator event form validates and creates a local draft", async ({ page }) 
   await expect(page.getByText("Local", { exact: true })).toBeVisible();
 });
 
-test("marketplace checkout is explicitly local and changes preview state", async ({ page }) => {
+test("marketplace add-to-library is free, local and never charges", async ({ page }) => {
   await page.goto("/marketplace/agent-blueprint-pack");
   await waitForApp(page);
 
-  await page.getByRole("button", { name: "Preview checkout" }).click();
-  await expect(page.getByRole("dialog", { name: "Preview checkout" })).toBeVisible();
-  await page.getByRole("button", { name: "Confirm preview purchase" }).click();
+  await page.getByRole("button", { name: "Get it free" }).click();
+  await expect(page.getByRole("dialog", { name: "Get this resource — free" })).toBeVisible();
+  await page.getByRole("button", { name: "Add to my library" }).click();
 
-  await expect(page.getByRole("dialog", { name: "Preview purchase complete" })).toBeVisible();
-  await expect(page.getByText("No order was created.")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Added to your library" })).toBeVisible();
+  await expect(page.getByText(/No order was created and no payment was taken/)).toBeVisible();
+});
+
+test("onboarding hands a new learner straight to a free first lesson", async ({ page }) => {
+  await page.goto("/onboarding");
+  await waitForApp(page);
+
+  await expect(page.getByRole("heading", { name: "What brings you here?" })).toBeVisible();
+  await page.getByRole("radio", { name: /I want to learn/ }).click();
+  await page.getByRole("button", { name: "AI", exact: true }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await expect(page.getByRole("heading", { name: "How should we introduce you?" })).toBeVisible();
+  await page.getByLabel("Display name").fill("Ama Boateng");
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await expect(page.getByRole("heading", { name: "Start with one useful lesson." })).toBeVisible();
+  await page.getByRole("button", { name: "Enter The Scenes" }).click();
+
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(page.getByRole("heading", { name: /Welcome back, Ama/ })).toBeVisible();
+  await expect(page.getByText("Welcome to The Scenes, Ama")).toBeVisible();
+
+  await page.getByRole("button", { name: "Start first lesson" }).click();
+  await expect(page).toHaveURL(/\/classroom\/.+\/.+/);
 });

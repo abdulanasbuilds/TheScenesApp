@@ -39,6 +39,10 @@ import { Route as DashboardEventsRouteImport } from './routes/dashboard/events'
 import { Route as DashboardMembersRouteImport } from './routes/dashboard/members'
 import { Route as DashboardReferralsRouteImport } from './routes/dashboard/referrals'
 import { Route as MarketplaceProductIdRouteImport } from './routes/marketplace/$productId'
+import { Route as VariantsIndexRouteImport } from './routes/variants/index'
+import { Route as VariantsCallSheetRouteImport } from './routes/variants/call-sheet'
+import { Route as VariantsCatalogueRouteImport } from './routes/variants/catalogue'
+import { Route as VariantsNightStudioRouteImport } from './routes/variants/night-studio'
 import { Route as CCommunityIdIndexRouteImport } from './routes/c/$communityId/index'
 import { Route as CCommunityIdCalendarRouteImport } from './routes/c/$communityId/calendar'
 import { Route as CCommunityIdClassroomRouteImport } from './routes/c/$communityId/classroom'
@@ -201,6 +205,26 @@ const MarketplaceProductIdRoute = MarketplaceProductIdRouteImport.update({
   path: '/$productId',
   getParentRoute: () => MarketplaceRoute,
 } as any)
+const VariantsIndexRoute = VariantsIndexRouteImport.update({
+  id: '/variants/',
+  path: '/variants/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VariantsCallSheetRoute = VariantsCallSheetRouteImport.update({
+  id: '/variants/call-sheet',
+  path: '/variants/call-sheet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VariantsCatalogueRoute = VariantsCatalogueRouteImport.update({
+  id: '/variants/catalogue',
+  path: '/variants/catalogue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VariantsNightStudioRoute = VariantsNightStudioRouteImport.update({
+  id: '/variants/night-studio',
+  path: '/variants/night-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CCommunityIdIndexRoute = CCommunityIdIndexRouteImport.update({
   id: '/c/$communityId/',
   path: '/c/$communityId/',
@@ -292,6 +316,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/members': typeof DashboardMembersRoute
   '/dashboard/referrals': typeof DashboardReferralsRoute
   '/marketplace/$productId': typeof MarketplaceProductIdRoute
+  '/variants/call-sheet': typeof VariantsCallSheetRoute
+  '/variants/catalogue': typeof VariantsCatalogueRoute
+  '/variants/night-studio': typeof VariantsNightStudioRoute
+  '/variants/': typeof VariantsIndexRoute
   '/c/$communityId/calendar': typeof CCommunityIdCalendarRoute
   '/c/$communityId/classroom': typeof CCommunityIdClassroomRouteWithChildren
   '/c/$communityId/leaderboard': typeof CCommunityIdLeaderboardRoute
@@ -335,6 +363,10 @@ export interface FileRoutesByTo {
   '/dashboard/members': typeof DashboardMembersRoute
   '/dashboard/referrals': typeof DashboardReferralsRoute
   '/marketplace/$productId': typeof MarketplaceProductIdRoute
+  '/variants/call-sheet': typeof VariantsCallSheetRoute
+  '/variants/catalogue': typeof VariantsCatalogueRoute
+  '/variants/night-studio': typeof VariantsNightStudioRoute
+  '/variants': typeof VariantsIndexRoute
   '/c/$communityId/calendar': typeof CCommunityIdCalendarRoute
   '/c/$communityId/classroom': typeof CCommunityIdClassroomRouteWithChildren
   '/c/$communityId/leaderboard': typeof CCommunityIdLeaderboardRoute
@@ -379,6 +411,10 @@ export interface FileRoutesById {
   '/dashboard/members': typeof DashboardMembersRoute
   '/dashboard/referrals': typeof DashboardReferralsRoute
   '/marketplace/$productId': typeof MarketplaceProductIdRoute
+  '/variants/call-sheet': typeof VariantsCallSheetRoute
+  '/variants/catalogue': typeof VariantsCatalogueRoute
+  '/variants/night-studio': typeof VariantsNightStudioRoute
+  '/variants/': typeof VariantsIndexRoute
   '/c/$communityId/calendar': typeof CCommunityIdCalendarRoute
   '/c/$communityId/classroom': typeof CCommunityIdClassroomRouteWithChildren
   '/c/$communityId/leaderboard': typeof CCommunityIdLeaderboardRoute
@@ -424,6 +460,10 @@ export interface FileRouteTypes {
     | '/dashboard/members'
     | '/dashboard/referrals'
     | '/marketplace/$productId'
+    | '/variants/call-sheet'
+    | '/variants/catalogue'
+    | '/variants/night-studio'
+    | '/variants/'
     | '/c/$communityId/calendar'
     | '/c/$communityId/classroom'
     | '/c/$communityId/leaderboard'
@@ -467,6 +507,10 @@ export interface FileRouteTypes {
     | '/dashboard/members'
     | '/dashboard/referrals'
     | '/marketplace/$productId'
+    | '/variants/call-sheet'
+    | '/variants/catalogue'
+    | '/variants/night-studio'
+    | '/variants'
     | '/c/$communityId/calendar'
     | '/c/$communityId/classroom'
     | '/c/$communityId/leaderboard'
@@ -510,6 +554,10 @@ export interface FileRouteTypes {
     | '/dashboard/members'
     | '/dashboard/referrals'
     | '/marketplace/$productId'
+    | '/variants/call-sheet'
+    | '/variants/catalogue'
+    | '/variants/night-studio'
+    | '/variants/'
     | '/c/$communityId/calendar'
     | '/c/$communityId/classroom'
     | '/c/$communityId/leaderboard'
@@ -553,6 +601,10 @@ export interface RootRouteChildren {
   DashboardEventsRoute: typeof DashboardEventsRoute
   DashboardMembersRoute: typeof DashboardMembersRoute
   DashboardReferralsRoute: typeof DashboardReferralsRoute
+  VariantsCallSheetRoute: typeof VariantsCallSheetRoute
+  VariantsCatalogueRoute: typeof VariantsCatalogueRoute
+  VariantsNightStudioRoute: typeof VariantsNightStudioRoute
+  VariantsIndexRoute: typeof VariantsIndexRoute
   CCommunityIdCalendarRoute: typeof CCommunityIdCalendarRoute
   CCommunityIdClassroomRoute: typeof CCommunityIdClassroomRouteWithChildren
   CCommunityIdLeaderboardRoute: typeof CCommunityIdLeaderboardRoute
@@ -775,6 +827,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplaceProductIdRouteImport
       parentRoute: typeof MarketplaceRoute
     }
+    '/variants/': {
+      id: '/variants/'
+      path: '/variants'
+      fullPath: '/variants/'
+      preLoaderRoute: typeof VariantsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/variants/call-sheet': {
+      id: '/variants/call-sheet'
+      path: '/variants/call-sheet'
+      fullPath: '/variants/call-sheet'
+      preLoaderRoute: typeof VariantsCallSheetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/variants/catalogue': {
+      id: '/variants/catalogue'
+      path: '/variants/catalogue'
+      fullPath: '/variants/catalogue'
+      preLoaderRoute: typeof VariantsCatalogueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/variants/night-studio': {
+      id: '/variants/night-studio'
+      path: '/variants/night-studio'
+      fullPath: '/variants/night-studio'
+      preLoaderRoute: typeof VariantsNightStudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/c/$communityId/': {
       id: '/c/$communityId/'
       path: '/c/$communityId'
@@ -937,6 +1017,10 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardEventsRoute: DashboardEventsRoute,
   DashboardMembersRoute: DashboardMembersRoute,
   DashboardReferralsRoute: DashboardReferralsRoute,
+  VariantsCallSheetRoute: VariantsCallSheetRoute,
+  VariantsCatalogueRoute: VariantsCatalogueRoute,
+  VariantsNightStudioRoute: VariantsNightStudioRoute,
+  VariantsIndexRoute: VariantsIndexRoute,
   CCommunityIdCalendarRoute: CCommunityIdCalendarRoute,
   CCommunityIdClassroomRoute: CCommunityIdClassroomRouteWithChildren,
   CCommunityIdLeaderboardRoute: CCommunityIdLeaderboardRoute,

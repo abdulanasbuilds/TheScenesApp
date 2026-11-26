@@ -2,7 +2,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
 import * as DropdownPrimitive from "@radix-ui/react-dropdown-menu";
-import { Check, ChevronDown, Clock, X } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, Clock, Sparkles, X } from "lucide-react";
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -10,6 +10,13 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
+import type {
+  SetupStep,
+  StateAction,
+  StateTone,
+  StateType,
+} from "@/components/feedback/state-view";
+import { StateView } from "@/components/feedback/state-view";
 import { cn, hashHue, initials } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ buttons */
@@ -147,15 +154,24 @@ export function Badge({
   );
 }
 
-export function ComingSoon({
+/**
+ * Canonical "not available yet" marker. Use it on any control, tab or card that looks
+ * interactive but has no working backend behind it, so the interface never implies a
+ * capability the product does not have yet.
+ */
+export function ComingSoonBadge({
   children = "Coming soon",
+  title,
   className,
 }: {
   children?: ReactNode;
+  /** Optional tooltip for a longer, plain-language explanation. */
+  title?: string;
   className?: string;
 }) {
   return (
     <span
+      title={title}
       className={cn(
         "inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600",
         className,
@@ -164,6 +180,77 @@ export function ComingSoon({
       <Clock className="h-3 w-3" aria-hidden="true" />
       {children}
     </span>
+  );
+}
+
+/** Backwards-compatible alias. New code should use ComingSoonBadge. */
+export const ComingSoon = ComingSoonBadge;
+
+/**
+ * Consistent teaser for a feature that is visible but not operational. It explains what is
+ * missing, states plainly that nothing was changed, and offers a real way to register interest
+ * through the founder feedback channel instead of leaving a dead button.
+ */
+export function FeatureTeaserModal({
+  open,
+  onOpenChange,
+  feature,
+  title,
+  description,
+  points,
+  requestHref = "/help#contact-heading",
+  requestLabel = "Request early access",
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** Short feature name, e.g. "Direct messaging". */
+  feature: string;
+  title: string;
+  description?: string;
+  points?: readonly string[];
+  requestHref?: string;
+  requestLabel?: string;
+}) {
+  return (
+    <Modal
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={description}
+      footer={
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+          <a href={requestHref} className={buttonClass("primary", "md")}>
+            <Sparkles className="h-4 w-4" aria-hidden="true" /> {requestLabel}
+            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </a>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <ComingSoonBadge>{feature} · Coming soon</ComingSoonBadge>
+        {points?.length ? (
+          <ul className="space-y-2 text-sm leading-6 text-slate-700">
+            {points.map((point) => (
+              <li key={point} className="flex gap-2">
+                <span
+                  aria-hidden="true"
+                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500"
+                />
+                {point}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
+          This feature is not connected yet, so nothing you do here changes your account. Requesting
+          early access opens the founder feedback section on the Help page — choose “Idea or
+          request”, mention this feature, and send it so the founder can reply.
+        </p>
+      </div>
+    </Modal>
   );
 }
 
@@ -422,29 +509,46 @@ export function EmptyState({
   description,
   action,
   className,
+  type = "empty",
+  tone,
+  secondaryAction,
+  helperText,
+  checklist,
+  meta,
+  compact,
 }: {
   icon?: ReactNode;
   title: string;
   description: string;
   action?: ReactNode;
   className?: string;
+  /** State semantics; defaults to "empty" so existing call sites keep working. */
+  type?: StateType;
+  tone?: StateTone;
+  secondaryAction?: StateAction;
+  helperText?: string;
+  checklist?: SetupStep[];
+  meta?: ReactNode;
+  compact?: boolean;
 }) {
+  // Delegates to the shared state system so every empty/loading/error/permission state
+  // across the product uses one accessible, consistent presentation. See
+  // `src/components/feedback/state-view.tsx`.
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center",
-        className,
-      )}
-    >
-      {icon ? (
-        <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-          {icon}
-        </div>
-      ) : null}
-      <h3 className="font-display text-lg font-bold text-slate-900">{title}</h3>
-      <p className="mt-1 max-w-sm text-sm leading-relaxed text-slate-500">{description}</p>
-      {action ? <div className="mt-5">{action}</div> : null}
-    </div>
+    <StateView
+      type={type}
+      tone={tone}
+      icon={icon}
+      title={title}
+      description={description}
+      action={action}
+      secondaryAction={secondaryAction}
+      helperText={helperText}
+      checklist={checklist}
+      meta={meta}
+      compact={compact}
+      className={className}
+    />
   );
 }
 
@@ -484,14 +588,17 @@ export function Avatar({
   online,
   className,
   src,
+  hue: hueOverride,
 }: {
   name: string;
   size?: number;
   online?: boolean;
   className?: string;
   src?: string;
+  /** Optional generated tint, used by onboarding avatar choices. */
+  hue?: number;
 }) {
-  const hue = hashHue(name);
+  const hue = hueOverride ?? hashHue(name);
   return (
     <span
       className={cn("relative inline-flex shrink-0", className)}

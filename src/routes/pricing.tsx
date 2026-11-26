@@ -1,244 +1,218 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Check, HelpCircle, Minus, Plus, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Compass,
+  GraduationCap,
+  HeartHandshake,
+  HelpCircle,
+  Megaphone,
+  Minus,
+  Plus,
+  Sparkles,
+} from "lucide-react";
 import { PublicShell } from "@/components/layout/public-shell";
 import { Badge, Card, buttonClass } from "@/components/ui";
-import { plans } from "@/data/seed";
+import { EARLY_ACCESS } from "@/lib/early-access";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/pricing")({
-  head: () => ({ meta: [{ title: "Pricing — The Scenes" }] }),
-  component: PricingPage,
+  head: () => ({ meta: [{ title: "Free during Early Access — The Scenes" }] }),
+  component: EarlyAccessPage,
 });
+
+const freeSurfaces = [
+  {
+    icon: GraduationCap,
+    title: "Learn for free",
+    body: "Every course, lesson and resource is open. Enrol in one click, pick up where you left off and keep your progress.",
+  },
+  {
+    icon: BookOpen,
+    title: "Teach for free",
+    body: "Publish a classroom, open a community, host a session. No plan to choose and no fee to unlock your own work.",
+  },
+  {
+    icon: Compass,
+    title: "Grow for free",
+    body: "Use discovery, search and your public creator page to reach people who care about the same craft — not just followers.",
+  },
+];
+
+const promises = [
+  "No plans to compare.",
+  "No platform fees during launch.",
+  "No checkout between you and the first lesson.",
+];
 
 const faqs = [
   [
-    "What do the paid plans cost?",
-    "Free is $0. Creator is $29 and Studio is $99 per month, priced in US dollars. Your local currency is shown before you pay. Yearly pricing, checkout and payment providers are coming soon.",
+    "Is this a free trial?",
+    "It is not a countdown and it is not a teaser. The Scenes is free for early members while we build the platform. When paid plans are introduced later, existing early members will hear about it first and nothing you have created will be locked away.",
   ],
   [
-    "Does the preview process payments?",
-    "No. Checkout and payments are coming soon. Every commercial action in this build is clearly simulated.",
+    "Do I need a card to join, learn or teach?",
+    "No. There is no payment method, no checkout and no card form anywhere in The Scenes today. You create an account and start.",
   ],
   [
-    "What do the platform fees mean?",
-    "Free has a 10% platform fee on sales, Creator has 5% and Studio has 2%. Payment processing is paid by the buyer at checkout. It is not charged to the creator and it is not absorbed by The Scenes. Checkout is coming soon.",
+    "Can creators charge for their work?",
+    "Not yet — and that is deliberate. During early access every creator publishes for free and keeps the full relationship with their audience. Payments, payouts and paid plans are a later, separately approved phase.",
   ],
   [
-    "Which currency will I pay in?",
-    "Plan prices are set in US dollars. The app detects your country and shows the equivalent in your local currency, and creators can choose the currency they price their own products in. The exact amount is always confirmed before payment.",
+    "Are there platform fees?",
+    "Zero during launch. Because no payment can be processed yet, there is nothing to take a percentage of. The future commercial model is documented separately and will be announced before it applies to anyone.",
   ],
   [
-    "Is video hosting included?",
-    "All launch plans use approved external video, file and live-session links. Native hosting and native live delivery are not included; adding them later would require a new provider, cost and quota decision.",
+    "What stays free if plans arrive later?",
+    "Your account, your published material and the communities you have joined. Paid tiers, when they come, are intended to add capacity for creators who are already earning — never to remove what early members already have.",
   ],
 ];
 
-const pricingModels = [
-  {
-    name: "Free",
-    detail: "Open entry for everyone. Approved 10% platform fee direction.",
-    status: "Approved direction",
-    tone: "green" as const,
-  },
-  {
-    name: "Freemium",
-    detail: "Free entry with paid upgrades layered on top.",
-    status: "Future direction",
-    tone: "outline" as const,
-  },
-  {
-    name: "Tiered",
-    detail: "Multiple monthly levels, each including the level below.",
-    status: "Monthly plans only",
-    tone: "indigo" as const,
-  },
-  {
-    name: "One-time",
-    detail: "A fixed price for lifetime or limited access.",
-    status: "Not approved",
-    tone: "slate" as const,
-  },
-];
-
-function PricingPage() {
+function EarlyAccessPage() {
   const [openFaq, setOpenFaq] = useState(0);
+
   return (
     <PublicShell active="/pricing">
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-4xl px-4 py-14 text-center sm:px-6 sm:py-20">
-          <Badge tone="clay">
-            <Sparkles className="h-3 w-3" /> Approved monthly direction
+          <Badge tone="green">
+            <Sparkles className="h-3 w-3" /> Free for Early Access
           </Badge>
-          <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-            Start free. Upgrade when your community grows.
+          <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight text-balance text-slate-950 sm:text-5xl">
+            {EARLY_ACCESS.manifestoHeadline}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600">
-            Monthly plan prices are approved. Checkout and payment providers remain intentionally
-            unavailable until the later payments phase.
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+            {EARLY_ACCESS.manifestoBody}
           </p>
-          <p className="mt-6 text-sm font-semibold text-slate-600">
-            Monthly billing direction · yearly pricing not yet set
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <a href="/register" className={buttonClass("primary", "lg")}>
+              Create your free account <ArrowRight className="h-4 w-4" />
+            </a>
+            <a href="/become-a-teacher" className={buttonClass("secondary", "lg")}>
+              Publish as a creator
+            </a>
+          </div>
+          <p className="mt-5 text-xs font-semibold text-slate-500">
+            No card. No plan. No checkout.
           </p>
         </div>
       </section>
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-5 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <Card
-              key={plan.id}
-              className={cn(
-                "relative flex flex-col p-5 sm:p-6",
-                plan.highlighted && "border-2 border-indigo-600 shadow-lg",
-              )}
-            >
-              {plan.highlighted ? (
-                <Badge tone="indigo" className="absolute -top-3 left-5">
-                  Most complete
-                </Badge>
-              ) : null}
-              <div className="border-b border-slate-200 pb-5">
-                <h2 className="font-display text-2xl font-extrabold text-slate-900">{plan.name}</h2>
-                <p className="mt-2 min-h-10 text-sm leading-5 text-slate-600">{plan.audience}</p>
-                <p className="mt-5 font-display text-2xl font-extrabold tracking-tight text-slate-950">
-                  {plan.priceLabel}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">{plan.priceNote}</p>
-                <Badge tone="outline" className="mt-3">
-                  {plan.fee}
-                </Badge>
-              </div>
-              <ul className="mt-5 flex-1 space-y-3">
-                {plan.features.map((feature) => (
-                  <li
-                    key={feature.label}
-                    className={cn(
-                      "flex gap-2.5 text-sm leading-5",
-                      feature.included ? "text-slate-700" : "text-slate-500",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
-                        feature.included === true
-                          ? "bg-emerald-50 text-emerald-700"
-                          : feature.included === "addon"
-                            ? "bg-amber-50 text-amber-700"
-                            : "bg-slate-100 text-slate-500",
-                      )}
-                    >
-                      {feature.included === true ? (
-                        <Check className="h-3 w-3" />
-                      ) : feature.included === "addon" ? (
-                        <Plus className="h-3 w-3" />
-                      ) : (
-                        <Minus className="h-3 w-3" />
-                      )}
-                    </span>
-                    <span>
-                      {feature.label}
-                      {feature.included === "addon" ? (
-                        <span className="ml-1 text-[10px] font-bold text-amber-700 uppercase">
-                          Add-on
-                        </span>
-                      ) : null}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <a
-                href={plan.id === "free" ? "/register" : "/register?role=creator"}
-                className={buttonClass(
-                  plan.highlighted ? "primary" : "secondary",
-                  "lg",
-                  "mt-6 w-full",
-                )}
-              >
-                {plan.id === "free" ? "Start free" : "Join the launch list"}
-              </a>
-            </Card>
-          ))}
-        </div>
-        <Card className="mt-6 border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
-          <strong>Commercial boundary:</strong> these are approved monthly plan directions, not an
-          active offer. Checkout, processor selection, yearly prices, refunds, chargebacks,
-          settlement timing and Ghana/international payment routes remain unavailable until the
-          payments phase. Plan prices are denominated in USD; local-currency figures are indicative
-          until checkout confirms them.
-        </Card>
-      </section>
-      <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-        <div className="max-w-2xl">
+
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
           <p className="text-[11px] font-bold tracking-[0.16em] text-indigo-700 uppercase">
-            Pricing models
+            What free covers today
           </p>
-          <h2 className="mt-2 font-display text-2xl font-extrabold text-slate-900">
-            Ways a community can charge
+          <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">
+            The whole product, not a sample of it.
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Skool and Circle both support several models. The approved direction today is free entry
-            plus monthly subscription plans. The others are documented directions, not active
-            offers.
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Early access means early influence. Use the same surfaces that will run the platform
+            later, and tell us what to build next.
           </p>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {pricingModels.map((model) => (
-            <Card key={model.name} className="p-5">
-              <h3 className="font-display text-lg font-extrabold text-slate-900">{model.name}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{model.detail}</p>
-              <Badge tone={model.tone} className="mt-4">
-                {model.status}
-              </Badge>
-            </Card>
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+          {freeSurfaces.map((surface) => {
+            const Icon = surface.icon;
+            return (
+              <Card key={surface.title} className="p-5 sm:p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700">
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <h3 className="mt-4 font-display text-lg font-extrabold text-slate-900">
+                  {surface.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{surface.body}</p>
+              </Card>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200 bg-slate-950 text-white">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-8">
+          <div>
+            <Badge className="bg-emerald-400/15 text-emerald-100 ring-1 ring-emerald-300/30">
+              <HeartHandshake className="h-3 w-3" /> The early-access promise
+            </Badge>
+            <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight">
+              Build the audience before the invoice.
+            </h2>
+            <p className="mt-3 max-w-lg text-sm leading-6 text-slate-300">
+              We would rather earn trust with a working product than with a pricing table. So for
+              now, the only thing we ask you to bring is your work.
+            </p>
+          </div>
+          <ul className="grid gap-3">
+            {promises.map((promise) => (
+              <li
+                key={promise}
+                className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm font-semibold"
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/20 text-emerald-200">
+                  <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+                {promise}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-16">
+        <div className="text-center">
+          <p className="text-[11px] font-bold tracking-[0.16em] text-indigo-700 uppercase">
+            Plain answers
+          </p>
+          <h2 className="mt-2 font-display text-3xl font-extrabold text-slate-900">
+            Questions about free access
+          </h2>
+        </div>
+        <div className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
+          {faqs.map(([question, answer], index) => (
+            <div key={question}>
+              <button
+                type="button"
+                onClick={() => setOpenFaq(openFaq === index ? -1 : index)}
+                className="flex w-full items-center gap-3 p-4 text-left sm:p-5"
+                aria-expanded={openFaq === index}
+              >
+                <HelpCircle className="h-4 w-4 shrink-0 text-indigo-700" />
+                <span className="flex-1 text-sm font-bold text-slate-900">{question}</span>
+                <Plus
+                  className={cn(
+                    "h-4 w-4 text-slate-400 transition-transform",
+                    openFaq === index && "rotate-45",
+                  )}
+                />
+              </button>
+              {openFaq === index ? (
+                <p className="px-5 pb-5 pl-12 text-sm leading-6 text-slate-600">{answer}</p>
+              ) : null}
+            </div>
           ))}
         </div>
       </section>
-      <section className="border-y border-slate-200 bg-white">
-        <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-16">
-          <div className="text-center">
-            <p className="text-[11px] font-bold tracking-[0.16em] text-indigo-700 uppercase">
-              Plain answers
-            </p>
-            <h2 className="mt-2 font-display text-3xl font-extrabold text-slate-900">
-              Pricing questions
-            </h2>
-          </div>
-          <div className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200">
-            {faqs.map(([question, answer], index) => (
-              <div key={question}>
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(openFaq === index ? -1 : index)}
-                  className="flex w-full items-center gap-3 p-4 text-left sm:p-5"
-                  aria-expanded={openFaq === index}
-                >
-                  <HelpCircle className="h-4 w-4 shrink-0 text-indigo-700" />
-                  <span className="flex-1 text-sm font-bold text-slate-900">{question}</span>
-                  <Plus
-                    className={cn(
-                      "h-4 w-4 text-slate-400 transition-transform",
-                      openFaq === index && "rotate-45",
-                    )}
-                  />
-                </button>
-                {openFaq === index ? (
-                  <p className="px-5 pb-5 pl-12 text-sm leading-6 text-slate-600">{answer}</p>
-                ) : null}
-              </div>
-            ))}
+
+      <section className="border-t border-slate-200 bg-indigo-50">
+        <div className="mx-auto max-w-3xl px-4 py-14 text-center sm:px-6 sm:py-16">
+          <Megaphone className="mx-auto h-6 w-6 text-indigo-700" aria-hidden="true" />
+          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-slate-900">
+            Be early. Help shape what comes next.
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600">
+            {EARLY_ACCESS.creatorPromise}
+          </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <a href="/register?role=creator" className={buttonClass("primary", "lg")}>
+              Start teaching free <ArrowRight className="h-4 w-4" />
+            </a>
+            <a href="/explore" className={buttonClass("secondary", "lg")}>
+              Join free communities
+            </a>
           </div>
         </div>
-      </section>
-      <section className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6">
-        <h2 className="font-display text-3xl font-extrabold text-slate-900">
-          Build the audience before the invoice.
-        </h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600">
-          Start a free preview account and explore the complete creator workspace with sample data.
-        </p>
-        <a href="/register?role=creator" className={buttonClass("primary", "lg", "mt-6")}>
-          Create preview account
-        </a>
       </section>
     </PublicShell>
   );

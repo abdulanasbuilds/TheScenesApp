@@ -25,9 +25,10 @@ test("connected registration, viewer, profile and logout journey", async ({ page
   expect(authCookies.length).toBeGreaterThan(0);
 
   await page.getByRole("link", { name: "Continue to onboarding" }).click();
+  // Step 1 is goals & focus; the profile (with the immutable handle) is step 2.
+  await page.getByRole("button", { name: "Continue" }).click();
   await expect(page.getByLabel("Profile handle")).toHaveValue(handle);
   await expect(page.getByLabel("Profile handle")).toHaveAttribute("readonly", "");
-  await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("button", { name: "Enter The Scenes" }).click();
 

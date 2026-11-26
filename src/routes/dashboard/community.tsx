@@ -37,7 +37,8 @@ import {
 import { MediaUploadField } from "@/components/domain/media-upload";
 import { categories, getCommunity } from "@/data/seed";
 import type { CommunitySpace } from "@/data/types";
-import { createLocalId, formatCompact, formatMoney } from "@/lib/utils";
+import { createLocalId, formatCompact } from "@/lib/utils";
+import { EARLY_ACCESS } from "@/lib/early-access";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/dashboard/community")({
@@ -298,17 +299,11 @@ function CommunitySettingsPage() {
                     <Field
                       label="Membership price"
                       htmlFor="community-price"
-                      hint="Price changes belong to the payments phase."
+                      hint="Free for early access. Paid plans belong to a later, approved payments phase."
                     >
                       <Input
                         id="community-price"
-                        value={
-                          community.pricing.type === "free"
-                            ? "Free"
-                            : `${formatMoney(community.pricing.amount)} / ${
-                                community.pricing.interval ?? "one time"
-                              }`
-                        }
+                        value={EARLY_ACCESS.shortLabel}
                         disabled
                         readOnly
                       />

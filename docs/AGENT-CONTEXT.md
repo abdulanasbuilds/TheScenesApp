@@ -77,7 +77,7 @@ Current direction:
 - Resend: important transactional email.
 - Redis-compatible service: rate limiting/short-lived coordination.
 - Bunny.net: only if a later native video/live decision supersedes ADR-029.
-- Telegram: internal feedback/alerts.
+- WhatsApp: direct founder feedback through a zero-cost `wa.me` handoff (ADR-048).
 - Payments: deferred.
 - Search: Postgres first; smarter search later.
 - PWA/Web Push: installability and consented notifications.

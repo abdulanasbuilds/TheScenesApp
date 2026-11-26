@@ -100,9 +100,11 @@ function CategoryPage() {
           </div>
         ) : (
           <EmptyState
+            type="empty"
             icon={<Layers className="h-5 w-5" />}
             title="No communities in this category yet"
             description="This category is ready, but no community has been published into it in the current catalogue."
+            helperText="Categories fill up as creators publish — try another one below."
             action={
               <Button variant="secondary" onClick={() => window.location.assign("/explore")}>
                 Back to Explore

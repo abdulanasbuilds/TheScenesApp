@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { InternalNavigationBridge } from "@/components/internal-navigation-bridge";
+import { ConnectivityBanner, DegradedNotice } from "@/components/feedback/route-states";
 import { getCurrentViewer } from "@/features/auth/auth.functions";
 import { getConnectedCatalog, getLearningState } from "@/features/learning/learning.functions";
 import { getNotificationUnreadCount } from "@/features/notifications/notifications.functions";
@@ -22,6 +23,7 @@ export const Route = createRootRoute({
         catalog: null,
         learningState: null,
         notificationSummary: null,
+        degraded: [] as string[],
       } as const;
     }
     const [viewerResult, catalogResult, learningResult, notificationResult] = await Promise.all([
@@ -30,6 +32,11 @@ export const Route = createRootRoute({
       getLearningState({ data: {} }),
       getNotificationUnreadCount({ data: undefined }),
     ]);
+    const degraded: string[] = [];
+    if (!viewerResult.ok) degraded.push("your account");
+    if (!catalogResult.ok) degraded.push("the catalogue");
+    if (!learningResult.ok) degraded.push("your learning progress");
+    if (!notificationResult.ok) degraded.push("notifications");
     return {
       dataMode,
       configuration,
@@ -39,6 +46,7 @@ export const Route = createRootRoute({
         ? learningResult.data
         : { enrolledCourseIds: [], completedLessonIds: [] },
       notificationSummary: notificationResult.ok ? notificationResult.data : { unreadCount: 0 },
+      degraded,
     } as const;
   },
   head: () => ({
@@ -68,7 +76,7 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const { dataMode, configuration, viewer, catalog, learningState, notificationSummary } =
+  const { dataMode, configuration, viewer, catalog, learningState, notificationSummary, degraded } =
     Route.useLoaderData();
 
   if (configuration.requestedMode === "invalid") {
@@ -96,6 +104,8 @@ function RootComponent() {
           >
             Skip to content
           </a>
+          <ConnectivityBanner />
+          <DegradedNotice sources={degraded} />
           <Outlet />
           <PwaExperience />
         </AppProvider>

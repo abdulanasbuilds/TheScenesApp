@@ -244,10 +244,6 @@ export const communities: Community[] = [
         layout: "card",
       },
     ],
-    externalLinks: [
-      { label: "Weekly build log", url: "https://example.com/build-log" },
-      { label: "Eval templates", url: "https://example.com/evals" },
-    ],
     accentHue: 246,
     featured: true,
     joined: true,

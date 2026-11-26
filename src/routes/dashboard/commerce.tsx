@@ -1,16 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   ArrowUpRight,
-  Banknote,
-  CheckCircle2,
   CircleDollarSign,
   CreditCard,
   Download,
   Package,
   Plus,
   ReceiptText,
-  RefreshCw,
   Search,
   ShieldCheck,
   ShoppingBag,
@@ -22,6 +19,7 @@ import {
   Badge,
   Button,
   Card,
+  ComingSoonBadge,
   EmptyState,
   Input,
   Modal,
@@ -54,7 +52,6 @@ function CommercePage() {
 
   const paidOrders = orders.filter((order) => order.status === "paid");
   const gross = paidOrders.reduce((sum, order) => sum + order.amount, 0);
-  const fees = paidOrders.reduce((sum, order) => sum + order.fee, 0);
   const refunds = orders
     .filter((order) => order.status === "refunded")
     .reduce((sum, order) => sum + order.amount, 0);
@@ -62,18 +59,18 @@ function CommercePage() {
     .filter((order) => order.status === "pending")
     .reduce((sum, order) => sum + order.amount, 0);
 
-  const visibleOrders = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return orders.filter((order) => {
-      const statusMatch = status === "all" || order.status === status;
-      const queryMatch =
-        !normalized ||
-        `${order.id} ${order.customer} ${order.item} ${order.kind}`
-          .toLowerCase()
-          .includes(normalized);
-      return statusMatch && queryMatch;
-    });
-  }, [query, status]);
+  // A plain filter is cheaper than a manual memo here, and the React Compiler cannot preserve the
+  // manual memoization in this component, so keeping it produced no benefit.
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleOrders = orders.filter((order) => {
+    const statusMatch = status === "all" || order.status === status;
+    const queryMatch =
+      !normalizedQuery ||
+      `${order.id} ${order.customer} ${order.item} ${order.kind}`
+        .toLowerCase()
+        .includes(normalizedQuery);
+    return statusMatch && queryMatch;
+  });
 
   return (
     <CreatorShell active="commerce">
@@ -107,14 +104,38 @@ function CommercePage() {
         </div>
       </section>
 
+      <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <Card className="border-indigo-100 bg-indigo-50 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-indigo-700 ring-1 ring-indigo-100">
+                <CircleDollarSign className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-display text-lg font-extrabold text-slate-900">
+                    Monetization &amp; Payouts are in development
+                  </p>
+                  <ComingSoonBadge>Coming soon</ComingSoonBadge>
+                </div>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-700">
+                  Enjoy zero platform fees today — no payment can be processed while the payment
+                  layer is being built. The ledger below is labelled sample data for exploring the
+                  interface; it is not a balance and cannot be withdrawn.
+                </p>
+              </div>
+            </div>
+            <a href="/pricing" className={buttonClass("secondary", "md")}>
+              How early access works
+            </a>
+          </div>
+        </Card>
+      </div>
+
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Stat label="Gross paid sales" value={formatMoney(gross)} hint="Sample paid orders" />
-          <Stat
-            label="Net after 5% fee"
-            value={formatMoney(gross - fees)}
-            hint="Illustrative Creator fee model"
-          />
+          <Stat label="Platform fees" value={formatMoney(0)} hint="Zero during early access" />
           <Stat label="Refunded" value={formatMoney(refunds)} hint="One sample refund" />
           <Stat label="Pending" value={formatMoney(pending)} hint="Not settled" />
         </div>
@@ -160,7 +181,12 @@ function CommercePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toast("Export prepared", "CSV export is coming soon.")}
+                    onClick={() =>
+                      toast(
+                        "CSV export is coming soon",
+                        "No file was generated or downloaded in this preview.",
+                      )
+                    }
                   >
                     <Download className="h-4 w-4" /> Export
                   </Button>
@@ -242,9 +268,11 @@ function CommercePage() {
                   </div>
                 ) : (
                   <EmptyState
+                    type="filtered"
                     icon={<ReceiptText className="h-5 w-5" />}
                     title="No orders match"
                     description="Clear the search or choose another status."
+                    helperText="Clearing the filters shows every order again."
                     action={
                       <Button
                         variant="secondary"
@@ -265,7 +293,7 @@ function CommercePage() {
                   and chargebacks are coming soon.
                 </p>
                 <a href="/pricing" className="font-bold underline underline-offset-2">
-                  Read the commercial boundary
+                  How free early access works
                 </a>
               </div>
             </TabsContent>
@@ -329,87 +357,22 @@ function CommercePage() {
             </TabsContent>
 
             <TabsContent value="payouts">
-              <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
-                <Card className="overflow-hidden">
-                  <div className="border-b border-slate-200 bg-slate-950 p-5 text-white">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-bold tracking-[0.14em] text-slate-300 uppercase">
-                        Available balance
-                      </p>
-                      <Badge className="bg-white/10 text-slate-200 ring-1 ring-white/15">
-                        Preview
-                      </Badge>
-                    </div>
-                    <p className="mt-2 font-display text-4xl font-extrabold tracking-tight">
-                      {formatMoney(gross - fees)}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-600">
-                      Net of illustrative 5% platform fee
-                    </p>
-                  </div>
-                  <div className="p-5">
-                    <dl className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <dt className="text-slate-500">Paid gross</dt>
-                        <dd className="font-semibold text-slate-900">{formatMoney(gross)}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-slate-500">Platform fee</dt>
-                        <dd className="font-semibold text-slate-900">-{formatMoney(fees)}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-slate-500">Refunded</dt>
-                        <dd className="font-semibold text-slate-900">-{formatMoney(refunds)}</dd>
-                      </div>
-                      <div className="flex justify-between border-t border-slate-200 pt-3">
-                        <dt className="font-bold text-slate-900">Estimated payout</dt>
-                        <dd className="font-display text-xl font-extrabold text-slate-900">
-                          {formatMoney(gross - fees - refunds)}
-                        </dd>
-                      </div>
-                    </dl>
-                    <Button className="mt-5 w-full" onClick={() => setPayoutOpen(true)}>
-                      <Banknote className="h-4 w-4" /> Request payout
+              <EmptyState
+                className="mt-4 border-indigo-200 bg-indigo-50"
+                icon={<Wallet className="h-5 w-5" />}
+                title="Monetization & Payouts are in development"
+                description="Enjoy zero platform fees today. Payout requests open once payments, identity checks and settlement rules are connected — and this build never moves money."
+                action={
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <Button onClick={() => setPayoutOpen(true)}>
+                      <Wallet className="h-4 w-4" /> Request payout
                     </Button>
-                    <p className="mt-3 text-center text-[11px] leading-4 text-slate-500">
-                      No payout provider is connected. This button opens a preview explanation.
-                    </p>
+                    <a href="/pricing" className={buttonClass("secondary", "md")}>
+                      <CircleDollarSign className="h-4 w-4" /> How early access works
+                    </a>
                   </div>
-                </Card>
-
-                <div className="space-y-4">
-                  <Card className="p-4">
-                    <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                      <RefreshCw className="h-4 w-4 text-indigo-700" /> Payout schedule
-                    </h2>
-                    <p className="mt-2 text-xs leading-5 text-slate-600">
-                      Standard automated payouts are part of the plan direction. Settlement timing,
-                      KYC and provider fees remain undecided.
-                    </p>
-                    <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-                      <p className="font-semibold text-slate-800">Next planned window</p>
-                      <p className="mt-0.5">Friday · 7 November 2026</p>
-                    </div>
-                  </Card>
-                  <Card className="p-4">
-                    <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" /> What works in this
-                      preview
-                    </h2>
-                    <ul className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
-                      <li>• Purchase state for marketplace testing</li>
-                      <li>• Sample orders and fee display</li>
-                      <li>• Clear commercial boundary messaging</li>
-                    </ul>
-                    <p className="mt-3 rounded-lg bg-amber-50 p-2.5 text-[11px] leading-4 text-amber-950">
-                      Coming soon: cards, mobile money, payouts, tax, receipts and refunds.
-                    </p>
-                  </Card>
-                  <a href="/pricing" className={buttonClass("secondary", "md", "w-full")}>
-                    <CircleDollarSign className="h-4 w-4" /> View plan structure
-                  </a>
-                </div>
-              </div>
+                }
+              />
             </TabsContent>
           </Tabs>
         </div>
@@ -440,7 +403,7 @@ function CommercePage() {
                 ["Type", selectedOrder.kind],
                 ["Date", formatDate(selectedOrder.date)],
                 ["Amount", formatMoney(selectedOrder.amount)],
-                ["Platform fee", formatMoney(selectedOrder.fee)],
+                ["Platform fee", formatMoney(0)],
                 ["Status", selectedOrder.status],
               ].map(([label, value]) => (
                 <div
@@ -471,7 +434,7 @@ function CommercePage() {
               Close
             </Button>
             <a href="/pricing" className={buttonClass("primary", "md")}>
-              Review plan terms
+              How early access works
             </a>
           </div>
         }

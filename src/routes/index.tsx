@@ -14,6 +14,7 @@ import { CommunityCard, CourseCard } from "@/components/domain/cards";
 import { PublicShell } from "@/components/layout/public-shell";
 import { Badge, Card, Eyebrow, SectionHeading, buttonClass } from "@/components/ui";
 import { categories, communities, courses, creators } from "@/data/seed";
+import { communityAccessLabel } from "@/lib/early-access";
 import { formatCompact } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -109,7 +110,7 @@ function Home() {
             </form>
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-indigo-100">
               <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4" /> Free communities available
+                <CheckCircle2 className="h-4 w-4" /> Free for early access
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <ShieldCheck className="h-4 w-4" /> Creator-led, moderated spaces
@@ -161,7 +162,7 @@ function Home() {
                     {formatCompact(community.members)}
                   </span>
                   <span className="text-right font-semibold text-slate-900">
-                    {community.pricing.type === "free" ? "Free" : `$${community.pricing.amount}/mo`}
+                    {communityAccessLabel(community.pricing, { compact: true })}
                   </span>
                 </a>
               ))}
@@ -355,7 +356,8 @@ function Home() {
               </h2>
               <p className="mt-4 max-w-xl text-base leading-7 text-slate-300">
                 Run a community, publish a classroom, host events and understand your audience from
-                one calm workspace. Plans are set out below; checkout is coming soon.
+                one calm workspace. Publish for free during early access — zero platform fees, no
+                checkout.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <a href="/register?role=creator" className={buttonClass("clay", "lg")}>

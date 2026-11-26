@@ -15,7 +15,7 @@ import { readFeedbackConfig, type FeedbackConfig } from "./feedback-config.serve
 import {
   FeedbackProviderError,
   MemoryFeedbackProvider,
-  TelegramFeedbackProvider,
+  WhatsAppFeedbackProvider,
   type FeedbackMessage,
   type FeedbackProvider,
 } from "./feedback-provider.server";
@@ -24,15 +24,16 @@ import {
  * P4-S4 feedback service.
  *
  * The caller-bound submission is rate-limited, validated, and reduced to the minimum operator
- * context: message, route, pseudonymous user ID (signed-in only), timestamp and request ID. No
- * cookie, token, email address, browser storage, protected content or raw header is ever included.
+ * context: message, category, route, pseudonymous user ID (signed-in only), timestamp and request
+ * ID. No cookie, token, email address, browser storage, protected content or raw header is ever
+ * included in the server-built WhatsApp handoff.
  */
 
 let memoryProvider = new MemoryFeedbackProvider();
 
 function providerFor(config: FeedbackConfig): FeedbackProvider {
-  if (config.provider === "telegram") {
-    return new TelegramFeedbackProvider({ botToken: config.botToken, chatId: config.chatId });
+  if (config.provider === "whatsapp") {
+    return new WhatsAppFeedbackProvider({ number: config.number });
   }
   return memoryProvider;
 }
@@ -107,8 +108,10 @@ export async function submitFeedback(
 
   const message: FeedbackMessage = {
     text: input.message,
+    category: input.category ?? "general",
     route: input.route,
     pseudonymousUserId: principal?.userId ?? null,
+    role: principal ? "member" : "guest",
     occurredAt: new Date(now()).toISOString(),
     requestId: crypto.randomUUID(),
   };

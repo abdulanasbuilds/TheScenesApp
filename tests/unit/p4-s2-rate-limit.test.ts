@@ -188,6 +188,7 @@ describe("P4-S2 Upstash counter", () => {
       token: UPSTASH_TOKEN,
       key: "rl:login:deadbeef",
       windowMs: 900_000,
+      limit: 20,
       fetchImpl,
     });
 
@@ -198,6 +199,8 @@ describe("P4-S2 Upstash counter", () => {
     expect(body[2]).toBe("1");
     expect(body[3]).toBe("rl:login:deadbeef");
     expect(body[4]).toBe("900000");
+    expect(body[5]).toBe("20");
+    expect(String(body[1])).toContain("if current > tonumber(ARGV[2])");
     expect(String(captured?.init.body)).not.toContain("learner@example.test");
     expect(new Headers(captured?.init.headers).get("authorization")).toBe(
       `Bearer ${UPSTASH_TOKEN}`,
@@ -217,6 +220,65 @@ describe("P4-S2 Upstash counter", () => {
       retryAfterSeconds: 50,
       limit: 20,
     });
+  });
+
+  test("repeats of a provider-confirmed block never reach the provider", async () => {
+    let calls = 0;
+    let at = 1_000_000;
+    const limiter = new UpstashRateLimiter(
+      { url: UPSTASH_URL, token: UPSTASH_TOKEN },
+      async () => {
+        calls += 1;
+        return jsonResponse({ result: [6, 60_000] });
+      },
+      () => at,
+    );
+
+    const first = await limiter.consume({ policy: policy({ limit: 5 }), subjectHash: "h" });
+    expect(first).toMatchObject({ allowed: false, remaining: 0, retryAfterSeconds: 60 });
+    expect(calls).toBe(1);
+
+    at += 10_000;
+    const second = await limiter.consume({ policy: policy({ limit: 5 }), subjectHash: "h" });
+    expect(second).toMatchObject({ allowed: false, remaining: 0, retryAfterSeconds: 50 });
+    expect(calls).toBe(1);
+  });
+
+  test("a cached block is re-checked after its window expires", async () => {
+    let calls = 0;
+    let at = 5_000;
+    const limiter = new UpstashRateLimiter(
+      { url: UPSTASH_URL, token: UPSTASH_TOKEN },
+      async () => {
+        calls += 1;
+        return calls === 1
+          ? jsonResponse({ result: [6, 60_000] })
+          : jsonResponse({ result: [1, 60_000] });
+      },
+      () => at,
+    );
+
+    await expect(
+      limiter.consume({ policy: policy({ limit: 5 }), subjectHash: "h" }),
+    ).resolves.toMatchObject({ allowed: false });
+    expect(calls).toBe(1);
+
+    at += 60_001;
+    await expect(
+      limiter.consume({ policy: policy({ limit: 5 }), subjectHash: "h" }),
+    ).resolves.toMatchObject({ allowed: true, remaining: 4 });
+    expect(calls).toBe(2);
+  });
+
+  test("allowed decisions are not cached", async () => {
+    let calls = 0;
+    const limiter = new UpstashRateLimiter({ url: UPSTASH_URL, token: UPSTASH_TOKEN }, async () => {
+      calls += 1;
+      return jsonResponse({ result: [1, 60_000] });
+    });
+    await limiter.consume({ policy: policy({ limit: 5 }), subjectHash: "h" });
+    await limiter.consume({ policy: policy({ limit: 5 }), subjectHash: "h" });
+    expect(calls).toBe(2);
   });
 
   test("concurrent requests cannot exceed the allowance through a race", async () => {
@@ -244,6 +306,7 @@ describe("P4-S2 Upstash counter", () => {
         token: UPSTASH_TOKEN,
         key: "k",
         windowMs: 1_000,
+        limit: 1,
         fetchImpl: async () => {
           throw new Error("offline");
         },
@@ -255,6 +318,7 @@ describe("P4-S2 Upstash counter", () => {
         token: UPSTASH_TOKEN,
         key: "k",
         windowMs: 1_000,
+        limit: 1,
         fetchImpl: async () => jsonResponse({ error: "bad request" }, 400),
       }),
     ).rejects.toBeInstanceOf(RateLimitProviderError);
@@ -264,6 +328,7 @@ describe("P4-S2 Upstash counter", () => {
         token: UPSTASH_TOKEN,
         key: "k",
         windowMs: 1_000,
+        limit: 1,
         fetchImpl: async () => jsonResponse({ result: "unexpected" }),
       }),
     ).rejects.toBeInstanceOf(RateLimitProviderError);

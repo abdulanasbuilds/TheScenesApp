@@ -296,9 +296,11 @@ function MyLearningPage() {
             ) : (
               <EmptyState
                 className="mt-4"
+                type="filtered"
                 icon={<BookOpen className="h-5 w-5" />}
                 title="No courses match this view"
                 description="Try another filter or clear the search. Your enrolled courses stay here."
+                helperText="Your enrolled courses are still here — just hidden by the current filter."
                 action={
                   <Button
                     variant="secondary"
@@ -385,9 +387,11 @@ function MyLearningPage() {
             ) : (
               <EmptyState
                 className="mt-4"
+                type="empty"
                 icon={<Bookmark className="h-5 w-5" />}
                 title="No saved resources yet"
                 description="Use the bookmark button on any marketplace listing to keep it here."
+                helperText="Saved resources are bookmarks only — no purchase or download."
                 action={
                   <a href="/marketplace" className={buttonClass("primary", "md")}>
                     Browse marketplace
@@ -412,9 +416,11 @@ function MyLearningPage() {
             ) : (
               <EmptyState
                 className="mt-4"
+                type="empty"
                 icon={<CalendarDays className="h-5 w-5" />}
                 title="No confirmed events"
                 description="Open a community calendar and confirm a session to see it here."
+                helperText="RSVPs are stored for this preview only."
                 action={
                   <a
                     href={`/c/${state.joined[0] ?? "ai-builders-guild"}/calendar`}

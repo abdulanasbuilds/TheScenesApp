@@ -75,7 +75,7 @@ Agents MUST NOT:
 - add real payment processing;
 - add production webhooks;
 - add production secrets;
-- wire production email/storage/video/Redis/Telegram services;
+- wire production email/storage/video/Redis/WhatsApp services;
 - implement the marketplace;
 - implement the production AI layer.
 
@@ -94,10 +94,11 @@ Standing instructions from the founder:
   database verification is deferred, not blocking.
 - Hosted/provider actions wait until the founder connects the required APIs/CLIs/MCPs and approves
   the target; then pending hosted actions may run against the designated location only.
-- The founder creates provider accounts (Resend, Upstash, the Telegram bot, others) himself. Keep
+- The founder creates provider accounts (Resend, Upstash, others) himself. Keep
   `.env.example`/`.env` placeholders exact so pasted credentials work immediately. Never read, print
   or receive secret values.
-- The feedback integration is a Telegram **bot**, not a channel.
+- The feedback integration is a direct WhatsApp chat (`wa.me`) to the founder, not a bot, a channel
+  or a paid Business API integration (ADR-048).
 - After a GitHub push and a Cloudflare deployment, the founder tests himself. Present the exact
   deployment action before executing it; never claim his verification.
 - Summarize reviews, plans and blockers in chat, in plain English, instead of expecting the founder
@@ -270,7 +271,7 @@ Current direction:
 - Resend: important transactional email;
 - Redis-compatible service: rate limiting and short-lived coordination;
 - Bunny.net: conditional only if a later native video/live decision supersedes ADR-029;
-- Telegram: internal feedback/alerts;
+- WhatsApp: direct founder feedback/alerts through a zero-cost `wa.me` handoff;
 - payments: HOLD;
 - search: Postgres first, intelligent search later;
 - PWA/Web Push: installability and notifications with consent.

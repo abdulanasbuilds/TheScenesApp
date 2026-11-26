@@ -55,6 +55,31 @@ Approved by ADR-043 on 11 November 2026, **only** for the pre-production project
 > (`extdmvwwvgqstoayzhhy`) through a global OpenCode config, not THE SCENES. Do not run its tools for this
 > work until the `project_ref` is corrected and a read-only check confirms the target.
 
+### Verified configuration state (19 November 2026)
+
+Read-only inspection through the founder's own signed-in dashboard sessions. No SMTP password, API key
+or other secret value was read, printed or stored.
+
+- **Resend** (`abdulanassofficial`): account exists, **no verified sending domain**, **no API key** yet.
+  Only the test-sender path (`onboarding@resend.dev`) is available, and it delivers only to the Resend
+  account owner's own address. It cannot serve any other recipient.
+- **Supabase Auth — THE SCENES**: `Custom SMTP` is **off**, so the built-in sender (organization team
+  addresses only) is still in effect and email templates cannot be edited. `Confirm email` is on; user
+  sign-ups are on; anonymous sign-ins and manual linking are off.
+- **URL configuration**: Site URL is `http://127.0.0.1:5000/login`; Redirect URLs contain a single entry,
+  `http://127.0.0.1:5000/**`. Both application redirect paths are therefore covered by the wildcard, but
+  the Site URL is a page path rather than the origin, no exact `/auth/confirm` or `/reset-password` entry
+  exists, and no HTTPS origin is listed. Recommended: Site URL `http://127.0.0.1:5000`, the two exact
+  URLs added, and the HTTPS host added only when a deployment is approved.
+- **Template link variable**: keep `{{ .ConfirmationURL }}`. The application exchanges `?code=` only for
+  recovery and has no `verifyOtp` handler, so the `token_hash` template pattern from Supabase's PKCE
+  guide would break both journeys.
+- **Templates and tracking**: keep Resend open/click tracking disabled for these messages; link rewriting
+  breaks single-use auth links.
+- **Local run command**: `node ./node_modules/vite/bin/vite.js dev --mode staging` (or
+  `npm run dev -- --mode staging`) loads `.env.staging.local`. The same command through **bun** does not:
+  bun preloads `.env`, whose `VITE_DATA_MODE=fixtures` wins, so the app stays in fixture mode.
+
 ## Configuration names (values are never printed)
 
 Application environment (ignored local file, existing names):

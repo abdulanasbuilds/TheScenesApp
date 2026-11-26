@@ -167,9 +167,11 @@ function CourseLibrary({ communitySlug, courses }: { communitySlug: string; cour
         ) : (
           <EmptyState
             className="mt-5"
+            type="filtered"
             icon={<BookOpen className="h-5 w-5" />}
             title="No courses in this view"
             description="Try another level or clear your classroom search."
+            helperText="Every course in this scene is still available — just hidden by the current filters."
           />
         )}
       </div>

@@ -22,8 +22,20 @@ import {
   Users,
 } from "lucide-react";
 import { CreatorShell } from "@/components/layout/creator-shell";
-import { Avatar, Badge, Button, Card, Progress, Select, Stat, buttonClass } from "@/components/ui";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  ComingSoonBadge,
+  Progress,
+  Select,
+  Stat,
+  buttonClass,
+} from "@/components/ui";
+import { CreatorFirstCourseChecklist } from "@/features/onboarding/getting-started";
 import { courses, events, getCommunity, members, orders, posts } from "@/data/seed";
+import { EARLY_ACCESS } from "@/lib/early-access";
 import { formatCompact, formatDate, formatMoney, relativeTime } from "@/lib/utils";
 import { useToast } from "@/store/app-store";
 
@@ -108,7 +120,10 @@ function CreatorDashboardPage() {
                 <Badge className="bg-white/12 text-indigo-50 ring-1 ring-white/20">
                   Demo workspace
                 </Badge>
-                <span className="text-xs text-indigo-200">Live analytics coming soon</span>
+                <Badge className="bg-emerald-400/15 text-emerald-100 ring-1 ring-emerald-300/30">
+                  {EARLY_ACCESS.creatorBadge}
+                </Badge>
+                <span className="text-xs text-indigo-200">Zero platform fees during launch</span>
               </div>
               <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
                 Good morning, Nana.
@@ -184,17 +199,12 @@ function CreatorDashboardPage() {
           />
           <Stat label="Visitor to member" value="6.1%" hint="Sample conversion rate" />
           <Stat label="30-day retention" value="82%" hint="Sample cohort model" />
-          <Stat
-            label="MRR"
-            value={formatMoney(
-              community.pricing.type === "free" ? 0 : community.members * community.pricing.amount,
-            )}
-            hint="Members × plan · sample estimate"
-          />
+          <Stat label="MRR" value="Not yet" hint="Paid plans arrive after early access" />
         </div>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.75fr)]">
           <div className="space-y-6">
+            <CreatorFirstCourseChecklist />
             <Card className="p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -545,11 +555,14 @@ function CreatorDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
-                    Commercial preview
+                    Early access · commercial preview
                   </p>
-                  <h2 className="mt-1 font-display text-lg font-extrabold text-slate-900">
-                    Orders and earnings
-                  </h2>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <h2 className="font-display text-lg font-extrabold text-slate-900">
+                      Orders and earnings
+                    </h2>
+                    <ComingSoonBadge>Coming soon</ComingSoonBadge>
+                  </div>
                 </div>
                 <CircleDollarSign className="h-5 w-5 text-emerald-600" />
               </div>
@@ -568,11 +581,12 @@ function CreatorDashboardPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <dt className="text-slate-500">Platform fee model</dt>
-                  <dd className="font-semibold text-slate-900">5% · Creator</dd>
+                  <dd className="font-semibold text-emerald-700">Zero during early access</dd>
                 </div>
               </dl>
               <div className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">
-                Payments and payouts are coming soon. These figures exist only to show the
+                Monetization &amp; Payouts are in development. Enjoy zero platform fees today —
+                nothing here is a real balance and no money can move. These figures only show the
                 management interface.
               </div>
               <a

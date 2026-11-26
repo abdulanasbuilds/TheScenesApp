@@ -142,7 +142,7 @@ function RegisterPage() {
             ? "Create a pre-production test account. Email confirmation is required; no payment or production deployment is connected."
             : "Create a local account for the connected learning proof. No email provider, payment method or production service is used."
           : role === "creator"
-            ? "Preview the teaching and community workspace. Live creator accounts and payouts are coming soon."
+            ? "Start teaching free during early access — publish for free and pay zero platform fees during launch."
             : "Start with a local preview profile. Production authentication will connect only after the frontend phase is accepted."
       }
       footer={

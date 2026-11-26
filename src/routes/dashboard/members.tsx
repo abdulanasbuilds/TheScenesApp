@@ -345,9 +345,11 @@ function MemberManagementPage() {
             </div>
           ) : (
             <EmptyState
+              type="filtered"
               icon={<Users className="h-5 w-5" />}
               title="No members match"
               description="Try another name, role or status. Invited members appear here after you add them."
+              helperText="Your full member list is still here — just hidden by the filters."
               action={
                 <Button
                   variant="secondary"

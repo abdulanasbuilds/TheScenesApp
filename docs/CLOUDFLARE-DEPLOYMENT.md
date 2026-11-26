@@ -80,16 +80,17 @@ public; Row Level Security is what protects data.
 If `RATE_LIMIT_DRIVER=upstash` is set but any value is missing or invalid, the limiter reports
 `misconfigured` (it does not silently fall back to per-instance memory in a hosted deployment).
 
-### Feedback (P4-S4) — optional internal channel
+### Feedback (P4-S4 / ADR-048) — optional direct founder chat
 
 | Name | Kind | Notes |
 |---|---|---|
-| `FEEDBACK_PROVIDER` | Variable | `telegram` to deliver to the internal chat; default `memory` |
-| `TELEGRAM_BOT_TOKEN` | Secret | Bot token from the founder-controlled bot |
-| `TELEGRAM_FEEDBACK_CHAT_ID` | Secret | Numeric chat ID (may be negative) or `@channelusername` |
+| `FEEDBACK_PROVIDER` | Variable | `whatsapp` enables the direct chat; default `memory` |
+| `WHATSAPP_FEEDBACK_NUMBER` | Variable | Full international number, for example `+233201234567`; a public contact, not a secret |
 
-An incomplete Telegram configuration fails closed and is reported `misconfigured`; feedback submissions
-return the safe `UNAVAILABLE` contract instead of silently going nowhere.
+An incomplete WhatsApp configuration fails closed and is reported `misconfigured`; feedback submissions
+return the safe `UNAVAILABLE` contract instead of silently going nowhere. The `whatsapp` provider
+returns a prepared `wa.me` link (`handoff`), so the app never claims delivery before the sender presses
+Send. Setup: `docs/WHATSAPP-FEEDBACK-SETUP.md`.
 
 ### Account email (P4-S1) — configured in Supabase, not here
 
@@ -123,7 +124,8 @@ Adding these variables alone will not activate the feature. Do not set them expe
    - the browser can install the app (or shows Add to Home Screen on iOS);
    - **Settings → Account → Connected services** reports Supabase `Ready`, rate limiting `Ready` when
      Upstash is configured, and account email `Ready`;
-   - feedback submission reaches the internal Telegram chat (one founder-controlled test message).
+   - feedback opens the founder's WhatsApp chat with the structured note pre-filled, on mobile and
+     desktop (one founder-controlled test message).
 5. Record the run as evidence under `docs/evidence/phase-4/`.
 
 If a connected mode is misconfigured, the root renders a **Configuration required** page listing the

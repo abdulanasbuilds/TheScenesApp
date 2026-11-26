@@ -16,6 +16,13 @@ export default tseslint.config(
       ".audit",
       "node_modules",
       "db/database.types.ts",
+      // Generated design-variant artifacts. `.hallmark/` is scratch tooling output and
+      // `src/{variants,routes/variants}` are transpiled prototype pages emitted by the variant
+      // generator (they use `var` and runtime `jsx()` calls). They are not hand-maintained
+      // application source, so they are excluded from lint rather than rewritten.
+      ".hallmark",
+      "src/variants",
+      "src/routes/variants",
     ],
   },
   {
