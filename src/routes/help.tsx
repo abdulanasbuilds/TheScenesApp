@@ -55,7 +55,7 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
     category: "Getting started",
     question: "How does sign-in work in this preview?",
     answer:
-      "Sign-in runs in preview mode. Any valid-looking email and password opens a demo session for Ama Boateng. No real account is created and no verification email is sent yet.",
+      "Sign-in runs in preview mode. Any valid-looking email and password opens a local preview session under the email you type. No real account is created and no verification email is sent yet.",
   },
   {
     category: "Getting started",

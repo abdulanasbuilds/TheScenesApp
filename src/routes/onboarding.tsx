@@ -31,17 +31,11 @@ function OnboardingPage() {
   const { signInDemo, joinCommunity, currentMember, dataMode, categories, communities } = useApp();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
-  const [name, setName] = useState(
-    currentMember?.name ?? (dataMode === "fixtures" ? "Ama Boateng" : ""),
-  );
-  const [handle, setHandle] = useState(
-    currentMember?.handle ?? (dataMode === "fixtures" ? "amaboateng" : ""),
-  );
+  const [name, setName] = useState(currentMember?.name ?? "");
+  const [handle, setHandle] = useState(currentMember?.handle ?? "");
   const [role, setRole] = useState<"learner" | "creator">(search.role);
   const [interests, setInterests] = useState<string[]>(() =>
-    dataMode === "fixtures"
-      ? ["ai-automation", "design"]
-      : categories.slice(0, 2).map((item) => item.slug),
+    categories.slice(0, 2).map((item) => item.slug),
   );
   const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
   const [error, setError] = useState("");

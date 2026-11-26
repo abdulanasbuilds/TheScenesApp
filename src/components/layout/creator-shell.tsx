@@ -107,9 +107,9 @@ export function CreatorShell({
                 <button
                   type="button"
                   className="flex items-center gap-1 rounded-full p-0.5 pr-1 hover:bg-slate-100"
-                  aria-label={`AB ${currentMember?.name ?? "Ama Boateng"} creator account menu`}
+                  aria-label={`${currentMember?.name ?? "Preview member"} creator account menu`}
                 >
-                  <Avatar name={currentMember?.name ?? "Ama Boateng"} size={34} online />
+                  <Avatar name={currentMember?.name ?? "Preview member"} size={34} online />
                   <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
                 </button>
               </DropdownTrigger>
@@ -119,21 +119,13 @@ export function CreatorShell({
                   <p className="text-xs text-slate-500">@{currentMember?.handle}</p>
                 </div>
                 <DropdownSeparator />
-                <DropdownItem
-                  onSelect={() =>
-                    void router.navigate({
-                      href: `/c/ai-builders-guild/members/${currentMember?.id}`,
-                    })
-                  }
-                >
-                  <Users className="h-4 w-4" /> Your member profile
+                <DropdownItem onSelect={() => void router.navigate({ href: "/settings" })}>
+                  <Users className="h-4 w-4" /> Your profile
                 </DropdownItem>
                 <DropdownItem onSelect={() => void router.navigate({ href: "/settings" })}>
                   <Settings className="h-4 w-4" /> Account settings
                 </DropdownItem>
-                <DropdownItem
-                  onSelect={() => void router.navigate({ href: "/c/ai-builders-guild" })}
-                >
+                <DropdownItem onSelect={() => void router.navigate({ href: "/explore" })}>
                   <MessageSquareText className="h-4 w-4" /> View as member
                 </DropdownItem>
                 <DropdownSeparator />
@@ -200,12 +192,10 @@ function WorkspaceNav({ active }: { active: CreatorSection }) {
         </p>
         <div className="mt-2 flex items-center gap-2.5">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-700 text-xs font-extrabold text-white">
-            AB
+            <LayoutDashboard className="h-4 w-4" />
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-sm font-bold text-slate-900">
-              AI Builders Guild
-            </span>
+            <span className="block truncate text-sm font-bold text-slate-900">Your workspace</span>
             <span className="block text-[11px] text-slate-500">Creator view</span>
           </span>
         </div>
@@ -238,7 +228,7 @@ function WorkspaceNav({ active }: { active: CreatorSection }) {
           <Settings className="h-[18px] w-[18px]" /> Settings
         </a>
         <a
-          href="/c/ai-builders-guild"
+          href="/explore"
           className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-950"
         >
           <MessageSquareText className="h-[18px] w-[18px]" /> View as member

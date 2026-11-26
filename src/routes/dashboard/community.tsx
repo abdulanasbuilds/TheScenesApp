@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import {
   AlertTriangle,
-  ArrowUpRight,
   Check,
   Globe2,
   LayoutGrid,
@@ -32,12 +31,11 @@ import {
   TabsTrigger,
   Textarea,
   Toggle,
-  buttonClass,
 } from "@/components/ui";
 import { MediaUploadField } from "@/components/domain/media-upload";
-import { categories, getCommunity } from "@/data/seed";
+import { categories } from "@/data/seed";
 import type { CommunitySpace } from "@/data/types";
-import { createLocalId, formatCompact, formatMoney } from "@/lib/utils";
+import { createLocalId } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/dashboard/community")({
@@ -45,8 +43,40 @@ export const Route = createFileRoute("/dashboard/community")({
   component: CommunitySettingsPage,
 });
 
+/**
+ * A creator workspace always starts empty. There is no community record to load,
+ * so the settings form starts from this neutral draft and never presents a
+ * fabricated community, member count or public URL.
+ */
+const emptyCommunity = {
+  name: "",
+  slug: "",
+  tagline: "",
+  description: "",
+  categorySlug: "",
+  privacy: "public" as "public" | "private",
+  languages: ["English"],
+  rules: [] as string[],
+  iconUrl: "",
+  logoUrl: "",
+  coverUrl: "",
+  brandColor: "#4338ca",
+  keywords: [] as string[],
+  customDomain: "",
+  minPostLevel: 1,
+  spaces: [] as CommunitySpace[],
+  externalLinks: [] as { label: string; url: string }[],
+  accentHue: 243,
+  pricing: { type: "free" as const },
+  members: 0,
+  online: 0,
+  postsPerWeek: 0,
+  rating: 0,
+  reviews: 0,
+};
+
 function CommunitySettingsPage() {
-  const community = getCommunity("ai-builders-guild")!;
+  const community = emptyCommunity;
   const { toast } = useToast();
   const { creatorCategories } = useApp();
   const [tab, setTab] = useState("general");
@@ -149,31 +179,27 @@ function CommunitySettingsPage() {
                 <p className="text-[11px] font-bold tracking-[0.14em] text-indigo-700 uppercase">
                   Community management
                 </p>
-                <Badge tone={community.privacy === "private" ? "slate" : "green"}>
-                  {community.privacy === "private" ? (
+                <Badge tone={values.privacy === "private" ? "slate" : "green"}>
+                  {values.privacy === "private" ? (
                     <Lock className="h-3 w-3" />
                   ) : (
                     <Globe2 className="h-3 w-3" />
                   )}
-                  {community.privacy}
+                  {values.privacy}
                 </Badge>
               </div>
               <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-950">
-                {community.name}
+                {values.name.trim() || "Your new community"}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 Shape how the room reads, who can enter and what members can do. Settings are local
                 to this preview.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <a href={`/communities/${community.slug}`} className={buttonClass("secondary", "md")}>
-                Public page <ArrowUpRight className="h-4 w-4" />
-              </a>
-              <a href={`/c/${community.slug}`} className={buttonClass("primary", "md")}>
-                View as member
-              </a>
-            </div>
+            <p className="max-w-xs rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+              A public community page and a member view appear after you publish. Nothing is
+              published yet.
+            </p>
           </div>
         </div>
       </section>
@@ -298,20 +324,9 @@ function CommunitySettingsPage() {
                     <Field
                       label="Membership price"
                       htmlFor="community-price"
-                      hint="Price changes belong to the payments phase."
+                      hint="Price changes belong to the payments phase and are not connected."
                     >
-                      <Input
-                        id="community-price"
-                        value={
-                          community.pricing.type === "free"
-                            ? "Free"
-                            : `${formatMoney(community.pricing.amount)} / ${
-                                community.pricing.interval ?? "one time"
-                              }`
-                        }
-                        disabled
-                        readOnly
-                      />
+                      <Input id="community-price" value="Not connected" disabled readOnly />
                     </Field>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
@@ -910,48 +925,21 @@ function CommunitySettingsPage() {
               <h2 className="text-xs font-bold tracking-[0.12em] text-slate-500 uppercase">
                 Community snapshot
               </h2>
-              <dl className="mt-3 space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-slate-500">Members</dt>
-                  <dd className="font-semibold text-slate-900">
-                    {formatCompact(community.members)}
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-slate-500">Online now</dt>
-                  <dd className="font-semibold text-emerald-700">
-                    <span
-                      className="mr-1 inline-block h-2 w-2 rounded-full bg-current align-middle"
-                      aria-hidden="true"
-                    />
-                    {community.online}
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-slate-500">Posts / week</dt>
-                  <dd className="font-semibold text-slate-900">{community.postsPerWeek}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-slate-500">Rating</dt>
-                  <dd className="font-semibold text-slate-900">
-                    {community.rating} ({community.reviews})
-                  </dd>
-                </div>
-              </dl>
+              <p className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+                No member activity yet. Members, live presence, posting rate and ratings appear here
+                after your community is published and people join.
+              </p>
             </Card>
             <Card className="p-4">
               <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <Users className="h-4 w-4 text-indigo-700" /> Member experience
               </h2>
               <p className="mt-2 text-xs leading-5 text-slate-600">
-                Preview the room exactly as a member sees it before changing more settings.
+                The member view opens once your community has a public page.
               </p>
-              <a
-                href={`/c/${community.slug}`}
-                className={buttonClass("secondary", "md", "mt-3 w-full")}
-              >
-                Open member view
-              </a>
+              <p className="mt-3 rounded-lg bg-slate-50 p-3 text-[11px] leading-5 text-slate-500">
+                Nothing is published yet, so there is no member view to preview.
+              </p>
             </Card>
             <Card className="border-amber-200 bg-amber-50 p-4">
               <p className="text-xs font-bold text-amber-950">Settings are not production policy</p>
@@ -978,7 +966,7 @@ function CommunitySettingsPage() {
               Cancel
             </Button>
             <Button
-              disabled={archiveText !== community.name}
+              disabled={!values.name.trim() || archiveText !== values.name.trim()}
               onClick={() => {
                 setArchiveOpen(false);
                 setArchiveText("");
@@ -998,12 +986,15 @@ function CommunitySettingsPage() {
             Archiving will require authorization, audit logging, data-retention rules and a recovery
             plan. That work is coming soon, so no community can be archived yet.
           </div>
-          <Field label={`Type “${community.name}” to confirm`} htmlFor="archive-confirm">
+          <Field
+            label={`Type ${values.name.trim() ? `“${values.name.trim()}”` : "the community name"} to confirm`}
+            htmlFor="archive-confirm"
+          >
             <Input
               id="archive-confirm"
               value={archiveText}
               onChange={(event) => setArchiveText(event.target.value)}
-              placeholder={community.name}
+              placeholder={values.name.trim() || "Community name"}
             />
           </Field>
         </div>

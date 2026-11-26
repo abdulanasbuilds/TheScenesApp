@@ -224,7 +224,6 @@ export function PublicFooter() {
                 ["Become a teacher", "/become-a-teacher"],
                 ["Creator workspace", "/dashboard/creator"],
                 ["Pricing", "/pricing"],
-                ["Creator profile", "/creators/nanaadjei"],
               ],
             },
             {

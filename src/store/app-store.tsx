@@ -24,7 +24,6 @@ import {
   courses,
   categories,
   currentUserId,
-  members,
   notifications as seedNotifications,
   posts as seedPosts,
 } from "@/data/seed";
@@ -33,6 +32,7 @@ import type {
   Category,
   Community,
   Course,
+  Member,
   NotificationItem,
   Post,
   PostComment,
@@ -104,27 +104,45 @@ type Action =
       changes: Pick<Post, "title" | "body" | "category">;
     };
 
-const demoUser: SessionUser = {
-  id: currentUserId,
-  name: "Ama Boateng",
-  handle: "amaboateng",
-  email: "ama@example.com",
-};
+/**
+ * Build the local preview identity from the email the visitor typed at sign-in.
+ *
+ * No person is fabricated: the display name and handle are derived from the address the visitor
+ * entered, and the default address is an explicit reserved-domain placeholder.
+ */
+function previewUser(email?: string): SessionUser {
+  const address =
+    email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email.trim() : "preview@example.com";
+  const local = address.split("@")[0] ?? "";
+  const words = local
+    .split(/[._\-+0-9]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
+  const handle = local.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return {
+    id: "preview-user",
+    name: words.length ? words.join(" ") : "Preview member",
+    handle: handle || "preview",
+    email: address,
+  };
+}
 
 const initialState: AppState = {
   user: null,
-  joined: ["ai-builders-guild", "product-design-studio", "freelance-foundry"],
+  // No fabricated memberships, enrolments or saved items: the fixture catalogue is intentionally
+  // empty until real records exist, so a fresh preview starts with nothing joined or completed.
+  joined: [],
   likedPosts: [],
   postLikeDelta: {},
   extraComments: {},
   notifications: seedNotifications,
   connectedUnreadCount: 0,
-  completedLessons: ["les-agents-1", "les-agents-2", "les-critique-1", "les-pricing-1"],
-  enrolledCourses: ["course-agents", "course-critique", "course-pricing"],
-  rsvps: ["ev-1"],
+  completedLessons: [],
+  enrolledCourses: [],
+  rsvps: [],
   purchases: [],
-  saved: ["prod-3"],
-  following: ["nanaadjei"],
+  saved: [],
+  following: [],
   localPosts: [],
   customCategories: [],
 };
@@ -291,7 +309,7 @@ type AppContextValue = {
   addPost: (post: Post) => void;
   updatePost: (postId: string, changes: Pick<Post, "title" | "body" | "category">) => void;
   unreadCount: number;
-  currentMember: (typeof members)[number] | undefined;
+  currentMember: Member | undefined;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -359,10 +377,7 @@ export function AppProvider({
   }, [dataMode, learningState, notificationSummary, viewer]);
 
   const signInDemo = useCallback((email?: string) => {
-    dispatch({
-      type: "signIn",
-      user: { ...demoUser, email: email && email.includes("@") ? email : demoUser.email },
-    });
+    dispatch({ type: "signIn", user: previewUser(email) });
   }, []);
 
   const signOut = useCallback(async () => {
@@ -373,20 +388,25 @@ export function AppProvider({
     dispatch({ type: "signOut" });
   }, [dataMode]);
 
-  const fixtureMember = members.find((member) => member.id === currentUserId);
-  const currentMember = useMemo(() => {
-    if (dataMode === "fixtures") return fixtureMember;
-    if (!state.user || !fixtureMember) return undefined;
+  const currentMember = useMemo<Member | undefined>(() => {
+    if (!state.user) return undefined;
     return {
-      ...fixtureMember,
       id: state.user.id,
       name: state.user.name,
       handle: state.user.handle,
+      role: "Member",
       headline: state.user.headline ?? "",
       bio: state.user.bio ?? "",
       location: state.user.location ?? "",
+      joined: "",
+      points: 0,
+      level: 1,
+      status: "active",
+      communities: [],
+      badges: [],
+      online: true,
     };
-  }, [dataMode, fixtureMember, state.user]);
+  }, [state.user]);
 
   const value = useMemo<AppContextValue>(
     () => ({

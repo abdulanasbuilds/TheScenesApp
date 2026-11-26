@@ -26,8 +26,7 @@ function MembersDirectoryPage() {
   const directory = useMemo(
     () =>
       members.filter((member) => {
-        const communityMatch =
-          member.communities.includes(community.slug) || community.slug === "ai-builders-guild";
+        const communityMatch = member.communities.includes(community.slug);
         const queryMatch =
           !query.trim() ||
           `${member.name} ${member.handle} ${member.headline} ${member.location}`

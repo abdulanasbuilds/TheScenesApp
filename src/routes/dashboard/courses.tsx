@@ -30,7 +30,6 @@ import {
   Textarea,
   buttonClass,
 } from "@/components/ui";
-import { courses as seedCourses } from "@/data/seed";
 import type { Course, Lesson } from "@/data/types";
 import { createLocalId, formatCompact } from "@/lib/utils";
 import { useToast } from "@/store/app-store";
@@ -40,8 +39,11 @@ export const Route = createFileRoute("/dashboard/courses")({
   component: CourseManagementPage,
 });
 
-const workspaceCourses = () =>
-  seedCourses.filter((course) => course.communitySlug === "ai-builders-guild");
+/**
+ * The workspace has no community and no courses until a creator creates them.
+ * Nothing is loaded from fixture data, so this list always starts empty.
+ */
+const workspaceCourses = (): Course[] => [];
 
 function CourseManagementPage() {
   const { toast } = useToast();
@@ -61,27 +63,12 @@ function CourseManagementPage() {
       setImportError("Use a course key in the format ABCD-1234-EFGH.");
       return;
     }
-    const source = seedCourses[0];
-    const importedId = createLocalId("course-imported");
-    setCourseList((current) => [
-      {
-        ...source,
-        id: importedId,
-        slug: `imported-${importedId.slice(-6)}`,
-        title: `${source.title} (imported)`,
-        status: "draft",
-        students: 0,
-        rating: 0,
-        reviews: 0,
-      },
-      ...current,
-    ]);
     setImportOpen(false);
     setImportKey("");
     setImportError("");
     toast(
-      "Course imported into this preview",
-      "The key was accepted locally. No course data left this browser and nothing was transferred between communities.",
+      "Course import is not connected yet",
+      "A course key will import a course you own once the backend is live. No course was created.",
     );
   };
 
@@ -148,7 +135,7 @@ function CourseManagementPage() {
                 <p className="text-[11px] font-bold tracking-[0.14em] text-indigo-700 uppercase">
                   Classroom management
                 </p>
-                <Badge tone="outline">AI Builders Guild</Badge>
+                <Badge tone="outline">No community yet</Badge>
               </div>
               <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-950">
                 Courses
@@ -173,7 +160,11 @@ function CourseManagementPage() {
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Stat label="Courses" value={courseList.length} hint={`${published} published`} />
-          <Stat label="Learners" value={formatCompact(learners)} hint="Fixture enrolment total" />
+          <Stat
+            label="Learners"
+            value={formatCompact(learners)}
+            hint="Enrolment is not connected"
+          />
           <Stat label="Lessons" value={lessons} hint="Across all modules" />
           <Stat
             label="Drafts"
@@ -283,18 +274,28 @@ function CourseManagementPage() {
           <EmptyState
             className="mt-5"
             icon={<BookOpen className="h-5 w-5" />}
-            title="No courses match"
-            description="Clear the search or choose another status."
+            title={courseList.length ? "No courses match" : "No courses yet"}
+            description={
+              courseList.length
+                ? "Clear the search or choose another status."
+                : "Create your first course draft. Curriculum, video hosting and learner progress stay local until the backend phase."
+            }
             action={
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setQuery("");
-                  setStatus("all");
-                }}
-              >
-                Reset filters
-              </Button>
+              courseList.length ? (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setQuery("");
+                    setStatus("all");
+                  }}
+                >
+                  Reset filters
+                </Button>
+              ) : (
+                <Button onClick={() => setCreating(true)}>
+                  <FilePlus2 className="h-4 w-4" /> New course
+                </Button>
+              )
             }
           />
         )}
@@ -310,8 +311,8 @@ function CourseManagementPage() {
                 learner progress persistence are deliberately outside this phase.
               </p>
             </div>
-            <a href="/c/ai-builders-guild/classroom" className={buttonClass("secondary", "md")}>
-              View member classroom
+            <a href="/dashboard/community" className={buttonClass("secondary", "md")}>
+              Set up your community
             </a>
           </div>
         </Card>
@@ -356,8 +357,8 @@ function CourseManagementPage() {
             />
           </Field>
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
-            The course key copies this sample course into your workspace. Importing a course from
-            another creator is coming soon.
+            Course import is not connected yet. A valid key is checked locally and nothing is
+            transferred between communities.
           </div>
         </form>
       </Modal>
@@ -697,13 +698,13 @@ function CreateCourseModal({
     onCreate({
       id: courseId,
       slug: `local-${courseId}`,
-      communitySlug: "ai-builders-guild",
+      communitySlug: "",
       title: title.trim(),
       subtitle: subtitle.trim() || "A new course draft.",
       description: "Draft course created in the local preview builder.",
       level,
-      categorySlug: "ai-automation",
-      instructorHandle: "nanaadjei",
+      categorySlug: "",
+      instructorHandle: "",
       hours: 0,
       students: 0,
       rating: 0,

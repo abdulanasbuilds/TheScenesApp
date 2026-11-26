@@ -29,7 +29,7 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState(dataMode === "fixtures" ? "ama@example.com" : "");
+  const [email, setEmail] = useState(dataMode === "fixtures" ? "preview@example.com" : "");
   const [password, setPassword] = useState(dataMode === "fixtures" ? "preview123" : "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { CommunityCard, CourseCard } from "@/components/domain/cards";
 import { PublicShell } from "@/components/layout/public-shell";
-import { Badge, Card, Eyebrow, SectionHeading, buttonClass } from "@/components/ui";
+import { Badge, Card, EmptyState, Eyebrow, SectionHeading, buttonClass } from "@/components/ui";
 import { categories, communities, courses, creators } from "@/data/seed";
 import { formatCompact } from "@/lib/utils";
 
@@ -144,32 +144,41 @@ function Home() {
                 <span className="text-right">Members</span>
                 <span className="text-right">Access</span>
               </div>
-              {communities.slice(0, 5).map((community) => (
-                <a
-                  key={community.id}
-                  href={`/communities/${community.slug}`}
-                  className="grid grid-cols-[1.7fr_0.65fr_0.65fr] items-center gap-2 border-b border-slate-100 px-4 py-3 text-xs last:border-0 hover:bg-slate-50"
-                >
-                  <span className="flex min-w-0 items-center gap-2.5">
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: `hsl(${community.accentHue} 54% 45%)` }}
-                    />
-                    <span className="truncate font-semibold">{community.name}</span>
-                  </span>
-                  <span className="text-right font-semibold tabular-nums text-slate-700">
-                    {formatCompact(community.members)}
-                  </span>
-                  <span className="text-right font-semibold text-slate-900">
-                    {community.pricing.type === "free" ? "Free" : `$${community.pricing.amount}/mo`}
-                  </span>
-                </a>
-              ))}
+              {communities.length ? (
+                communities.slice(0, 5).map((community) => (
+                  <a
+                    key={community.id}
+                    href={`/communities/${community.slug}`}
+                    className="grid grid-cols-[1.7fr_0.65fr_0.65fr] items-center gap-2 border-b border-slate-100 px-4 py-3 text-xs last:border-0 hover:bg-slate-50"
+                  >
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: `hsl(${community.accentHue} 54% 45%)` }}
+                      />
+                      <span className="truncate font-semibold">{community.name}</span>
+                    </span>
+                    <span className="text-right font-semibold tabular-nums text-slate-700">
+                      {formatCompact(community.members)}
+                    </span>
+                    <span className="text-right font-semibold text-slate-900">
+                      {community.pricing.type === "free"
+                        ? "Free"
+                        : `$${community.pricing.amount}/mo`}
+                    </span>
+                  </a>
+                ))
+              ) : (
+                <p className="px-4 py-6 text-xs leading-5 text-slate-500">
+                  No communities have been published yet. The first scenes are being prepared —
+                  check back soon.
+                </p>
+              )}
             </div>
             <div className="mt-3 grid grid-cols-3 divide-x divide-white/15 rounded-xl border border-white/10 bg-indigo-950/20 px-2 py-3 text-center">
               {[
-                [String(communities.length), "sample communities"],
-                [String(courses.length), "sample courses"],
+                [String(communities.length), "published communities"],
+                [String(courses.length), "published courses"],
                 [String(creators.length), "working creators"],
               ].map(([value, label]) => (
                 <div key={label} className="px-2">
@@ -267,9 +276,23 @@ function Home() {
           }
         />
         <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {featuredCommunities.map((community) => (
-            <CommunityCard key={community.id} community={community} />
-          ))}
+          {featuredCommunities.length ? (
+            featuredCommunities.map((community) => (
+              <CommunityCard key={community.id} community={community} />
+            ))
+          ) : (
+            <EmptyState
+              className="col-span-full"
+              icon={<Users className="h-5 w-5" />}
+              title="No communities yet"
+              description="The first scenes are being prepared. When creators publish, they will appear here."
+              action={
+                <a href="/become-a-teacher" className={buttonClass("primary", "md")}>
+                  Become a teacher <ArrowRight className="h-4 w-4" />
+                </a>
+              }
+            />
+          )}
         </div>
       </section>
 
@@ -339,9 +362,21 @@ function Home() {
           }
         />
         <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {featuredCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
+          {featuredCourses.length ? (
+            featuredCourses.map((course) => <CourseCard key={course.id} course={course} />)
+          ) : (
+            <EmptyState
+              className="col-span-full"
+              icon={<BookOpen className="h-5 w-5" />}
+              title="No courses yet"
+              description="Courses will appear here as soon as creators publish their first classrooms."
+              action={
+                <a href="/explore" className={buttonClass("secondary", "md")}>
+                  Explore The Scenes <ArrowRight className="h-4 w-4" />
+                </a>
+              }
+            />
+          )}
         </div>
       </section>
 

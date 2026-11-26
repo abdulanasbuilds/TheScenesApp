@@ -1,8 +1,7 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import {
   AlertTriangle,
-  ArrowUpRight,
   CalendarDays,
   CalendarPlus,
   Check,
@@ -42,9 +41,8 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
-  buttonClass,
 } from "@/components/ui";
-import { events, getCreator, members } from "@/data/seed";
+import { members } from "@/data/seed";
 import type { EventItem } from "@/data/types";
 import { formatCompact, formatDate, formatTime } from "@/lib/utils";
 import { useToast } from "@/store/app-store";
@@ -57,9 +55,8 @@ export const Route = createFileRoute("/dashboard/events")({
 type ManagedStatus = "scheduled" | "draft" | "past" | "cancelled";
 type ManagedEvent = EventItem & { status: ManagedStatus };
 
-const initialEvents: ManagedEvent[] = events
-  .filter((event) => event.communitySlug === "ai-builders-guild")
-  .map((event) => ({ ...event, status: event.replay ? "past" : "scheduled" }));
+/** No events are loaded from fixtures: the calendar starts genuinely empty. */
+const initialEvents: ManagedEvent[] = [];
 
 const statusTone = {
   scheduled: "green",
@@ -83,7 +80,6 @@ const kindIcons: Record<EventItem["kind"], typeof Video> = {
 };
 
 function EventManagementPage() {
-  const router = useRouter();
   const { toast } = useToast();
   const [eventList, setEventList] = useState<ManagedEvent[]>(initialEvents);
   const [query, setQuery] = useState("");
@@ -150,11 +146,11 @@ function EventManagementPage() {
     if (event.id.startsWith("ev-local-")) {
       toast(
         "Local drafts have no public page",
-        "Only fixture events resolve on the member calendar.",
+        "Events created in this preview do not resolve as public event pages.",
       );
       return;
     }
-    const url = `${window.location.origin}/c/${event.communitySlug}/events/${event.slug}`;
+    const url = `${window.location.origin}/events/${event.slug}`;
     try {
       await navigator.clipboard.writeText(url);
       toast("Event link copied", url);
@@ -189,7 +185,7 @@ function EventManagementPage() {
                 <p className="text-[11px] font-bold tracking-[0.14em] text-indigo-700 uppercase">
                   Live and scheduled
                 </p>
-                <Badge tone="amber">Fixture calendar · no reminders</Badge>
+                <Badge tone="amber">Calendar not connected</Badge>
               </div>
               <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-950">
                 Events
@@ -208,11 +204,7 @@ function EventManagementPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat
-            label="Scheduled"
-            value={counts.scheduled}
-            hint="Fixture events plus local changes"
-          />
+          <Stat label="Scheduled" value={counts.scheduled} hint="Scheduled in this preview" />
           <Stat
             label="Registered"
             value={formatCompact(registered)}
@@ -252,9 +244,6 @@ function EventManagementPage() {
             <option value="office-hours">Office hours</option>
             <option value="meetup">Meetup</option>
           </Select>
-          <a href="/c/ai-builders-guild/calendar" className={buttonClass("secondary", "md")}>
-            Member calendar <ArrowUpRight className="h-4 w-4" />
-          </a>
         </div>
 
         <div className="mt-5">
@@ -295,7 +284,6 @@ function EventManagementPage() {
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {visible.map((event) => {
-                          const host = getCreator(event.hostHandle);
                           const KindIcon = kindIcons[event.kind];
                           const local = event.id.startsWith("ev-local-");
                           const fillPercent = event.capacity
@@ -332,9 +320,9 @@ function EventManagementPage() {
                               </td>
                               <td className="px-4 py-3">
                                 <p className="text-sm font-semibold text-slate-900">
-                                  {host?.name ?? "Host"}
+                                  {event.hostHandle ? `@${event.hostHandle}` : "No host assigned"}
                                 </p>
-                                <p className="text-xs text-slate-500">@{event.hostHandle}</p>
+                                <p className="text-xs text-slate-500">Local preview event</p>
                               </td>
                               <td className="w-40 px-4 py-3">
                                 <p className="text-xs font-semibold tabular-nums text-slate-700">
@@ -365,17 +353,6 @@ function EventManagementPage() {
                                     </button>
                                   </DropdownTrigger>
                                   <DropdownContent>
-                                    {!local ? (
-                                      <DropdownItem
-                                        onSelect={() => {
-                                          void router.navigate({
-                                            href: `/c/${event.communitySlug}/events/${event.id}`,
-                                          });
-                                        }}
-                                      >
-                                        <ArrowUpRight className="h-4 w-4" /> View member page
-                                      </DropdownItem>
-                                    ) : null}
                                     {event.status !== "past" ? (
                                       <DropdownItem onSelect={() => setEditing(event)}>
                                         <Pencil className="h-4 w-4" /> Edit event
@@ -634,13 +611,13 @@ function EventFormModal({
     onSave({
       id: event?.id ?? `ev-local-${stamp}`,
       slug: event?.slug ?? `local-event-${stamp}`,
-      communitySlug: "ai-builders-guild",
+      communitySlug: "",
       title: title.trim(),
       description: description.trim(),
       start: startDate.toISOString(),
       end: endDate.toISOString(),
       timezone: event?.timezone ?? "GMT",
-      hostHandle: event?.hostHandle ?? "nanaadjei",
+      hostHandle: event?.hostHandle ?? "",
       location: location.trim(),
       kind,
       attendees: event?.attendees ?? 0,
@@ -805,16 +782,15 @@ function AttendeesModal({
     if (!event) return [];
     const normalized = query.trim().toLowerCase();
     return members
-      .filter((member) => member.communities.includes(event.communitySlug))
       .filter(
         (member) =>
           !normalized ||
           `${member.name} ${member.handle} ${member.location}`.toLowerCase().includes(normalized),
       )
       .slice(0, 8)
-      .map((member, index) => ({
+      .map((member) => ({
         ...member,
-        rsvp: index < 5 ? "Going" : index < 7 ? "Waitlist" : "Invited",
+        rsvp: "Going",
       }));
   }, [event, query]);
 
@@ -834,7 +810,7 @@ function AttendeesModal({
     anchor.download = `${event.slug}-attendees.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
-    toast("CSV exported", "Generated in the browser from the fixture roster.");
+    toast("CSV exported", "Generated in the browser from the current roster.");
   };
 
   return (
@@ -842,7 +818,7 @@ function AttendeesModal({
       open={Boolean(event)}
       onOpenChange={(open) => (!open ? onClose() : undefined)}
       title={event ? `Attendees — ${event.title}` : "Attendees"}
-      description="A sample roster. Registration, ticketing and check-in are coming soon."
+      description="Registration, ticketing and check-in are not connected yet."
       size="lg"
       footer={
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
@@ -893,7 +869,7 @@ function AttendeesModal({
               id="attendee-search"
               value={query}
               onChange={(inputEvent) => onQueryChange(inputEvent.target.value)}
-              placeholder="Search the visible fixture roster"
+              placeholder="Search attendees"
               className="pl-9"
             />
           </div>
@@ -953,8 +929,8 @@ function AttendeesModal({
               title="No attendees in this view"
               description={
                 query
-                  ? "No fixture member matches that search."
-                  : "Drafts have no registrations. Scheduled fixture events show a sample roster."
+                  ? "No member matches that search."
+                  : "Registration is not connected yet, so there are no attendees to show."
               }
             />
           )}

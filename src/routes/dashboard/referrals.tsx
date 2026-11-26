@@ -17,17 +17,16 @@ import {
 } from "lucide-react";
 import { CreatorShell } from "@/components/layout/creator-shell";
 import {
-  Avatar,
   Badge,
   Button,
   Card,
+  EmptyState,
   Field,
   Input,
   Select,
   Stat,
   buttonClass,
 } from "@/components/ui";
-import { members } from "@/data/seed";
 import { useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/dashboard/referrals")({
@@ -54,20 +53,6 @@ const rewardTiers = [
   },
 ];
 
-const referredMembers = [
-  { name: "Kofi Mensah", joined: "2 days ago", status: "Onboarding" },
-  { name: "Sara Owusu", joined: "1 week ago", status: "Active" },
-  { name: "Lindi Ndlovu", joined: "2 weeks ago", status: "Active" },
-  { name: "Tobi Adeyemi", joined: "3 weeks ago", status: "Qualified" },
-];
-
-const affiliates = [
-  { name: "Nana Adjei", code: "NANA10", clicks: 412, signups: 38, conversions: 21, earned: 189.0 },
-  { name: "Ama Boateng", code: "AMA25", clicks: 268, signups: 24, conversions: 11, earned: 99.0 },
-  { name: "Kofi Asante", code: "KOFI33", clicks: 143, signups: 12, conversions: 5, earned: 45.0 },
-  { name: "Sara Nwosu", code: "SARA12", clicks: 88, signups: 7, conversions: 3, earned: 27.0 },
-];
-
 type Invite = {
   id: string;
   label: string;
@@ -78,30 +63,11 @@ type Invite = {
   limit: number;
 };
 
-const seedInvites: Invite[] = [
-  {
-    id: "inv-1",
-    label: "Founding members",
-    access: "VIP",
-    trialDays: 14,
-    coupon: "FOUNDER20",
-    uses: 9,
-    limit: 25,
-  },
-  {
-    id: "inv-2",
-    label: "Newsletter readers",
-    access: "Member",
-    trialDays: 7,
-    coupon: "NEWS7",
-    uses: 31,
-    limit: 100,
-  },
-];
+/** Invitations start empty. A creator creates them; nothing is fabricated. */
+const seedInvites: Invite[] = [];
 
 function ReferralsPage() {
   const { toast } = useToast();
-  const referralLink = "https://thescenes.example/join?ref=nanaadjei";
   const [commission, setCommission] = useState(30);
   const [invites, setInvites] = useState<Invite[]>(seedInvites);
   const [inviteDraft, setInviteDraft] = useState({
@@ -138,15 +104,6 @@ function ReferralsPage() {
     );
   };
 
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(referralLink);
-      toast("Referral link copied", referralLink);
-    } catch {
-      toast("Copy unavailable", `Copy this address manually: ${referralLink}`);
-    }
-  };
-
   return (
     <CreatorShell active="referrals">
       <section className="border-b border-indigo-800 bg-indigo-700 text-white">
@@ -155,7 +112,7 @@ function ReferralsPage() {
             <div>
               <div className="flex items-center gap-2">
                 <Badge className="bg-white/12 text-indigo-50 ring-1 ring-white/20">
-                  Demo workspace
+                  Not connected
                 </Badge>
                 <span className="text-xs text-indigo-200">Affiliate payouts coming soon</span>
               </div>
@@ -183,10 +140,10 @@ function ReferralsPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat label="Invited" value="18" hint="Fixture referral links shared" />
-          <Stat label="Joined" value="9" hint="Members who accepted" />
-          <Stat label="Qualified" value="5" hint="Completed onboarding · 30 days active" />
-          <Stat label="Entitlements earned" value="2" hint="Publishing slot · analytics" />
+          <Stat label="Invited" value="0" hint="No referral links shared yet" />
+          <Stat label="Joined" value="0" hint="No members have accepted yet" />
+          <Stat label="Qualified" value="0" hint="Completed onboarding · 30 days active" />
+          <Stat label="Entitlements earned" value="0" hint="Publishing slot · analytics" />
         </div>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(300px,0.7fr)]">
@@ -199,16 +156,13 @@ function ReferralsPage() {
                 </h2>
               </div>
               <p className="mt-1 text-xs text-slate-500">
-                Membership is recorded in this preview. External tracking is coming soon.
+                Referral tracking is not connected yet, so no link exists until your community is
+                published.
               </p>
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                <code className="min-w-0 flex-1 truncate rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-700">
-                  {referralLink}
-                </code>
-                <Button variant="secondary" onClick={() => void copyLink()}>
-                  <Copy className="h-4 w-4" /> Copy link
-                </Button>
-              </div>
+              <p className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+                A referral link is generated from your published community. Nothing is fabricated in
+                the meantime.
+              </p>
               <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
                 <ShieldCheck className="mr-1 inline h-4 w-4 align-[-2px]" />
                 Referral rewards are entitlements, not guaranteed provider capacity. Storage and
@@ -223,35 +177,18 @@ function ReferralsPage() {
                   <h2 className="font-display text-lg font-extrabold text-slate-900">
                     Referred members
                   </h2>
-                  <p className="text-xs text-slate-500">Sample activity for this preview</p>
+                  <p className="text-xs text-slate-500">
+                    Referred members appear after referral tracking is connected.
+                  </p>
                 </div>
                 <Users className="h-5 w-5 text-slate-400" />
               </div>
-              <div className="divide-y divide-slate-100">
-                {referredMembers.map((member, index) => (
-                  <div
-                    key={member.name}
-                    className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-5 py-3"
-                  >
-                    <Avatar name={member.name} size={34} online={index < 2} />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-slate-900">{member.name}</p>
-                      <p className="text-xs text-slate-500">Joined {member.joined}</p>
-                    </div>
-                    <Badge
-                      tone={
-                        member.status === "Qualified"
-                          ? "green"
-                          : member.status === "Active"
-                            ? "indigo"
-                            : "outline"
-                      }
-                    >
-                      {member.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+              <EmptyState
+                className="rounded-none border-0"
+                icon={<Users className="h-5 w-5" />}
+                title="No referred members yet"
+                description="When someone joins through your referral link, they show up here with their status."
+              />
             </Card>
 
             <Card className="p-5">
@@ -309,62 +246,17 @@ function ReferralsPage() {
                     Affiliate performance
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Sample tracking · live attribution and payouts are coming soon
+                    Live attribution and payouts are not connected yet
                   </p>
                 </div>
                 <TrendingUp className="h-5 w-5 text-slate-400" />
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[560px] text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100 text-[11px] tracking-wide text-slate-500 uppercase">
-                      <th scope="col" className="px-5 py-2.5 font-bold">
-                        Affiliate
-                      </th>
-                      <th scope="col" className="px-3 py-2.5 font-bold">
-                        Code
-                      </th>
-                      <th scope="col" className="px-3 py-2.5 text-right font-bold">
-                        Clicks
-                      </th>
-                      <th scope="col" className="px-3 py-2.5 text-right font-bold">
-                        Signups
-                      </th>
-                      <th scope="col" className="px-3 py-2.5 text-right font-bold">
-                        Paid
-                      </th>
-                      <th scope="col" className="px-5 py-2.5 text-right font-bold">
-                        Earned
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {affiliates.map((affiliate) => (
-                      <tr key={affiliate.code}>
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-2.5">
-                            <Avatar name={affiliate.name} size={30} />
-                            <span className="font-semibold text-slate-900">{affiliate.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-3 py-3">
-                          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-700">
-                            {affiliate.code}
-                          </code>
-                        </td>
-                        <td className="px-3 py-3 text-right text-slate-600">{affiliate.clicks}</td>
-                        <td className="px-3 py-3 text-right text-slate-600">{affiliate.signups}</td>
-                        <td className="px-3 py-3 text-right text-slate-600">
-                          {affiliate.conversions}
-                        </td>
-                        <td className="px-5 py-3 text-right font-bold text-slate-900">
-                          ${affiliate.earned.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <EmptyState
+                className="rounded-none border-0"
+                icon={<TrendingUp className="h-5 w-5" />}
+                title="No affiliate activity yet"
+                description="Clicks, signups, paid members and earnings appear after affiliate tracking is connected."
+              />
             </Card>
 
             <Card className="p-5">
@@ -409,7 +301,7 @@ function ReferralsPage() {
                       variant="secondary"
                       size="sm"
                       onClick={async () => {
-                        const link = `https://thescenes.example/join?invite=${invite.id}`;
+                        const link = `${window.location.origin}/join?invite=${invite.id}`;
                         try {
                           await navigator.clipboard.writeText(link);
                           toast("Invitation link copied", link);
@@ -532,10 +424,10 @@ function ReferralsPage() {
                 your newsletter, at the end of a build log or after a live session.
               </p>
               <a
-                href="/c/ai-builders-guild/posts/new"
+                href="/dashboard/community"
                 className={buttonClass("primary", "md", "mt-3 w-full")}
               >
-                Draft an invite post <ArrowRight className="h-4 w-4" />
+                Open community settings <ArrowRight className="h-4 w-4" />
               </a>
             </Card>
 
@@ -556,7 +448,7 @@ function ReferralsPage() {
               <ul className="mt-3 space-y-1.5 text-xs leading-5 text-slate-600">
                 <li>· Payout accounts will connect to a payment provider.</li>
                 <li>· Commission, tax and currency rules will be handled automatically.</li>
-                <li>· Balances shown here are samples, not real money.</li>
+                <li>· Balances stay at zero until a payment provider is connected.</li>
               </ul>
               <Button variant="secondary" className="mt-3 w-full" disabled>
                 Payouts coming soon
@@ -566,7 +458,7 @@ function ReferralsPage() {
             <Card className="p-5">
               <h2 className="text-sm font-bold text-slate-900">Members in the room</h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                {members.length} members in this preview. Live referral attribution is coming soon.
+                No members yet. Live referral attribution is coming soon.
               </p>
             </Card>
           </aside>

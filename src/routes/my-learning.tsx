@@ -297,18 +297,28 @@ function MyLearningPage() {
               <EmptyState
                 className="mt-4"
                 icon={<BookOpen className="h-5 w-5" />}
-                title="No courses match this view"
-                description="Try another filter or clear the search. Your enrolled courses stay here."
+                title={enrolled.length ? "No courses match this view" : "No courses yet"}
+                description={
+                  enrolled.length
+                    ? "Try another filter or clear the search. Your enrolled courses stay here."
+                    : "You have not enrolled in a course yet. Explore the catalogue to find a classroom."
+                }
                 action={
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setFilter("all");
-                      setQuery("");
-                    }}
-                  >
-                    Reset filters
-                  </Button>
+                  enrolled.length ? (
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setFilter("all");
+                        setQuery("");
+                      }}
+                    >
+                      Reset filters
+                    </Button>
+                  ) : (
+                    <a href="/explore" className={buttonClass("primary", "md")}>
+                      Explore courses <ArrowRight className="h-4 w-4" />
+                    </a>
+                  )
                 }
               />
             )}
@@ -417,10 +427,10 @@ function MyLearningPage() {
                 description="Open a community calendar and confirm a session to see it here."
                 action={
                   <a
-                    href={`/c/${state.joined[0] ?? "ai-builders-guild"}/calendar`}
+                    href={state.joined[0] ? `/c/${state.joined[0]}/calendar` : "/explore"}
                     className={buttonClass("primary", "md")}
                   >
-                    Open calendar
+                    {state.joined[0] ? "Open calendar" : "Find a scene"}
                   </a>
                 }
               />
@@ -444,17 +454,17 @@ function MyLearningPage() {
             </div>
           </div>
           <a
-            href={`/c/${state.joined[0] ?? "ai-builders-guild"}`}
+            href={state.joined[0] ? `/c/${state.joined[0]}` : "/explore"}
             className={buttonClass("secondary", "md")}
           >
-            Open your community
+            {state.joined[0] ? "Open your community" : "Find a community"}
           </a>
         </Card>
 
         <p className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[11px] text-slate-600">
           <GraduationCap className="h-3.5 w-3.5" />
           {formatCompact(communities.length)} communities · {formatCompact(courses.length)} courses
-          in the sample catalogue
+          in the catalogue
         </p>
       </div>
     </MemberShell>

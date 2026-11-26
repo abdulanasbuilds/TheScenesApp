@@ -70,10 +70,10 @@ export function MemberShell({ active, children }: { active: MemberSection; child
               ) : null}
             </a>
             <a
-              href={`/c/ai-builders-guild/members/${currentMember?.id}`}
-              aria-label={`${initials(currentMember?.name ?? "Ama Boateng")} — open your profile`}
+              href="/settings"
+              aria-label={`${initials(currentMember?.name ?? "Preview member")} — open your profile`}
             >
-              <Avatar name={currentMember?.name ?? "Ama Boateng"} size={34} online />
+              <Avatar name={currentMember?.name ?? "Preview member"} size={34} online />
             </a>
           </div>
         </div>
@@ -111,19 +111,25 @@ export function MemberShell({ active, children }: { active: MemberSection; child
               Your communities
             </p>
             <div className="mt-2 space-y-1">
-              {state.joined.slice(0, 4).map((slug) => (
-                <a
-                  key={slug}
-                  href={`/c/${slug}`}
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                >
-                  <span className="h-2.5 w-2.5 rounded-sm bg-indigo-600" />
-                  {slug
-                    .split("-")
-                    .map((part) => part[0]?.toUpperCase() + part.slice(1))
-                    .join(" ")}
-                </a>
-              ))}
+              {state.joined.length ? (
+                state.joined.slice(0, 4).map((slug) => (
+                  <a
+                    key={slug}
+                    href={`/c/${slug}`}
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  >
+                    <span className="h-2.5 w-2.5 rounded-sm bg-indigo-600" />
+                    {slug
+                      .split("-")
+                      .map((part) => part[0]?.toUpperCase() + part.slice(1))
+                      .join(" ")}
+                  </a>
+                ))
+              ) : (
+                <p className="px-3 py-2 text-xs leading-5 text-slate-500">
+                  You have not joined a scene yet.
+                </p>
+              )}
             </div>
           </div>
           <div className="mt-auto rounded-xl border border-slate-200 bg-slate-50 p-3">

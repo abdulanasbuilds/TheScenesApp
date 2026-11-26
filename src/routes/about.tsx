@@ -87,8 +87,6 @@ const surfaces = [
 ];
 
 function AboutPage() {
-  const totalMembers = communities.reduce((sum, community) => sum + community.members, 0);
-
   return (
     <PublicShell active="/about">
       <section className="border-b border-slate-200 bg-white">
@@ -138,7 +136,7 @@ function AboutPage() {
                 One account, four surfaces
               </p>
               <p className="mt-1 text-sm font-semibold text-slate-900">
-                {formatCompact(totalMembers)} members across the preview catalogue
+                No live accounts or catalogue records yet
               </p>
             </div>
             <div className="divide-y divide-slate-200">
@@ -335,8 +333,9 @@ function AboutPage() {
               </h2>
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              The current phase is a complete frontend with deterministic sample data. It is meant
-              to be used, tested and critiqued before any production service is connected.
+              The current phase is a complete frontend. The catalogue is intentionally left empty
+              until real records exist, so you can see the true empty states before any production
+              service is connected.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {[

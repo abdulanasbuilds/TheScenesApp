@@ -234,7 +234,8 @@ function PricingPage() {
           Build the audience before the invoice.
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600">
-          Start a free preview account and explore the complete creator workspace with sample data.
+          Start a free preview account and explore the complete creator workspace. It starts empty
+          so you can see the real setup flow.
         </p>
         <a href="/register?role=creator" className={buttonClass("primary", "lg", "mt-6")}>
           Create preview account

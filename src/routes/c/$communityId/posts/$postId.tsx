@@ -46,7 +46,7 @@ function PostDetailPage() {
   const { community, postId } = Route.useLoaderData();
   const router = useRouter();
   const post = usePosts().find((item) => item.id === postId);
-  const { state, toggleLike, addComment } = useApp();
+  const { state, toggleLike, addComment, currentMember } = useApp();
   const { toast } = useToast();
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
@@ -253,7 +253,7 @@ function PostDetailPage() {
           <Card className="p-4 sm:p-5">
             <form onSubmit={submitComment} noValidate>
               <div className="flex gap-3">
-                <Avatar name="Ama Boateng" size={38} online />
+                <Avatar name={currentMember?.name ?? "You"} size={38} online />
                 <div className="min-w-0 flex-1">
                   <label htmlFor="new-comment" className="sr-only">
                     Add a comment

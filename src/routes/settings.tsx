@@ -77,27 +77,17 @@ function SettingsPage() {
   const [tab, setTab] = useState("profile");
 
   const [profile, setProfile] = useState({
-    name: currentMember?.name ?? (dataMode === "fixtures" ? "Ama Boateng" : ""),
-    handle: currentMember?.handle ?? (dataMode === "fixtures" ? "amaboateng" : ""),
-    headline:
-      currentMember?.headline ??
-      (dataMode === "fixtures"
-        ? "Product designer learning to ship AI features without breaking the craft."
-        : ""),
-    location: currentMember?.location ?? (dataMode === "fixtures" ? "Accra, Ghana" : ""),
-    bio:
-      currentMember?.bio ??
-      (dataMode === "fixtures"
-        ? "Product designer in Accra. I joined The Scenes to learn how to ship AI features without breaking the craft."
-        : ""),
-    expertise: dataMode === "fixtures" ? "Product design, AI prototyping, Design systems" : "",
+    name: currentMember?.name ?? "",
+    handle: currentMember?.handle ?? "",
+    headline: currentMember?.headline ?? "",
+    location: currentMember?.location ?? "",
+    bio: currentMember?.bio ?? "",
+    expertise: "",
   });
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const [profileSaved, setProfileSaved] = useState(false);
 
-  const [email, setEmail] = useState(
-    user?.email ?? (dataMode === "fixtures" ? "ama@thescenes.example" : ""),
-  );
+  const [email, setEmail] = useState(user?.email ?? "");
   const [emailError, setEmailError] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -217,14 +207,6 @@ function SettingsPage() {
                 a production account.
               </p>
             </div>
-            {currentMember ? (
-              <a
-                href={`/c/ai-builders-guild/members/${currentMember.id}`}
-                className={buttonClass("secondary", "md")}
-              >
-                View public profile
-              </a>
-            ) : null}
           </div>
         </div>
       </section>
@@ -735,7 +717,7 @@ function SettingsPage() {
                 <div className="flex justify-between">
                   <dt className="text-slate-500">Joined</dt>
                   <dd className="font-semibold text-slate-900">
-                    {currentMember ? formatDate(currentMember.joined) : "Preview member"}
+                    {currentMember?.joined ? formatDate(currentMember.joined) : "Not recorded"}
                   </dd>
                 </div>
               </dl>

@@ -6,9 +6,9 @@ import { canonicalRoutes } from "./routes";
 const screenshotRoutes = new Map<string, string>([
   ["/", "landing"],
   ["/explore", "explore"],
-  ["/c/ai-builders-guild", "community-feed"],
-  ["/c/ai-builders-guild/classroom/ship-your-first-ai-agent/les-agents-1", "lesson-viewer"],
+  ["/categories/ai-automation", "category-detail"],
   ["/dashboard/creator", "creator-dashboard"],
+  ["/dashboard/community", "community-settings"],
   ["/marketplace", "marketplace"],
 ]);
 

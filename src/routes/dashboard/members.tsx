@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import {
   Check,
@@ -51,11 +51,8 @@ const roleTone = {
 } as const;
 
 function MemberManagementPage() {
-  const router = useRouter();
   const { toast } = useToast();
-  const [directory, setDirectory] = useState<Member[]>(() =>
-    members.filter((member) => member.communities.includes("ai-builders-guild")),
-  );
+  const [directory, setDirectory] = useState<Member[]>(() => members);
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
@@ -130,7 +127,7 @@ function MemberManagementPage() {
       points: 0,
       level: 1,
       status: "invited",
-      communities: ["ai-builders-guild"],
+      communities: [],
       badges: [],
       online: false,
     };
@@ -152,7 +149,7 @@ function MemberManagementPage() {
                 <p className="text-[11px] font-bold tracking-[0.14em] text-indigo-700 uppercase">
                   People and moderation
                 </p>
-                <Badge tone="outline">AI Builders Guild</Badge>
+                <Badge tone="outline">No community yet</Badge>
               </div>
               <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-950">
                 Members
@@ -171,9 +168,13 @@ function MemberManagementPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat label="Members in view" value={directory.length} hint="Sample community roster" />
+          <Stat
+            label="Members in view"
+            value={directory.length}
+            hint="No community is published yet"
+          />
           <Stat label="Active" value={activeCount} hint={`${invitedCount} invited`} />
-          <Stat label="Online now" value={onlineCount} hint="Sample presence" />
+          <Stat label="Online now" value={onlineCount} hint="Live presence is not connected" />
           <Stat
             label="Admins + moderators"
             value={teamCount}
@@ -302,17 +303,6 @@ function MemberManagementPage() {
                             </button>
                           </DropdownTrigger>
                           <DropdownContent>
-                            {member.status !== "invited" ? (
-                              <DropdownItem
-                                onSelect={() => {
-                                  void router.navigate({
-                                    href: `/c/ai-builders-guild/members/${member.id}`,
-                                  });
-                                }}
-                              >
-                                <Users className="h-4 w-4" /> View profile
-                              </DropdownItem>
-                            ) : null}
                             <DropdownItem onSelect={() => updateRole(member.id, "Moderator")}>
                               <Shield className="h-4 w-4" /> Make moderator
                             </DropdownItem>
