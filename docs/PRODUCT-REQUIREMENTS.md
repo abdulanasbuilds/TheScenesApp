@@ -365,7 +365,7 @@ Requirements originate from:
 
 | ID          | Requirement                  | Source | Classification | Phase | Notes                                     |
 | ----------- | ---------------------------- | ------ | -------------- | ----- | ----------------------------------------- |
-| TS-FEED-001 | WhatsApp feedback channel    | S1     | CORE LATER     | 4     | Direct founder chat; internal/operational, not hard dependency |
+| TS-FEED-001 | GitHub Issues feedback channel    | S1     | CORE LATER     | 4     | Feedback creates an Issue in a private repository; internal/operational, not hard dependency |
 | TS-FEED-002 | Replaceable support channels | S2     | CORE LATER     | 4     | Architecture must allow alternatives      |
 
 ## TS-MOBILE: Mobile & PWA

@@ -80,17 +80,18 @@ public; Row Level Security is what protects data.
 If `RATE_LIMIT_DRIVER=upstash` is set but any value is missing or invalid, the limiter reports
 `misconfigured` (it does not silently fall back to per-instance memory in a hosted deployment).
 
-### Feedback (P4-S4 / ADR-048) — optional direct founder chat
+### Feedback (P4-S4 / ADR-049) — optional GitHub Issue channel
 
 | Name | Kind | Notes |
 |---|---|---|
-| `FEEDBACK_PROVIDER` | Variable | `whatsapp` enables the direct chat; default `memory` |
-| `WHATSAPP_FEEDBACK_NUMBER` | Variable | Full international number, for example `+233201234567`; a public contact, not a secret |
+| `FEEDBACK_PROVIDER` | Variable | `github` creates Issues; `memory` keeps a local preview inbox (default; reported `disabled` in hosted mode) |
+| `GITHUB_FEEDBACK_REPO` | Variable | Repository as `owner/name`, for example `thescenes-app/thescenes-feedback` |
+| `GITHUB_FEEDBACK_TOKEN` | Secret | Fine-grained token scoped to the feedback repository with Issues read/write |
+| `GITHUB_FEEDBACK_API_BASE` | Variable | Optional; defaults to `https://api.github.com` |
 
-An incomplete WhatsApp configuration fails closed and is reported `misconfigured`; feedback submissions
-return the safe `UNAVAILABLE` contract instead of silently going nowhere. The `whatsapp` provider
-returns a prepared `wa.me` link (`handoff`), so the app never claims delivery before the sender presses
-Send. Setup: `docs/WHATSAPP-FEEDBACK-SETUP.md`.
+A complete GitHub configuration reports `ready`; an incomplete one reports `misconfigured` and
+submissions fail closed with `UNAVAILABLE` instead of silently going nowhere. Success is claimed only
+after GitHub confirms an Issue number. Setup: `docs/GITHUB-FEEDBACK-SETUP.md`.
 
 ### Account email (P4-S1) — configured in Supabase, not here
 
@@ -124,8 +125,8 @@ Adding these variables alone will not activate the feature. Do not set them expe
    - the browser can install the app (or shows Add to Home Screen on iOS);
    - **Settings → Account → Connected services** reports Supabase `Ready`, rate limiting `Ready` when
      Upstash is configured, and account email `Ready`;
-   - feedback opens the founder's WhatsApp chat with the structured note pre-filled, on mobile and
-     desktop (one founder-controlled test message).
+   - feedback creates a GitHub Issue (one founder-controlled test message) and reports `ready` in the
+      integration report;
 5. Record the run as evidence under `docs/evidence/phase-4/`.
 
 If a connected mode is misconfigured, the root renders a **Configuration required** page listing the

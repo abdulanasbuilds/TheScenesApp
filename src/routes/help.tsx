@@ -18,7 +18,6 @@ import {
 import { PublicShell } from "@/components/layout/public-shell";
 import { Badge, Button, Card, Chip, EmptyState, buttonClass } from "@/components/ui";
 import { FeedbackForm } from "@/features/feedback/feedback-form";
-import { useApp } from "@/store/app-store";
 
 export const Route = createFileRoute("/help")({
   head: () => ({
@@ -198,7 +197,6 @@ const statusRows = [
 function HelpPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<FaqCategory>("All topics");
-  const { user } = useApp();
   const currentRoute = useRouterState({
     // `href` is the origin-less path (pathname + search + hash), which is exactly the safe internal
     // route the feedback schema accepts. `search` is an object and would stringify as "[object Object]".
@@ -420,27 +418,24 @@ function HelpPage() {
           </Card>
         </section>
 
-        <section className="mt-10" aria-labelledby="contact-heading">
+        <section id="feedback" className="mt-10 scroll-mt-24" aria-labelledby="feedback-heading">
           <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
             <Card className="p-5 sm:p-6">
               <div className="flex flex-wrap items-center gap-2">
                 <Mail className="h-4 w-4 text-indigo-700" />
                 <h2
-                  id="contact-heading"
+                  id="feedback-heading"
                   className="font-display text-xl font-extrabold text-slate-900"
                 >
-                  Talk to the founder
+                  Send feedback
                 </h2>
               </div>
               <p className="mt-1 text-sm leading-6 text-slate-600">
-                Chat with the founder directly on WhatsApp, or send a note from inside the app.
-                Either way, include only what you are comfortable sharing — never passwords or
-                private personal information.
+                Tell us what is working, what is broken or what you would like to see next. Include
+                only what you are comfortable sharing — never passwords, card numbers or private
+                personal information.
               </p>
-              <FeedbackForm
-                route={currentRoute}
-                viewer={user ? { id: user.id, name: user.name, email: user.email } : null}
-              />
+              <FeedbackForm route={currentRoute} />
             </Card>
 
             <div className="space-y-4">

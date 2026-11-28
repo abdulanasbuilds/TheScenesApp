@@ -198,7 +198,7 @@ export function FeatureTeaserModal({
   title,
   description,
   points,
-  requestHref = "/help#contact-heading",
+  requestHref = "/help#feedback",
   requestLabel = "Request early access",
 }: {
   open: boolean;

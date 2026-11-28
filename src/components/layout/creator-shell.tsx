@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   MessageSquareText,
+  Send,
   Settings,
   Store,
   Users,
@@ -136,6 +137,9 @@ export function CreatorShell({
                 >
                   <MessageSquareText className="h-4 w-4" /> View as member
                 </DropdownItem>
+                <DropdownItem onSelect={() => void router.navigate({ href: "/help#feedback" })}>
+                  <Send className="h-4 w-4" /> Send feedback
+                </DropdownItem>
                 <DropdownSeparator />
                 <DropdownItem
                   onSelect={() =>
@@ -231,6 +235,12 @@ function WorkspaceNav({ active }: { active: CreatorSection }) {
         })}
       </nav>
       <div className="mt-auto space-y-1 border-t border-slate-200 pt-3">
+        <a
+          href="/help#feedback"
+          className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+        >
+          <Send className="h-[18px] w-[18px]" /> Send feedback
+        </a>
         <a
           href="/dashboard/community#settings"
           className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-950"

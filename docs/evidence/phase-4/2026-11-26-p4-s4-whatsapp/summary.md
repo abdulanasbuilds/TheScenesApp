@@ -1,5 +1,7 @@
 # P4-S4 evidence — WhatsApp direct-chat feedback (code/local)
 
+**Status:** **Superseded by `2026-11-28-p4-s4-github-issues` (ADR-049).** WhatsApp handoff is removed; feedback now creates a GitHub Issue.
+
 **Date:** 2026-11-26
 **Slice:** P4-S4 — Replaceable feedback channel
 **Approval:** ADR-048 (code/local; remote actions NONE)

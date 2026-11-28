@@ -97,8 +97,8 @@ Standing instructions from the founder:
 - The founder creates provider accounts (Resend, Upstash, others) himself. Keep
   `.env.example`/`.env` placeholders exact so pasted credentials work immediately. Never read, print
   or receive secret values.
-- The feedback integration is a direct WhatsApp chat (`wa.me`) to the founder, not a bot, a channel
-  or a paid Business API integration (ADR-048).
+- The feedback integration creates a GitHub Issue in a private repository through the server-side GitHub
+  REST API (ADR-049). The token stays server-side; GitHub Issues is the founder's management interface.
 - After a GitHub push and a Cloudflare deployment, the founder tests himself. Present the exact
   deployment action before executing it; never claim his verification.
 - Summarize reviews, plans and blockers in chat, in plain English, instead of expecting the founder
@@ -271,7 +271,7 @@ Current direction:
 - Resend: important transactional email;
 - Redis-compatible service: rate limiting and short-lived coordination;
 - Bunny.net: conditional only if a later native video/live decision supersedes ADR-029;
-- WhatsApp: direct founder feedback/alerts through a zero-cost `wa.me` handoff;
+- GitHub Issues: feedback creates an Issue in a private repository through the server-side REST API (ADR-049);
 - payments: HOLD;
 - search: Postgres first, intelligent search later;
 - PWA/Web Push: installability and notifications with consent.

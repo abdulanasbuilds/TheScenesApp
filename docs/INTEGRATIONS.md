@@ -83,21 +83,34 @@ Use for:
 
 Never treat it as durable source of truth.
 
-## WhatsApp
+## GitHub Issues feedback
 
-**Code/local adapter implemented (P4-S4, ADR-048).** Feedback uses the standard
-`https://wa.me/<number>?text=...` deep link to the founder's own WhatsApp chat. This is deliberately
-the leanest, zero-cost path: no WhatsApp Business account, no Business Solution Provider (Twilio,
-MessageBird and similar), no webhook and no template approval. On a phone the link opens the WhatsApp
-app; on desktop it opens WhatsApp Web.
+**Code/local adapter implemented (P4-S4, ADR-049).** Feedback is an internal operational signal for
+the founder, not a durable product database. A submission is validated, rate-limited and turned into
+a GitHub Issue in a private repository (`thescenes-feedback`) through the official GitHub REST API.
+GitHub Issues is the founder's management interface: triage, label, assign and close Issues there.
+There is no feedback database, no Supabase feedback table and no separate owner dashboard.
 
 The implementation ships a `memory` provider (local preview, reported `disabled` in a hosted
-deployment) and a `whatsapp` provider selected by `FEEDBACK_PROVIDER` with
-`WHATSAPP_FEEDBACK_NUMBER`. The server returns a `handoff` receipt because nothing is delivered until
-the sender presses Send inside WhatsApp; the app never claims otherwise. An incomplete WhatsApp
-configuration is reported `misconfigured` and submissions fail closed with `UNAVAILABLE`; it never
-silently falls back to the memory inbox. The founder's number is a public feedback contact, not a
-secret. Setup: `docs/WHATSAPP-FEEDBACK-SETUP.md`.
+deployment) and a `github` provider selected by `FEEDBACK_PROVIDER=github`. GitHub needs two
+server-only variables:
+
+| Name | Kind | Notes |
+|---|---|---|
+| `GITHUB_FEEDBACK_REPO` | Variable | Repository as `owner/name`, for example `thescenes-app/thescenes-feedback` |
+| `GITHUB_FEEDBACK_TOKEN` | Secret | Fine-grained token scoped to the feedback repository with Issues read/write |
+| `GITHUB_FEEDBACK_API_BASE` | Variable | Optional; defaults to `https://api.github.com` |
+
+The server reports the feedback channel `ready` only when all required values are present, and
+`misconfigured` (fail-closed) when any is missing; it never silently falls back to the memory
+inbox. The token value is never logged, returned to the browser or written into an Issue.
+
+Each Issue carries a category, subject, description, platform area, the current internal route, a
+coarse role (member or guest), a pseudonymous user reference and an ISO timestamp. Categories map to
+GitHub labels and title prefixes, for example `[BUG] Course enrollment problem`.
+
+A duplicate-safe retry reuses an existing Issue identified by a hidden submission marker in its body,
+so a retry after a lost response does not create a second Issue. Setup: `docs/GITHUB-FEEDBACK-SETUP.md`.
 
 ## Bunny.net
 

@@ -761,8 +761,8 @@ Detail and open items: `docs/MONETIZATION-MODEL-SPEC.md`.
 
 ## ADR-048 — Feedback uses a direct WhatsApp chat
 
-Status: Accepted (26 November 2026). Supersedes ADR-046 item 4 (Telegram bot). The rest of ADR-046
-remains in force.
+Status: **Superseded by ADR-049 (26 November 2026).** Accepted (26 November 2026). Superseded ADR-046
+item 4 (Telegram bot). The rest of ADR-046 remains in force.
 
 The founder could not create the Telegram bot, and wants feedback routed to his own WhatsApp direct
 message: African-first, zero friction and no provider account. The Telegram feedback backend is
@@ -798,3 +798,57 @@ therefore replaced.
 
 Durable record: `.env.example`, `docs/WHATSAPP-FEEDBACK-SETUP.md`, `docs/INTEGRATIONS.md`,
 `docs/CLOUDFLARE-DEPLOYMENT.md`, `AGENTS.md`.
+
+## ADR-049 — Feedback creates a GitHub Issue in a private repository
+
+Status: Accepted (26 November 2026). Supersedes ADR-048 (WhatsApp direct chat) and the earlier Telegram
+direction. The rest of ADR-046 remains in force.
+
+The WhatsApp handoff made the founder the transport: nothing became a trackable record until he opened
+the chat, and there was no shared status, label or history. Feedback needs a real queue that the founder
+already knows how to run, without adding a database, an owner dashboard or a paid form service.
+
+### Decision
+
+1. **GitHub Issues is the management interface.** Every valid submission becomes one Issue in a private
+   repository (`thescenes-feedback`). The founder triages, labels, assigns and closes Issues in GitHub.
+   There is no feedback database, no Supabase table and no separate owner dashboard.
+2. **One server-side path.** The existing TanStack Start server function (running on the existing
+   Cloudflare Worker, Nitro `cloudflare-module` preset) calls the official GitHub REST API with the
+   runtime `fetch`. No new Worker, no `octokit` dependency and no duplicate infrastructure.
+3. **Credentials stay server-side.** `GITHUB_FEEDBACK_TOKEN` is a fine-grained token limited to the
+   feedback repository with Issues read/write. It is read from the merged runtime environment
+   (`process.env` overlaid by Cloudflare bindings), never exposed to the browser, never logged and never
+   written into an Issue. `GITHUB_FEEDBACK_REPO` names the repository as `owner/name`.
+4. **Capture is minimal.** Category, subject, description, platform area, the current internal route, a
+   coarse role (signed-in member or guest), a pseudonymous user reference and an ISO timestamp. No email,
+   password, card data or browser storage. The UI states what is sent and warns against sensitive data.
+5. **Categories and labels.** General feedback, Bug report, Feature request, Complaint, Payment problem,
+   Course problem, Marketplace problem, Events problem, Community problem. Each maps to one label
+   (`general-feedback`, `bug`, `feature-request`, `complaint`, `payment`, `course`, `marketplace`,
+   `events`, `community`) and one title prefix, for example `[BUG] Course enrollment problem`.
+6. **Honest delivery.** A submission is reported delivered only after GitHub answers HTTP 201 with an
+   Issue number. GitHub failures (401, 403, 404, 410, 429, 5xx, timeout, network) map to the existing
+   safe `UNAVAILABLE` contract; the note stays in the form and can be retried.
+7. **Duplicate-safe retry.** The browser generates one `submissionId` per composed note and reuses it on
+   retry. The server embeds a hidden `<!-- thescenes-submission:<id> -->` marker in the Issue body and
+   checks recent Issues for that marker before creating, so a retry after a lost response reuses the
+   existing Issue instead of creating a second one.
+8. **Abuse controls.** The existing `feedback` rate-limit policy (fail-closed) applies, the payload is
+   zod-validated and bounded, the internal route must be a same-origin path, and a hidden honeypot field
+   rejects obvious bots.
+9. **Out of scope:** paid form/automation services, a feedback database, a GitHub App, webhooks, public
+   Issues, and exposing repository or issue-management detail to users.
+
+### Consequences
+
+- The founder manages feedback with a tool he already uses; labels and search replace a bespoke inbox.
+- Delivery now depends on GitHub availability and the token's scope; failures are visible as an honest
+  retry instead of a fake success.
+- A misconfigured GitHub channel is reported `misconfigured` and fails closed; it never silently falls
+  back to the memory preview.
+- The repository should be **private** and the token **fine-grained** with the smallest scope that can
+  open Issues.
+
+Durable record: `.env.example`, `docs/GITHUB-FEEDBACK-SETUP.md`, `docs/INTEGRATIONS.md`,
+`docs/CLOUDFLARE-DEPLOYMENT.md`, `AGENTS.md`, `src/server/feedback/github-issues.server.ts`.
