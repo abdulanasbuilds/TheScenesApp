@@ -14,6 +14,7 @@ import { CommunityCard, CourseCard } from "@/components/domain/cards";
 import { PublicShell } from "@/components/layout/public-shell";
 import { Badge, Card, EmptyState, Eyebrow, SectionHeading, buttonClass } from "@/components/ui";
 import { categories, communities, courses, creators } from "@/data/seed";
+import { communityAccessLabel } from "@/lib/early-access";
 import { formatCompact } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -162,9 +163,7 @@ function Home() {
                       {formatCompact(community.members)}
                     </span>
                     <span className="text-right font-semibold text-slate-900">
-                      {community.pricing.type === "free"
-                        ? "Free"
-                        : `$${community.pricing.amount}/mo`}
+                      {communityAccessLabel(community.pricing, { compact: true })}
                     </span>
                   </a>
                 ))

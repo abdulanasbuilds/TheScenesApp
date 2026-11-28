@@ -184,9 +184,11 @@ function MembersDirectoryPage() {
           </div>
         ) : (
           <EmptyState
+            type="filtered"
             icon={<Users className="h-5 w-5" />}
             title="No members match"
             description="Try a different name, role or activity filter."
+            helperText="Clearing the filters shows every member again."
           />
         )}
       </div>

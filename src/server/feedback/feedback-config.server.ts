@@ -3,52 +3,48 @@ import type {
   FeedbackProviderKind,
   FeedbackProviderState,
 } from "../../features/feedback/contracts";
+import { normalizeWhatsAppNumber } from "../../features/feedback/whatsapp";
 import { readRuntimeEnv, type RuntimeEnvSource } from "../runtime-env.server";
 
 /**
- * Server-only feedback configuration (P4-S4).
+ * Server-only feedback configuration (P4-S4 / ADR-048).
  *
  * `FEEDBACK_PROVIDER` selects the implementation:
  * - `memory` (default) keeps a deterministic, bounded in-process inbox for fixture/local mode and
  *   tests. It never claims a human received the note;
- * - `telegram` posts to the founder-approved internal Telegram chat.
+ * - `whatsapp` builds a direct `wa.me` handoff to the founder's WhatsApp number. No business API,
+ *   webhook or paid provider is involved.
  *
- * A selected-but-incomplete Telegram configuration is never silently downgraded to memory. It is
+ * A selected-but-incomplete WhatsApp configuration is never silently downgraded to memory. It is
  * reported as `misconfigured`, and submissions fail with the safe `UNAVAILABLE` contract. Problems
  * list variable names only; values are never read back out of this module.
  */
 
 export type FeedbackConfig =
   | Readonly<{ provider: "memory" }>
-  | Readonly<{ provider: "telegram"; botToken: string; chatId: string }>
+  /** `number` is normalized to digits only (no `+`), ready for `wa.me`. */
+  | Readonly<{ provider: "whatsapp"; number: string }>
   | Readonly<{ provider: "misconfigured"; problems: readonly string[] }>;
-
-/** Telegram bot tokens look like `123456789:AA...` (35+ characters after the colon). */
-const TELEGRAM_BOT_TOKEN = /^\d{6,12}:[A-Za-z0-9_-]{30,64}$/;
-/** Numeric chat IDs (possibly negative for groups/channels) or an `@channelusername`. */
-const TELEGRAM_CHAT_ID = /^(?:-?\d{5,20}|@[A-Za-z0-9_]{5,32})$/;
 
 export function readFeedbackConfig(source: RuntimeEnvSource = readRuntimeEnv()): FeedbackConfig {
   const provider = (source.FEEDBACK_PROVIDER ?? "memory").trim().toLowerCase();
 
   if (provider === "memory") return Object.freeze({ provider: "memory" as const });
 
-  if (provider !== "telegram") {
+  if (provider !== "whatsapp") {
+    // Includes the retired `telegram` value: fail closed instead of silently switching channels.
     return Object.freeze({ provider: "misconfigured" as const, problems: ["FEEDBACK_PROVIDER"] });
   }
 
-  const botToken = (source.TELEGRAM_BOT_TOKEN ?? "").trim();
-  const chatId = (source.TELEGRAM_FEEDBACK_CHAT_ID ?? "").trim();
-  const problems: string[] = [];
-
-  if (!TELEGRAM_BOT_TOKEN.test(botToken)) problems.push("TELEGRAM_BOT_TOKEN");
-  if (!TELEGRAM_CHAT_ID.test(chatId)) problems.push("TELEGRAM_FEEDBACK_CHAT_ID");
-
-  if (problems.length > 0) {
-    return Object.freeze({ provider: "misconfigured" as const, problems: Object.freeze(problems) });
+  const number = normalizeWhatsAppNumber(source.WHATSAPP_FEEDBACK_NUMBER);
+  if (!number) {
+    return Object.freeze({
+      provider: "misconfigured" as const,
+      problems: ["WHATSAPP_FEEDBACK_NUMBER"],
+    });
   }
 
-  return Object.freeze({ provider: "telegram" as const, botToken, chatId });
+  return Object.freeze({ provider: "whatsapp" as const, number });
 }
 
 /**
@@ -61,8 +57,8 @@ export function describeFeedbackProvider(
   config: FeedbackConfig,
   dataMode: "fixtures" | "supabase-local" | "supabase-staging" | string = "fixtures",
 ): FeedbackProviderState {
-  if (config.provider === "telegram") {
-    return Object.freeze({ state: "ready" as const, provider: "telegram" as FeedbackProviderKind });
+  if (config.provider === "whatsapp") {
+    return Object.freeze({ state: "ready" as const, provider: "whatsapp" as FeedbackProviderKind });
   }
   if (config.provider === "memory") {
     if (dataMode === "supabase-staging") {
@@ -72,7 +68,7 @@ export function describeFeedbackProvider(
   }
   return Object.freeze({
     state: "misconfigured" as const,
-    provider: "telegram" as const,
+    provider: "whatsapp" as const,
     problems: config.problems,
   });
 }

@@ -1,11 +1,31 @@
 import { Outlet, createFileRoute, notFound, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
-import { Check, ChevronDown, Clock3, Lock, Play, Star, Users } from "lucide-react";
+import {
+  Award,
+  Check,
+  ChevronDown,
+  Clock3,
+  ListChecks,
+  Lock,
+  Play,
+  Star,
+  Users,
+} from "lucide-react";
 import { MediaCover } from "@/components/domain/media-upload";
-import { Avatar, Badge, Button, Card, CoverArt, Progress } from "@/components/ui";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  ComingSoonBadge,
+  CoverArt,
+  FeatureTeaserModal,
+  Progress,
+} from "@/components/ui";
 import { getCreator } from "@/data/seed";
 import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
-import { cn, formatCompact, formatMoney } from "@/lib/utils";
+import { EARLY_ACCESS, courseAccessLabel } from "@/lib/early-access";
+import { cn, formatCompact } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
 export const Route = createFileRoute("/c/$communityId/classroom/$courseId")({
@@ -45,13 +65,14 @@ function CourseOverview() {
   const firstIncomplete =
     allLessons.find((lesson) => !state.completedLessons.includes(lesson.id)) ?? allLessons[0];
   const [pending, setPending] = useState(false);
+  const [teaser, setTeaser] = useState<"certificate" | "quizzes" | null>(null);
 
   const handleEnroll = async () => {
     if (pending) return;
     setPending(true);
     try {
       await enroll(course.id);
-      toast("Course added to your learning", "Your enrolment is saved to your account.");
+      toast("Enrolled for free", "Your enrolment is saved to your account.");
     } catch (error) {
       toast("Could not enrol", error instanceof Error ? error.message : "Please try again.");
     } finally {
@@ -262,18 +283,17 @@ function CourseOverview() {
                   Course access
                 </p>
                 <p className="mt-2 font-display text-2xl font-extrabold text-slate-900">
-                  {course.price === "included" ? "Included" : formatMoney(course.price)}
+                  {courseAccessLabel(course.price)}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {course.price === "included"
-                    ? `Included with your ${community.name} membership.`
-                    : "One-time course access. Checkout is coming soon."}
+                  Free for early access. Enrol now and start learning — no payment is collected.
                 </p>
                 <Button className="mt-5 w-full" size="lg" onClick={handleEnroll} disabled={pending}>
-                  Add to my learning
+                  {EARLY_ACCESS.enrollLabel}
                 </Button>
                 <p className="mt-3 text-center text-[11px] leading-4 text-slate-500">
-                  No payment is processed. Included access is recorded on your account.
+                  Free for early access. Your enrolment is recorded on your account and no payment
+                  is processed.
                 </p>
               </>
             )}
@@ -295,8 +315,69 @@ function CourseOverview() {
               {course.instructorBio ?? instructor?.bio}
             </p>
           </Card>
+          <Card className="mt-4 p-4">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-bold text-slate-900">Coming soon on this course</h3>
+              <ComingSoonBadge>Not live yet</ComingSoonBadge>
+            </div>
+            <p className="mt-1.5 text-xs leading-5 text-slate-600">
+              Two parts of the learning experience are not connected yet. Open either for details
+              and an early-access request.
+            </p>
+            <div className="mt-3 space-y-2">
+              <button
+                type="button"
+                onClick={() => setTeaser("certificate")}
+                className="flex w-full items-center gap-2.5 rounded-lg border border-slate-200 p-2.5 text-left hover:border-slate-300 hover:bg-slate-50"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-clay-50 text-clay-700">
+                  <Award className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1 text-xs font-semibold text-slate-900">
+                  Certificate of completion
+                </span>
+                <ComingSoonBadge>Soon</ComingSoonBadge>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTeaser("quizzes")}
+                className="flex w-full items-center gap-2.5 rounded-lg border border-slate-200 p-2.5 text-left hover:border-slate-300 hover:bg-slate-50"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700">
+                  <ListChecks className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1 text-xs font-semibold text-slate-900">
+                  Quizzes &amp; knowledge checks
+                </span>
+                <ComingSoonBadge>Soon</ComingSoonBadge>
+              </button>
+            </div>
+          </Card>
         </aside>
       </div>
+
+      <FeatureTeaserModal
+        open={teaser === "certificate"}
+        onOpenChange={(open) => (!open ? setTeaser(null) : undefined)}
+        feature="Certificates"
+        title="Course certificates are coming soon"
+        description="Completing a course does not issue a certificate yet."
+        points={[
+          "A certificate needs verified completion, a stable course record and a downloadable file.",
+          "No certificate is created, stored or emailed in this preview.",
+        ]}
+      />
+      <FeatureTeaserModal
+        open={teaser === "quizzes"}
+        onOpenChange={(open) => (!open ? setTeaser(null) : undefined)}
+        feature="Quizzes"
+        title="Quizzes and knowledge checks are coming soon"
+        description="Lessons are reading and exercise content for now."
+        points={[
+          "Quizzes need question banks, scoring and a server-side record of attempts.",
+          "Nothing is graded or saved when you complete a lesson today.",
+        ]}
+      />
     </>
   );
 }

@@ -420,6 +420,7 @@ function EventManagementPage() {
                   </div>
                 ) : (
                   <EmptyState
+                    type="filtered"
                     icon={<CalendarDays className="h-5 w-5" />}
                     title={
                       tab === "draft"
@@ -925,6 +926,7 @@ function AttendeesModal({
             </div>
           ) : (
             <EmptyState
+              type="empty"
               icon={<Ticket className="h-5 w-5" />}
               title="No attendees in this view"
               description={

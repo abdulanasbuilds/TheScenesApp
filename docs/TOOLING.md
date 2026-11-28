@@ -90,7 +90,7 @@ If the environment does not expose a named skill, do not pretend it exists. Use 
 | Transactional email | Resend                              | Direction            |
 | Rate limiting       | Redis-compatible                    | Direction            |
 | Video / live        | Bunny.net / LiveKit / Daily / Agora | Evaluate by use case |
-| Internal feedback   | Telegram                            | Direction            |
+| Internal feedback   | WhatsApp direct chat (`wa.me`)      | Direction            |
 | Payments            | TBD                                 | HOLD                 |
 | Search              | Postgres first; dedicated/AI later  | Deferred             |
 | Notifications       | PWA / Web Push                      | Direction            |

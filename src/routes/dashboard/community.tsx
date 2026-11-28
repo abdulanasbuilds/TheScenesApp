@@ -35,6 +35,7 @@ import {
 import { MediaUploadField } from "@/components/domain/media-upload";
 import { categories } from "@/data/seed";
 import type { CommunitySpace } from "@/data/types";
+import { EARLY_ACCESS } from "@/lib/early-access";
 import { createLocalId } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
@@ -324,9 +325,14 @@ function CommunitySettingsPage() {
                     <Field
                       label="Membership price"
                       htmlFor="community-price"
-                      hint="Price changes belong to the payments phase and are not connected."
+                      hint="Free for early access. Paid plans belong to a later, approved payments phase."
                     >
-                      <Input id="community-price" value="Not connected" disabled readOnly />
+                      <Input
+                        id="community-price"
+                        value={EARLY_ACCESS.shortLabel}
+                        disabled
+                        readOnly
+                      />
                     </Field>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">

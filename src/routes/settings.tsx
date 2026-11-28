@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   Bell,
   Check,
+  FileDown,
   KeyRound,
   LockKeyhole,
   LogOut,
@@ -19,6 +20,7 @@ import {
   Badge,
   Button,
   Card,
+  ComingSoonBadge,
   EmptyState,
   Field,
   Input,
@@ -493,6 +495,27 @@ function SettingsPage() {
                     </Button>
                   </div>
                 </Card>
+
+                <Card className="p-5 sm:p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <FileDown className="h-4 w-4 text-indigo-700" />
+                      <h2 className="font-display text-lg font-extrabold text-slate-900">
+                        Your data
+                      </h2>
+                    </div>
+                    <ComingSoonBadge>Coming soon</ComingSoonBadge>
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    A downloadable export of your profile, posts, courses and activity is not
+                    available yet. Nothing is generated, stored or emailed when you open this page.
+                  </p>
+                  <p className="mt-3 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+                    A real export needs a server-side inventory of every record tied to your account
+                    and an access check, so one member can never download another member’s data.
+                    That work is planned, not connected.
+                  </p>
+                </Card>
               </div>
             </TabsContent>
 
@@ -908,9 +931,11 @@ function ConnectedNotificationPreferences() {
         </div>
       ) : status === "error" ? (
         <EmptyState
+          type="error"
           icon={<TriangleAlert className="h-5 w-5" />}
           title="Preferences are unavailable"
           description={errorMessage}
+          helperText="Your other settings are unaffected."
           action={
             <Button variant="secondary" onClick={() => void load()}>
               Try again

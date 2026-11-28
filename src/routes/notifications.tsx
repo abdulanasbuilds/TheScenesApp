@@ -269,9 +269,11 @@ function ConnectedNotificationsPage() {
           </Card>
         ) : status === "error" ? (
           <EmptyState
+            type="error"
             icon={<Bell className="h-5 w-5" />}
             title="Notifications are unavailable"
             description={errorMessage}
+            helperText="The rest of The Scenes still works."
             action={
               <Button variant="secondary" onClick={() => void loadFirstPage(filter)}>
                 Try again
@@ -367,6 +369,7 @@ function NotificationEmpty({
 }) {
   return (
     <EmptyState
+      type={filter === "unread" ? "success" : "empty"}
       icon={<Bell className="h-5 w-5" />}
       title={filter === "unread" ? "You’re all caught up" : "No notifications yet"}
       description={
@@ -374,6 +377,7 @@ function NotificationEmpty({
           ? "There are no unread updates. Switch to All to revisit earlier activity."
           : "Community and classroom activity will appear here."
       }
+      helperText={filter === "unread" ? undefined : "New activity lands here as it happens."}
       action={
         filter === "unread" ? (
           <Button variant="secondary" onClick={onShowAll}>

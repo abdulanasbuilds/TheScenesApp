@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Check,
   Download,
-  Lock,
   RefreshCw,
   ShieldCheck,
   ShoppingBag,
@@ -15,6 +14,7 @@ import { ProductCard } from "@/components/domain/cards";
 import { PublicShell } from "@/components/layout/public-shell";
 import { Avatar, Badge, Button, Card, CoverArt, Modal, buttonClass } from "@/components/ui";
 import { getCreator, getProduct, products } from "@/data/seed";
+import { EARLY_ACCESS, SHOW_PAID_PLANS, productAccessLabel } from "@/lib/early-access";
 import { formatCompact, formatMoney } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
 
@@ -53,7 +53,10 @@ function ProductDetailPage() {
   const confirmPurchase = () => {
     purchase(product.id);
     setCompleted(true);
-    toast("Preview purchase recorded", "No payment was processed and no file was delivered.");
+    toast(
+      "Added to your library",
+      "This resource is free during early access. No payment was processed.",
+    );
   };
 
   const closeCheckout = () => {
@@ -229,14 +232,17 @@ function ProductDetailPage() {
           <Card className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
-                  One-time purchase
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
+                    Early access resource
+                  </p>
+                  <Badge tone="green">{EARLY_ACCESS.memberBadge}</Badge>
+                </div>
                 <div className="mt-1 flex items-baseline gap-2">
                   <p className="font-display text-3xl font-extrabold text-slate-950">
-                    {formatMoney(product.price)}
+                    {productAccessLabel(product.price)}
                   </p>
-                  {product.compareAt ? (
+                  {SHOW_PAID_PLANS && product.compareAt ? (
                     <p className="text-sm text-slate-400 line-through">
                       {formatMoney(product.compareAt)}
                     </p>
@@ -259,21 +265,21 @@ function ProductDetailPage() {
             {purchased ? (
               <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                 <p className="flex items-center gap-2 text-sm font-bold text-emerald-950">
-                  <Check className="h-4 w-4" /> In your preview library
+                  <Check className="h-4 w-4" /> In your library
                 </p>
                 <p className="mt-1 text-xs leading-5 text-emerald-900">
-                  This purchase exists only in local state. Files are not delivered.
+                  This resource was added for free during early access. Files are not delivered yet.
                 </p>
               </div>
             ) : (
               <Button className="mt-4 w-full" size="lg" onClick={() => setCheckoutOpen(true)}>
-                <ShoppingBag className="h-4 w-4" /> Preview checkout
+                <Download className="h-4 w-4" /> Get it free
               </Button>
             )}
 
             <div className="mt-4 space-y-2.5 border-t border-slate-100 pt-4 text-xs text-slate-600">
               <p className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-emerald-600" /> Secure checkout planned
+                <ShieldCheck className="h-4 w-4 text-emerald-600" /> Free for early access
               </p>
               <p className="flex items-center gap-2">
                 <Download className="h-4 w-4 text-indigo-700" /> Digital delivery planned
@@ -282,8 +288,8 @@ function ProductDetailPage() {
                 <RefreshCw className="h-4 w-4 text-indigo-700" /> Lifetime updates planned
               </p>
             </div>
-            <p className="mt-4 rounded-lg bg-amber-50 p-3 text-[11px] leading-4 text-amber-950">
-              Checkout is coming soon. No card is collected and no money moves.
+            <p className="mt-4 rounded-lg bg-emerald-50 p-3 text-[11px] leading-4 text-emerald-950">
+              Free during early access. No card, no checkout and no charge.
             </p>
           </Card>
 
@@ -321,11 +327,11 @@ function ProductDetailPage() {
       <Modal
         open={checkoutOpen}
         onOpenChange={(open) => (open ? setCheckoutOpen(true) : closeCheckout())}
-        title={completed ? "Preview purchase complete" : "Preview checkout"}
+        title={completed ? "Added to your library" : "Get this resource — free"}
         description={
           completed
-            ? "The item is now marked as purchased in local state."
-            : "Confirm the order to test the purchase state. No payment method is requested."
+            ? "The resource is now in your preview library."
+            : "Confirm to add this resource. No payment method is requested and nothing is charged."
         }
         footer={
           completed ? (
@@ -343,7 +349,7 @@ function ProductDetailPage() {
                 Cancel
               </Button>
               <Button onClick={confirmPurchase}>
-                <Lock className="h-4 w-4" /> Confirm preview purchase
+                <Download className="h-4 w-4" /> Add to my library
               </Button>
             </div>
           )
@@ -355,7 +361,7 @@ function ProductDetailPage() {
               <Check className="h-4 w-4" /> Saved for this preview
             </p>
             <p className="mt-1 text-xs leading-5 text-emerald-900">
-              No order was created. Downloads are coming soon.
+              No order was created and no payment was taken. Downloads are coming soon.
             </p>
           </div>
         ) : (
@@ -376,24 +382,28 @@ function ProductDetailPage() {
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-slate-500">Item</dt>
-                <dd className="font-semibold text-slate-900">{formatMoney(product.price)}</dd>
+                <dd className="font-semibold text-slate-900">
+                  {productAccessLabel(product.price)}
+                </dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500">Platform fee (preview)</dt>
-                <dd className="font-semibold text-slate-900">{formatMoney(fee)}</dd>
-              </div>
+              {SHOW_PAID_PLANS ? (
+                <div className="flex justify-between">
+                  <dt className="text-slate-500">Platform fee (preview)</dt>
+                  <dd className="font-semibold text-slate-900">{formatMoney(fee)}</dd>
+                </div>
+              ) : null}
               <div className="flex justify-between border-t border-slate-200 pt-2">
-                <dt className="font-bold text-slate-900">Total</dt>
-                <dd className="font-display text-lg font-extrabold text-slate-900">
-                  {formatMoney(product.price)}
+                <dt className="font-bold text-slate-900">Total today</dt>
+                <dd className="font-display text-lg font-extrabold text-emerald-700">
+                  {EARLY_ACCESS.shortLabel}
                 </dd>
               </div>
             </dl>
             <div className="rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
               <p className="font-semibold text-slate-800">What happens when you confirm?</p>
               <p className="mt-1">
-                Only local purchase state changes. There is no card form or payment provider yet;
-                receipts and downloads are coming soon.
+                The resource is added to your preview library at no cost. There is no card form, no
+                payment provider and no charge — receipts and downloads are coming soon.
               </p>
             </div>
           </div>

@@ -14,7 +14,13 @@ export const sendFeedback = createServerFn({ method: "POST" })
     }),
   );
 
-/** Reports the feedback channel by name and state only, so the UI can label the preview honestly. */
+/**
+ * Reports the feedback channel by name and state only, so the UI can label the channel honestly.
+ *
+ * When WhatsApp is selected, the founder's normalized number is returned so the browser can build the
+ * direct `wa.me` link locally. That number is the public contact the founder chose for feedback; no
+ * secret (bot token, key, token) is ever returned.
+ */
 export const getFeedbackProviderStatus = createServerFn({ method: "GET" })
   .validator(nonThrowingTypedPassthrough)
   .handler(
@@ -24,11 +30,13 @@ export const getFeedbackProviderStatus = createServerFn({ method: "GET" })
           import("../../server/integrations/health.server"),
           import("../../server/feedback/feedback-config.server"),
         ]);
+      const config = readFeedbackConfig();
       const report = inspectIntegrations();
-      const state = describeFeedbackProvider(readFeedbackConfig(), report.dataMode);
+      const state = describeFeedbackProvider(config, report.dataMode);
       return {
         state: state.state,
         provider: state.state === "ready" ? state.provider : null,
+        whatsappNumber: config.provider === "whatsapp" ? config.number : null,
         dataMode: report.dataMode,
       } as const;
     }),

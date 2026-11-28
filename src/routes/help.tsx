@@ -18,6 +18,7 @@ import {
 import { PublicShell } from "@/components/layout/public-shell";
 import { Badge, Button, Card, Chip, EmptyState, buttonClass } from "@/components/ui";
 import { FeedbackForm } from "@/features/feedback/feedback-form";
+import { useApp } from "@/store/app-store";
 
 export const Route = createFileRoute("/help")({
   head: () => ({
@@ -49,7 +50,7 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
     category: "Getting started",
     question: "Do I need an account to explore The Scenes?",
     answer:
-      "No. The landing page, discovery, public community pages, creator profiles, marketplace and pricing are all browsable without signing in. Member actions such as joining, posting, saving or confirming an event use a local demo session.",
+      "No. The landing page, discovery, public community pages, creator profiles, marketplace and free early-access details are all browsable without signing in. Member actions such as joining, posting, saving or confirming an event use a local demo session.",
   },
   {
     category: "Getting started",
@@ -67,7 +68,7 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
     category: "Communities & posts",
     question: "Can I join a community?",
     answer:
-      "Yes. Joining and leaving update the member state and unlock the community feed. Billing and permanent membership records are coming soon.",
+      "Yes. Joining and leaving update the member state and unlock the community feed. Membership is free during early access; permanent membership records arrive with the account system.",
   },
   {
     category: "Communities & posts",
@@ -109,13 +110,13 @@ const faqs: { category: Exclude<FaqCategory, "All topics">; question: string; an
     category: "Creators & commerce",
     question: "Can I buy a resource in the marketplace?",
     answer:
-      "You can complete a preview checkout. It records a purchase state and nothing else: no card is collected, no money moves, no receipt is emailed and no file is delivered.",
+      "You can add a resource to your library for free during early access. It records a library state and nothing else: no card is collected, no money moves and no receipt is emailed.",
   },
   {
     category: "Creators & commerce",
-    question: "Are the prices final?",
+    question: "Are there prices or plans I need to choose?",
     answer:
-      "Community prices shown in the sample catalogue are examples. The approved platform direction is Free at $0 with a 10% platform fee, Creator at $29 per month with 5%, and Studio at $99 per month with 2%. Plan prices are set in US dollars and the local equivalent is shown automatically. Payment processing is paid by the buyer at checkout. No charge can occur in this preview because checkout is coming soon.",
+      "No. The Scenes is currently free to join, learn, and teach. There are no plans to compare, no platform fees during launch and no checkout anywhere in the product. Early access members get the full experience while we build the paid layer separately.",
   },
   {
     category: "Account & privacy",
@@ -163,10 +164,10 @@ const statusRows = [
     detail: "Demo session only. No credential is stored.",
   },
   {
-    service: "Marketplace checkout",
-    status: "Preview",
-    tone: "amber" as const,
-    detail: "Checkout is a preview; payments are coming soon.",
+    service: "Marketplace resources",
+    status: "Free",
+    tone: "green" as const,
+    detail: "Free for early access. No checkout and no payment.",
   },
   {
     service: "Payments, payouts and refunds",
@@ -197,6 +198,7 @@ const statusRows = [
 function HelpPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<FaqCategory>("All topics");
+  const { user } = useApp();
   const currentRoute = useRouterState({
     // `href` is the origin-less path (pathname + search + hash), which is exactly the safe internal
     // route the feedback schema accepts. `search` is an object and would stringify as "[object Object]".
@@ -345,9 +347,11 @@ function HelpPage() {
           ) : (
             <EmptyState
               className="mt-4"
+              type="no-results"
               icon={<CircleHelp className="h-5 w-5" />}
               title="No answers match that search"
               description="Try a broader term, or clear the topic filter."
+              helperText="Search covers setup, learning, creators and preview limits."
               action={
                 <Button
                   variant="secondary"
@@ -425,15 +429,18 @@ function HelpPage() {
                   id="contact-heading"
                   className="font-display text-xl font-extrabold text-slate-900"
                 >
-                  Send feedback
+                  Talk to the founder
                 </h2>
               </div>
               <p className="mt-1 text-sm leading-6 text-slate-600">
-                Tell us what is confusing, broken or missing. Your note goes to the internal team
-                channel, together with the page you were on, the time and a reference. Nothing else
-                is included.
+                Chat with the founder directly on WhatsApp, or send a note from inside the app.
+                Either way, include only what you are comfortable sharing — never passwords or
+                private personal information.
               </p>
-              <FeedbackForm route={currentRoute} />
+              <FeedbackForm
+                route={currentRoute}
+                viewer={user ? { id: user.id, name: user.name, email: user.email } : null}
+              />
             </Card>
 
             <div className="space-y-4">
@@ -449,11 +456,11 @@ function HelpPage() {
               <Card className="p-5">
                 <h2 className="text-sm font-bold text-slate-900">Looking for the product terms?</h2>
                 <p className="mt-1.5 text-xs leading-5 text-slate-600">
-                  Membership entitlements, the platform fee direction and the launch-pricing
-                  placeholder are documented on the pricing page.
+                  See exactly what free early access includes, and what stays free when paid plans
+                  eventually arrive.
                 </p>
                 <a href="/pricing" className={buttonClass("secondary", "md", "mt-3 w-full")}>
-                  Read pricing
+                  Read about free access
                 </a>
               </Card>
               <Card className="p-5">
@@ -477,7 +484,7 @@ function HelpPage() {
             About The Scenes
           </a>
           <a href="/pricing" className="font-semibold hover:text-indigo-700">
-            Pricing
+            Free early access
           </a>
           <a href="/explore" className="font-semibold hover:text-indigo-700">
             Explore

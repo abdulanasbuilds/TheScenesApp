@@ -24,6 +24,7 @@ import {
   DropdownItem,
   DropdownSeparator,
   DropdownTrigger,
+  FeatureTeaserModal,
 } from "@/components/ui";
 import { communities, creators, getCommunity, getMember, posts } from "@/data/seed";
 import { formatDate, formatCompact } from "@/lib/utils";
@@ -53,6 +54,7 @@ function MemberProfilePage() {
   const profile = member ?? creator!;
   const { toast } = useToast();
   const [following, setFollowing] = useState(false);
+  const [messageTeaserOpen, setMessageTeaserOpen] = useState(false);
   const activity = posts.filter((post) => post.authorId === (member?.id ?? creator?.id));
   const profileCommunities = communities.filter((item) =>
     member ? member.communities.includes(item.slug) : creator?.communities.includes(item.slug),
@@ -111,11 +113,7 @@ function MemberProfilePage() {
                 {following ? <Check className="h-4 w-4" /> : null}
                 {following ? "Following" : "Follow"}
               </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => toast("Messaging coming soon", "Private messaging is coming soon.")}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setMessageTeaserOpen(true)}>
                 <MessageCircle className="h-4 w-4" /> Message
               </Button>
               <Dropdown>
@@ -254,6 +252,18 @@ function MemberProfilePage() {
           </Card>
         </aside>
       </div>
+
+      <FeatureTeaserModal
+        open={messageTeaserOpen}
+        onOpenChange={setMessageTeaserOpen}
+        feature="Direct messaging"
+        title="Direct messaging is coming soon"
+        description={`Messaging ${profile.name} is not connected yet.`}
+        points={[
+          "Private messages need inboxes, abuse controls and notification delivery.",
+          "No message is sent, stored or emailed when you open this.",
+        ]}
+      />
     </CommunityShell>
   );
 }

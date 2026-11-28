@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { FEEDBACK_MESSAGE_MAX, FEEDBACK_MESSAGE_MIN, FEEDBACK_ROUTE_MAX } from "./contracts";
+import {
+  FEEDBACK_CATEGORIES,
+  FEEDBACK_MESSAGE_MAX,
+  FEEDBACK_MESSAGE_MIN,
+  FEEDBACK_ROUTE_MAX,
+} from "./contracts";
 
 /**
  * A safe internal route only. Absolute URLs, protocol-relative paths ("//host") and control
@@ -16,9 +21,16 @@ export const feedbackRouteSchema = z
     message: "Use an internal application path.",
   });
 
+export const feedbackCategorySchema = z.enum(FEEDBACK_CATEGORIES).optional();
+
+/**
+ * `category` is optional so older clients (and the existing API contract) keep working; the service
+ * treats a missing category as `general`.
+ */
 export const feedbackSubmissionSchema = z.object({
   message: z.string().trim().min(FEEDBACK_MESSAGE_MIN).max(FEEDBACK_MESSAGE_MAX),
   route: feedbackRouteSchema,
+  category: feedbackCategorySchema,
 });
 
 export type FeedbackSubmissionInput = z.infer<typeof feedbackSubmissionSchema>;

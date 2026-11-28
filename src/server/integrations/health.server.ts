@@ -141,7 +141,7 @@ function feedbackHealth(
   configuration: ConfigurationDiagnostic,
   source: RuntimeEnvSource,
 ): IntegrationHealth {
-  const required = ["FEEDBACK_PROVIDER", "TELEGRAM_BOT_TOKEN", "TELEGRAM_FEEDBACK_CHAT_ID"];
+  const required = ["FEEDBACK_PROVIDER", "WHATSAPP_FEEDBACK_NUMBER"];
   const base = {
     name: "feedback" as const,
     label: "Feedback channel",
@@ -149,11 +149,12 @@ function feedbackHealth(
   };
   const state = describeFeedbackProvider(readFeedbackConfig(source), configuration.dataMode);
 
-  if (state.state === "ready" && state.provider === "telegram") {
+  if (state.state === "ready" && state.provider === "whatsapp") {
     return Object.freeze({
       ...base,
       state: "ready" as const,
-      detail: "Feedback is delivered to the internal Telegram channel.",
+      detail:
+        "Feedback opens the founder's WhatsApp chat with a prepared message. Nothing is sent until the sender presses Send.",
       missingVariables: [],
     });
   }
@@ -169,7 +170,7 @@ function feedbackHealth(
     return Object.freeze({
       ...base,
       state: "misconfigured" as const,
-      detail: "The selected Telegram channel is incomplete, so feedback is not accepted.",
+      detail: "The selected feedback channel is incomplete, so feedback is not accepted.",
       missingVariables: state.problems,
     });
   }
@@ -177,7 +178,7 @@ function feedbackHealth(
     ...base,
     state: "disabled" as const,
     detail: "No delivery channel is configured for this deployment.",
-    missingVariables: ["FEEDBACK_PROVIDER", "TELEGRAM_BOT_TOKEN", "TELEGRAM_FEEDBACK_CHAT_ID"],
+    missingVariables: ["FEEDBACK_PROVIDER", "WHATSAPP_FEEDBACK_NUMBER"],
   });
 }
 

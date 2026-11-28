@@ -758,3 +758,43 @@ bunny.net/pricing, skool.com/pricing and circle.so/pricing. USD/GHS 11.778354 fr
 exchangerate-api.com, updated 18 November 2026 00:02 UTC.
 
 Detail and open items: `docs/MONETIZATION-MODEL-SPEC.md`.
+
+## ADR-048 — Feedback uses a direct WhatsApp chat
+
+Status: Accepted (26 November 2026). Supersedes ADR-046 item 4 (Telegram bot). The rest of ADR-046
+remains in force.
+
+The founder could not create the Telegram bot, and wants feedback routed to his own WhatsApp direct
+message: African-first, zero friction and no provider account. The Telegram feedback backend is
+therefore replaced.
+
+### Decision
+
+1. The user-facing channel is the standard `https://wa.me/<number>?text=<encoded>` deep link. Mobile
+   opens the WhatsApp app; desktop opens WhatsApp Web or the WhatsApp download page.
+2. `FEEDBACK_PROVIDER=whatsapp` selects the channel and `WHATSAPP_FEEDBACK_NUMBER` carries the
+   founder's full international number. The number is a public feedback contact, not a secret.
+3. The server keeps a replaceable `FeedbackProvider` adapter. WhatsApp has no free server-to-person
+   API, so the adapter returns a `handoff` receipt with the prepared link. It never claims delivery;
+   nothing is delivered until the sender presses Send inside WhatsApp.
+4. The pre-filled text is plain text and includes the category, page route, absolute page URL, an ISO
+   timestamp and a request reference. The browser path also adds the signed-in sender's name/email
+   because the sender reviews and sends it themselves. The server path continues to exclude email.
+5. A selected-but-incomplete WhatsApp configuration reports `misconfigured` and fails closed with the
+   existing `UNAVAILABLE` contract. The retired `telegram` value is also misconfigured; it is never
+   silently downgraded to the memory preview.
+6. Out of scope: paid Business Solution Providers (Twilio, MessageBird and similar), WhatsApp
+   Business templates, webhooks and message analytics. They may be proposed later only with a measured
+   business need, cost and privacy decision.
+
+### Consequences
+
+- Feedback costs nothing per message and needs no key, token, webhook or account.
+- Delivery is a sender action, not a fire-and-forget server call. The UI states this plainly.
+- Personal WhatsApp numbers are exposed when chosen as the destination; a dedicated feedback number
+  is recommended if privacy matters.
+- Rate limiting still applies to the in-app submit; a direct link uses the sender's own WhatsApp
+  account.
+
+Durable record: `.env.example`, `docs/WHATSAPP-FEEDBACK-SETUP.md`, `docs/INTEGRATIONS.md`,
+`docs/CLOUDFLARE-DEPLOYMENT.md`, `AGENTS.md`.

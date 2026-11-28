@@ -3,9 +3,14 @@ import "@tanstack/react-start/server-only";
 /**
  * Fetch-compatible Upstash Redis REST counter used by the P4-S2 rate limiter.
  *
- * The increment and TTL read run inside one Lua `EVAL`, so two concurrent requests cannot both read
- * the same count and then both decide they are allowed. Keys are caller-supplied and already hashed;
- * this module never sees a raw email address, IP address or user ID.
+ * The increment and the conditional TTL read run inside one Lua `EVAL`, so two concurrent requests
+ * cannot both read the same count and then both decide they are allowed. Keys are caller-supplied and
+ * already hashed; this module never sees a raw email address, IP address or user ID.
+ *
+ * Cost model (Upstash bills an `EVAL` as 1 command plus 1 per `redis.call`):
+ *   - allowed request: INCR (+ PEXPIRE on the first request in a window) = 1 or 2 calls;
+ *   - rejected request: INCR + PTTL = 2 calls, because `Retry-After` needs the real remaining TTL.
+ * An allowed request never pays for `PTTL`; only a rejected one does.
  */
 
 export class RateLimitProviderError extends Error {
@@ -22,7 +27,8 @@ export type UpstashCounter = Readonly<{ count: number; ttlMs: number }>;
 const EVAL_SCRIPT = [
   'local current = redis.call("INCR", KEYS[1])',
   'if current == 1 then redis.call("PEXPIRE", KEYS[1], ARGV[1]) end',
-  'return { current, redis.call("PTTL", KEYS[1]) }',
+  'if current > tonumber(ARGV[2]) then return { current, redis.call("PTTL", KEYS[1]) } end',
+  "return { current, 0 }",
 ].join("\n");
 
 export async function consumeUpstash(input: {
@@ -30,6 +36,7 @@ export async function consumeUpstash(input: {
   readonly token: string;
   readonly key: string;
   readonly windowMs: number;
+  readonly limit: number;
   readonly fetchImpl?: UpstashFetch;
   readonly timeoutMs?: number;
 }): Promise<UpstashCounter> {
@@ -45,7 +52,14 @@ export async function consumeUpstash(input: {
         authorization: `Bearer ${input.token}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify(["EVAL", EVAL_SCRIPT, "1", input.key, String(input.windowMs)]),
+      body: JSON.stringify([
+        "EVAL",
+        EVAL_SCRIPT,
+        "1",
+        input.key,
+        String(input.windowMs),
+        String(input.limit),
+      ]),
       signal: controller.signal,
     });
   } catch {

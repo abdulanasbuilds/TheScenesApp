@@ -71,8 +71,12 @@ const steps = [
 
 const faqs = [
   {
+    q: "What does early access cost me?",
+    a: "Nothing. There is no plan to choose, no platform fee and no checkout. You create a creator profile, publish your work and keep the relationship with your audience — free for early access.",
+  },
+  {
     q: "Can I charge for my community or course?",
-    a: "Not yet. Pricing direction is documented, but payments, checkout, refunds and payouts are a later phase. Nothing in this preview collects money.",
+    a: "Not yet — and during early access you do not need to. Publish for free, build your audience and pay zero platform fees during launch. Paid plans, payouts and refunds are a later, separately approved phase, and nothing you have already published will be locked away.",
   },
   {
     q: "Do I need to host video on The Scenes?",
@@ -103,9 +107,12 @@ function BecomeATeacherPage() {
               a focused community, publish a clear course and host sessions around the work you
               already know how to do.
             </p>
+            <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-emerald-800">
+              Publish for free, build your audience, and pay zero platform fees during launch.
+            </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <a href="/register?role=creator" className={buttonClass("primary", "lg")}>
-                Start your creator profile <ArrowRight className="h-4 w-4" />
+                Start teaching free <ArrowRight className="h-4 w-4" />
               </a>
               <a href="/dashboard/creator" className={buttonClass("secondary", "lg")}>
                 Preview the workspace
@@ -113,7 +120,11 @@ function BecomeATeacherPage() {
             </div>
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
               <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Free to start
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Free to publish during early
+                access
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4 text-emerald-600" /> Zero platform fees during launch
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <ShieldCheck className="h-4 w-4 text-emerald-600" /> You keep ownership of your
@@ -150,7 +161,8 @@ function BecomeATeacherPage() {
             <div className="border-t border-slate-200 bg-indigo-50 px-5 py-4">
               <p className="flex items-start gap-2 text-xs leading-5 text-indigo-900">
                 <Sparkles className="mt-0.5 h-4 w-4 shrink-0" />
-                Payments, payouts, live streaming and transactional email are coming soon.
+                Publish for free during early access, with zero platform fees. Payments, payouts and
+                live streaming arrive later — we will tell early creators first.
               </p>
             </div>
           </Card>
@@ -251,13 +263,14 @@ function BecomeATeacherPage() {
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600">
             Start with one outcome you can help someone reach, then build the room around it.
+            Publish for free during early access and pay zero platform fees during launch.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <a href="/register?role=creator" className={buttonClass("primary", "lg")}>
-              Create your profile <ArrowRight className="h-4 w-4" />
+              Publish for free <ArrowRight className="h-4 w-4" />
             </a>
             <a href="/pricing" className={buttonClass("secondary", "lg")}>
-              See plan direction
+              How early access works
             </a>
           </div>
         </div>

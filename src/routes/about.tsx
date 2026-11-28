@@ -108,7 +108,7 @@ function AboutPage() {
                 Explore communities <ArrowRight className="h-4 w-4" />
               </a>
               <a href="/pricing" className={buttonClass("secondary", "md")}>
-                See membership options
+                Free during early access
               </a>
             </div>
             <dl className="mt-8 grid max-w-xl grid-cols-2 gap-4 sm:grid-cols-4">
@@ -391,11 +391,11 @@ function AboutPage() {
             <Card className="p-5">
               <h2 className="text-sm font-bold text-slate-900">Need the details?</h2>
               <p className="mt-1.5 text-xs leading-5 text-slate-600">
-                Read the membership structure or check which services are connected.
+                Read what free early access includes, or check which services are connected.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <a href="/pricing" className={buttonClass("ghost", "sm")}>
-                  Pricing
+                  Early access
                 </a>
                 <a href="/help" className={buttonClass("ghost", "sm")}>
                   Help centre

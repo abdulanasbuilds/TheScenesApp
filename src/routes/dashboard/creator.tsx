@@ -9,7 +9,9 @@ import {
   UserPlus,
 } from "lucide-react";
 import { CreatorShell } from "@/components/layout/creator-shell";
-import { Card, EmptyState, Progress, buttonClass } from "@/components/ui";
+import { Badge, Card, EmptyState, Progress, buttonClass } from "@/components/ui";
+import { CreatorFirstCourseChecklist } from "@/features/onboarding/getting-started";
+import { EARLY_ACCESS } from "@/lib/early-access";
 import { useApp } from "@/store/app-store";
 import { useState } from "react";
 
@@ -84,6 +86,11 @@ function CreatorDashboardPage() {
                 Set up your community, publish a classroom and schedule a live session. Live member,
                 learning and earnings numbers appear here once your community has real activity.
               </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge className="bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200">
+                  {EARLY_ACCESS.creatorBadge}
+                </Badge>
+              </div>
             </div>
             <a href="/dashboard/community" className={buttonClass("secondary", "md")}>
               Community settings <ArrowRight className="h-4 w-4" />
@@ -105,6 +112,10 @@ function CreatorDashboardPage() {
             }
           />
         )}
+
+        <div className="mt-6 empty:hidden">
+          <CreatorFirstCourseChecklist />
+        </div>
 
         <Card className="mt-6 p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">

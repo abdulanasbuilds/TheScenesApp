@@ -10,11 +10,11 @@ import {
   FileText,
   ListTree,
   Lock,
-  Pause,
   Play,
   RotateCcw,
 } from "lucide-react";
-import { Badge, Button, Card, Progress } from "@/components/ui";
+import { VideoSourceNote } from "@/components/domain/media-upload";
+import { Badge, Button, Card, FeatureTeaserModal, Progress } from "@/components/ui";
 import { loadCatalogForRoute } from "@/features/learning/catalog-loader";
 import { cn } from "@/lib/utils";
 import { useApp, useToast } from "@/store/app-store";
@@ -57,7 +57,7 @@ function LessonViewerPage() {
     Route.useLoaderData();
   const { state, completeLesson, currentMember } = useApp();
   const { toast } = useToast();
-  const [playing, setPlaying] = useState(false);
+  const [videoTeaserOpen, setVideoTeaserOpen] = useState(false);
   const [curriculumOpen, setCurriculumOpen] = useState(false);
   const [completionPending, setCompletionPending] = useState(false);
   const completed = state.completedLessons.includes(lesson.id);
@@ -155,50 +155,39 @@ function LessonViewerPage() {
             <p className="mt-3 text-base leading-7 text-slate-600">{lesson.summary}</p>
 
             {lesson.type === "video" ? (
-              <div className="mt-7 overflow-hidden rounded-xl border border-slate-800 bg-slate-950 text-white shadow-sm">
-                <div className="relative aspect-video">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,#312e81_0,#0f172a_62%)]">
+              <>
+                <div className="mt-7 overflow-hidden rounded-xl border border-slate-800 bg-slate-950 text-white shadow-sm">
+                  <div className="relative aspect-video">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,#312e81_0,#0f172a_62%)]">
+                      <button
+                        type="button"
+                        onClick={() => setVideoTeaserOpen(true)}
+                        className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-indigo-800 shadow-xl transition-transform hover:scale-105"
+                        aria-label="Play lesson video — native playback coming soon"
+                      >
+                        <Play className="ml-1 h-6 w-6 fill-current" />
+                      </button>
+                      <p className="mt-4 text-sm font-semibold">Lesson video</p>
+                      <p className="mt-1 text-xs text-slate-400">Native playback is coming soon</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 border-t border-slate-800 px-4 py-3">
                     <button
                       type="button"
-                      onClick={() => setPlaying((value) => !value)}
-                      className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-indigo-800 shadow-xl transition-transform hover:scale-105"
-                      aria-label={playing ? "Pause lesson preview" : "Play lesson preview"}
+                      onClick={() => setVideoTeaserOpen(true)}
+                      className="text-slate-300 hover:text-white"
+                      aria-label="Play lesson video — coming soon"
                     >
-                      {playing ? (
-                        <Pause className="h-6 w-6 fill-current" />
-                      ) : (
-                        <Play className="ml-1 h-6 w-6 fill-current" />
-                      )}
-                    </button>
-                    <p className="mt-4 text-sm font-semibold">
-                      {playing ? "Playing lesson preview" : "Lesson video"}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">Video hosting is coming soon</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 border-t border-slate-800 px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => setPlaying((value) => !value)}
-                    className="text-slate-300 hover:text-white"
-                    aria-label={playing ? "Pause" : "Play"}
-                  >
-                    {playing ? (
-                      <Pause className="h-4 w-4 fill-current" />
-                    ) : (
                       <Play className="h-4 w-4 fill-current" />
-                    )}
-                  </button>
-                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-slate-700">
-                    <div
-                      className={cn("h-full rounded-full bg-indigo-400", playing ? "w-2/5" : "w-0")}
-                    />
+                    </button>
+                    <div className="h-1 flex-1 overflow-hidden rounded-full bg-slate-700" />
+                    <span className="font-mono text-[10px] text-slate-400">
+                      00:00 / {lesson.duration}
+                    </span>
                   </div>
-                  <span className="font-mono text-[10px] text-slate-400">
-                    00:00 / {lesson.duration}
-                  </span>
                 </div>
-              </div>
+                <VideoSourceNote className="mt-2" />
+              </>
             ) : (
               <Card className="mt-7 flex items-center gap-4 border-indigo-100 bg-indigo-50 p-5">
                 <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-indigo-700 ring-1 ring-indigo-100">
@@ -265,28 +254,47 @@ function LessonViewerPage() {
                   Lesson resources
                 </h2>
                 <div className="mt-3 space-y-2">
-                  {lesson.resources.map((resource) => (
-                    <a
-                      key={resource.label}
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3.5 text-left hover:border-slate-300 hover:bg-slate-50"
-                    >
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-indigo-700">
-                        <FileText className="h-4 w-4" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-slate-900">
-                          {resource.label}
+                  {lesson.resources.map((resource) => {
+                    const row = (
+                      <>
+                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-indigo-700">
+                          <FileText className="h-4 w-4" />
                         </span>
-                        <span className="text-xs text-slate-500">
-                          {resource.kind} · {resource.meta}
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-slate-900">
+                            {resource.label}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {resource.kind} · {resource.meta}
+                          </span>
                         </span>
-                      </span>
-                      <Download className="h-4 w-4 text-slate-400" />
-                    </a>
-                  ))}
+                        {resource.url ? (
+                          <Download className="h-4 w-4 text-slate-400" />
+                        ) : (
+                          <Badge tone="outline">Included</Badge>
+                        )}
+                      </>
+                    );
+                    const base =
+                      "flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3.5 text-left";
+                    // Only render an anchor when there is a real destination; a resource without an
+                    // external URL is shown as an included item instead of a dead, non-clickable link.
+                    return resource.url ? (
+                      <a
+                        key={resource.label}
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(base, "hover:border-slate-300 hover:bg-slate-50")}
+                      >
+                        {row}
+                      </a>
+                    ) : (
+                      <div key={resource.label} className={base}>
+                        {row}
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             ) : null}
@@ -425,6 +433,19 @@ function LessonViewerPage() {
           </div>
         </aside>
       </div>
+
+      <FeatureTeaserModal
+        open={videoTeaserOpen}
+        onOpenChange={setVideoTeaserOpen}
+        feature="Native video"
+        title="Native video playback is coming soon"
+        description="Lesson video is not hosted inside The Scenes yet."
+        points={[
+          "At launch, lessons point to video you already host elsewhere.",
+          "Direct uploads, transcoding and private playback arrive with a dedicated video provider.",
+          "Nothing here records a view, a completion or a file upload.",
+        ]}
+      />
     </div>
   );
 }

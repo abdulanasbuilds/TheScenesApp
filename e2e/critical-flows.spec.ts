@@ -26,25 +26,30 @@ test("landing page shows honest empty states instead of fabricated content", asy
   await expect(page.getByText("No courses yet")).toBeVisible();
 });
 
-test("pricing reflects the approved external-link launch direction", async ({ page }) => {
+test("pricing page presents free early access with no plan tags", async ({ page }) => {
   await page.goto("/pricing");
   await waitForApp(page);
 
-  await expect(page.getByText("$29", { exact: true })).toBeVisible();
-  await expect(page.getByText("$99", { exact: true })).toBeVisible();
-  await expect(page.getByText("10% platform fee on sales", { exact: true })).toBeVisible();
-  await expect(page.getByText("5% platform fee on sales", { exact: true })).toBeVisible();
-  await expect(page.getByText("2% platform fee on sales", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("Monthly billing direction · yearly pricing not yet set"),
+    page.getByRole("heading", { level: 1, name: /free while we build it/i }),
   ).toBeVisible();
-  await expect(page.getByText(/300 GB|1 TB/)).toHaveCount(0);
   await expect(
-    page.getByText("Native video and file hosting planned", { exact: true }),
-  ).toHaveCount(0);
-  await expect(
-    page.getByText("Native live streaming and replay planned", { exact: true }),
-  ).toHaveCount(0);
+    page.getByText("The Scenes is currently free to join, learn, and teach.", { exact: false }),
+  ).toBeVisible();
+  await expect(page.getByText("Free for Early Access", { exact: true }).first()).toBeVisible();
+
+  // No paid plan tags, prices or platform-fee percentages on the public page.
+  for (const forbidden of [
+    "$29",
+    "$99",
+    "10% platform fee on sales",
+    "5% platform fee on sales",
+    "2% platform fee on sales",
+    "Start free. Upgrade when your community grows.",
+    "Monthly billing direction · yearly pricing not yet set",
+  ]) {
+    await expect(page.getByText(forbidden, { exact: true })).toHaveCount(0);
+  }
 });
 
 test("demo login keeps its session through client navigation", async ({ page }) => {
@@ -83,4 +88,36 @@ test("creator dashboard starts from an honest setup state", async ({ page }) => 
 
   await expect(page.getByText("No community yet")).toBeVisible();
   await expect(page.getByText("Finish setting up your workspace")).toBeVisible();
+});
+
+test("marketplace stays honest without sample products", async ({ page }) => {
+  await page.goto("/marketplace");
+  await waitForApp(page);
+
+  await expect(page.getByText("No resources yet")).toBeVisible();
+
+  // The previously fabricated sample product is no longer routable.
+  await page.goto("/marketplace/agent-blueprint-pack");
+  await expect(page.getByRole("heading", { name: "This page has left the stage." })).toBeVisible();
+});
+
+test("onboarding hands a new learner to the home surface", async ({ page }) => {
+  await page.goto("/onboarding");
+  await waitForApp(page);
+
+  await expect(page.getByRole("heading", { name: "What brings you here?" })).toBeVisible();
+  await page.getByRole("radio", { name: /I want to learn/ }).click();
+  await page.getByRole("button", { name: "AI", exact: true }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await expect(page.getByRole("heading", { name: "How should we introduce you?" })).toBeVisible();
+  await page.getByLabel("Display name").fill("Ama Boateng");
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await expect(page.getByRole("heading", { name: "Start with one useful lesson." })).toBeVisible();
+  // No catalogue is invented, so no first lesson is forced; the handoff stays honest.
+  await expect(page.getByText("Explore the catalogue next")).toBeVisible();
+  await page.getByRole("button", { name: "Enter The Scenes" }).click();
+
+  await expect(page).toHaveURL(/\/home$/);
 });

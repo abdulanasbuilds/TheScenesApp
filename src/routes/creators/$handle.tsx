@@ -8,6 +8,7 @@ import {
   Badge,
   Button,
   Card,
+  FeatureTeaserModal,
   Tabs,
   TabsContent,
   TabsList,
@@ -34,6 +35,7 @@ function CreatorProfilePage() {
   const { state, toggleFollow } = useApp();
   const { toast } = useToast();
   const [tab, setTab] = useState("overview");
+  const [messageTeaserOpen, setMessageTeaserOpen] = useState(false);
   const followed = state.following.includes(creator.handle);
   const creatorCommunities = communities.filter((community) =>
     creator.communities.includes(community.slug),
@@ -75,10 +77,7 @@ function CreatorProfilePage() {
                 {followed ? <Check className="h-4 w-4" /> : null}
                 {followed ? "Following" : "Follow"}
               </Button>
-              <Button
-                variant="secondary"
-                onClick={() => toast("Message coming soon", "Direct messaging is coming soon.")}
-              >
+              <Button variant="secondary" onClick={() => setMessageTeaserOpen(true)}>
                 Message
               </Button>
             </div>
@@ -197,6 +196,18 @@ function CreatorProfilePage() {
           </div>
         </Tabs>
       </div>
+
+      <FeatureTeaserModal
+        open={messageTeaserOpen}
+        onOpenChange={setMessageTeaserOpen}
+        feature="Direct messaging"
+        title="Direct messaging is coming soon"
+        description={`Messaging ${creator.name} is not connected yet.`}
+        points={[
+          "Messages need inboxes, abuse controls and notification delivery before they can go live.",
+          "No message is sent, stored or emailed when you open this.",
+        ]}
+      />
     </PublicShell>
   );
 }

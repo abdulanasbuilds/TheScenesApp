@@ -1,20 +1,58 @@
 # The Scenes — Current Project Status
 
-**Last updated:** 14 November 2026
-**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and for the code/local scope of P4-S2 to P4-S5 one slice at a time (ADR-044); P4-S2 rate limiting, P4-S3 connected in-app notifications, P4-S4 feedback channel and P4-S5 PWA are implemented code/local, and deployment configuration is now driven by the runtime environment (ADR-045); P4-S6 (web push) and P4-S7 (R2) remain not approved
+**Last updated:** 19 November 2026
+**Current stage:** Phase 3A Waves 1–4 complete and the learning vertical slice accepted; Wave 5 capacity/recovery evidence formally deferred by founder decision (ADR-041); Phase 4 revision 2 approved for P4-S1 account email/password recovery (ADR-042 code/local; ADR-043 hosted account-email config on THE SCENES) and for the code/local scope of P4-S2 to P4-S5 one slice at a time (ADR-044); P4-S2 rate limiting, P4-S3 connected in-app notifications, P4-S4 feedback channel and P4-S5 PWA are implemented code/local, and deployment configuration is now driven by the runtime environment (ADR-045); P4-S2 now additionally has **local development** connected to a temporary Upstash Redis database with 26/26 proof checks passing (19 November 2026, see below) — this is not staging or production use; P4-S6 (web push) and P4-S7 (R2) remain not approved
 **Production status:** not deployed; THE SCENES Supabase project is the final long-term project but remains PRE-PRODUCTION until the release gate passes
 
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
 but their old status paragraphs do not override this page, `AGENTS.md` or accepted ADRs.
 
+## Feedback switched to a direct WhatsApp chat — 26 November 2026 (ADR-048)
+
+The Telegram bot could not be created, so the feedback backend was replaced with a direct
+`wa.me` WhatsApp chat to the founder's own number. `FEEDBACK_PROVIDER=whatsapp` plus
+`WHATSAPP_FEEDBACK_NUMBER` selects it; the number is a public contact, not a secret. The server
+adapter returns a `handoff` receipt with a prepared link and never claims delivery before the sender
+presses Send. A selected-but-incomplete WhatsApp configuration, including the retired `telegram`
+value, fails closed as `misconfigured`. Setup: `docs/WHATSAPP-FEEDBACK-SETUP.md`. The old
+`docs/TELEGRAM-FEEDBACK-SETUP.md` was removed. No real message, hosted variable or deployment is
+claimed.
+
+## P4-S2 rate limiter connected to Upstash — 19 November 2026 (local development only)
+
+At the founder's explicit request, the official Upstash CLI (`npx -y upstash setup --opencode`) installed
+the **Upstash MCP server** (`https://mcp.upstash.com/mcp`, OAuth on first use) and the **Upstash skills**
+into `~/.config/opencode`. The same CLI minted a temporary database, which was then **claimed into the
+founder's Personal team** and is now a permanent **Free-tier** database:
+
+- Name `the-scenes-rate-limit`, **Region Cape Town, South Africa (`af-south-1`)**, Free plan, $0/month.
+- `RATE_LIMIT_DRIVER=upstash`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` and a generated
+  64-hex `RATE_LIMIT_HASH_SECRET` live in the git-ignored `.env`; all four are server-only and absent
+  from the client bundle. It stores only `rl:*` keys.
+- Evidence: `bun run verify:rate-limit:prove` → **26/26 checks passed**, including two separate OS
+  processes sharing one bucket (20 allowed / 4 blocked of 24 concurrent `login` attempts), a cold-start
+  process inheriting the limit, a `memory` control admitting 24/24, provider-side counter `24` with a
+  ~15-minute TTL, fail-closed auth vs fail-open learning writes, a real-endpoint 401 rejection, and a
+  clean client bundle. Output: `.audit/p4-s2-upstash/prove-af-south-1.txt` and timestamped JSON.
+- Latency from this development machine to `af-south-1`: limiter `p50 77.7 ms` / `p95 85.6 ms`, equal to
+  a bare `PING` within noise. (An earlier unclaimed instance in the default region measured 239 ms,
+  which is what motivated the Cape Town region choice.) Still not a production latency claim — measure
+  again with the Worker deployed near the database.
+- Command cost reduced (19 November 2026): an allowed check now costs 2 billed commands instead of 3
+  (`PTTL` is only requested when a request is rejected), and repeats of a provider-confirmed block are
+  answered locally at 0 commands. Before/after table: `docs/RATE-LIMITING.md#resource-cost`.
+- Still **not** authorized or done: setting hosted staging or production secrets, any deployment, or any
+  load/scale claim (ADR-041).
+
 ## Founder working mode update — 13 November 2026 (ADR-046)
 
 The founder set the standing working mode: local-first work with no Docker dependency, code synced to
 GitHub when needed; hosted/provider actions run only when the founder connects the required tools and
-approves the target; the founder creates provider accounts (Resend, Upstash, the Telegram bot)
-himself, with the environment contract kept ready so pasted credentials work; the feedback
-integration is a Telegram bot, not a channel; after a GitHub push and Cloudflare deployment the
-founder tests himself; and agents summarize reviews, plans and blockers in chat in plain English.
+approves the target; the founder creates provider accounts (Resend, Upstash, others) himself, with the
+environment contract kept ready so pasted credentials work; feedback uses a direct WhatsApp chat to
+the founder (`wa.me`, ADR-048) instead of the blocked Telegram bot; after a GitHub push and Cloudflare
+deployment the founder tests himself; and agents summarize reviews, plans and blockers in chat in plain
+English.
 The historical root audits (`*_AUDIT.md`, `ARCHITECTURAL_RISKS.md`, `RECOMMENDED_CHANGES.md`,
 `FINAL_ARCHITECTURE_ASSESSMENT.md`) describe the pre-implementation Phase 0 state and are superseded
 by this page.
@@ -157,7 +195,7 @@ These are milestone estimates, not percentages generated from lines of code:
 - Phase 4 code/local: runtime configuration resolved from the merged Cloudflare `__env__` bindings plus
   `process.env` (ADR-045); build-time data-mode module removed; a misconfigured connected deployment
   fails closed with a variable-name-only notice. P4-S2 distributed rate limiting, P4-S3 connected
-  in-app notifications, P4-S4 Telegram/memory feedback provider and P4-S5 PWA/installability are
+  in-app notifications, P4-S4 WhatsApp/memory feedback provider and P4-S5 PWA/installability are
   implemented with tests. Settings → Account shows a read-only integration health report (names and
   states only). P4-S6 web push, P4-S7 R2 and application (Resend) email are reported `disabled`.
 
@@ -197,7 +235,7 @@ Phase 4 code/local gaps that remain explicit:
 - the P4-S3 notifications migration (`20261111120000_phase4_0019_notifications.sql`) is written and
   unit-tested but **not applied** to `okdzuqgzgnmmbtjxdaci`; applying it needs a separate approval and a
   reviewed remote migration history;
-- the P4-S4 Telegram channel, the P4-S2 Upstash database and the P4-S1 Resend domain/key are **not
+- the P4-S4 WhatsApp number, the P4-S2 Upstash database and the P4-S1 Resend domain/key are **not
   created**; the code is configuration-ready and fails safe without them;
 - P4-S5 is code/local only; no deployment has been made and the service worker is registered only in a
   production build;
@@ -217,7 +255,7 @@ See `docs/CLOUDFLARE-DEPLOYMENT.md` for the variables and verification steps an 
 - manual browser check: `VITE_DATA_MODE=supabase-staging` with no URL/key rendered the configuration
   notice (HTTP 200) with no fixture identity and no mode leak.
 
-These are code/local checks. They do not prove a hosted deployment, a real Telegram delivery, a real
+These are code/local checks. They do not prove a hosted deployment, a real WhatsApp handoff, a real
 push subscription, an Upstash connection, or Wave 5 capacity/recovery.
 
 ## Phase 3A verified checks — 11 November 2026
@@ -343,10 +381,13 @@ The deferred Wave 5 rehearsal must run before any staging load test or public la
 
 ## Checkpoint state
 
-- Founder action needed: **apply the Supabase Auth URL/SMTP settings on THE SCENES and create the
-  Resend account/domain**, then run one inbox test (ADR-043). The Supabase MCP here resolves to VOICE
-  SYSTEM and must not be used until corrected. The deferred Wave 5 rehearsal still needs Docker/credit
-  before any staging load test or public launch;
+- Founder action needed: **create a Resend API key (Sending access) and a verified sending domain, then
+  enter the Resend SMTP values in Supabase Auth on THE SCENES**, then run one inbox test (ADR-043).
+  Verified read-only on 19 November 2026: the Resend account exists but has no domain and no API key, and
+  Supabase Auth custom SMTP is still off; the Auth URL allowlist holds one local wildcard entry and the
+  Site URL is `http://127.0.0.1:5000/login`. Details in `docs/ACCOUNT-EMAIL-SETUP.md`. The Supabase MCP
+  here resolves to VOICE SYSTEM and must not be used until corrected. The deferred Wave 5 rehearsal still
+  needs Docker/credit before any staging load test or public launch;
 - working tree: **uncommitted fixture media and copy pass on `main` (16 November 2026)**; Phase 4
   revision-2 review committed at `9cc91e3`; P4-S1 code/local committed; hosted account-email config
   approved (ADR-043) and pending the founder dashboard/Resend steps; P4-S2 to P4-S5 code/local

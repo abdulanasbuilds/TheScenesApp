@@ -1,0 +1,93 @@
+{
+  "runId": "2026-11-26-p4-s4-whatsapp",
+  "date": "2026-11-26",
+  "phase": 4,
+  "slice": "P4-S4",
+  "title": "WhatsApp direct-chat feedback replaces the blocked Telegram channel",
+  "supersedes": "2026-11-11-p4-s4-feedback (telegram channel)",
+  "approval": {
+    "decision": "ADR-048",
+    "date": "2026-11-13",
+    "scope": "code/local only",
+    "remoteActions": "NONE",
+    "providers": "NONE",
+    "deployment": false,
+    "realCustomerData": false
+  },
+  "target": {
+    "kind": "local-code-and-fixture-browser",
+    "supabaseProjectContacted": false,
+    "providerContacted": false,
+    "messageSent": false
+  },
+  "channels": [
+    {
+      "name": "memory",
+      "selectedBy": "FEEDBACK_PROVIDER unset (default)",
+      "deliveryState": "local-preview",
+      "claimsHumanReceived": false
+    },
+    {
+      "name": "whatsapp",
+      "selectedBy": "FEEDBACK_PROVIDER=whatsapp",
+      "variables": ["FEEDBACK_PROVIDER", "WHATSAPP_FEEDBACK_NUMBER"],
+      "mechanism": "https://wa.me/<number>?text=<encoded> deep link",
+      "deliveryState": "handoff",
+      "claimsHumanReceived": false,
+      "note": "The sender presses Send inside WhatsApp; nothing is delivered server-side.",
+      "incompleteBehavior": "misconfigured + UNAVAILABLE (fails closed)",
+      "silentFallbackToMemory": false,
+      "retiredValueBehavior": "telegram is rejected as misconfigured"
+    }
+  ],
+  "security": {
+    "publicContactNotSecret": true,
+    "serverHandoffExcludesEmail": true,
+    "browserHandoffIncludesIdentityBecauseSenderReviewsIt": true,
+    "secretValuesInClient": false,
+    "criticalFindings": 0,
+    "highFindings": 0
+  },
+  "verification": {
+    "unitPassed": 273,
+    "unitFailed": 0,
+    "unitFiles": 23,
+    "typecheck": true,
+    "productionBuild": true,
+    "lint": {
+      "slice": "clean",
+      "global": "blocked",
+      "blockedBy": [
+        "src/features/onboarding/onboarding-wizard.tsx",
+        "src/routes/c/$communityId/classroom/$courseId.tsx",
+        "src/routes/c/$communityId/events/$eventId.tsx",
+        "src/routes/c/$communityId/members/$memberId.tsx",
+        "src/routes/creators/$handle.tsx",
+        "src/routes/dashboard/commerce.tsx",
+        "src/routes/dashboard/zztest.tsx"
+      ],
+      "note": "All remaining errors are in files owned by concurrently running agents and were left untouched."
+    },
+    "e2e": {
+      "spec": "e2e/feedback-whatsapp.spec.ts",
+      "passed": 6,
+      "failed": 0,
+      "viewports": ["desktop", "tablet", "mobile"],
+      "paths": ["one-tap pre-filled link", "in-app submit -> handoff receipt"]
+    }
+  },
+  "toolVersions": {
+    "bun": "1.4.4",
+    "node": "v26.12.1",
+    "typescript": "5.9.3",
+    "playwright": "1.64.1"
+  },
+  "notRun": [
+    "sending a real WhatsApp message (sender's own action)",
+    "hosted FEEDBACK_PROVIDER / WHATSAPP_FEEDBACK_NUMBER configuration",
+    "deployment",
+    "global lint clean (concurrent agents own the remaining files)",
+    "ADR-041 Wave 5 capacity/recovery rehearsal (deferred)"
+  ],
+  "containsSensitiveMaterial": false
+}

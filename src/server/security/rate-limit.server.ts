@@ -179,10 +179,23 @@ export class MemoryRateLimiter implements RateLimiter {
   }
 }
 
+/** Hard cap on remembered blocks so a flood of distinct subjects cannot grow memory without bound. */
+const MAX_CACHED_BLOCKS = 10_000;
+
 export class UpstashRateLimiter implements RateLimiter {
+  /**
+   * Provider-confirmed blocks, keyed by bucket. A subject that is already over its limit is answered
+   * locally until its window expires, so a burst of blocked attempts costs no extra provider commands.
+   *
+   * This never *allows* a request the provider would refuse: it only remembers a refusal the provider
+   * already returned. It is not a fallback for provider failure — an unreachable provider still throws.
+   */
+  private readonly blockedUntil = new Map<string, number>();
+
   constructor(
     private readonly config: Readonly<{ url: string; token: string }>,
     private readonly fetchImpl: UpstashFetch = fetch,
+    private readonly now: () => number = () => Date.now(),
   ) {}
 
   async consume({
@@ -192,26 +205,60 @@ export class UpstashRateLimiter implements RateLimiter {
     readonly policy: RateLimitPolicy;
     readonly subjectHash: string;
   }): Promise<RateLimitDecision> {
+    const key = `rl:${policy.name}:${subjectHash}`;
+    const cachedUntil = this.blockedUntil.get(key);
+    const at = this.now();
+
+    if (cachedUntil !== undefined) {
+      if (cachedUntil > at) {
+        return {
+          allowed: false,
+          remaining: 0,
+          limit: policy.limit,
+          policy: policy.name,
+          retryAfterSeconds: Math.max(1, Math.ceil((cachedUntil - at) / 1000)),
+          reason: "limit",
+        };
+      }
+      this.blockedUntil.delete(key);
+    }
+
     const counter = await consumeUpstash({
       url: this.config.url,
       token: this.config.token,
-      key: `rl:${policy.name}:${subjectHash}`,
+      key,
       windowMs: policy.windowMs,
+      limit: policy.limit,
       fetchImpl: this.fetchImpl,
     });
-    const allowed = counter.count <= policy.limit;
+
+    if (counter.count <= policy.limit) {
+      return {
+        allowed: true,
+        remaining: Math.max(0, policy.limit - counter.count),
+        limit: policy.limit,
+        policy: policy.name,
+      };
+    }
+
+    const retryAfterSeconds = Math.max(1, Math.ceil(counter.ttlMs / 1000));
+    this.rememberBlock(key, this.now() + retryAfterSeconds * 1000);
     return {
-      allowed,
-      remaining: Math.max(0, policy.limit - counter.count),
+      allowed: false,
+      remaining: 0,
       limit: policy.limit,
       policy: policy.name,
-      ...(allowed
-        ? {}
-        : {
-            retryAfterSeconds: Math.max(1, Math.ceil(counter.ttlMs / 1000)),
-            reason: "limit" as const,
-          }),
+      retryAfterSeconds,
+      reason: "limit",
     };
+  }
+
+  private rememberBlock(key: string, untilMs: number): void {
+    if (this.blockedUntil.size >= MAX_CACHED_BLOCKS) {
+      const oldest = this.blockedUntil.keys().next().value;
+      if (oldest !== undefined) this.blockedUntil.delete(oldest);
+    }
+    this.blockedUntil.set(key, untilMs);
   }
 }
 
@@ -252,7 +299,11 @@ export function createRateLimitService(options: RateLimitServiceOptions = {}): R
   let hashSecret: string;
 
   if (config.driver === "upstash") {
-    limiter = new UpstashRateLimiter({ url: config.url, token: config.token }, options.fetchImpl);
+    limiter = new UpstashRateLimiter(
+      { url: config.url, token: config.token },
+      options.fetchImpl,
+      now,
+    );
     hashSecret = config.hashSecret;
   } else if (config.driver === "misconfigured") {
     limiter = new MisconfiguredRateLimiter(config.problems);

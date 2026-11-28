@@ -4,6 +4,7 @@ import { CommunityCard, EventCard, MiniLearningCard, PostCard } from "@/componen
 import { MemberShell } from "@/components/layout/member-shell";
 import { Badge, Card, EmptyState, SectionHeading, buttonClass } from "@/components/ui";
 import { events } from "@/data/seed";
+import { LearnerGettingStarted } from "@/features/onboarding/getting-started";
 import { useApp, usePosts } from "@/store/app-store";
 
 export const Route = createFileRoute("/home")({
@@ -56,6 +57,7 @@ function MemberHomePage() {
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_340px]">
           <div className="min-w-0 space-y-8">
+            <LearnerGettingStarted />
             <section>
               <SectionHeading
                 title="Continue learning"

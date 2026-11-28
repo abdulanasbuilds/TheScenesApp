@@ -4,7 +4,8 @@ import { BookOpen, Search, ShoppingBag, UserRound, Users, X } from "lucide-react
 import { PublicShell } from "@/components/layout/public-shell";
 import { Avatar, Badge, Button, Card, Chip, EmptyState } from "@/components/ui";
 import { communities, courses, creators, products } from "@/data/seed";
-import { formatCompact, formatMoney } from "@/lib/utils";
+import { communityAccessLabel, courseAccessLabel, productAccessLabel } from "@/lib/early-access";
+import { formatCompact } from "@/lib/utils";
 
 type SearchParams = { q: string; type: string };
 
@@ -40,7 +41,7 @@ function SearchResultsPage() {
         title: item.name,
         description: item.tagline,
         href: `/communities/${item.slug}`,
-        meta: `${formatCompact(item.members)} members · ${item.pricing.type === "free" ? "Free" : `$${item.pricing.amount}/month`}`,
+        meta: `${formatCompact(item.members)} members · ${communityAccessLabel(item.pricing, { compact: true })}`,
         hue: item.accentHue,
       })),
       ...courses.map((item) => ({
@@ -49,7 +50,7 @@ function SearchResultsPage() {
         title: item.title,
         description: item.subtitle,
         href: `/c/${item.communitySlug}/classroom/${item.slug}`,
-        meta: `${item.level} · ${item.hours} hours · ${item.price === "included" ? "Included" : formatMoney(item.price)}`,
+        meta: `${item.level} · ${item.hours} hours · ${courseAccessLabel(item.price)}`,
         hue: item.accentHue,
       })),
       ...creators.map((item) => ({
@@ -66,7 +67,7 @@ function SearchResultsPage() {
         title: item.title,
         description: item.blurb,
         href: `/marketplace/${item.slug}`,
-        meta: `${item.category} · ${formatMoney(item.price)}`,
+        meta: `${item.category} · ${productAccessLabel(item.price)}`,
         hue: item.accentHue,
       })),
     ],
@@ -151,9 +152,11 @@ function SearchResultsPage() {
         ) : (
           <EmptyState
             className="mt-4"
+            type="no-results"
             icon={<Search className="h-5 w-5" />}
             title="No results found"
             description="Check the spelling, use fewer words or search all result types."
+            helperText="Search covers scenes, courses, creators and resources."
             action={
               <Button
                 variant="secondary"
