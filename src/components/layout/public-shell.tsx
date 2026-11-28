@@ -230,6 +230,7 @@ export function PublicFooter() {
               links: [
                 ["About", "/about"],
                 ["Help centre", "/help"],
+                ["Send feedback", "/help#feedback"],
                 ["Product status", "/help#status"],
               ],
             },

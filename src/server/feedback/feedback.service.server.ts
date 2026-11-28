@@ -15,25 +15,30 @@ import { readFeedbackConfig, type FeedbackConfig } from "./feedback-config.serve
 import {
   FeedbackProviderError,
   MemoryFeedbackProvider,
-  WhatsAppFeedbackProvider,
   type FeedbackMessage,
   type FeedbackProvider,
 } from "./feedback-provider.server";
+import { GitHubIssuesFeedbackProvider } from "./github-issues.server";
 
 /**
  * P4-S4 feedback service.
  *
  * The caller-bound submission is rate-limited, validated, and reduced to the minimum operator
- * context: message, category, route, pseudonymous user ID (signed-in only), timestamp and request
- * ID. No cookie, token, email address, browser storage, protected content or raw header is ever
- * included in the server-built WhatsApp handoff.
+ * context: subject, message, category, area, route, pseudonymous user ID (signed-in only), timestamp,
+ * request ID and the client's stable submission ID. No cookie, token, email address, browser storage,
+ * protected content or raw header is ever included in the GitHub Issue the server creates.
  */
 
 let memoryProvider = new MemoryFeedbackProvider();
 
 function providerFor(config: FeedbackConfig): FeedbackProvider {
-  if (config.provider === "whatsapp") {
-    return new WhatsAppFeedbackProvider({ number: config.number });
+  if (config.provider === "github") {
+    return new GitHubIssuesFeedbackProvider({
+      owner: config.owner,
+      repo: config.repo,
+      token: config.token,
+      apiBase: config.apiBase,
+    });
   }
   return memoryProvider;
 }
@@ -107,13 +112,16 @@ export async function submitFeedback(
   );
 
   const message: FeedbackMessage = {
+    category: input.category,
+    subject: input.subject,
     text: input.message,
-    category: input.category ?? "general",
+    area: input.area ?? null,
     route: input.route,
     pseudonymousUserId: principal?.userId ?? null,
     role: principal ? "member" : "guest",
     occurredAt: new Date(now()).toISOString(),
     requestId: crypto.randomUUID(),
+    submissionId: input.submissionId,
   };
 
   const provider = options.provider ?? providerFor(config);

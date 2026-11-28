@@ -169,7 +169,8 @@ Introduce:
 - Resend;
 - PWA/web push where appropriate;
 - Redis rate limiting;
-- replaceable direct WhatsApp feedback channel (`wa.me`, ADR-048).
+- replaceable direct WhatsApp feedback channel (`wa.me`, ADR-048) — superseded by ADR-049.
+- GitHub Issues feedback in a private repository (ADR-049).
 
 ## Phase 5 — Teacher/creator operations
 

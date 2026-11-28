@@ -77,7 +77,8 @@ Current direction:
 - Resend: important transactional email.
 - Redis-compatible service: rate limiting/short-lived coordination.
 - Bunny.net: only if a later native video/live decision supersedes ADR-029.
-- WhatsApp: direct founder feedback through a zero-cost `wa.me` handoff (ADR-048).
+- WhatsApp: direct founder feedback through a zero-cost `wa.me` handoff (ADR-048) — superseded by ADR-049.
+- GitHub Issues: feedback creates an Issue in a private repository; the server calls the GitHub REST API (ADR-049).
 - Payments: deferred.
 - Search: Postgres first; smarter search later.
 - PWA/Web Push: installability and consented notifications.

@@ -141,7 +141,7 @@ function feedbackHealth(
   configuration: ConfigurationDiagnostic,
   source: RuntimeEnvSource,
 ): IntegrationHealth {
-  const required = ["FEEDBACK_PROVIDER", "WHATSAPP_FEEDBACK_NUMBER"];
+  const required = ["FEEDBACK_PROVIDER", "GITHUB_FEEDBACK_REPO", "GITHUB_FEEDBACK_TOKEN"];
   const base = {
     name: "feedback" as const,
     label: "Feedback channel",
@@ -149,12 +149,12 @@ function feedbackHealth(
   };
   const state = describeFeedbackProvider(readFeedbackConfig(source), configuration.dataMode);
 
-  if (state.state === "ready" && state.provider === "whatsapp") {
+  if (state.state === "ready" && state.provider === "github") {
     return Object.freeze({
       ...base,
       state: "ready" as const,
       detail:
-        "Feedback opens the founder's WhatsApp chat with a prepared message. Nothing is sent until the sender presses Send.",
+        "Feedback creates a GitHub Issue in the private feedback repository and is reported delivered only after GitHub confirms it.",
       missingVariables: [],
     });
   }
@@ -178,7 +178,7 @@ function feedbackHealth(
     ...base,
     state: "disabled" as const,
     detail: "No delivery channel is configured for this deployment.",
-    missingVariables: ["FEEDBACK_PROVIDER", "WHATSAPP_FEEDBACK_NUMBER"],
+    missingVariables: ["FEEDBACK_PROVIDER", "GITHUB_FEEDBACK_REPO", "GITHUB_FEEDBACK_TOKEN"],
   });
 }
 

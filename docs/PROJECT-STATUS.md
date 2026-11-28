@@ -7,15 +7,15 @@
 This is the one current plain-English checkpoint. Plans, audits and evidence files preserve history,
 but their old status paragraphs do not override this page, `AGENTS.md` or accepted ADRs.
 
-## Feedback switched to a direct WhatsApp chat — 26 November 2026 (ADR-048)
+## Feedback switched to GitHub Issues — 26 November 2026 (ADR-049)
 
-The Telegram bot could not be created, so the feedback backend was replaced with a direct
-`wa.me` WhatsApp chat to the founder's own number. `FEEDBACK_PROVIDER=whatsapp` plus
-`WHATSAPP_FEEDBACK_NUMBER` selects it; the number is a public contact, not a secret. The server
-adapter returns a `handoff` receipt with a prepared link and never claims delivery before the sender
-presses Send. A selected-but-incomplete WhatsApp configuration, including the retired `telegram`
-value, fails closed as `misconfigured`. Setup: `docs/WHATSAPP-FEEDBACK-SETUP.md`. The old
-`docs/TELEGRAM-FEEDBACK-SETUP.md` was removed. No real message, hosted variable or deployment is
+The WhatsApp direct-chat feedback backend (ADR-048) is replaced by a GitHub Issue created server-side
+through the official GitHub REST API. `FEEDBACK_PROVIDER=github` plus `GITHUB_FEEDBACK_REPO` and
+`GITHUB_FEEDBACK_TOKEN` selects it; those values are server-only and never committed. Each submission
+becomes an Issue with category labels and a title prefix such as `[BUG] Course enrollment problem`.
+The private repository is the founder's management interface — no feedback database, no Supabase
+feedback table, no owner dashboard. Setup: `docs/GITHUB-FEEDBACK-SETUP.md`. The old
+`docs/WHATSAPP-FEEDBACK-SETUP.md` was removed. No real token, hosted variable or deployment is
 claimed.
 
 ## P4-S2 rate limiter connected to Upstash — 19 November 2026 (local development only)
@@ -195,7 +195,7 @@ These are milestone estimates, not percentages generated from lines of code:
 - Phase 4 code/local: runtime configuration resolved from the merged Cloudflare `__env__` bindings plus
   `process.env` (ADR-045); build-time data-mode module removed; a misconfigured connected deployment
   fails closed with a variable-name-only notice. P4-S2 distributed rate limiting, P4-S3 connected
-  in-app notifications, P4-S4 WhatsApp/memory feedback provider and P4-S5 PWA/installability are
+  in-app notifications, P4-S4 GitHub Issues/memory feedback provider and P4-S5 PWA/installability are
   implemented with tests. Settings → Account shows a read-only integration health report (names and
   states only). P4-S6 web push, P4-S7 R2 and application (Resend) email are reported `disabled`.
 
