@@ -31,7 +31,7 @@ const MIGRATION = readFileSync(
     "../../supabase/migrations/20261111120000_phase4_0019_notifications.sql",
   ),
   "utf8",
-);
+).replaceAll("\r\n", "\n");
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const NOTIFICATION_ID = "22222222-2222-4222-8222-222222222222";

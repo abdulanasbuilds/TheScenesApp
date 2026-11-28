@@ -79,7 +79,7 @@ export const completeAccountPasswordRecovery = createServerFn({ method: "POST" }
     }),
   );
 
-/** Set the new password on the verified recovery session and revoke all sessions. */
+/** Set the new password and report whether global refresh-session revocation was confirmed. */
 export const updateRecoveredAccountPassword = createServerFn({ method: "POST" })
   .validator(nonThrowingTypedPassthrough)
   .handler(

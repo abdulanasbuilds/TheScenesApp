@@ -113,7 +113,7 @@ function ForgotPasswordPage() {
                 "Supabase Auth creates and verifies the single-use recovery token.",
                 "The link returns to the recovery-only page on this site.",
                 "Your password changes only after you confirm a new one.",
-                "All other sessions are signed out after the change.",
+                "Other refresh sessions are revoked after the change; already-issued access tokens may remain valid until they expire.",
               ].map((item) => (
                 <li key={item} className="flex gap-2">
                   <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600" />
@@ -289,6 +289,9 @@ function EmailSetupChecker() {
           <p className="flex items-start gap-1.5 text-slate-500">
             <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             {status.notes[0]}
+            {status.state === "requires-hosted-verification"
+              ? " Once connected, confirm the email arrives by opening the confirmation or recovery link in the same browser."
+              : ""}
           </p>
         </div>
       ) : null}

@@ -31,3 +31,13 @@ export const getIntegrationsHealth = createServerFn({ method: "GET" })
       return inspectIntegrations();
     }),
   );
+
+/** Returns the public PWA lifecycle mode. It never returns a credential or provider value. */
+export const getPwaRuntimeMode = createServerFn({ method: "GET" })
+  .validator(nonThrowingTypedPassthrough)
+  .handler(
+    withSafeHandler(z.unknown(), async () => {
+      const { readPwaMode } = await import("../../server/pwa/pwa-config.server");
+      return readPwaMode();
+    }),
+  );

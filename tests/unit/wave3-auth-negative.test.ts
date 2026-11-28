@@ -58,7 +58,10 @@ describe("Wave 3 — hosted Auth negative cases", () => {
     });
 
     test("accepts HTTPS origin for production use", () => {
-      const result = buildEmailConfirmationRedirect(new URL("https://app.thescenes.test/register"));
+      const result = buildEmailConfirmationRedirect(
+        new URL("https://app.thescenes.test/register"),
+        "https://app.thescenes.test",
+      );
       expect(result).toBe("https://app.thescenes.test/auth/confirm?next=%2Fonboarding");
     });
 
@@ -75,7 +78,12 @@ describe("Wave 3 — hosted Auth negative cases", () => {
     });
 
     test("confirmation URL always routes to /auth/confirm with next=/onboarding", () => {
-      const url = new URL(buildEmailConfirmationRedirect(new URL("https://app.example.test/")));
+      const url = new URL(
+        buildEmailConfirmationRedirect(
+          new URL("https://app.example.test/"),
+          "https://app.example.test",
+        ),
+      );
       expect(url.pathname).toBe("/auth/confirm");
       expect(url.searchParams.get("next")).toBe("/onboarding");
     });

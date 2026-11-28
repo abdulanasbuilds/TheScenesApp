@@ -6,6 +6,7 @@ import { buildEmailConfirmationRedirect } from "../../features/auth/redirects";
 import type { signInSchema, signUpSchema, updateProfileSchema } from "../../features/auth/schemas";
 import { getServerEnv } from "../env.server";
 import { applyPrivateNoStoreResponse } from "../http/errors.server";
+import { readRuntimeEnv } from "../runtime-env.server";
 import { ProfileRepository } from "../repositories/profile.repository.server";
 import { assertRateLimit, consumeRateLimit } from "../security/rate-limit.server";
 import { getVerifiedPrincipal } from "../supabase/auth.server";
@@ -22,6 +23,7 @@ export async function signUp(input: SignUpInput) {
     "Please wait before trying again.",
   );
   const env = getServerEnv();
+  const runtime = readRuntimeEnv();
   const client = createRequestSupabaseClient();
   const { data, error } = await client.auth.signUp({
     email: input.email,
@@ -29,7 +31,7 @@ export async function signUp(input: SignUpInput) {
     options: {
       data: { handle: input.handle, display_name: input.displayName },
       ...(env.dataMode === "supabase-staging"
-        ? { emailRedirectTo: buildEmailConfirmationRedirect(getRequestUrl()) }
+        ? { emailRedirectTo: buildEmailConfirmationRedirect(getRequestUrl(), runtime.APP_ORIGIN) }
         : {}),
     },
   });

@@ -19,6 +19,7 @@ import type {
 import { PublicAppError } from "../../features/shared/safe-handler";
 import { getServerEnv } from "../env.server";
 import { applyPrivateNoStoreResponse } from "../http/errors.server";
+import { readRuntimeEnv } from "../runtime-env.server";
 import {
   AuthRecoveryRepository,
   type AuthRecoveryRepositoryLike,
@@ -46,10 +47,11 @@ export type PasswordRecoveryDeps = Readonly<{
 
 export function createPasswordRecoveryDeps(): PasswordRecoveryDeps {
   const env = getServerEnv();
+  const runtime = readRuntimeEnv();
   return {
     mode: env.dataMode,
     repository: env.dataMode === "fixtures" ? null : new AuthRecoveryRepository(),
-    resolveRedirectTo: () => buildPasswordRecoveryRedirect(getRequestUrl()),
+    resolveRedirectTo: () => buildPasswordRecoveryRedirect(getRequestUrl(), runtime.APP_ORIGIN),
     consumeLimit: (subject) => consumeRateLimit("password-reset", subject),
     prepareResponse: applyPrivateNoStoreResponse,
   };
@@ -113,8 +115,14 @@ export async function completePasswordRecovery(
 }
 
 /**
- * Set the new password on the verified recovery session, then revoke every session so a stolen or
- * stale session cannot outlive the reset.
+ * Set the new password on the verified recovery session, then request global refresh-session
+ * revocation.
+ *
+ * The new password takes effect immediately. Refresh tokens for other sessions are revoked so they
+ * cannot be used to obtain new access tokens. Access tokens that were already issued and cached in
+ * other browser tabs may remain valid until they expire; the application still tries to sign them
+ * out, but its sign-out response is best-effort and is not treated as proof that a stolen token
+ * stopped working.
  */
 export async function updateRecoveredPassword(
   input: UpdateInput,
@@ -124,14 +132,17 @@ export async function updateRecoveredPassword(
   if (!deps.repository) {
     throw new PublicAppError("UNAVAILABLE", "Password reset is not available in this preview.");
   }
-  const error = await deps.repository.updatePassword(input.password);
-  if (error) {
-    const outcome = classifyRecoveryRequestError(error);
+  const passwordError = await deps.repository.updatePassword(input.password);
+  if (passwordError) {
+    const outcome = classifyRecoveryRequestError(passwordError);
     if (outcome === "unavailable") {
       throw new PublicAppError("UNAVAILABLE", UNAVAILABLE_MESSAGE);
     }
     throw new PublicAppError("UNAUTHENTICATED", "That reset link has expired. Request a new one.");
   }
-  await deps.repository.signOutEverywhere();
-  return { status: "updated" };
+  const signOutError = await deps.repository.signOutEverywhere();
+  return {
+    status: "updated",
+    sessionRevocation: signOutError ? "unconfirmed" : "confirmed",
+  };
 }

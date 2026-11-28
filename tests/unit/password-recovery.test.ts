@@ -99,7 +99,10 @@ describe("P4-S1 recovery redirect allowlist", () => {
 
   test("accepts HTTPS origins and always targets the recovery-only route", () => {
     const url = new URL(
-      buildPasswordRecoveryRedirect(new URL("https://app.example.test/forgot-password?next=/evil")),
+      buildPasswordRecoveryRedirect(
+        new URL("https://app.example.test/forgot-password?next=/evil"),
+        "https://app.example.test",
+      ),
     );
     expect(url.origin).toBe("https://app.example.test");
     expect(url.pathname).toBe("/reset-password");
@@ -114,6 +117,15 @@ describe("P4-S1 recovery redirect allowlist", () => {
       "not approved",
     );
     expect(() => resolveApprovedAccountEmailOrigin(new URL("ftp://app.test/"))).toThrow(
+      "not approved",
+    );
+    expect(() =>
+      resolveApprovedAccountEmailOrigin(
+        new URL("https://attacker.example.test/"),
+        "https://app.example.test",
+      ),
+    ).toThrow("not approved");
+    expect(() => resolveApprovedAccountEmailOrigin(new URL("https://app.example.test/"))).toThrow(
       "not approved",
     );
   });
@@ -289,9 +301,19 @@ describe("P4-S1 recovery service", () => {
     const updated = makeRepo();
     expect(
       await updateRecoveredPassword({ password: "a-new-safe-password" }, deps(updated.repository)),
-    ).toEqual({ status: "updated" });
+    ).toEqual({ status: "updated", sessionRevocation: "confirmed" });
     expect(updated.calls.update).toEqual(["a-new-safe-password"]);
     expect(updated.calls.signOut).toBe(1);
+
+    const revocationUnavailable = makeRepo({
+      signOutEverywhere: async () => ({ status: 503, code: "unavailable" }),
+    });
+    expect(
+      await updateRecoveredPassword(
+        { password: "a-new-safe-password" },
+        deps(revocationUnavailable.repository),
+      ),
+    ).toEqual({ status: "updated", sessionRevocation: "unconfirmed" });
 
     const expired = makeRepo({ updatePassword: async () => ({ status: 400 }) });
     await expect(

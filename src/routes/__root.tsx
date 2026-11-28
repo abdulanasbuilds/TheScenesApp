@@ -5,13 +5,18 @@ import { getCurrentViewer } from "@/features/auth/auth.functions";
 import { getConnectedCatalog, getLearningState } from "@/features/learning/learning.functions";
 import { getNotificationUnreadCount } from "@/features/notifications/notifications.functions";
 import { resolveRuntimeConfiguration } from "@/features/shared/runtime-mode";
+import { getPwaRuntimeMode } from "@/features/shared/setup.functions";
 import { PwaExperience } from "@/features/pwa/pwa-experience";
 import { AppProvider, ToastProvider } from "@/store/app-store";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
   loader: async () => {
-    const configuration = await resolveRuntimeConfiguration();
+    const [configuration, pwaResult] = await Promise.all([
+      resolveRuntimeConfiguration(),
+      getPwaRuntimeMode({ data: undefined }),
+    ]);
+    const pwaMode = pwaResult.ok ? pwaResult.data : ("retire" as const);
     const { dataMode } = configuration;
 
     if (dataMode === "fixtures") {
@@ -22,6 +27,7 @@ export const Route = createRootRoute({
         catalog: null,
         learningState: null,
         notificationSummary: null,
+        pwaMode,
       } as const;
     }
     const [viewerResult, catalogResult, learningResult, notificationResult] = await Promise.all([
@@ -39,6 +45,7 @@ export const Route = createRootRoute({
         ? learningResult.data
         : { enrolledCourseIds: [], completedLessonIds: [] },
       notificationSummary: notificationResult.ok ? notificationResult.data : { unreadCount: 0 },
+      pwaMode,
     } as const;
   },
   head: () => ({
@@ -68,7 +75,7 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const { dataMode, configuration, viewer, catalog, learningState, notificationSummary } =
+  const { dataMode, configuration, viewer, catalog, learningState, notificationSummary, pwaMode } =
     Route.useLoaderData();
 
   if (configuration.requestedMode === "invalid") {
@@ -97,7 +104,7 @@ function RootComponent() {
             Skip to content
           </a>
           <Outlet />
-          <PwaExperience />
+          <PwaExperience mode={pwaMode} />
         </AppProvider>
       </ToastProvider>
     </RootDocument>

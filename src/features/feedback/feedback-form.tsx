@@ -5,7 +5,7 @@ import { FEEDBACK_MESSAGE_MAX, FEEDBACK_MESSAGE_MIN } from "./contracts";
 import { getFeedbackProviderStatus, sendFeedback } from "./feedback.functions";
 
 type ChannelStatus = Readonly<{
-  state: "ready" | "disabled" | "missing" | "misconfigured" | "unhealthy";
+  state: "ready" | "configured-unverified" | "disabled" | "missing" | "misconfigured" | "unhealthy";
   provider: "memory" | "telegram" | null;
   dataMode: string;
 }>;
@@ -41,6 +41,7 @@ export function FeedbackForm({ route }: Readonly<{ route: string }>) {
   }, []);
 
   const deliveredToTeam = channel?.provider === "telegram";
+  const isMisconfigured = channel?.state === "misconfigured";
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -81,7 +82,7 @@ export function FeedbackForm({ route }: Readonly<{ route: string }>) {
             <TriangleAlert className="h-4 w-4 text-amber-600" />
           )}
           {receipt.delivery === "provider"
-            ? "Sent to the internal channel"
+            ? "Sent to the internal Telegram chat"
             : "Saved to the local preview inbox"}
         </p>
         <p className="mt-1.5 text-sm leading-6 text-slate-600">
@@ -96,14 +97,33 @@ export function FeedbackForm({ route }: Readonly<{ route: string }>) {
     );
   }
 
+  if (isMisconfigured) {
+    return (
+      <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
+        <p className="flex items-center gap-2 text-sm font-bold text-amber-950">
+          <TriangleAlert className="h-4 w-4 text-amber-600" />
+          Feedback unavailable — needs configuration
+        </p>
+        <p className="mt-1.5 text-sm leading-6 text-amber-900">
+          The Telegram destination is incomplete on this deployment, so feedback cannot be sent.
+          Nothing is being stored or silently delivered elsewhere.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={submit} className="mt-4 space-y-4" noValidate>
       <div className="flex flex-wrap items-center gap-2">
         {channel === null ? (
           <Badge tone="outline">Checking channel…</Badge>
+        ) : isMisconfigured ? (
+          <Badge tone="amber">
+            <TriangleAlert className="h-3 w-3" /> Unavailable — needs config
+          </Badge>
         ) : deliveredToTeam ? (
           <Badge tone="green">
-            <ShieldCheck className="h-3 w-3" /> Internal channel
+            <ShieldCheck className="h-3 w-3" /> Telegram configured
           </Badge>
         ) : (
           <Badge tone="amber">

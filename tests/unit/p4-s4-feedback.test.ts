@@ -8,6 +8,7 @@ import {
   FeedbackProviderError,
   formatFeedbackMessage,
   MemoryFeedbackProvider,
+  TelegramFeedbackProvider,
   type FeedbackMessage,
   type FeedbackProvider,
 } from "../../src/server/feedback/feedback-provider.server";
@@ -75,6 +76,16 @@ describe("P4-S4 feedback configuration", () => {
     });
   });
 
+  test("accepts only numeric private or group chat IDs", () => {
+    expect(
+      readFeedbackConfig({
+        FEEDBACK_PROVIDER: "telegram",
+        TELEGRAM_BOT_TOKEN: BOT_TOKEN,
+        TELEGRAM_FEEDBACK_CHAT_ID: "@publicchannel",
+      }),
+    ).toEqual({ provider: "misconfigured", problems: ["TELEGRAM_FEEDBACK_CHAT_ID"] });
+  });
+
   test("treats the in-memory provider as disabled for a hosted deployment", () => {
     expect(describeFeedbackProvider({ provider: "memory" }, "supabase-staging")).toEqual({
       state: "disabled",
@@ -95,7 +106,10 @@ describe("P4-S4 feedback service", () => {
     };
 
     const receipt = await submitFeedback(
-      { message: "The keyboard focus is lost after saving my profile.", route: "/settings" },
+      {
+        message: "The keyboard focus is lost after saving my profile.",
+        route: "/settings?email=private%40example.test#security",
+      },
       {
         ...silent,
         config: { provider: "memory" },
@@ -118,6 +132,7 @@ describe("P4-S4 feedback service", () => {
       occurredAt: "2026-11-11T12:00:00.000Z",
     });
     expect(JSON.stringify(captured)).not.toContain("a@b.test");
+    expect(JSON.stringify(captured)).not.toContain("private%40example.test");
   });
 
   test("fails closed when the rate limit rejects the submission", async () => {
@@ -216,6 +231,37 @@ describe("P4-S4 provider and formatting", () => {
     expect(text).toContain("<b>*bold*</b>");
     expect(text).toContain("From: anonymous");
   });
+
+  test("requires Telegram's JSON body to confirm delivery", async () => {
+    const message: FeedbackMessage = {
+      text: "A valid test message.",
+      route: "/help",
+      pseudonymousUserId: null,
+      occurredAt: "2026-11-11T12:00:00.000Z",
+      requestId: "r1",
+    };
+    const delivered = new TelegramFeedbackProvider(
+      { botToken: BOT_TOKEN, chatId: "-1001234567890" },
+      async () =>
+        new Response(JSON.stringify({ ok: true, result: { message_id: 42 } }), { status: 200 }),
+    );
+    expect(await delivered.submit(message)).toEqual({
+      delivery: "provider",
+      reference: "telegram:42",
+    });
+
+    const rejected = new TelegramFeedbackProvider(
+      { botToken: BOT_TOKEN, chatId: "-1001234567890" },
+      async () => new Response(JSON.stringify({ ok: false }), { status: 200 }),
+    );
+    await expect(rejected.submit(message)).rejects.toMatchObject({ cause: "rejected" });
+
+    const malformed = new TelegramFeedbackProvider(
+      { botToken: BOT_TOKEN, chatId: "-1001234567890" },
+      async () => new Response("not-json", { status: 200 }),
+    );
+    await expect(malformed.submit(message)).rejects.toMatchObject({ cause: "body" });
+  });
 });
 
 describe("integration health", () => {
@@ -231,6 +277,8 @@ describe("integration health", () => {
       UPSTASH_REDIS_REST_URL: "https://example.upstash.io",
       UPSTASH_REDIS_REST_TOKEN: "opaque-token-value",
       RATE_LIMIT_HASH_SECRET: "0123456789abcdef",
+      APP_ORIGIN: "https://app.thescenes.test",
+      PWA_MODE: "enabled",
     });
 
     const serialized = JSON.stringify(report);
@@ -238,8 +286,17 @@ describe("integration health", () => {
     expect(serialized).not.toContain("opaque-token-value");
     expect(serialized).not.toContain("abcdefghijklmnopqrst");
     expect(report.ok).toBe(true);
-    expect(report.integrations.find((item) => item.name === "supabase")?.state).toBe("ready");
-    expect(report.integrations.find((item) => item.name === "rate-limit")?.state).toBe("ready");
-    expect(report.integrations.find((item) => item.name === "feedback")?.state).toBe("ready");
+    expect(report.integrations.find((item) => item.name === "supabase")?.state).toBe(
+      "configured-unverified",
+    );
+    expect(report.integrations.find((item) => item.name === "rate-limit")?.state).toBe(
+      "configured-unverified",
+    );
+    expect(report.integrations.find((item) => item.name === "feedback")?.state).toBe(
+      "configured-unverified",
+    );
+    expect(report.integrations.find((item) => item.name === "notifications")?.state).toBe(
+      "configured-unverified",
+    );
   });
 });

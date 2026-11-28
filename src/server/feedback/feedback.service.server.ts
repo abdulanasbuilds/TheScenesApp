@@ -12,6 +12,7 @@ import {
 } from "../security/rate-limit.server";
 import { getVerifiedPrincipal, type VerifiedPrincipal } from "../supabase/auth.server";
 import { readFeedbackConfig, type FeedbackConfig } from "./feedback-config.server";
+import { sanitizeFeedbackRoute } from "./sanitize-route.server";
 import {
   FeedbackProviderError,
   MemoryFeedbackProvider,
@@ -107,7 +108,7 @@ export async function submitFeedback(
 
   const message: FeedbackMessage = {
     text: input.message,
-    route: input.route,
+    route: sanitizeFeedbackRoute(input.route),
     pseudonymousUserId: principal?.userId ?? null,
     occurredAt: new Date(now()).toISOString(),
     requestId: crypto.randomUUID(),
@@ -120,7 +121,7 @@ export async function submitFeedback(
     log("info", "feedback_accepted", {
       provider: provider.kind,
       delivery: result.delivery,
-      route: input.route,
+      route: message.route,
       signedIn: principal !== null,
     });
     return Object.freeze({

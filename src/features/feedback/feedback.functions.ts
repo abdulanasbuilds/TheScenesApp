@@ -26,8 +26,9 @@ export const getFeedbackProviderStatus = createServerFn({ method: "GET" })
         ]);
       const report = inspectIntegrations();
       const state = describeFeedbackProvider(readFeedbackConfig(), report.dataMode);
+      const health = report.integrations.find((integration) => integration.name === "feedback");
       return {
-        state: state.state,
+        state: health?.state ?? "unhealthy",
         provider: state.state === "ready" ? state.provider : null,
         dataMode: report.dataMode,
       } as const;

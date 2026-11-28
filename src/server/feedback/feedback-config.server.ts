@@ -25,8 +25,8 @@ export type FeedbackConfig =
 
 /** Telegram bot tokens look like `123456789:AA...` (35+ characters after the colon). */
 const TELEGRAM_BOT_TOKEN = /^\d{6,12}:[A-Za-z0-9_-]{30,64}$/;
-/** Numeric chat IDs (possibly negative for groups/channels) or an `@channelusername`. */
-const TELEGRAM_CHAT_ID = /^(?:-?\d{5,20}|@[A-Za-z0-9_]{5,32})$/;
+/** Numeric chat IDs only (positive for a private chat, commonly negative for a group). */
+const TELEGRAM_CHAT_ID = /^-?\d{5,20}$/;
 
 export function readFeedbackConfig(source: RuntimeEnvSource = readRuntimeEnv()): FeedbackConfig {
   const provider = (source.FEEDBACK_PROVIDER ?? "memory").trim().toLowerCase();

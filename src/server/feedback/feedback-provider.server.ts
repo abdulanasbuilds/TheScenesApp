@@ -20,7 +20,7 @@ export type FeedbackResult = Readonly<{ delivery: FeedbackDelivery; reference: s
 
 export class FeedbackProviderError extends Error {
   constructor(
-    readonly cause: "configuration" | "network" | "rejected",
+    readonly cause: "configuration" | "network" | "rejected" | "body",
     message: string,
   ) {
     super(message);
@@ -60,8 +60,7 @@ export class MemoryFeedbackProvider implements FeedbackProvider {
 }
 
 export const TELEGRAM_TIMEOUT_MS = 3000;
-
-type TelegramResponse = { result?: { message_id?: unknown } };
+export type TelegramFetch = (input: string, init: RequestInit) => Promise<Response>;
 
 /** Format the operator message as plain text so no Markdown/HTML injection is possible. */
 export function formatFeedbackMessage(message: FeedbackMessage): string {
@@ -81,12 +80,18 @@ export function formatFeedbackMessage(message: FeedbackMessage): string {
   ].join("\n");
 }
 
+/**
+ * A minimal Telegram response envelope. The full provider body is never returned to callers,
+ * so a malformed or partial response cannot leak details and is treated as a delivery failure.
+ */
+export type TelegramOkResponse = Readonly<{ ok: boolean; result?: { message_id?: unknown } }>;
+
 export class TelegramFeedbackProvider implements FeedbackProvider {
   readonly kind = "telegram" as const;
 
   constructor(
     private readonly config: Readonly<{ botToken: string; chatId: string }>,
-    private readonly fetchImpl: typeof fetch = fetch,
+    private readonly fetchImpl: TelegramFetch = fetch,
   ) {}
 
   async submit(message: FeedbackMessage): Promise<FeedbackResult> {
@@ -115,16 +120,24 @@ export class TelegramFeedbackProvider implements FeedbackProvider {
       throw new FeedbackProviderError("rejected", `The feedback provider rejected the message.`);
     }
 
-    let reference: string | null = null;
+    let body: TelegramOkResponse;
     try {
-      const body = (await response.json()) as TelegramResponse;
-      const messageId = body?.result?.message_id;
-      if (typeof messageId === "number") reference = `telegram:${messageId}`;
+      body = (await response.json()) as TelegramOkResponse;
     } catch {
-      // A missing/unreadable body is not a delivery failure; the 2xx status already confirms it.
-      reference = null;
+      throw new FeedbackProviderError(
+        "body",
+        "The provider did not return a valid delivery confirmation.",
+      );
     }
 
-    return { delivery: "provider", reference };
+    const messageId = body?.result?.message_id;
+    if (!body || typeof body !== "object" || body.ok !== true || typeof messageId !== "number") {
+      throw new FeedbackProviderError(
+        "rejected",
+        "The provider responded, but delivery was not confirmed.",
+      );
+    }
+
+    return { delivery: "provider", reference: `telegram:${messageId}` };
   }
 }

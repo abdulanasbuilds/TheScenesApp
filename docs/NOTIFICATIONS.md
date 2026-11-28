@@ -1,8 +1,9 @@
 # Connected in-app notifications (P4-S3)
 
-**Status:** P4-S3 implemented as code/local work (ADR-044, 11 November 2026). Remote actions: **NONE**.
-The migration is authored and locally reviewed; it is **not** applied to any hosted project. No
-push/email provider is connected.
+**Status:** P4-S3 implemented under ADR-044. On 15 November 2026 the founder explicitly authorized the
+hosted connection and migration; `20261111120000_phase4_0019_notifications.sql` is applied to THE
+SCENES (`okdzuqgzgnmmbtjxdaci`) and its migration history, RLS, grants, policies, indexes, trigger and
+private function were verified. No push/email provider is connected.
 
 This document is the operator and reviewer reference for the notification tables, the client/server
 surface and the event/preference matrix.
@@ -109,6 +110,7 @@ tampered cursor becomes a normal field validation error, never a malformed query
 ## Verification
 
 Code/local evidence: `docs/evidence/phase-4/2026-11-11-p4-s3-notifications/`.
+Hosted migration evidence: `docs/evidence/phase-4/2026-11-15-p4-s3-hosted/`.
 
 - `tests/unit/p4-s3-notifications.test.ts` — cursor encode/decode/keyset filter, href allowlist,
   preference defaults, list-input validation, repository mapping/ownership, and **static migration
@@ -116,21 +118,18 @@ Code/local evidence: `docs/evidence/phase-4/2026-11-11-p4-s3-notifications/`.
 - Full set: `bun run test:unit`, `typecheck`, `lint`, `verify:client-boundary`, `build`, `test:fixture`
   and `git diff --check` all pass.
 
-**Not run:** the local database gate (`bun run test:db`) could not run — the Docker daemon was
-unavailable. The live RLS/constraint allow-deny matrix and `EXPLAIN` plans remain owed and must run on a
-machine with Docker before this slice is treated as database-verified. The static migration-contract
-tests are a substitute for, not a replacement of, the live gate.
+The remote metadata gate confirms the schema boundary. A two-user connected browser/RLS behavior matrix
+and representative-data query plans remain owed; the project currently has no hosted catalogue or user
+rows with which to exercise those flows. Docker/local DB verification remains deferred under ADR-046.
 
-## Hosted steps (not authorized in this slice)
+## Hosted state
 
-Applying the migration to THE SCENES (`okdzuqgzgnmmbtjxdaci`) or any hosted project is a separate,
-explicitly approved action. Until then, connected notifications only work after a local stack is running
-and the migration is applied locally.
+The hosted project records exactly migrations 0001–0019. Both notification tables are empty, have RLS
+enabled and expose no anonymous grants. Application deployment and real-user verification remain
+separate actions.
 
 ## Rollback
 
-The migration is additive. Drop the `audit_events_create_notification` trigger, the
-`private.create_notification_from_audit_event()` function, and the two tables; revert
-`src/features/notifications/`, `src/server/{repositories,services}/notification.*.server.ts`, the
-`notifications.tsx` route, the settings notifications tab, and the root-loader/store summary wiring. No
-hosted state exists to undo.
+The migration is additive. Routine rollback disables application wiring while preserving rows. Any
+hosted trigger/function/table removal requires a separately reviewed forward migration and explicit
+destructive approval; do not drop populated tables as an operational rollback.

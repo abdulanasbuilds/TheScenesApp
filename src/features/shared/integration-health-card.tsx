@@ -8,7 +8,7 @@ import { Badge, Card } from "@/components/ui";
 export type IntegrationHealthItem = Readonly<{
   name: string;
   label: string;
-  state: "ready" | "disabled" | "missing" | "misconfigured" | "unhealthy";
+  state: "ready" | "configured-unverified" | "disabled" | "missing" | "misconfigured" | "unhealthy";
   detail: string;
   requiredVariables: readonly string[];
   missingVariables: readonly string[];
@@ -23,6 +23,7 @@ export type IntegrationsReportData = Readonly<{
 
 const STATE_TONE = {
   ready: "green",
+  "configured-unverified": "amber",
   disabled: "slate",
   missing: "amber",
   misconfigured: "amber",
@@ -31,6 +32,7 @@ const STATE_TONE = {
 
 const STATE_LABEL = {
   ready: "Ready",
+  "configured-unverified": "Configured — verify",
   disabled: "Not enabled",
   missing: "Missing configuration",
   misconfigured: "Needs attention",
@@ -45,8 +47,8 @@ export function IntegrationHealthCard({ report }: Readonly<{ report: Integration
         <h2 className="font-display text-lg font-extrabold text-slate-900">Connected services</h2>
       </div>
       <p className="mt-1 text-sm leading-6 text-slate-600">
-        What this deployment can reach right now, and the variable names it reads. Only names are
-        shown — never a value.
+        What this deployment has configured, what still needs a real-provider check, and the
+        variable names it reads. Only names are shown — never a value.
       </p>
 
       <ul className="mt-4 space-y-3">

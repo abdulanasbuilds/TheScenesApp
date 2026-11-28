@@ -8,8 +8,9 @@ sent. No hosted project mutated.
 
 ## Implemented
 
-- `src/features/feedback/schemas.ts`: bounded, server-validated submission contract (message length,
-  category enum, optional contact address, `route` restricted to a safe internal path, honeypot field).
+- `src/features/feedback/schemas.ts`: bounded, server-validated submission contract (message length and
+  `route` restricted to a safe internal path). The server strips query strings and fragments before
+  delivery or logging. There is no contact-address field, category field or honeypot in this slice.
 - `src/features/feedback/contracts.ts`: the shared result contract (`ok` / typed failure) with codes
   limited to `UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|CONFLICT|RATE_LIMITED|UNAVAILABLE`.
 - `src/features/feedback/feedback.functions.ts`: `createServerFn` entry point wrapped by
@@ -28,14 +29,14 @@ sent. No hosted project mutated.
 
 ## Behavior guarantees
 
-| Situation | Behavior |
-| --- | --- |
-| `FEEDBACK_PROVIDER` unset | `memory` provider; delivery state `local-preview` (never claims a human received it) |
-| `FEEDBACK_PROVIDER=telegram` and both variables present | posts to the internal chat; failures return `UNAVAILABLE` |
+| Situation                                                   | Behavior                                                                                               |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `FEEDBACK_PROVIDER` unset                                   | `memory` provider; delivery state `local-preview` (never claims a human received it)                   |
+| `FEEDBACK_PROVIDER=telegram` and both variables present     | posts to the internal chat; failures return `UNAVAILABLE`                                              |
 | `FEEDBACK_PROVIDER=telegram` and a variable missing/invalid | reported `misconfigured`; submissions fail closed with `UNAVAILABLE`; **never** downgraded to `memory` |
-| Fixture/no mode configured | anonymous submission accepted; no Supabase client is constructed |
-| Rate limited | returns `RATE_LIMITED` |
-| Malformed input | rejected by the shared schema before the provider is called |
+| Fixture/no mode configured                                  | anonymous submission accepted; no Supabase client is constructed                                       |
+| Rate limited                                                | returns `RATE_LIMITED`                                                                                 |
+| Malformed input                                             | rejected by the shared schema before the provider is called                                            |
 
 The delivery status of a `memory` submission is `local-preview`, which explicitly does not assert that
 a person received the message.
@@ -50,24 +51,25 @@ is not a safe internal path, so the field cannot be used for an open redirect or
 
 ## Verification
 
-| Check | Result |
-| --- | --- |
-| `bun test tests/unit/p4-s4-feedback.test.ts` | 14 passed, 0 failed |
-| `bun run test:unit` | 264 passed, 0 failed (23 files) |
-| `bun run typecheck` | clean |
-| `bun run lint` | clean |
-| `bun run verify:client-boundary` | pass |
-| `bun run build` | success |
-| `git diff --check` | clean |
+| Check                                        | Result                          |
+| -------------------------------------------- | ------------------------------- |
+| `bun test tests/unit/p4-s4-feedback.test.ts` | 14 passed, 0 failed             |
+| `bun run test:unit`                          | 264 passed, 0 failed (23 files) |
+| `bun run typecheck`                          | clean                           |
+| `bun run lint`                               | clean                           |
+| `bun run verify:client-boundary`             | pass                            |
+| `bun run build`                              | success                         |
+| `git diff --check`                           | clean                           |
 
 Environment: Bun 1.4.4, Node v26.12.1, TypeScript 5.9.3, Playwright 1.64.1.
 
 ## Security review summary
 
 - The bot token and chat ID are read only on the server and never returned to the client.
-- Input is length-bounded and validated; the honeypot field suppresses trivial bots.
+- Input is length-bounded and validated; repeated submissions are controlled by the shared feedback
+  rate limit.
 - Submissions are rate limited by the shared `feedback` policy.
-- A misconfigured Telegram channel fails closed; there is no silent path to a fake success.
+- A misconfigured Telegram bot destination fails closed; there is no silent path to a fake success.
 - Critical findings: 0. High findings: 0.
 
 ## Not run / not authorized

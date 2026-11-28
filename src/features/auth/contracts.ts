@@ -40,7 +40,10 @@ export const recoverySessionStatusSchema = z.object({
 
 export type RecoverySessionStatus = z.infer<typeof recoverySessionStatusSchema>;
 
-export const recoveredPasswordStatusSchema = z.object({ status: z.literal("updated") });
+export const recoveredPasswordStatusSchema = z.object({
+  status: z.literal("updated"),
+  sessionRevocation: z.enum(["confirmed", "unconfirmed"]),
+});
 
 export type RecoveredPasswordStatus = z.infer<typeof recoveredPasswordStatusSchema>;
 

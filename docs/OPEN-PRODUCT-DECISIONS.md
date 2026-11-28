@@ -29,7 +29,7 @@ historical text below.
 - Connect bot to The Scenes application
 - Identify pages/sections where feedback widget appears
 - Pass user feedback + context (page, user ID, timestamp) to bot
-- Founder receives feedback in Telegram channel
+- Founder receives feedback from the Telegram bot in an approved private chat or group
 
 **Affected Architecture:** TS-FEED-001, feedback widget component, Telegram bot integration (Phase 4)
 
