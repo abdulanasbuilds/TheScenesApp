@@ -1,9 +1,11 @@
 import "@tanstack/react-start/server-only";
+import { normalizeApprovedHostedOrigin } from "../../features/auth/redirects";
 import type { ConfigurationDiagnostic } from "../env.server";
 import { inspectServerConfiguration } from "../env.server";
 import { readRuntimeEnv, type RuntimeEnvSource } from "../runtime-env.server";
 import { readRateLimitConfig } from "../security/rate-limit-config.server";
 import { describeFeedbackProvider, readFeedbackConfig } from "../feedback/feedback-config.server";
+import { readPwaMode } from "../pwa/pwa-config.server";
 
 /**
  * Non-leaking integration health for the current deployment.
@@ -17,12 +19,15 @@ export type IntegrationName =
   | "supabase"
   | "rate-limit"
   | "feedback"
+  | "notifications"
   | "account-email"
   | "application-email"
   | "web-push"
-  | "object-storage";
+  | "object-storage"
+  | "pwa";
 
-export type IntegrationState = "ready" | "disabled" | "missing" | "misconfigured" | "unhealthy";
+export type IntegrationState =
+  "ready" | "configured-unverified" | "disabled" | "missing" | "misconfigured" | "unhealthy";
 
 export type IntegrationHealth = Readonly<{
   name: IntegrationName;
@@ -39,7 +44,7 @@ export type IntegrationsReport = Readonly<{
   dataMode: ConfigurationDiagnostic["dataMode"];
   generatedAt: string;
   integrations: readonly IntegrationHealth[];
-  /** True when every integration that is expected to be on in this mode is `ready`. */
+  /** True when configuration is coherent; this is not a real-provider verification claim. */
   ok: boolean;
 }>;
 
@@ -71,16 +76,16 @@ function supabaseHealth(configuration: ConfigurationDiagnostic): IntegrationHeal
   if (configuration.ok && configuration.dataMode === "supabase-local") {
     return Object.freeze({
       ...base,
-      state: "ready" as const,
-      detail: "Connected to the local Supabase proof.",
+      state: "configured-unverified" as const,
+      detail: "Local Supabase variables are valid. Reachability must be checked separately.",
       missingVariables: [],
     });
   }
   if (configuration.ok && configuration.dataMode === "supabase-staging") {
     return Object.freeze({
       ...base,
-      state: "ready" as const,
-      detail: "Connected to the hosted Supabase project.",
+      state: "configured-unverified" as const,
+      detail: "Hosted Supabase variables are valid. Reachability must be checked separately.",
       missingVariables: [],
     });
   }
@@ -108,8 +113,9 @@ function rateLimitHealth(
   if (config.driver === "upstash") {
     return Object.freeze({
       ...base,
-      state: "ready" as const,
-      detail: "Distributed limiting is active across instances.",
+      state: "configured-unverified" as const,
+      detail:
+        "Distributed limiter variables are valid. One controlled Upstash request is still required to verify reachability.",
       missingVariables: [],
     });
   }
@@ -144,7 +150,7 @@ function feedbackHealth(
   const required = ["FEEDBACK_PROVIDER", "GITHUB_FEEDBACK_REPO", "GITHUB_FEEDBACK_TOKEN"];
   const base = {
     name: "feedback" as const,
-    label: "Feedback channel",
+    label: "Feedback delivery",
     requiredVariables: required,
   };
   const state = describeFeedbackProvider(readFeedbackConfig(source), configuration.dataMode);
@@ -161,7 +167,7 @@ function feedbackHealth(
   if (state.state === "ready") {
     return Object.freeze({
       ...base,
-      state: "ready" as const,
+      state: "disabled" as const,
       detail: "Feedback is captured in a local preview inbox and is not delivered.",
       missingVariables: [],
     });
@@ -182,16 +188,106 @@ function feedbackHealth(
   });
 }
 
-function accountEmailHealth(configuration: ConfigurationDiagnostic): IntegrationHealth {
+function accountEmailHealth(
+  configuration: ConfigurationDiagnostic,
+  source: RuntimeEnvSource,
+): IntegrationHealth {
+  if (!configuration.ok) {
+    return Object.freeze({
+      name: "account-email" as const,
+      label: "Account email (confirmation, recovery)",
+      state: "disabled" as const,
+      detail: "Account email is inactive until the application data configuration is valid.",
+      requiredVariables: ["APP_ORIGIN"],
+      missingVariables: [],
+    });
+  }
+
   const fixture = configuration.dataMode === "fixtures";
+  const hosted = configuration.dataMode === "supabase-staging";
+  const requiredVariables = hosted ? ["APP_ORIGIN"] : [];
+  const configuredOrigin = normalizeApprovedHostedOrigin(source.APP_ORIGIN);
+  const originMissing = hosted && (source.APP_ORIGIN ?? "").trim() === "";
+  const originInvalid = hosted && !originMissing && configuredOrigin === null;
+
+  if (originMissing || originInvalid) {
+    return Object.freeze({
+      name: "account-email" as const,
+      label: "Account email (confirmation, recovery)",
+      state: originMissing ? ("missing" as const) : ("misconfigured" as const),
+      detail: originMissing
+        ? "Set APP_ORIGIN to the exact approved HTTPS application origin before hosted account email is enabled."
+        : "APP_ORIGIN must be one exact HTTPS origin with no path, query, fragment or credentials.",
+      requiredVariables,
+      missingVariables: ["APP_ORIGIN"],
+    });
+  }
+
   return Object.freeze({
     name: "account-email" as const,
     label: "Account email (confirmation, recovery)",
-    state: (fixture ? "disabled" : "ready") as IntegrationState,
+    state: (fixture ? "disabled" : "configured-unverified") as IntegrationState,
     detail: fixture
       ? "Fixture mode sends no account email."
-      : "Delivery is owned by Supabase Auth custom SMTP; verified in the Supabase dashboard.",
+      : "Delivered by Supabase Auth custom SMTP. SMTP credentials, domain and templates are owned by the Supabase dashboard and must be verified by inbox test once connected.",
+    requiredVariables,
+    missingVariables: [],
+  });
+}
+
+function notificationsHealth(configuration: ConfigurationDiagnostic): IntegrationHealth {
+  if (!configuration.ok) {
+    return Object.freeze({
+      name: "notifications" as const,
+      label: "In-app notifications",
+      state: "disabled" as const,
+      detail:
+        "Connected notifications are inactive until the application data configuration is valid.",
+      requiredVariables: [],
+      missingVariables: [],
+    });
+  }
+
+  const fixture = configuration.dataMode === "fixtures";
+  return Object.freeze({
+    name: "notifications" as const,
+    label: "In-app notifications",
+    state: fixture ? ("disabled" as const) : ("configured-unverified" as const),
+    detail: fixture
+      ? "Fixture notifications are local only; no database migration is used."
+      : "Application code is configured. The notification migration and owner-only access matrix still require database verification.",
     requiredVariables: [],
+    missingVariables: [],
+  });
+}
+
+function pwaHealth(source: RuntimeEnvSource): IntegrationHealth {
+  const configuredValue = source.PWA_MODE?.trim().toLowerCase();
+  const invalid =
+    configuredValue !== undefined &&
+    configuredValue !== "" &&
+    configuredValue !== "enabled" &&
+    configuredValue !== "retire";
+  const mode = readPwaMode(source);
+  if (invalid) {
+    return Object.freeze({
+      name: "pwa" as const,
+      label: "Installable/offline application",
+      state: "misconfigured" as const,
+      detail: "PWA_MODE must be either enabled or retire. Invalid values fail safe to retirement.",
+      requiredVariables: ["PWA_MODE"],
+      missingVariables: ["PWA_MODE"],
+    });
+  }
+  return Object.freeze({
+    name: "pwa" as const,
+    label: "Installable/offline application",
+    state: mode === "retire" ? ("disabled" as const) : ("configured-unverified" as const),
+    detail:
+      mode === "retire"
+        ? "Retirement mode unregisters the root service worker and deletes The Scenes-owned caches."
+        : "PWA files and registration are enabled. Deployment, installation, offline and update behavior require browser verification.",
+    requiredVariables: ["PWA_MODE"],
     missingVariables: [],
   });
 }
@@ -203,7 +299,9 @@ export function inspectIntegrations(source?: RuntimeEnvSource): IntegrationsRepo
     supabaseHealth(configuration),
     rateLimitHealth(configuration, environment),
     feedbackHealth(configuration, environment),
-    accountEmailHealth(configuration),
+    notificationsHealth(configuration),
+    accountEmailHealth(configuration, environment),
+    pwaHealth(environment),
     Object.freeze({
       name: "application-email" as const,
       label: "Application email (Resend)",
@@ -231,7 +329,12 @@ export function inspectIntegrations(source?: RuntimeEnvSource): IntegrationsRepo
     }),
   ]);
 
-  const ok = integrations.every((integration) => integration.state !== "misconfigured");
+  const ok = integrations.every(
+    (integration) =>
+      integration.state !== "missing" &&
+      integration.state !== "misconfigured" &&
+      integration.state !== "unhealthy",
+  );
 
   return Object.freeze({
     dataMode: configuration.dataMode,

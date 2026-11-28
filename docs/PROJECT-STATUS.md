@@ -225,7 +225,7 @@ process together inside WSL resolved it without weakening expiry or claim verifi
 The founder designated **THE SCENES** (`okdzuqgzgnmmbtjxdaci`) as the application's final long-term
 Supabase project. It is intentionally treated as **PRE-PRODUCTION** until the release gate passes; no
 separate staging project will be created. Email confirmation is enabled and must remain enabled. The
-remote project now has exactly 18 accepted migration-history entries, 15 expected public tables and the
+remote project now has exactly 19 accepted migration-history entries, 17 expected public tables and the
 private audit table. Every expected table has RLS enabled. The founder-authorized deterministic
 fictional catalogue is loaded; it contains no seeded learner, customer, payment, membership, enrolment,
 or completion. No production deployment is claimed.
@@ -235,7 +235,7 @@ Phase 4 code/local gaps that remain explicit:
 - the P4-S3 notifications migration (`20261111120000_phase4_0019_notifications.sql`) is written and
   unit-tested but **not applied** to `okdzuqgzgnmmbtjxdaci`; applying it needs a separate approval and a
   reviewed remote migration history;
-- the P4-S4 WhatsApp number, the P4-S2 Upstash database and the P4-S1 Resend domain/key are **not
+- the P4-S4 GitHub feedback repository, the P4-S2 Upstash database and the P4-S1 Resend domain/key are **not
   created**; the code is configuration-ready and fails safe without them;
 - P4-S5 is code/local only; no deployment has been made and the service worker is registered only in a
   production build;

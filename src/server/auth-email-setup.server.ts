@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
+import { normalizeApprovedHostedOrigin } from "../features/auth/redirects";
 import { inspectServerConfiguration, type ConfigurationDiagnostic } from "./env.server";
-import type { RuntimeEnvSource } from "./runtime-env.server";
+import { readRuntimeEnv, type RuntimeEnvSource } from "./runtime-env.server";
 
 export type AuthEmailCheckState =
   "configured-in-app" | "manual-verification-required" | "not-configured";
@@ -25,14 +26,21 @@ export type AuthEmailSetupStatus = Readonly<{
  * project after explicit remote approval.
  */
 export function inspectAuthEmailSetup(source?: RuntimeEnvSource): AuthEmailSetupStatus {
-  const configuration = inspectServerConfiguration(source);
+  const environment = source ?? readRuntimeEnv();
+  const configuration = inspectServerConfiguration(environment);
   const fixture = configuration.dataMode === "fixtures";
+  const originConfigured =
+    configuration.dataMode === "supabase-local" ||
+    normalizeApprovedHostedOrigin(environment.APP_ORIGIN) !== null;
 
   return Object.freeze({
     provider: "supabase-auth-custom-smtp" as const,
     vendor: "resend" as const,
     configurationOwner: "supabase-auth" as const,
-    state: fixture ? ("not-configured" as const) : ("requires-hosted-verification" as const),
+    state:
+      fixture || !originConfigured
+        ? ("not-configured" as const)
+        : ("requires-hosted-verification" as const),
     dataMode: configuration.dataMode,
     redirectPaths: Object.freeze(["/auth/confirm", "/reset-password"]),
     checks: Object.freeze([
@@ -46,11 +54,15 @@ export function inspectAuthEmailSetup(source?: RuntimeEnvSource): AuthEmailSetup
       { name: "Verified Resend sending domain", state: "manual-verification-required" as const },
       { name: "Confirmation email template", state: "manual-verification-required" as const },
       { name: "Recovery email template", state: "manual-verification-required" as const },
-      { name: "Application redirect allowlist", state: "configured-in-app" as const },
+      {
+        name: "Canonical APP_ORIGIN and redirect allowlist",
+        state: (originConfigured ? "configured-in-app" : "not-configured") as AuthEmailCheckState,
+      },
       { name: "Client-bundle secret scan", state: "manual-verification-required" as const },
     ]),
     notes: Object.freeze([
       "The application cannot read Supabase Auth SMTP settings; verify them in the approved project.",
+      "Hosted redirects fail closed unless APP_ORIGIN matches the exact HTTPS request origin.",
       "No provider value is returned by this check.",
       "Remote configuration and real-inbox verification require separate founder approval.",
     ]),

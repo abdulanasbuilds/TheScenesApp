@@ -33,6 +33,9 @@ function ResetPasswordPage() {
   const [fieldError, setFieldError] = useState("");
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [sessionRevocation, setSessionRevocation] = useState<"confirmed" | "unconfirmed">(
+    "confirmed",
+  );
 
   const consume = useCallback(async () => {
     if (!codeRef.current) {
@@ -93,13 +96,20 @@ function ResetPasswordPage() {
     try {
       const result = await updateRecoveredAccountPassword({ data: parsed.data });
       if (!result.ok) {
-        setFormError(result.error.message);
-        if (result.error.code === "UNAUTHENTICATED") setPhase("invalid");
+        if (result.error?.code === "UNAUTHENTICATED") {
+          setFormError("That reset link has expired. Request a new one.");
+          setPhase("invalid");
+          return;
+        }
+        setFormError(result.error?.message ?? "The password could not be saved.");
+        setFieldError("");
+        setSubmitting(false);
         return;
       }
       codeRef.current = null;
       setPassword("");
       setConfirm("");
+      setSessionRevocation(result.data.sessionRevocation);
       setPhase("updated");
       await router.invalidate();
     } finally {
@@ -157,7 +167,11 @@ function ResetPasswordPage() {
     return (
       <AuthShell
         title="Password updated"
-        description="Your password has changed and every other session has been signed out."
+        description={
+          sessionRevocation === "confirmed"
+            ? "Your password has changed and global session revocation was accepted."
+            : "Your password has changed, but global session revocation could not be confirmed."
+        }
         footer={
           <a href="/login" className="font-bold text-indigo-700">
             Back to sign in
@@ -176,8 +190,9 @@ function ResetPasswordPage() {
             <div>
               <p className="text-sm font-bold text-emerald-950">You can sign in now.</p>
               <p className="mt-1 text-sm leading-6 text-emerald-900">
-                Use the new password on the sign-in page. The old password and other sessions no
-                longer work.
+                {sessionRevocation === "confirmed"
+                  ? "Use the new password on the sign-in page. Other refresh sessions were revoked, though browser tabs with an already-issued access token may keep working until it expires."
+                  : "Use the new password on the sign-in page. Because session revocation was not confirmed, review active sessions and sign out again after you log in."}
               </p>
             </div>
           </div>
@@ -264,8 +279,8 @@ function ResetPasswordPage() {
           )}
         </Button>
         <p className="text-xs leading-5 text-slate-500">
-          Updating your password signs out every other session. The reset link can only be used
-          once.
+          Updating your password requests global refresh-session revocation. The reset link can only
+          be used once. Already-issued access tokens may remain valid until they expire.
         </p>
       </form>
     </AuthShell>

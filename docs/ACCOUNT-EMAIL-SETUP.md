@@ -12,15 +12,19 @@ only. No SMTP password, API key or template secret is ever read, printed **or** 
 
 ## What this feature does
 
-- **Email confirmation** is handled by Supabase Auth's built-in confirmation flow. The application
-  requests it at sign-up; Supabase Auth creates and verifies the confirmation token.
+- **Email confirmation** is handled by Supabase Auth's built-in confirmation flow. The approved
+  template uses `{{ .ConfirmationURL }}`. Supabase Auth creates and verifies the token at its own
+  `/auth/v1/verify` endpoint, then returns to `/auth/confirm`; the application does not verify the
+  token a second time.
 - **Password recovery** lets a signed-out person set a new password:
   1. `/forgot-password` submits an email address to `resetPasswordForEmail`;
-  2. Supabase Auth emails a single-use link to `/reset-password?code=...`;
+  2. the approved template uses `{{ .ConfirmationURL }}`; Supabase Auth verifies the single-use token
+     and returns the PKCE code to `/reset-password?code=...`;
   3. `/reset-password` strips the code from the visible URL, exchanges the PKCE code
      (`exchangeCodeForSession`) and shows a new-password form;
-  4. `updateUser({ password })` sets the new password, then `signOut({ scope: "global" })` revokes
-     every session.
+  4. `updateUser({ password })` sets the new password, then `signOut({ scope: "global" })` requests
+     global refresh-session revocation. The application reports whether that revocation call was
+     confirmed; already-issued access tokens can remain valid until they expire.
 
 Supabase Auth is the **only** token authority. The application never builds its own tokens or links,
 never uses a service-role/admin key for ordinary recovery, and never contacts an email provider
@@ -28,11 +32,11 @@ directly.
 
 ## Data modes
 
-| Mode | Behaviour |
-|---|---|
-| `fixtures` | No provider contact. Recovery returns an honest `delivery: "not-configured"` acknowledgement. `/reset-password` refuses and states recovery is not connected. |
-| `supabase-local` | Connects to the local Supabase stack (`http://127.0.0.1:54321`). Emails are captured by the local mail catcher. |
-| `supabase-staging` | Connects to the approved pre-production Supabase project. Real email delivery requires Supabase Auth custom SMTP (see below). |
+| Mode               | Behaviour                                                                                                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fixtures`         | No provider contact. Recovery returns an honest `delivery: "not-configured"` acknowledgement. `/reset-password` refuses and states recovery is not connected. |
+| `supabase-local`   | Connects to the local Supabase stack (`http://127.0.0.1:54321`). Emails are captured by the local mail catcher.                                               |
+| `supabase-staging` | Connects to the approved pre-production Supabase project. Real email delivery requires Supabase Auth custom SMTP (see below).                                 |
 
 A configured integration never silently falls back to fixtures.
 
@@ -87,6 +91,8 @@ Application environment (ignored local file, existing names):
 - `VITE_DATA_MODE` — `fixtures`, `supabase-local` or `supabase-staging`;
 - `VITE_SUPABASE_URL` — approved project URL;
 - `VITE_SUPABASE_PUBLISHABLE_KEY` — public/publishable key only.
+- `APP_ORIGIN` — exact canonical hosted HTTPS origin, with no path or wildcard. Loopback development
+  remains pinned to `http://127.0.0.1:5000` in code.
 
 Supabase Auth custom SMTP (Supabase Dashboard → Authentication → Emails → SMTP Settings; owned by
 Supabase Auth, not readable by the application):
@@ -105,8 +111,8 @@ these app paths are used:
 - Hosted: `https://<approved-host>/auth/confirm`, `https://<approved-host>/reset-password`
 
 The application also checks the origin itself (`src/features/auth/redirects.ts`): loopback is pinned to
-`127.0.0.1:5000`; every hosted origin must be HTTPS; an unapproved origin fails closed. Supabase's
-redirect allowlist is the second, authoritative layer.
+`127.0.0.1:5000`; a hosted request must exactly match `APP_ORIGIN`; an unapproved or malformed origin
+fails closed. Supabase's redirect allowlist is the second, authoritative layer.
 
 ## Email templates
 
@@ -119,6 +125,12 @@ Supabase Auth sends both emails. Keep the templates short, plain and accessible:
   request was not expected.
 
 Template rules:
+
+- **Confirmation action link:** `<a href="{{ .ConfirmationURL }}">Confirm email</a>`;
+- **Recovery action link:** `<a href="{{ .ConfirmationURL }}">Reset password</a>`;
+- do not replace these with a direct `token_hash` URL unless the application is separately changed to
+  call `verifyOtp`; the current `/auth/confirm` callback intentionally expects Supabase to verify the
+  default confirmation URL before redirecting;
 
 - include a meaningful link label (for example "Confirm email" / "Reset password") rather than a bare
   URL;
@@ -139,6 +151,8 @@ Template rules:
 3. **Connected (requires separate remote approval):** after Resend account, verified domain, scoped key
    and Supabase Auth SMTP are approved and configured, request one recovery for a founder-controlled
    fictional address and confirm the email arrives and the link returns to `/reset-password`.
+4. Confirm the Connected Services screen says **Configured — verify** before the inbox test and record
+   real-provider verification separately; configuration alone is never reported as `Ready`.
 
 ## Rollback
 

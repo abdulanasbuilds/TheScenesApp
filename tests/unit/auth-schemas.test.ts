@@ -48,9 +48,15 @@ describe("Wave 3 auth schemas", () => {
     expect(buildEmailConfirmationRedirect(new URL("http://localhost:5000/register"))).toBe(
       "http://127.0.0.1:5000/auth/confirm?next=%2Fonboarding",
     );
-    expect(buildEmailConfirmationRedirect(new URL("https://app.example.test/register"))).toBe(
-      "https://app.example.test/auth/confirm?next=%2Fonboarding",
-    );
+    expect(
+      buildEmailConfirmationRedirect(
+        new URL("https://app.example.test/register"),
+        "https://app.example.test",
+      ),
+    ).toBe("https://app.example.test/auth/confirm?next=%2Fonboarding");
+    expect(() =>
+      buildEmailConfirmationRedirect(new URL("https://app.example.test/register")),
+    ).toThrow("not approved");
     expect(() =>
       buildEmailConfirmationRedirect(new URL("http://app.example.test/register")),
     ).toThrow("not approved");

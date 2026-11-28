@@ -125,7 +125,8 @@ Do not build all slices in one change set.
 
 ### Feedback
 
-- The form states that feedback and limited context are sent to an internal Telegram channel.
+- The form states that feedback and limited context are sent by the founder-controlled Telegram bot
+  to an approved private chat or group.
 - Required: message (10–2,000 characters) and current internal route. Optional screenshot, email and
   file attachment are out of scope. Never send cookies, tokens, browser storage, full email, protected
   content or raw request headers.
@@ -285,7 +286,7 @@ TTL, exact object/owner binding, private-by-default bucket and denial tests. No 
 - Candidate server-only names:
   - app email (only if approved later): `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`;
   - Redis REST: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`,
-    `RATE_LIMIT_KEY_SECRET`;
+    `RATE_LIMIT_HASH_SECRET`;
   - Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_FEEDBACK_CHAT_ID`;
   - web push: `VAPID_PUBLIC_KEY` (public), `VAPID_PRIVATE_KEY` (server-only), `VAPID_SUBJECT`;
   - conditional R2: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`,
@@ -338,8 +339,8 @@ Cost guardrails: free tier by default, overages disabled, usage checked during a
   ADR-041 restore rehearsal covers Phase 4 tables. Redis has no RPO because counters are disposable.
 - **Observability:** structured counts/latency for accepted/failed/throttled provider calls, request IDs,
   unread query latency, service-worker version and subscription churn; no PII in metrics.
-- **Health/setup:** one command reports adapters as `ready`, `missing`, `disabled` or `unhealthy`
-  without printing credentials.
+- **Health/setup:** one command reports adapters as `ready`, `configured-unverified`, `missing`,
+  `disabled`, `misconfigured` or `unhealthy` without printing credentials.
 - **Runbooks:** configure/verify/disable/rotate each provider; bounce/suppression response; Redis outage;
   Telegram outage; push 404/410 cleanup; service-worker rollback; retention/deletion procedure.
 - **Rollout:** explicit per-slice feature flag plus validated config; configuration presence alone does
@@ -427,15 +428,15 @@ Phase 4 acceptance does not authorize production deployment or real customer dat
 
 ## 11. Provider/account decisions required
 
-| Slice | Proposed provider | Current pre-production posture | Remote action requiring approval | Rollback |
-|---|---|---|---|---|
-| S1 Auth email | Resend SMTP through Supabase Auth | Free plan; verified business domain required | Create/approve Resend account/key/domain and update THE SCENES Auth SMTP | Restore disabled/custom SMTP config; keep safe no-send/local path |
-| S2 rate limiting | Upstash Redis REST | Free plan, pre-production only; no SLA/at-rest encryption | Create business-controlled DB, configure scoped REST credentials | Disable Redis flag; memory limiter remains for local/fixture only |
-| S3 notifications | THE SCENES Supabase | Additive migration on pre-production | Apply reviewed migration after dry run | Disable connected feature; preserve rows; forward-fix schema |
-| S4 feedback | Telegram Bot API | Replaceable internal alert channel | Create bot/chat and send founder-controlled test | Disable Telegram flag; memory provider/local form remains |
-| S5 PWA | Web standards | No provider | None until deployment | Unregister service worker and remove manifest link |
-| S6 push | Web Push/VAPID after workerd proof | No paid provider; browser consent | Store VAPID secret and a founder-controlled subscription | Disable push; revoke/delete subscriptions |
-| S7 objects | Cloudflare R2 (conditional) | Not approved | Separate object/cost/access request | Disable object feature; delete only explicitly approved test objects |
+| Slice            | Proposed provider                  | Current pre-production posture                            | Remote action requiring approval                                         | Rollback                                                             |
+| ---------------- | ---------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| S1 Auth email    | Resend SMTP through Supabase Auth  | Free plan; verified business domain required              | Create/approve Resend account/key/domain and update THE SCENES Auth SMTP | Restore disabled/custom SMTP config; keep safe no-send/local path    |
+| S2 rate limiting | Upstash Redis REST                 | Free plan, pre-production only; no SLA/at-rest encryption | Create business-controlled DB, configure scoped REST credentials         | Disable Redis flag; memory limiter remains for local/fixture only    |
+| S3 notifications | THE SCENES Supabase                | Additive migration on pre-production                      | Apply reviewed migration after dry run                                   | Disable connected feature; preserve rows; forward-fix schema         |
+| S4 feedback      | Telegram Bot API                   | Replaceable internal alert channel                        | Create bot/chat and send founder-controlled test                         | Disable Telegram flag; memory provider/local form remains            |
+| S5 PWA           | Web standards                      | No provider                                               | None until deployment                                                    | Unregister service worker and remove manifest link                   |
+| S6 push          | Web Push/VAPID after workerd proof | No paid provider; browser consent                         | Store VAPID secret and a founder-controlled subscription                 | Disable push; revoke/delete subscriptions                            |
+| S7 objects       | Cloudflare R2 (conditional)        | Not approved                                              | Separate object/cost/access request                                      | Disable object feature; delete only explicitly approved test objects |
 
 No secret is pasted in chat or committed. The founder places it in an ignored local environment file or
 the approved provider/platform secret store; the agent verifies presence/behavior without printing it.

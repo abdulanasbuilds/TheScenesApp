@@ -341,6 +341,29 @@ describe("P4-S4 feedback service", () => {
     expect(JSON.stringify(captured)).not.toContain("a@b.test");
   });
 
+  test("sends only the page pathname, never query text or a fragment", async () => {
+    let captured: FeedbackMessage | null = null;
+    const provider: FeedbackProvider = {
+      kind: "memory",
+      async submit(message) {
+        captured = message;
+        return { delivery: "local-preview", reference: "test:2" };
+      },
+    };
+
+    await submitFeedback(validInput({ route: "/settings?token=super-secret#billing" }), {
+      ...silent,
+      config: { provider: "memory" },
+      provider,
+      principal: null,
+      consumeLimit: allowLimit,
+    });
+
+    expect(captured).toMatchObject({ route: "/settings" });
+    expect(JSON.stringify(captured)).not.toContain("super-secret");
+    expect(JSON.stringify(captured)).not.toContain("#billing");
+  });
+
   test("reports a GitHub delivery only after the provider confirms it", async () => {
     const provider: FeedbackProvider = {
       kind: "github",
@@ -456,6 +479,8 @@ describe("integration health", () => {
       UPSTASH_REDIS_REST_URL: "https://example.upstash.io",
       UPSTASH_REDIS_REST_TOKEN: "opaque-token-value",
       RATE_LIMIT_HASH_SECRET: "0123456789abcdef",
+      APP_ORIGIN: "https://app.thescenes.test",
+      PWA_MODE: "enabled",
     });
 
     const serialized = JSON.stringify(report);
@@ -464,8 +489,12 @@ describe("integration health", () => {
     expect(serialized).not.toContain("opaque-token-value");
     expect(serialized).not.toContain("abcdefghijklmnopqrst");
     expect(report.ok).toBe(true);
-    expect(report.integrations.find((item) => item.name === "supabase")?.state).toBe("ready");
-    expect(report.integrations.find((item) => item.name === "rate-limit")?.state).toBe("ready");
+    expect(report.integrations.find((item) => item.name === "supabase")?.state).toBe(
+      "configured-unverified",
+    );
+    expect(report.integrations.find((item) => item.name === "rate-limit")?.state).toBe(
+      "configured-unverified",
+    );
     expect(report.integrations.find((item) => item.name === "feedback")?.state).toBe("ready");
   });
 

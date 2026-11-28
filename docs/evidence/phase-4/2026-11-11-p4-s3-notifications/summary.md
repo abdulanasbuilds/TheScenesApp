@@ -1,5 +1,8 @@
 # P4-S3 evidence — connected in-app notifications (code/local)
 
+> Historical code/local evidence. For the current hosted migration state, see
+> `docs/evidence/phase-4/2026-11-15-p4-s3-hosted/summary.md`.
+
 **Date:** 2026-11-11
 **Slice:** P4-S3 — Connected in-app notifications
 **Approval:** ADR-044 (code/local; remote actions NONE)

@@ -19,6 +19,7 @@ import {
   type FeedbackProvider,
 } from "./feedback-provider.server";
 import { GitHubIssuesFeedbackProvider } from "./github-issues.server";
+import { sanitizeFeedbackRoute } from "./sanitize-route.server";
 
 /**
  * P4-S4 feedback service.
@@ -116,7 +117,7 @@ export async function submitFeedback(
     subject: input.subject,
     text: input.message,
     area: input.area ?? null,
-    route: input.route,
+    route: sanitizeFeedbackRoute(input.route),
     pseudonymousUserId: principal?.userId ?? null,
     role: principal ? "member" : "guest",
     occurredAt: new Date(now()).toISOString(),

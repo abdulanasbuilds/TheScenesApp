@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { readPwaMode } from "../../src/server/pwa/pwa-config.server";
 
 /**
  * P4-S5 conformance tests.
@@ -43,6 +44,8 @@ const manifest = JSON.parse(readText("manifest.webmanifest")) as {
 
 const worker = readText("sw.js");
 const offline = readText("offline.html");
+const experience = readFileSync(join(root, "src", "features", "pwa", "pwa-experience.tsx"), "utf8");
+const lifecycle = readFileSync(join(root, "src", "features", "pwa", "pwa-lifecycle.ts"), "utf8");
 
 describe("P4-S5 manifest", () => {
   test("declares installability fields and a root scope", () => {
@@ -131,5 +134,22 @@ describe("P4-S5 offline shell", () => {
       expect(href.startsWith("/c/")).toBe(false);
       expect(href.startsWith("/dashboard")).toBe(false);
     }
+  });
+});
+
+describe("P4-S5 operational retirement", () => {
+  test("defaults to enabled and fails an invalid explicit mode safe to retirement", () => {
+    expect(readPwaMode({})).toBe("enabled");
+    expect(readPwaMode({ PWA_MODE: "enabled" })).toBe("enabled");
+    expect(readPwaMode({ PWA_MODE: "retire" })).toBe("retire");
+    expect(readPwaMode({ PWA_MODE: "unexpected" })).toBe("retire");
+  });
+
+  test("unregisters only the root-scope worker and deletes only owned caches", () => {
+    expect(experience).toContain('mode === "retire"');
+    expect(lifecycle).toContain("registration.unregister()");
+    expect(lifecycle).toContain('scope.pathname === "/"');
+    expect(lifecycle).toContain('const OWNED_CACHE_PREFIX = "thescenes-pwa-"');
+    expect(lifecycle).toContain("key.startsWith(OWNED_CACHE_PREFIX)");
   });
 });

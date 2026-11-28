@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download, RefreshCw, Share, X } from "lucide-react";
 import { Button } from "@/components/ui";
+import { retireTheScenesPwa } from "./pwa-lifecycle";
 
 /**
  * PWA install and update experience (P4-S5).
@@ -32,7 +33,7 @@ function isStandalone(): boolean {
   return window.matchMedia("(display-mode: standalone)").matches || iosStandalone;
 }
 
-export function PwaExperience() {
+export function PwaExperience({ mode = "enabled" }: Readonly<{ mode?: "enabled" | "retire" }>) {
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [showInstall, setShowInstall] = useState(false);
   const [iosGuidance, setIosGuidance] = useState(false);
@@ -42,7 +43,22 @@ export function PwaExperience() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     let cancelled = false;
-    const dismissed = window.localStorage.getItem(DISMISS_KEY) === "1";
+
+    if (mode === "retire") {
+      void retireTheScenesPwa().catch(() => {
+        // Retirement is retried on the next page load; the app remains usable as an ordinary page.
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    let dismissed = false;
+    try {
+      dismissed = window.localStorage.getItem(DISMISS_KEY) === "1";
+    } catch {
+      // Storage can be unavailable (private mode); installation remains optional and dismissible.
+    }
     const standalone = isStandalone();
 
     const onBeforeInstall = (event: Event) => {
@@ -91,7 +107,7 @@ export function PwaExperience() {
       window.clearTimeout(iosTimer);
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
     };
-  }, []);
+  }, [mode]);
 
   const dismiss = () => {
     setShowInstall(false);
